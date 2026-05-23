@@ -1,0 +1,6 @@
+{
+  "name": "Imóvel Conectado Importer",
+  "description": "Import, validate, and synchronize the Imóvel Conectado project preserving strict environment configurations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
