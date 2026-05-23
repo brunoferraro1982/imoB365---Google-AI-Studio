@@ -1,0 +1,1 @@
+ALTER TYPE lead_origem ADD VALUE IF NOT EXISTS 'api';
