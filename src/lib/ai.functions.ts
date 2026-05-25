@@ -115,3 +115,84 @@ export const gerarPostRedesImovel = createServerFn({ method: "POST" })
     ]);
     return { post: text.trim() };
   });
+
+const SeoInput = z.object({
+  titulo: z.string().max(200),
+  descricao: z.string().max(4000).optional().default(""),
+  bairro: z.string().max(120).optional().default(""),
+  cidade: z.string().max(120).optional().default(""),
+  tipo: z.string().max(60).optional().default("apartamento"),
+});
+
+export const gerarMetatagsSEO = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => SeoInput.parse(d))
+  .handler(async ({ data }) => {
+    const system = "Você é um especialista em SEO no mercado imobiliário brasileiro. Retorne apenas um JSON estruturado com chave e valor correspondentes.";
+    const user = `Otimize o SEO para este imóvel:\nTítulo: ${data.titulo}\nDescrição: ${data.descricao}\nLocalização: ${data.bairro} - ${data.cidade}\nTipo: ${data.tipo}\n\nRetorne obrigatoriamente um objeto JSON com as seguintes chaves:\n- "seo_title": título SEO altamente amigável para motores de busca (máximo 60 caracteres)\n- "meta_description": resumo focado em cliques com tags de relevância (máximo 155 caracteres) contendo localização\n- "keywords": lista de até 6 palavras-chave separadas por vírgula.`;
+    const response = await callAI([
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ], { jsonMode: true });
+
+    try {
+      const parsed = JSON.parse(response);
+      return { seo: parsed };
+    } catch {
+      return {
+        seo: {
+          seo_title: `${data.tipo} em ${data.bairro}, ${data.cidade} | imob365`,
+          meta_description: `Confira este excelente ${data.tipo} em ${data.bairro}, ${data.cidade}. Detalhes completos e fotos profissionais. Solicite sua visita!`,
+          keywords: `${data.tipo}, ${data.bairro}, imóvel em ${data.cidade}, imob365`
+        }
+      };
+    }
+  });
+
+const InterpretadorInput = z.object({
+  mensagem: z.string().max(800),
+});
+
+export const interpretarBuscaConversacional = createServerFn({ method: "POST" })
+  .inputValidator((d) => InterpretadorInput.parse(d))
+  .handler(async ({ data }) => {
+    const system = `Você é o corretor virtual inteligente da imob365. Sua tarefa é interpretar o que o usuário quer em linguagem natural e responder com dados estruturados para filtrar imóveis no portal.
+Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
+- "resposta_amigavel": mensagem curta e simpática direcionada ao cliente resumindo o que você entendeu e quais filtros foram aplicados (em português, sem aspas extras, máximo 250 caracteres).
+- "q": termo geral de busca ou bairro (string, vazia se não especificado)
+- "finalidade": obrigatoriamente um valor entre "todos", "venda" ou "aluguel" (ou "temporada" se falarem aluguel de temporada/praia). Default "todos".
+- "tipo": tipo do imóvel: "apartamento", "casa", "terreno", "cobertura", "comercial" (string, vazia se não especificado)
+- "quartos": quantidade de quartos mínima como string de número (ex: "2", "3", "4", ou "" se não especificado)
+- "banheiros": quantidade de banheiros mínima como string de número (ex: "2", "3", ou "" se não especificado)
+- "precoMax": valor máximo (em reais, como string numérica sem pontos Ex: "800000", ou "" se não especificado)
+- "precoMin": valor mínimo (em reais, como string numérica sem pontos Ex: "200000", ou "" se não especificado)
+- "areaMin": área útil construída mínima (como string numérica Ex: "80", ou "" se não especificado)
+- "caracteristicasSelecionadas": lista de amenidades identificadas (ex: ["piscina", "academia", "churrasqueira", "varanda gourmet", "mobiliado", "portaria 24h", "aceita pet"])`;
+
+    const user = `Considere a mensagem do usuário:\n"${data.mensagem}"\n\nAnalise e retorne o JSON estruturado correspondente.`;
+
+    const response = await callAI([
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ], { jsonMode: true });
+
+    try {
+      const parsed = JSON.parse(response);
+      return { bot: parsed };
+    } catch {
+      return {
+        bot: {
+          resposta_amigavel: "Entendi o seu desejo! Busquei os melhores imóveis disponíveis conforme as suas indicações.",
+          q: "",
+          finalidade: "todos",
+          tipo: "",
+          quartos: "",
+          banheiros: "",
+          precoMax: "",
+          precoMin: "",
+          areaMin: "",
+          caracteristicasSelecionadas: []
+        }
+      };
+    }
+  });

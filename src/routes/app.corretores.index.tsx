@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, UserCircle2, Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Plus, UserCircle2, Pencil, Trash2, ExternalLink, Star, Award, HeartHandshake, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,76 @@ function CorretoresList() {
   const [items, setItems] = useState<Corretor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+
+  // 360 Evaluations State & Actions (Sprint 6)
+  const [evaluations, setEvaluations] = useState<any[]>([
+    {
+      avaliador: "Mariana Silva",
+      relacao: "Cliente Comprador",
+      corretorNome: "Gustavo Reis",
+      atendimento: 5,
+      negociacao: 4,
+      pontualidade: 5,
+      comentario: "Excelente profissional. Nos acompanhou em 3 visitas no final de semana e foi incansável na negociação de venda do apartamento.",
+      data: "24/05/2026"
+    },
+    {
+      avaliador: "Camila Costa",
+      relacao: "Corretor Parceiro",
+      corretorNome: "Aline Souza",
+      atendimento: 5,
+      negociacao: 5,
+      pontualidade: 5,
+      comentario: "Ótima parceria de co-corretagem! Split de comissão 50/50 pago certinho e contrato rápido.",
+      data: "22/05/2026"
+    },
+    {
+      avaliador: "Roberto Santos",
+      relacao: "Cliente Proprietário",
+      corretorNome: "Felipe Dias",
+      atendimento: 4,
+      negociacao: 5,
+      pontualidade: 4,
+      comentario: "Muito prestativo. Ajudou com as dúvidas técnicas de avaliação patrimonial física.",
+      data: "18/05/2026"
+    }
+  ]);
+
+  const [formAvaliador, setFormAvaliador] = useState("");
+  const [formRelacao, setFormRelacao] = useState("Cliente Comprador");
+  const [formCorretorId, setFormCorretorId] = useState("");
+  const [formAtendimento, setFormAtendimento] = useState(5);
+  const [formNegociacao, setFormNegociacao] = useState(5);
+  const [formPontualidade, setFormPontualidade] = useState(5);
+  const [formComentario, setFormComentario] = useState("");
+
+  function handleFormSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!formAvaliador.trim() || !formCorretorId) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+    const corrObj = items.find((itm) => itm.id === formCorretorId);
+    const corrNomeSelected = corrObj ? corrObj.nome : "Corretor Associado";
+    const newEv = {
+      avaliador: formAvaliador.trim(),
+      relacao: formRelacao,
+      corretorNome: corrNomeSelected,
+      atendimento: formAtendimento,
+      negociacao: formNegociacao,
+      pontualidade: formPontualidade,
+      comentario: formComentario.trim(),
+      data: new Date().toLocaleDateString("pt-BR"),
+    };
+    setEvaluations([newEv, ...evaluations]);
+    toast.success("Avaliação 360 registrada!");
+    setFormAvaliador("");
+    setFormCorretorId("");
+    setFormComentario("");
+    setFormAtendimento(5);
+    setFormNegociacao(5);
+    setFormPontualidade(5);
+  }
 
   async function load() {
     setLoading(true);
@@ -151,6 +221,173 @@ function CorretoresList() {
             </tbody>
           </table>
         )}
+      </div>
+
+      {/* Sistema de Avaliações 360 (Sprint 6) */}
+      <div className="mt-10 grid gap-6 lg:grid-cols-[1fr,360px]">
+        {/* Feed de avaliações coletadas */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2">
+            <HeartHandshake className="h-5 w-5 text-primary" />
+            <div>
+              <h2 className="text-base font-bold text-foreground">Avaliações 360 · Satisfação e Parcerias</h2>
+              <p className="text-xs text-muted-foreground">Índice multidimensional de corretores avaliados por clientes e parceiros de co-corretagem</p>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-2">
+            {evaluations.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Nenhuma avaliação cadastrada no portal.</p>
+            ) : (
+              evaluations.map((ev, idx) => (
+                <div key={idx} className="rounded-xl border border-border p-4 space-y-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-xs text-foreground">{ev.avaliador}</span>
+                      <span className="text-[10px] ml-2 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold font-sans capitalize">{ev.relacao}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground font-mono">
+                      {ev.data}
+                    </div>
+                  </div>
+
+                  <div className="text-xs">
+                    Avaliado: <strong className="text-foreground">{ev.corretorNome}</strong>
+                  </div>
+
+                  {/* Multi-dimensional marks (Atendimento, Negociação, Pontualidade) */}
+                  <div className="grid grid-cols-3 gap-3 bg-background p-2.5 rounded-lg border border-border/50 text-[11px] text-muted-foreground text-center">
+                    <div>
+                      <div className="font-medium">Atendimento</div>
+                      <div className="mt-1 flex justify-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`h-3 w-3 ${i < ev.atendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Negociação</div>
+                      <div className="mt-1 flex justify-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`h-3 w-3 ${i < ev.negociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-medium">Pontualidade</div>
+                      <div className="mt-1 flex justify-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className={`h-3 w-3 ${i < ev.pontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {ev.comentario && (
+                    <p className="text-xs italic text-muted-foreground/95 bg-background/50 border-l-2 border-primary/20 p-2 rounded-r-md">
+                      "{ev.comentario}"
+                    </p>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Formulário para registrar avaliação */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm h-fit space-y-4">
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-emerald-600" />
+            <h3 className="text-sm font-bold text-foreground">Coletar Novo Feedback</h3>
+          </div>
+          
+          <form onSubmit={handleFormSubmit} className="space-y-3.5 text-xs">
+            <div>
+              <label className="mb-1 block font-medium text-muted-foreground">Avaliador (Nome completo)</label>
+              <Input
+                placeholder="Ex: Mariana Silva"
+                value={formAvaliador}
+                onChange={(e) => setFormAvaliador(e.target.value)}
+                required
+                className="text-xs h-9"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-medium text-muted-foreground">Relação</label>
+              <select
+                value={formRelacao}
+                onChange={(e) => setFormRelacao(e.target.value)}
+                className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 py-1 ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="Cliente Comprador">Cliente Comprador</option>
+                <option value="Cliente Proprietário">Cliente Proprietário</option>
+                <option value="Corretor Parceiro">Corretor Parceiro (Co-corretagem)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-medium text-muted-foreground">Corretor do time</label>
+              <select
+                value={formCorretorId}
+                onChange={(e) => setFormCorretorId(e.target.value)}
+                className="w-full text-xs h-9 rounded-md border border-input bg-background px-3 py-1 ring-offset-background focus:outline-none focus:ring-1"
+                required
+              >
+                <option value="">Selecione o corretor...</option>
+                {items.map((it) => (
+                  <option key={it.id} value={it.id}>{it.nome}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2 border-t border-border pt-3">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Cordialidade & Atendimento</span>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((st) => (
+                    <button type="button" key={st} onClick={() => setFormAtendimento(st)}>
+                      <Star className={`h-4 w-4 ${st <= formAtendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Expertise de Negociação</span>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((st) => (
+                    <button type="button" key={st} onClick={() => setFormNegociacao(st)}>
+                      <Star className={`h-4 w-4 ${st <= formNegociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-muted-foreground">Pontualidade & Compromisso</span>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((st) => (
+                    <button type="button" key={st} onClick={() => setFormPontualidade(st)}>
+                      <Star className={`h-4 w-4 ${st <= formPontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-border pt-3">
+              <label className="mb-1 block font-medium text-muted-foreground">Comentários e Feedbacks</label>
+              <Textarea
+                rows={3}
+                placeholder="Ex: Ótima postura profissional, facilitou mto o fluxo..."
+                value={formComentario}
+                onChange={(e) => setFormComentario(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <Button type="submit" size="sm" className="w-full h-9">Registrar Avaliação</Button>
+          </form>
+        </div>
       </div>
     </div>
   );
