@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Globe2, Copy, Check, AlertCircle, KeyRound, Eye, EyeOff, Save } from "lucide-react";
+import { Globe2, Copy, Check, AlertCircle, KeyRound, Eye, EyeOff, Save, Users, HeartHandshake, Layers } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,12 @@ function PortaisPage() {
   const [savingCreds, setSavingCreds] = useState<string | null>(null);
   const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  // Co-brokerage sharing state (Sprint 9)
+  const [coBrokerageEnabled, setCoBrokerageEnabled] = useState(true);
+  const [comissionSplit, setComissionSplit] = useState("50/50");
+  const [sharedProperties, setSharedProperties] = useState(12);
+  const [autoMatchPool, setAutoMatchPool] = useState(true);
 
   async function load() {
     if (!tenantId) return;
@@ -248,6 +254,112 @@ function PortaisPage() {
           })}
         </div>
       )}
+
+      {/* Rede de Co-corretagem e MLS Nacional (Sprint 9) */}
+      <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-sm space-y-6 font-sans">
+        <div className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-4">
+          <div className="flex items-start gap-3">
+            <div className="rounded-lg bg-emerald-100 text-emerald-800 p-2"><HeartHandshake className="h-5 w-5" /></div>
+            <div>
+              <h2 className="text-base font-bold text-foreground">Rede de Co-corretagem & MLS imob365</h2>
+              <p className="text-xs text-muted-foreground">
+                Compartilhe sua carteira de imóveis com corretores parceiros e divida comissões automaticamente de forma segura.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-muted-foreground">Compartilhamento Ativo</span>
+            <Switch
+              checked={coBrokerageEnabled}
+              onCheckedChange={(v) => {
+                setCoBrokerageEnabled(v);
+                toast.success(v ? "Sua carteira está disponível na rede MLS!" : "Compartilhamento ocultado temporariamente.");
+              }}
+            />
+          </div>
+        </div>
+
+        {coBrokerageEnabled && (
+          <div className="grid gap-6 md:grid-cols-[1fr,320px] text-xs">
+            {/* MLS configuration details */}
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="p-4 bg-muted/40 border border-border/50 rounded-lg space-y-1">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Acordo de Split de Comissão</span>
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className="text-sm font-bold text-foreground">{comissionSplit} Padrão</span>
+                    <Badge variant="outline" className="text-[9px] uppercase bg-emerald-50 text-emerald-700 hover:bg-emerald-50 border-emerald-200">Garantido</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-normal">
+                    50% para o captador do imóvel e 50% para o corretor que trouxer o lead qualificado comprador/inquilino.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-muted/40 border border-border/50 rounded-lg space-y-1">
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wide">Imóveis no Pool MLS</span>
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <span className="text-sm font-bold text-emerald-600">{sharedProperties} imóveis</span>
+                    <Badge variant="secondary" className="text-[9px]">Ativo no RSS/XML</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-normal">
+                    Seus imóveis ativos estão visíveis para todos os corretores e imobiliárias associadas no Brasil.
+                  </p>
+                </div>
+              </div>
+
+              {/* Match rule settings */}
+              <div className="border border-border rounded-lg bg-background p-4 space-y-3">
+                <div className="flex items-center gap-1.5 font-bold text-foreground text-[12px]">
+                  <Layers className="h-4 w-4 text-emerald-600" /> Matches de Clientes Automáticos
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Quando ativado, nossa IA monitora as buscas salvas de imobiliárias parceiras da região. Se um imóvel seu coincidir com o perfil, um alerta de lead qualificado é gerado instantaneamente no seu painel.
+                </p>
+                <div className="flex items-center gap-2 pt-1">
+                  <Switch
+                    checked={autoMatchPool}
+                    onCheckedChange={(v) => {
+                      setAutoMatchPool(v);
+                      toast.success(v ? "Auto-matching reativado para parcerias." : "Auto-matching desligado.");
+                    }}
+                  />
+                  <span className="font-medium text-muted-foreground text-[11px]">Permitir IA sugerir de forma cruzada</span>
+                </div>
+              </div>
+            </div>
+
+            {/* List of active partner networks */}
+            <div className="border border-border bg-muted/20 p-4 rounded-lg space-y-3">
+              <div className="flex items-center gap-1.5 font-bold text-foreground text-[11px] uppercase tracking-wider text-muted-foreground">
+                <Users className="h-4 w-4 text-primary" /> Redes Parceiras Conectadas
+              </div>
+              <ul className="space-y-3 pt-1">
+                <li className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <span className="font-semibold block text-xs">Lopes Associados MLS</span>
+                    <span className="text-[10px] text-muted-foreground">Parceria Ativa</span>
+                  </div>
+                  <Badge className="text-[10px] bg-emerald-100 text-emerald-800 hover:bg-emerald-100">450 imóveis</Badge>
+                </li>
+                <li className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <span className="font-semibold block text-xs">QuintoAndar Co-Realtor</span>
+                    <span className="text-[10px] text-muted-foreground">Parceria Ativa</span>
+                  </div>
+                  <Badge className="text-[10px] bg-emerald-100 text-emerald-800 hover:bg-emerald-100">1.200 imóveis</Badge>
+                </li>
+                <li className="flex items-center justify-between border-b border-border pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <span className="font-semibold block text-xs">Netimóveis Multicentro</span>
+                    <span className="text-[10px] text-muted-foreground">Conexão Pendente</span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-300">Aguardando termo</Badge>
+                </li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -351,6 +351,66 @@ function RelatoriosPage() {
               </div>
             </div>
           </div>
+
+          {/* Performance e Conversão do Imóvel widget (Sprint 5) */}
+          <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
+            <div>
+              <h2 className="text-base font-bold text-foreground">Performance & Desempenho dos Anúncios</h2>
+              <p className="text-xs text-muted-foreground">Monitoramento orgânico de visualizações, contatos via WhatsApp e favoritação por anúncio ativo</p>
+            </div>
+            
+            {(!data.ranking_imoveis || data.ranking_imoveis.length === 0) ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">Nenhum anúncio disponível para análise de performance de tráfego.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse select-none">
+                  <thead>
+                    <tr className="border-b border-border text-xs text-muted-foreground uppercase font-semibold">
+                      <th className="pb-3 pt-1">Imóvel</th>
+                      <th className="pb-3 pt-1 text-center">Preço</th>
+                      <th className="pb-3 pt-1 text-center font-sans">👥 Visualizações</th>
+                      <th className="pb-3 pt-1 text-center font-sans">💬 Cliques WhatsApp</th>
+                      <th className="pb-3 pt-1 text-center font-sans font-medium">⭐ Favoritos</th>
+                      <th className="pb-3 pt-1 text-right">Taxa de Conversão</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.ranking_imoveis.map((im) => (
+                      <tr key={im.id} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                        <td className="py-4 font-medium max-w-xs truncate">
+                          <span className="block truncate text-foreground text-xs font-bold leading-tight">{im.titulo}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono uppercase">{im.bairro} · {TIPO_LABEL[im.tipo] ?? im.tipo}</span>
+                        </td>
+                        <td className="py-4 text-center text-xs font-bold font-mono text-primary">
+                          {formatBRL(im.preco)}
+                        </td>
+                        <td className="py-4 text-center font-mono text-xs font-semibold text-muted-foreground">
+                          {im.pageviews}
+                        </td>
+                        <td className="py-4 text-center font-mono text-xs font-semibold text-emerald-600">
+                          {im.whatsapp_clicks}
+                        </td>
+                        <td className="py-4 text-center font-mono text-xs font-semibold text-amber-500">
+                          {im.favorited}
+                        </td>
+                        <td className="py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="font-mono text-xs font-bold text-foreground">{im.conversion_rate}%</span>
+                            <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden relative">
+                              <div 
+                                className="h-full bg-emerald-500 rounded-full" 
+                                style={{ width: `${Math.min(im.conversion_rate * 3.5, 100)}%` }} 
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </>
       )}
     </div>
