@@ -1,25 +1,35 @@
-import { useState } from "react";
-import logoDark from "../../assets/logo-imob365.png";
-import logoWhite from "../../assets/logo-imob365-white.png";
-
-function resolveAssetUrl(importedAsset: any, fallbackPath: string): string {
-  if (!importedAsset) return fallbackPath;
-  if (typeof importedAsset === "string") return importedAsset;
-  if (typeof importedAsset === "object" && importedAsset !== null) {
-    if (typeof importedAsset.default === "string") return importedAsset.default;
-  }
-  return fallbackPath;
-}
 
 export function LogoIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <img
-      src="/favicon.png"
-      alt="imoB365"
+    <svg
+      viewBox="0 0 24 24"
       className={className}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-    />
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        {/* Top-left clipping half diagonal from bottom-left to top-right over 24x24 box */}
+        <clipPath id="logo-icon-clip-top-left">
+          <rect x="-24" y="-48" width="48" height="48" transform="rotate(-45) translate(0, -0.6)" />
+        </clipPath>
+        {/* Bottom-right clipping half diagonal over 24x24 box */}
+        <clipPath id="logo-icon-clip-bottom-right">
+          <rect x="-24" y="0" width="48" height="48" transform="rotate(-45) translate(0, 0.6)" />
+        </clipPath>
+      </defs>
+      
+      {/* Dynamic orange split ring icon */}
+      <g transform="translate(12, 12)">
+        {/* Top-left shifted half */}
+        <g clipPath="url(#logo-icon-clip-top-left)" transform="translate(-1, -1)">
+          <circle cx="0" cy="0" r="7.5" stroke="#F27A24" strokeWidth="4.6" />
+        </g>
+        {/* Bottom-right shifted half */}
+        <g clipPath="url(#logo-icon-clip-bottom-right)" transform="translate(1, 1)">
+          <circle cx="0" cy="0" r="7.5" stroke="#F27A24" strokeWidth="4.6" />
+        </g>
+      </g>
+    </svg>
   );
 }
 
@@ -30,54 +40,74 @@ export function Logo({
   className?: string;
   variant?: "dark" | "white";
 }) {
-  const [errorCount, setErrorCount] = useState(0);
-
-  // Try different URLs based on error level
-  let src = "";
-  if (errorCount === 0) {
-    src = resolveAssetUrl(variant === "white" ? logoWhite : logoDark, variant === "white" ? "/logo-imob365-white.png" : "/logo-imob365.png");
-  } else if (errorCount === 1) {
-    src = variant === "white" ? "/logo-imob365-white.png" : "/logo-imob365.png";
-  } else if (errorCount === 2) {
-    src = variant === "white" ? `${window.location.origin}/logo-imob365-white.png` : `${window.location.origin}/logo-imob365.png`;
-  }
-
-  // Fallback to beautiful pure React typographic representation if image loading has issues
-  if (errorCount >= 3) {
-    const textColor = variant === "white" ? "text-white" : "text-neutral-900 dark:text-white";
-    return (
-      <div className={`inline-flex items-center gap-1 font-sans select-none tracking-tight ${className}`}>
-        <span className={`font-extrabold leading-none ${textColor} tracking-tight`}>
-          im
-        </span>
-        <span className="text-[#F2762E] font-extrabold">o</span>
-        <span className={`font-black leading-none ${textColor} tracking-tight`}>
-          B365
-        </span>
-      </div>
-    );
-  }
+  const textColor = variant === "white" ? "#FFFFFF" : "#0F172A";
 
   return (
-    <img
-      src={src}
-      alt="imoB365"
+    <svg
+      viewBox="0 0 115 32"
       className={className}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      onError={() => {
-        setErrorCount((prev) => prev + 1);
-      }}
-    />
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        {/* Top-left clipping half diagonal inside a local 40x40 area */}
+        <clipPath id="logo-clip-top-left">
+          <rect x="-20" y="-40" width="40" height="40" transform="rotate(-45) translate(0, -0.5)" />
+        </clipPath>
+        {/* Bottom-right clipping half diagonal inside a local 40x40 area */}
+        <clipPath id="logo-clip-bottom-right">
+          <rect x="-20" y="0" width="40" height="40" transform="rotate(-45) translate(0, 0.5)" />
+        </clipPath>
+      </defs>
+
+      {/* "im" prefix with compact letter-spacing and heavy weight */}
+      <text
+        x="1"
+        y="23.5"
+        fontFamily="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        fontWeight="900"
+        fontSize="21"
+        fill={textColor}
+        letterSpacing="-0.04em"
+      >
+        im
+      </text>
+
+      {/* The iconic diagonal split-ring 'o' of the brand */}
+      <g transform="translate(36, 16.5)">
+        {/* Top-left shifted half */}
+        <g clipPath="url(#logo-clip-top-left)" transform="translate(-0.8, -0.8)">
+          <circle cx="0" cy="0" r="7.2" stroke="#F27A24" strokeWidth="4.4" />
+        </g>
+        {/* Bottom-right shifted half */}
+        <g clipPath="url(#logo-clip-bottom-right)" transform="translate(0.8, 0.8)">
+          <circle cx="0" cy="0" r="7.2" stroke="#F27A24" strokeWidth="4.4" />
+        </g>
+      </g>
+
+      {/* "B365" suffix */}
+      <text
+        x="48"
+        y="23.5"
+        fontFamily="Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        fontWeight="900"
+        fontSize="21"
+        fill={textColor}
+        letterSpacing="-0.04em"
+      >
+        B365
+      </text>
+    </svg>
   );
 }
 
 export function LogoMark({ className = "h-7 w-auto font-display font-extrabold tracking-tight text-foreground" }: { className?: string }) {
   return (
-    <span className={`${className} inline-flex items-center gap-1`}>
-      <span>im</span>
-      <LogoIcon className="h-[0.7em] w-[0.7em]" />
-      <span>b365</span>
-    </span>
+    <div className="flex items-center gap-1.5">
+      <LogoIcon className="h-6 w-6" />
+      <span className={className}>
+        imob365
+      </span>
+    </div>
   );
 }

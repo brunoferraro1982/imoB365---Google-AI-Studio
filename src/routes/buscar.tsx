@@ -21,16 +21,16 @@ import { CompararCheckbox, CompararBar } from "@/components/CompararSelector";
 const MapaImoveis = lazy(() => import("@/components/MapaImoveis"));
 
 type SearchParams = {
-  q: string;
-  finalidade: "todos" | "venda" | "aluguel" | "temporada";
-  tipo: string;
-  bairro: string;
-  quartos: string;
-  banheiros: string;
-  vagas: string;
-  areaMin: string;
-  precoMin: string;
-  precoMax: string;
+  q?: string;
+  finalidade?: "todos" | "venda" | "aluguel" | "temporada";
+  tipo?: string;
+  bairro?: string;
+  quartos?: string;
+  banheiros?: string;
+  vagas?: string;
+  areaMin?: string;
+  precoMin?: string;
+  precoMax?: string;
 };
 
 function str(v: unknown): string {
@@ -68,15 +68,15 @@ function Buscar() {
   const sp = Route.useSearch();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState(sp.q);
-  const [finalidade, setFinalidade] = useState<string>(sp.finalidade);
-  const [tipo, setTipo] = useState<string>(sp.tipo);
-  const [quartos, setQuartos] = useState<string>(sp.quartos);
+  const [search, setSearch] = useState(sp.q || "");
+  const [finalidade, setFinalidade] = useState<string>(sp.finalidade || "todos");
+  const [tipo, setTipo] = useState<string>(sp.tipo || "");
+  const [quartos, setQuartos] = useState<string>(sp.quartos || "");
   const [banheiros, setBanheiros] = useState<string>(sp.banheiros || "");
-  const [vagas, setVagas] = useState<string>(sp.vagas);
-  const [precoMin, setPrecoMin] = useState<string>(sp.precoMin);
-  const [precoMax, setPrecoMax] = useState<string>(sp.precoMax);
-  const [areaMin, setAreaMin] = useState<string>(sp.areaMin);
+  const [vagas, setVagas] = useState<string>(sp.vagas || "");
+  const [precoMin, setPrecoMin] = useState<string>(sp.precoMin || "");
+  const [precoMax, setPrecoMax] = useState<string>(sp.precoMax || "");
+  const [areaMin, setAreaMin] = useState<string>(sp.areaMin || "");
   const [view, setView] = useState<"lista" | "mapa">("lista");
   const [mounted, setMounted] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);

@@ -210,7 +210,7 @@ function EditarContrato() {
                         </div>
                         <Button 
                           type="button" 
-                          size="xs" 
+                          size="sm" 
                           disabled={clicksignStatus === "assinado_parcial" || clicksignStatus === "assinado_total"}
                           onClick={() => handleSimularAssinatura("locatario")}
                           className="text-[10px] h-7 px-2"
@@ -226,7 +226,7 @@ function EditarContrato() {
                         </div>
                         <Button 
                           type="button" 
-                          size="xs" 
+                          size="sm" 
                           disabled={clicksignStatus === "assinado_total"}
                           onClick={() => handleSimularAssinatura("locador")}
                           className="text-[10px] h-7 px-2"

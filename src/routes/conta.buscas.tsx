@@ -318,7 +318,7 @@ function MinhasBuscasPage() {
               <p className="text-xs text-muted-foreground">Fila assíncrona por banco de dados monitorando novos imóveis</p>
             </div>
           </div>
-          <Button size="xs" variant="outline" disabled={runningSync} onClick={handleSimulateSync}>
+          <Button size="sm" variant="outline" disabled={runningSync} onClick={handleSimulateSync}>
             ⚽ Executar Matcher Agora
           </Button>
         </div>

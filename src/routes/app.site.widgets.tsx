@@ -77,11 +77,11 @@ function WidgetsManagerPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await ((supabase as any)
         .from("conversion_widgets")
         .select("*")
         .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }) as any);
 
       if (error) {
         console.warn("Utilizando persistência local para conversion_widgets:", error.message);
@@ -182,10 +182,10 @@ function WidgetsManagerPage() {
 
       if (currentWidget.id && currentWidget.id.length > 5 && !currentWidget.id.startsWith("w")) {
         try {
-          await supabase
+          await ((supabase as any)
             .from("conversion_widgets")
             .update(payload)
-            .eq("id", currentWidget.id);
+            .eq("id", currentWidget.id) as any);
         } catch (supabaseErr) {
           console.warn("Supabase update indisponível, aplicando localmente", supabaseErr);
         }
@@ -212,9 +212,9 @@ function WidgetsManagerPage() {
         } as ConversionWidget;
 
         try {
-          await supabase
+          await ((supabase as any)
             .from("conversion_widgets")
-            .insert({ ...payload, id: newId });
+            .insert({ ...payload, id: newId }) as any);
         } catch (supabaseErr) {
           console.warn("Supabase insert indisponível, aplicando localmente", supabaseErr);
         }
@@ -249,7 +249,7 @@ function WidgetsManagerPage() {
     if (!confirm("Remover este widget de conversão? Ele deixará de funcionar no seu site.")) return;
     try {
       try {
-        await supabase.from("conversion_widgets").delete().eq("id", id);
+        await ((supabase as any).from("conversion_widgets").delete().eq("id", id) as any);
       } catch (supabaseErr) {
         console.warn("Supabase delete indisponível, aplicando localmente", supabaseErr);
       }
