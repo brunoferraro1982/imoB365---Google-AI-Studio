@@ -82,7 +82,7 @@ function BlogManagerPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("blog_posts")
         .select("*")
         .eq("tenant_id", tenantId)
@@ -202,7 +202,7 @@ function BlogManagerPage() {
 
       if (currentPost.id && currentPost.id.length > 5 && !currentPost.id.startsWith("1") && !currentPost.id.startsWith("2")) {
         try {
-          await supabase
+          await (supabase as any)
             .from("blog_posts")
             .update(payload)
             .eq("id", currentPost.id);
@@ -231,7 +231,7 @@ function BlogManagerPage() {
         } as BlogPost;
 
         try {
-          await supabase
+          await (supabase as any)
             .from("blog_posts")
             .insert({ ...payload, id: newId });
         } catch (supabaseErr) {
@@ -268,7 +268,7 @@ function BlogManagerPage() {
     if (!confirm("Tem certeza que deseja remover este artigo permanentemente?")) return;
     try {
       try {
-        await supabase.from("blog_posts").delete().eq("id", id);
+        await (supabase as any).from("blog_posts").delete().eq("id", id);
       } catch (supabaseErr) {
         console.warn("Supabase delete indisponível, aplicando localmente", supabaseErr);
       }

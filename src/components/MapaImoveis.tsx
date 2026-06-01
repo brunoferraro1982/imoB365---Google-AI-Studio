@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "leaflet.markercluster";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { formatBRL } from "@/lib/format";
 
 // Fix default icon paths (Leaflet quirk com bundlers)
@@ -35,6 +35,40 @@ export type ImovelMapPoint = {
 function ClusterLayer({ pontos }: { pontos: ImovelMapPoint[] }) {
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<any>(null);
+  const navigate = useNavigate();
+
+  // Resize invalidation effect to completely solve intermittent map loading / grey boxes
+  useEffect(() => {
+    if (mapRef.current) {
+      const timer = setTimeout(() => {
+        mapRef.current?.invalidateSize();
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [pontos]);
+
+  // Click interceptor to parse .spa-link clicks in Leaflet and navigate using the TanStack Router
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const container = mapRef.current.getContainer();
+
+    const handleContainerClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest(".spa-link");
+      if (link) {
+        e.preventDefault();
+        const href = link.getAttribute("href");
+        if (href) {
+          navigate({ to: href });
+        }
+      }
+    };
+
+    container.addEventListener("click", handleContainerClick);
+    return () => {
+      container.removeEventListener("click", handleContainerClick);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -50,7 +84,7 @@ function ClusterLayer({ pontos }: { pontos: ImovelMapPoint[] }) {
           <div style="font-weight:600;font-size:13px;line-height:1.2">${escapeHtml(p.titulo)}</div>
           <div style="font-size:11px;color:#666;margin-top:2px">${escapeHtml([p.endereco_bairro, p.endereco_cidade].filter(Boolean).join(" · "))}</div>
           <div style="font-weight:700;color:#0a6;margin-top:4px">${formatBRL(p.preco)}</div>
-          <a href="/imovel/${p.slug}" style="display:inline-block;margin-top:6px;font-size:12px;color:#06f;text-decoration:underline">Ver detalhes</a>
+          <a href="/imovel/${p.slug}" class="spa-link" style="display:inline-block;margin-top:6px;font-size:12px;color:#06f;text-decoration:underline;font-weight:600">Ver detalhes</a>
         </div>`;
       m.bindPopup(html);
       cluster.addLayer(m);

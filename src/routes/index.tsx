@@ -34,6 +34,8 @@ import {
   Terminal,
   FileText,
   BookOpen,
+  PlusCircle,
+  Truck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Logo } from "@/components/brand/Logo";
@@ -42,7 +44,9 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
+import { useAuth } from "@/hooks/useAuth";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
+import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -71,7 +75,49 @@ type TenantCard = {
   total: number;
 };
 
+const PHRASES = [
+  "com quem entende do seu bairro.",
+  "de acordo com sua necessidade.",
+  "e realize seu sonho."
+];
+
 function Landing() {
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [displayText, setDisplayText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(100);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    const activePhrase = PHRASES[currentPhraseIndex];
+
+    if (!isDeleting) {
+      if (displayText.length < activePhrase.length) {
+        timer = setTimeout(() => {
+          setDisplayText(activePhrase.substring(0, displayText.length + 1));
+          setTypingSpeed(100);
+        }, typingSpeed);
+      } else {
+        timer = setTimeout(() => {
+          setIsDeleting(true);
+          setTypingSpeed(50);
+        }, 2000);
+      }
+    } else {
+      if (displayText.length > 0) {
+        timer = setTimeout(() => {
+          setDisplayText(activePhrase.substring(0, displayText.length - 1));
+        }, typingSpeed);
+      } else {
+        setIsDeleting(false);
+        setCurrentPhraseIndex((prev) => (prev + 1) % PHRASES.length);
+        setTypingSpeed(150);
+      }
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, currentPhraseIndex, typingSpeed]);
+
   const [imoveis, setImoveis] = useState<ImovelCard[]>([]);
   const [tenants, setTenants] = useState<TenantCard[]>([]);
   const [busca, setBusca] = useState("");
@@ -110,7 +156,7 @@ function Landing() {
       const { data: ts } = await supabase
         .from("tenants")
         .select("id,slug,nome")
-        .eq("status", "active")
+        .in("status", ["active", "trial"])
         .limit(12);
       const ids = (ts ?? []).map((t: any) => t.id);
       let counts: Record<string, number> = {};
@@ -124,7 +170,12 @@ function Landing() {
         for (const r of cs ?? []) counts[(r as any).tenant_id] = (counts[(r as any).tenant_id] ?? 0) + 1;
       }
       setTenants(
-        (ts ?? []).map((t: any) => ({ id: t.id, slug: t.slug, nome: t.nome, total: counts[t.id] ?? 0 })),
+        (ts ?? []).map((t: any) => ({
+          id: t.id,
+          slug: t.slug,
+          nome: t.nome,
+          total: counts[t.id] ?? 0,
+        })),
       );
     })();
   }, []);
@@ -163,7 +214,10 @@ function Landing() {
       {/* HERO + BUSCA */}
       <section className="relative isolate overflow-hidden border-b border-border/60 pb-20 pt-16 md:pb-28 md:pt-24 bg-cover bg-center">
         {/* Real city skyline background image centered and scaled like the image */}
-        <div className="absolute inset-0 -z-30 bg-[url('https://images.unsplash.com/photo-1549643276-fdf2fab574f5?q=80&w=2400&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10" />
+        <div 
+          className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10" 
+          style={{ backgroundImage: `url(${citySkylineHero})` }}
+        />
         {/* Soft elegant vignette / gradient overlays to blend beautifully */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/95 via-background/65 to-transparent dark:from-background dark:via-background/80 dark:to-transparent" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--primary-glow)_15%,_transparent_55%)] opacity-35 dark:opacity-20" />
@@ -173,10 +227,12 @@ function Landing() {
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
               <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta imobiliárias, corretores e clientes
             </span>
-            <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground">
+            <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,<br />
-              com quem entende do <span className="text-primary">seu</span><br />
-              <span className="text-primary">bairro</span>.
+              <span className="text-primary inline-block min-h-[1.26em] relative">
+                {displayText}
+                <span className="inline-block animate-pulse ml-1 select-none text-foreground font-light">|</span>
+              </span>
             </h1>
             <p className="mt-6 max-w-2xl text-base md:text-lg text-muted-foreground font-semibold leading-relaxed">
               Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil. Atendimento humano, sem burocracia.
@@ -223,7 +279,7 @@ function Landing() {
                 <input type="hidden" name="finalidade" value={finalidade} />
                 <Button 
                   type="submit" 
-                  size="xl" 
+                  size="lg" 
                   className="rounded-xl px-7 bg-primary hover:bg-[#d65e1b] hover:scale-101 text-white shadow-sm font-bold tracking-wide transition-all duration-200 shrink-0 h-12 flex items-center justify-center gap-2 pointer-events-auto"
                 >
                   <Search className="h-4 w-4 stroke-[2.5px]" /> Buscar imóveis
@@ -361,7 +417,8 @@ function Landing() {
             {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
               <Link
                 key={t}
-                to={`/buscar?tipo=${t.toLowerCase()}`}
+                to="/buscar"
+                search={{ tipo: t.toLowerCase() }}
                 className="rounded-full border border-border bg-white/95 dark:bg-card px-4.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-2xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-200"
               >
                 {t}
@@ -577,10 +634,11 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
 }
 
 function _SiteHeader() {
-  const [activeMenu, setActiveMenu] = useState<"encontrar" | "ferramentas" | "imobiliarias" | null>(null);
+  const { user } = useAuth();
+  const [activeMenu, setActiveMenu] = useState<"encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | null>(null);
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias") => {
+  const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico") => {
     if (menuTimeout) {
       clearTimeout(menuTimeout);
       setMenuTimeout(null);
@@ -597,51 +655,20 @@ function _SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md shadow-xs transition-all duration-300 font-sans">
-      {/* BARRA SUPERIOR PRETA COM CONTATOS E IDIOMA */}
+      {/* BARRA SUPERIOR PRETA COM CONTATOS */}
       <div className="bg-neutral-950 text-white text-[11px] font-semibold py-2 px-6 border-b border-white/5">
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
           {/* Email / Telefone */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80 w-full">
             <a href="mailto:contato@imob365.com.br" className="flex items-center gap-2 hover:text-primary transition-colors duration-200">
               <Mail className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
               <span>contato@imob365.com.br</span>
             </a>
             <span className="hidden sm:inline text-white/20 select-none">|</span>
-            <a href="tel:5513997794382" className="flex items-center gap-2 hover:text-primary transition-colors duration-200">
+            <a href="https://wa.me/5513997794382" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors duration-200">
               <Phone className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
               <span>(13) 99779-4382</span>
             </a>
-          </div>
-
-          {/* Opções de Idioma da plataforma */}
-          <div className="flex items-center gap-3.5">
-            <span className="text-white/40 uppercase text-[9px] tracking-widest font-bold">Idioma:</span>
-            <div className="flex items-center gap-1.5 bg-white/5 rounded-md p-0.5 border border-white/10">
-              <button 
-                type="button" 
-                className="flex items-center gap-1 bg-primary text-white px-2 py-0.5 rounded-sm transition-all text-[10px] font-bold cursor-pointer hover:bg-primary/90" 
-                title="Português (BR)"
-              >
-                <span>🇧🇷</span>
-                <span>PT</span>
-              </button>
-              <button 
-                type="button" 
-                className="flex items-center gap-1 text-white/60 hover:text-white px-2 py-0.5 rounded-sm transition-all text-[10px] font-bold cursor-pointer hover:bg-white/10" 
-                title="English (US)"
-              >
-                <span>🇺🇸</span>
-                <span>EN</span>
-              </button>
-              <button 
-                type="button" 
-                className="flex items-center gap-1 text-white/60 hover:text-white px-2 py-0.5 rounded-sm transition-all text-[10px] font-bold cursor-pointer hover:bg-white/10" 
-                title="Español (ES)"
-              >
-                <span>🇪🇸</span>
-                <span>ES</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -652,9 +679,9 @@ function _SiteHeader() {
         </Link>
         
         {/* DESKTOP NAV WITH MEGA MENU POPUPS */}
-        <nav className="hidden items-center gap-1 lg:flex text-sm font-semibold text-foreground/85">
+        <nav className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex text-[13px] xl:text-sm font-semibold text-foreground/85 tracking-tight xl:tracking-normal shrink-0">
           {/* LINK INICIAL */}
-          <Link to="/" className="px-3 py-2 rounded-lg hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors duration-150">
+          <Link to="/" className="px-2 xl:px-3 py-2 rounded-lg hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors duration-150 whitespace-nowrap">
             Home
           </Link>
 
@@ -664,7 +691,7 @@ function _SiteHeader() {
             onMouseEnter={() => handleMouseEnter("encontrar")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
               activeMenu === "encontrar" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
             }`}>
               <span>Encontrar Imóveis</span>
@@ -678,7 +705,7 @@ function _SiteHeader() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-[150px] top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4 z-50 overflow-hidden"
+                  className="absolute left-1/2 -translate-x-[150px] top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
                     <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Disponíveis</span>
@@ -722,16 +749,16 @@ function _SiteHeader() {
             </AnimatePresence>
           </div>
 
-          {/* MEGA MENU 2: SIMULADORES & ANÁLISE */}
+          {/* MEGA MENU 2: FERRAMENTAS & SIMULADORES */}
           <div 
             className="relative"
             onMouseEnter={() => handleMouseEnter("ferramentas")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
               activeMenu === "ferramentas" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
             }`}>
-              <span>Crédito & Ferramentas</span>
+              <span>Ferramentas & Simuladores</span>
               <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "ferramentas" ? "rotate-180" : ""}`} />
             </button>
 
@@ -742,23 +769,30 @@ function _SiteHeader() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[460px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
+                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Cálculos Rápidos</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Simuladores</span>
                     <div className="space-y-1">
-                      <Link to="/calculadoras" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link to="/calculadora-financiamento" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Calculator className="h-3.5 w-3.5 text-primary" /> Financiamento SAC
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Parquimize juros e parcelas de acordo com sua renda.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Estime as parcelas decrescentes do imóvel de forma simples.</span>
                       </Link>
 
-                      <Link to="/calculadoras" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link to="/calculadora-itbi" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Calculator className="h-3.5 w-3.5 text-orange-500" /> Imposto ITBI
+                          <Calculator className="h-3.5 w-3.5 text-orange-500" /> Imposto de ITBI
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Estime as custas prefeitura e de tabelionato do contrato.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Verifique taxas de prefeitura e cartório de registro.</span>
+                      </Link>
+
+                      <Link to="/calculadora-mudanca" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                          <Truck className="h-3.5 w-3.5 text-indigo-500" /> Custo de Mudança
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Planeje custos de frete e logística para o novo lar.</span>
                       </Link>
                     </div>
                   </div>
@@ -789,7 +823,7 @@ function _SiteHeader() {
             onMouseEnter={() => handleMouseEnter("imobiliarias")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
               activeMenu === "imobiliarias" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
             }`}>
               <span>Para Imobiliárias</span>
@@ -803,56 +837,82 @@ function _SiteHeader() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-[540px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-[1.2fr,1fr] gap-5.5 z-50 overflow-hidden"
+                  className="absolute right-[120px] top-full mt-2 w-[290px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
                     <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Recursos de Negócio</span>
                     <div className="space-y-1">
                       <Link to="/planos" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <CreditCard className="h-3.5 w-3.5" /> Planos & Valores
+                          <CreditCard className="h-3.5 w-3.5 animate-pulse text-primary" /> Planos & Valores
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Soluções modulares para corretores avulsos e imobiliárias.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Soluções ideais para corretores autônomos e agências de imóveis.</span>
                       </Link>
 
                       <Link to="/app/portais" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Globe2 className="h-3.5 w-3.5 text-emerald-600 animate-pulse" /> Rede MLS & Integrações
+                          <Globe2 className="h-3.5 w-3.5 text-emerald-600" /> Divulgação & Parcerias
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Co-corretagem integrada com Zap, VivaReal e OLX.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Anuncie automaticamente nos maiores portais de imóveis do país.</span>
                       </Link>
 
                       <Link to="/app/configuracoes/dominios" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <SlidersHorizontal className="h-3.5 w-3.5" /> Domínios White-Label
+                          <SlidersHorizontal className="h-3.5 w-3.5 text-orange-500" /> Site com sua Marca
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Crie seu site totalmente próprio com sua marca e DNS.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Crie um portal de imóveis exclusivo com as cores e logotipo da sua empresa.</span>
                       </Link>
                     </div>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
-                  <div className="border-l border-border/60 pl-4 space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Monitoramento & Devs</span>
+          {/* MEGA MENU 4: ÁREA TÉCNICA */}
+          <div 
+            className="relative"
+            onMouseEnter={() => handleMouseEnter("tecnico")}
+            onMouseLeave={handleMouseLeave}
+          >
+            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+              activeMenu === "tecnico" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
+            }`}>
+              <span>Área Técnica</span>
+              <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "tecnico" ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {activeMenu === "tecnico" && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute right-0 top-full mt-2 w-[280px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
+                >
+                  <div className="space-y-3">
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Recursos Integradores</span>
                     <div className="space-y-1">
-                      <Link to="/app/configuracoes/golive" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link to="/app/configuracoes/golive" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Sparkles className="h-3.5 w-3.5 text-primary" /> Painel Go-Live
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug">Auditoria e checklist completo de saúde e ativação de portal.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Auditoria e checklist completo de ativação do portal.</span>
                       </Link>
 
-                      <Link to="/docs/api" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link to="/docs/api" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-emerald-600 group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Terminal className="h-3.5 w-3.5" /> Documentação API
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug">Disparador de Webhooks e rotas REST para integração de ERPs.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Disparadores REST e webhooks técnicos para ERPs de imobiliárias.</span>
                       </Link>
 
-                      <Link to="/status" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link to="/status" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Activity className="h-3.5 w-3.5 text-pink-600" /> Servidores & APIs
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug">Status em tempo real das conexões de banco de dados e APIs.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Verificação em tempo real da integridade de bancos de dados.</span>
                       </Link>
                     </div>
                   </div>
@@ -862,7 +922,16 @@ function _SiteHeader() {
           </div>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {/* HIGH VISIBILITY SEARCH CTA KEY FOR ANNOUNCEMENTS */}
+          <Link
+            to={user ? "/app/imoveis/novo" : "/signup"}
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#e86620] hover:from-[#e86620] hover:to-orange-500 text-white px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02]"
+          >
+            <PlusCircle className="h-3.8 w-3.8 shrink-0" />
+            <span>Anunciar Imóvel</span>
+          </Link>
+
           {/* USER MENU & MOBILE BURGER */}
           <HeaderUserMenu />
           
@@ -882,6 +951,17 @@ function _SiteHeader() {
                 </SheetHeader>
                 
                 <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 text-xs">
+                  {/* MOBILE QUICK CTA FOR ANNOUNCE PROPERTY */}
+                  <div className="px-3 pb-2">
+                    <Link
+                      to={user ? "/app/imoveis/novo" : "/signup"}
+                      className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-[#e86620] px-4 py-3.5 text-xs font-black text-white shadow-sm hover:scale-[1.01] transition-all text-center"
+                    >
+                      <PlusCircle className="h-4.5 w-4.5 shrink-0" />
+                      <span>Anunciar meu Imóvel</span>
+                    </Link>
+                  </div>
+
                   {/* Category 1 Mobile */}
                   <div className="space-y-1">
                     <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
@@ -922,16 +1002,36 @@ function _SiteHeader() {
                   {/* Category 2 Mobile */}
                   <div className="space-y-1">
                     <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
-                      Cálculos & Simulação
+                      Simuladores e Cálculos
                     </h3>
 
-                    <Link to="/calculadoras" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link to="/calculadora-financiamento" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
                       <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                         <Calculator className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span>Financiamento & ITBI</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Faça sua simulação gratuita</span>
+                        <span>Financiamento SAC</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">Parcelas decrescentes de financiamento</span>
+                      </div>
+                    </Link>
+
+                    <Link to="/calculadora-itbi" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                      <div className="p-2 bg-orange-100 text-orange-700 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                        <Calculator className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span>Simulador de ITBI</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">Custos de transferência e impostos</span>
+                      </div>
+                    </Link>
+
+                    <Link to="/calculadora-mudanca" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                      <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                        <Truck className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span>Custo de Mudança</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">Previsão logística e fretes</span>
                       </div>
                     </Link>
                   </div>
@@ -957,8 +1057,8 @@ function _SiteHeader() {
                         <Globe2 className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span>Rede MLS & Parcerias</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Controle de portais integrados</span>
+                        <span>Divulgação & Parcerias</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">Anunciar em múltiplos portais</span>
                       </div>
                     </Link>
 
@@ -967,31 +1067,29 @@ function _SiteHeader() {
                         <SlidersHorizontal className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span>Domínios White-Label</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Hospedagem de domínio próprio</span>
-                      </div>
-                    </Link>
-
-                    <Link to="/app/configuracoes/golive" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
-                      <div className="p-2 bg-teal-100 text-teal-850 rounded-lg group-hover:bg-teal-500 group-hover:text-white transition-colors">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Lançamento (Go-Live)</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Auditar integridade de conexões</span>
+                        <span>Site com sua Marca</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">Layout personalizado e logotipo próprio</span>
                       </div>
                     </Link>
                   </div>
 
                   {/* Category 4 Devs Mobile */}
                   <div className="space-y-1 border-t border-border/50 pt-3">
-                    <Link to="/docs/api" className="flex items-center gap-3.5 px-3 py-1.5 text-muted-foreground hover:text-foreground font-semibold">
-                      <Terminal className="h-4 w-4 shrink-0" />
+                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2">
+                      Área Técnica (Devs)
+                    </h3>
+                    
+                    <Link to="/app/configuracoes/golive" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+                      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+                      <span>Painel Go-Live (Checklist)</span>
+                    </Link>
+                    <Link to="/docs/api" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+                      <Terminal className="h-4 w-4 shrink-0 text-emerald-600" />
                       <span>Documentação de API</span>
                     </Link>
-                    <Link to="/status" className="flex items-center gap-3.5 px-3 py-1.5 text-muted-foreground hover:text-foreground font-semibold">
-                      <Activity className="h-4 w-4 shrink-0" />
-                      <span>Status do Sistema</span>
+                    <Link to="/status" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+                      <Activity className="h-4 w-4 shrink-0 text-pink-600" />
+                      <span>Servidores & APIs (Status)</span>
                     </Link>
                   </div>
                 </div>
@@ -1057,11 +1155,18 @@ export function SiteFooter() {
                 </div>
                 <span>contato@imob365.com.br</span>
               </li>
-              <li className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <Phone className="h-4 w-4 text-primary" />
-                </div>
-                <span>(13) 99779-4382</span>
+              <li>
+                <a 
+                  href="https://wa.me/5513997794382" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="flex items-center gap-3 hover:text-primary transition-all duration-200"
+                >
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
+                    <Phone className="h-4 w-4 text-primary" />
+                  </div>
+                  <span>(13) 99779-4382</span>
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <div className="p-2 bg-white/5 rounded-lg border border-white/10">

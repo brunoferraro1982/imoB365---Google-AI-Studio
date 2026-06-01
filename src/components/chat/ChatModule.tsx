@@ -116,8 +116,8 @@ export function ChatModule({
             return (
               <Link
                 key={c.id}
-                to={`${basePath}/$id`}
-                params={{ id: c.id }}
+                to={`${basePath}/$id` as any}
+                params={{ id: c.id } as any}
                 className={`flex gap-3 border-b border-border/60 p-3 transition-colors hover:bg-muted/60 ${
                   active ? "bg-muted" : ""
                 }`}

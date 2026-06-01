@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
 import { X, MapPin } from "lucide-react";
 
-type Search = { ids: string };
+type Search = { ids?: string };
 
 export const Route = createFileRoute("/comparar")({
   validateSearch: (raw: Record<string, unknown>): Search => ({
@@ -20,7 +20,7 @@ function CompararPage() {
   const sp = Route.useSearch();
   const navigate = useNavigate();
   const ids = useMemo(
-    () => sp.ids.split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 4),
+    () => (sp.ids || "").split(",").map((s: string) => s.trim()).filter(Boolean).slice(0, 4),
     [sp.ids],
   );
   const [items, setItems] = useState<any[]>([]);

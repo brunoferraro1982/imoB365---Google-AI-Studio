@@ -114,7 +114,7 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin } = useAuth();
+  const { user, loading, isSuperAdmin, profile } = useAuth();
   const navigate = useNavigate();
   const router = useRouterState();
 
@@ -143,6 +143,72 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   async function signOut() {
     await supabase.auth.signOut();
     navigate({ to: "/login" });
+  }
+
+  // Pending approval locker gate for non-super admins
+  if (!isSuperAdmin && profile && !profile.aprovado) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/45 p-6 font-sans">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm text-center">
+          <Logo className="h-8 w-auto mx-auto mb-6" />
+          <div className="mx-auto w-12 h-12 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-4">
+            <ShieldCheck className="h-6 w-6 stroke-[2.25]" />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight">Cadastro em Análise</h1>
+          <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+            Olá, <span className="font-semibold text-foreground">{profile.nome || user.email}</span>! Sua conta foi criada com sucesso e está aguardando homologação do Administrador Geral imob365.
+          </p>
+
+          <div className="mt-5 border border-border/80 rounded-xl p-4 bg-muted/20 text-left text-xs space-y-3">
+            <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
+              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Identificação</span>
+              <span className="font-mono text-3xs font-medium">{user.email}</span>
+            </div>
+            {profile.tipo_usuario && (
+              <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
+                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Perfil</span>
+                <span className="font-semibold capitalize text-right text-3xs">{profile.tipo_usuario === "imobiliaria" ? "Imobiliária / Agência" : "Corretor de Imóveis"}</span>
+              </div>
+            )}
+            {profile.plano_pretendido && (
+              <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
+                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Plano Pretendido</span>
+                <span className="font-semibold text-right text-3xs">Plano {profile.plano_pretendido}</span>
+              </div>
+            )}
+            {profile.imobiliaria_nome && (
+              <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
+                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
+                  {profile.tipo_usuario === "corretor" ? "Vínculo de Imobiliária" : "Parceiro Comercial"}
+                </span>
+                <span className="font-semibold text-right text-3xs truncate max-w-[180px]">{profile.imobiliaria_nome}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center">
+              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Assinatura</span>
+              <span className={`font-semibold text-right text-3xs ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}>
+                {profile.plano_pretendido === "Free" ? "Grátis (Ativação Direta)" : "Aguardando validação do pagamento"}
+              </span>
+            </div>
+          </div>
+
+          <p className="mt-5 text-balance text-3xs text-muted-foreground leading-normal">
+            Seu acesso e visibilidade aos dados do tenant serão ativados assim que o super-administrador validar os dados no painel global.
+          </p>
+
+          <div className="mt-6 flex flex-col gap-2">
+            <a href="mailto:contato@imob365.com.br" className="w-full">
+              <Button variant="outline" className="w-full h-9 text-xs">
+                Contatar Suporte
+              </Button>
+            </a>
+            <Button onClick={signOut} variant="ghost" className="w-full h-9 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10">
+              Sair da minha conta
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (variant === "admin") {
