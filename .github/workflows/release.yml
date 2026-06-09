@@ -1,0 +1,68 @@
+name: Release — Geração Automática de Changelog
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"  # Ex: v1.0.0, v2.3.1
+
+jobs:
+  release:
+    name: 📦 Criar Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # histórico completo para o changelog
+
+      - name: Gerar changelog desde a última tag
+        id: changelog
+        run: |
+          # Pega a tag anterior
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -z "$PREV_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %s (%h)" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD)
+          fi
+          
+          # Categoriza commits por prefixo convencional
+          FEAT=$(echo "$COMMITS" | grep -i "^- feat" || true)
+          FIX=$(echo "$COMMITS" | grep -i "^- fix" || true)
+          SECURITY=$(echo "$COMMITS" | grep -i "^- security\|^- sec\|^- fix.*security" || true)
+          CHORE=$(echo "$COMMITS" | grep -i "^- chore\|^- ci\|^- build\|^- docs" || true)
+          
+          BODY=""
+          [ -n "$SECURITY" ] && BODY="${BODY}## 🔒 Segurança\n${SECURITY}\n\n"
+          [ -n "$FIX" ]      && BODY="${BODY}## 🐛 Correções\n${FIX}\n\n"
+          [ -n "$FEAT" ]     && BODY="${BODY}## ✨ Novas Features\n${FEAT}\n\n"
+          [ -n "$CHORE" ]    && BODY="${BODY}## 🔧 Manutenção\n${CHORE}\n\n"
+          
+          # Fallback se categorias estiverem vazias
+          [ -z "$BODY" ] && BODY="$COMMITS"
+          
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo -e "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Criar GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          body: |
+            ## imoB365 — ${{ github.ref_name }}
+            
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ---
+            **Deploy:** Cloudflare Workers  
+            **Commit:** `${{ github.sha }}`  
+            **Data:** ${{ github.event.repository.updated_at }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

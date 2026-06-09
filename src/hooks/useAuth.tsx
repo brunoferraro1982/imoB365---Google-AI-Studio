@@ -34,10 +34,14 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // defer to avoid recursive call inside callback
+        // FIX [QA-04]: Usar setTimeout(0) para defer fora do callback síncrono do Supabase,
+        // evitando re-entrância. As queries são disparadas assincronamente — o setLoading
+        // inicial já é controlado pelo getSession().then() abaixo com Promise.all.
         setTimeout(() => {
-          loadRoles(s.user.id);
-          loadProfile(s.user.id, s.user);
+          void Promise.all([
+            loadRoles(s.user.id),
+            loadProfile(s.user.id, s.user),
+          ]);
         }, 0);
       } else {
         setRoles([]);

@@ -180,7 +180,11 @@ function VisitasPage() {
   const grouped = useMemo(() => {
     const map = new Map<string, any[]>();
     for (const v of items) {
-      const dia = new Date(v.data_hora).toISOString().slice(0, 10);
+      // FIX [QA-01]: Não usar .toISOString().slice(0,10) — converte para UTC e desloca
+      // datas após 21h no fuso America/Sao_Paulo (UTC-3) para o dia seguinte.
+      // Usar getters locais do objeto Date preserva o fuso do navegador do corretor.
+      const d = new Date(v.data_hora);
+      const dia = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
       if (!map.has(dia)) map.set(dia, []);
       map.get(dia)!.push(v);
     }
