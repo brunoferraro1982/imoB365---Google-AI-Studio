@@ -116,7 +116,9 @@ export const Route = createFileRoute("/api/public/cron/buscas-alertas")({
       POST: async ({ request }) => {
         const apikey = request.headers.get("apikey") ?? "";
         const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
-        if (!expected || expected.trim() === "" || apikey !== expected) {
+        // FIX [QA-03]: Validar comprimento mínimo (JWT Supabase anon keys têm ~200+ chars).
+        // Isso elimina o edge case onde expected="" e apikey="" resultariam em bypass.
+        if (!expected || expected.length < 20 || apikey !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
         const origin = new URL(request.url).origin;
@@ -132,7 +134,8 @@ export const Route = createFileRoute("/api/public/cron/buscas-alertas")({
         // allow GET with apikey for easy manual testing / pg_net flexibility
         const apikey = request.headers.get("apikey") ?? "";
         const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
-        if (!expected || expected.trim() === "" || apikey !== expected) return new Response("Unauthorized", { status: 401 });
+        // FIX [QA-03]: Mesma blindagem do handler POST acima.
+        if (!expected || expected.length < 20 || apikey !== expected) return new Response("Unauthorized", { status: 401 });
         const origin = new URL(request.url).origin;
         const siteUrl = process.env.SITE_URL || origin;
         const res = await processarBuscas(siteUrl);

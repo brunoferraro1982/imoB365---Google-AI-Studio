@@ -38,7 +38,8 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
       POST: async ({ request }) => {
         const apikey = request.headers.get("apikey") ?? "";
         const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
-        if (!expected || expected.trim() === "" || apikey !== expected) {
+        // FIX [QA-03]: Validar comprimento mínimo para eliminar edge case de bypass com strings vazias.
+        if (!expected || expected.length < 20 || apikey !== expected) {
           return new Response("Unauthorized", { status: 401 });
         }
         const baseUrl = process.env.SITE_URL || new URL(request.url).origin;
