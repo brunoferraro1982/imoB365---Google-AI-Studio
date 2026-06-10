@@ -38,3 +38,6 @@ dist-ssr
 *.sw?
 .env
 .env.local
+
+# Claude Code — config local nunca vai pro repo
+.claude/settings.local.json

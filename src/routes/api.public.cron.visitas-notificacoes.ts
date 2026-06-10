@@ -6,7 +6,10 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // 2) Pedido de NPS após visita realizada (uma vez por visita).
 
 function escape(s: string | null | undefined) {
-  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+  return String(s ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 }
 
 function lembreteHtml(opts: { nome: string; titulo: string; data: string; endereco: string }) {
@@ -37,7 +40,8 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
     handlers: {
       POST: async ({ request }) => {
         const apikey = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+        const expected =
+          process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
         // FIX [QA-03]: Validar comprimento mínimo para eliminar edge case de bypass com strings vazias.
         if (!expected || expected.length < 20 || apikey !== expected) {
           return new Response("Unauthorized", { status: 401 });
@@ -52,7 +56,9 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
 
         const { data: paraLembrar } = await supabaseAdmin
           .from("visitas")
-          .select("id, data_hora, visitante_nome, visitante_email, observacoes, imovel_id, imoveis(titulo,endereco_logradouro,endereco_numero,endereco_bairro,endereco_cidade)")
+          .select(
+            "id, data_hora, visitante_nome, visitante_email, observacoes, imovel_id, imoveis(titulo,endereco_logradouro,endereco_numero,endereco_bairro,endereco_cidade)",
+          )
           .in("status", ["agendada", "confirmada"])
           .is("lembrete_enviado_at", null)
           .gte("data_hora", min.toISOString())
@@ -63,16 +69,31 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
         for (const v of paraLembrar ?? []) {
           const im: any = (v as any).imoveis;
           if (!im || !v.visitante_email) continue;
-          const endereco = [im.endereco_logradouro, im.endereco_numero, im.endereco_bairro, im.endereco_cidade]
-            .filter(Boolean).join(", ");
-          const dataFmt = new Date(v.data_hora as string).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
+          const endereco = [
+            im.endereco_logradouro,
+            im.endereco_numero,
+            im.endereco_bairro,
+            im.endereco_cidade,
+          ]
+            .filter(Boolean)
+            .join(", ");
+          const dataFmt = new Date(v.data_hora as string).toLocaleString("pt-BR", {
+            dateStyle: "short",
+            timeStyle: "short",
+            timeZone: "America/Sao_Paulo",
+          });
 
           await supabaseAdmin.rpc("enqueue_email", {
             queue_name: "transactional_emails",
             payload: {
               to: v.visitante_email,
               subject: `Lembrete: visita em ${dataFmt}`,
-              html: lembreteHtml({ nome: v.visitante_nome ?? "visitante", titulo: im.titulo ?? "imóvel", data: dataFmt, endereco }),
+              html: lembreteHtml({
+                nome: v.visitante_nome ?? "visitante",
+                titulo: im.titulo ?? "imóvel",
+                data: dataFmt,
+                endereco,
+              }),
               label: "lembrete_visita",
               sender_domain: "notify.imob365.com.br",
               from: "imob365 <no-reply@notify.imob365.com.br>",
@@ -81,7 +102,10 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
             },
           } as any);
 
-          await supabaseAdmin.from("visitas").update({ lembrete_enviado_at: new Date().toISOString() }).eq("id", v.id);
+          await supabaseAdmin
+            .from("visitas")
+            .update({ lembrete_enviado_at: new Date().toISOString() })
+            .eq("id", v.id);
           lembretes++;
         }
 
@@ -111,7 +135,11 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
             payload: {
               to: v.visitante_email,
               subject: "Como foi sua visita?",
-              html: npsHtml({ nome: v.visitante_nome ?? "visitante", titulo: im?.titulo ?? "imóvel", link }),
+              html: npsHtml({
+                nome: v.visitante_nome ?? "visitante",
+                titulo: im?.titulo ?? "imóvel",
+                link,
+              }),
               label: "nps_visita",
               sender_domain: "notify.imob365.com.br",
               from: "imob365 <no-reply@notify.imob365.com.br>",
@@ -120,7 +148,10 @@ export const Route = createFileRoute("/api/public/cron/visitas-notificacoes")({
             },
           } as any);
 
-          await supabaseAdmin.from("visitas").update({ nps_enviado_at: new Date().toISOString() }).eq("id", v.id);
+          await supabaseAdmin
+            .from("visitas")
+            .update({ nps_enviado_at: new Date().toISOString() })
+            .eq("id", v.id);
           nps++;
         }
 

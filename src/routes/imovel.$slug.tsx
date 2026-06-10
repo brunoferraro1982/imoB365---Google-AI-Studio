@@ -55,7 +55,11 @@ function ImovelDetail() {
   const [fotos, setFotos] = useState<{ storage_path: string; capa: boolean }[]>([]);
   const [tenantNome, setTenantNome] = useState<string>("");
   const [pixels, setPixels] = useState<any>(null);
-  const [corretor, setCorretor] = useState<{ nome: string; whatsapp: string | null; slug: string } | null>(null);
+  const [corretor, setCorretor] = useState<{
+    nome: string;
+    whatsapp: string | null;
+    slug: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,18 +71,33 @@ function ImovelDetail() {
         .eq("publicado", true)
         .eq("status", "ativo")
         .maybeSingle();
-      if (!data) { setLoading(false); return; }
+      if (!data) {
+        setLoading(false);
+        return;
+      }
       setImovel(data as unknown as Imovel);
-      const [{ data: fotosData }, { data: tenant }, { data: cor }, { data: site }] = await Promise.all([
-        supabase.from("imovel_fotos").select("storage_path,capa").eq("imovel_id", data.id).order("capa", { ascending: false }).order("ordem"),
-        supabase.from("tenants").select("nome").eq("id", data.tenant_id).maybeSingle(),
-        data.corretor_responsavel_id
-          ? (supabase as any).from("corretores").select("nome,whatsapp,slug").eq("id", data.corretor_responsavel_id).maybeSingle()
-          : Promise.resolve({ data: null }),
-        (supabase as any).from("tenant_site_settings")
-          .select("ga4_id,gtm_id,fb_pixel_id,google_ads_id,hotjar_id,head_custom_html")
-          .eq("tenant_id", data.tenant_id).maybeSingle(),
-      ]);
+      const [{ data: fotosData }, { data: tenant }, { data: cor }, { data: site }] =
+        await Promise.all([
+          supabase
+            .from("imovel_fotos")
+            .select("storage_path,capa")
+            .eq("imovel_id", data.id)
+            .order("capa", { ascending: false })
+            .order("ordem"),
+          supabase.from("tenants").select("nome").eq("id", data.tenant_id).maybeSingle(),
+          data.corretor_responsavel_id
+            ? (supabase as any)
+                .from("corretores")
+                .select("nome,whatsapp,slug")
+                .eq("id", data.corretor_responsavel_id)
+                .maybeSingle()
+            : Promise.resolve({ data: null }),
+          (supabase as any)
+            .from("tenant_site_settings")
+            .select("ga4_id,gtm_id,fb_pixel_id,google_ads_id,hotjar_id,head_custom_html")
+            .eq("tenant_id", data.tenant_id)
+            .maybeSingle(),
+        ]);
       setFotos(fotosData ?? []);
       setTenantNome(tenant?.nome ?? "");
       setCorretor(cor ?? null);
@@ -91,19 +110,27 @@ function ImovelDetail() {
     return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
   }
 
-  if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
-  if (!imovel) return (
-    <div className="p-16 text-center">
-      <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
-      <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">Voltar para a busca</Link>
-    </div>
-  );
+  if (loading)
+    return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
+  if (!imovel)
+    return (
+      <div className="p-16 text-center">
+        <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
+        <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
+          Voltar para a busca
+        </Link>
+      </div>
+    );
 
   const enderecoLinha = [
-    imovel.mostrar_endereco_publico ? `${imovel.endereco_logradouro ?? ""}${imovel.endereco_numero ? ", " + imovel.endereco_numero : ""}` : null,
+    imovel.mostrar_endereco_publico
+      ? `${imovel.endereco_logradouro ?? ""}${imovel.endereco_numero ? ", " + imovel.endereco_numero : ""}`
+      : null,
     imovel.endereco_bairro,
     [imovel.endereco_cidade, imovel.endereco_uf].filter(Boolean).join("/"),
-  ].filter(Boolean).join(" · ");
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="min-h-screen bg-background">
@@ -112,9 +139,18 @@ function ImovelDetail() {
       <main className="mx-auto max-w-6xl px-6 py-10">
         {fotos.length > 0 && (
           <div className="mb-8 grid gap-2 overflow-hidden rounded-xl md:grid-cols-4 md:grid-rows-2">
-            <img src={publicUrl(fotos[0].storage_path)} alt="" className="h-72 w-full object-cover md:col-span-2 md:row-span-2 md:h-full" />
+            <img
+              src={publicUrl(fotos[0].storage_path)}
+              alt=""
+              className="h-72 w-full object-cover md:col-span-2 md:row-span-2 md:h-full"
+            />
             {fotos.slice(1, 5).map((f, i) => (
-              <img key={i} src={publicUrl(f.storage_path)} alt="" className="h-36 w-full object-cover" />
+              <img
+                key={i}
+                src={publicUrl(f.storage_path)}
+                alt=""
+                className="h-36 w-full object-cover"
+              />
             ))}
           </div>
         )}
@@ -142,7 +178,9 @@ function ImovelDetail() {
                 onClick={async () => {
                   const url = typeof window !== "undefined" ? window.location.href : "";
                   if (navigator.share) {
-                    try { await navigator.share({ title: imovel.titulo, url }); } catch {}
+                    try {
+                      await navigator.share({ title: imovel.titulo, url });
+                    } catch {}
                   } else {
                     await navigator.clipboard.writeText(url);
                     toast.success("Link copiado!");
@@ -156,10 +194,16 @@ function ImovelDetail() {
 
             <div className="mt-6 flex flex-wrap gap-6 border-y border-border py-4 text-sm">
               {imovel.quartos != null && <Spec icon={Bed} label={`${imovel.quartos} quartos`} />}
-              {imovel.banheiros != null && <Spec icon={Bath} label={`${imovel.banheiros} banheiros`} />}
+              {imovel.banheiros != null && (
+                <Spec icon={Bath} label={`${imovel.banheiros} banheiros`} />
+              )}
               {imovel.vagas != null && <Spec icon={Car} label={`${imovel.vagas} vagas`} />}
-              {imovel.area_util != null && <Spec icon={Maximize2} label={`${imovel.area_util} m² úteis`} />}
-              {imovel.area_total != null && <Spec icon={Home} label={`${imovel.area_total} m² totais`} />}
+              {imovel.area_util != null && (
+                <Spec icon={Maximize2} label={`${imovel.area_util} m² úteis`} />
+              )}
+              {imovel.area_total != null && (
+                <Spec icon={Home} label={`${imovel.area_total} m² totais`} />
+              )}
             </div>
 
             {imovel.descricao && (
@@ -173,7 +217,9 @@ function ImovelDetail() {
           </div>
 
           <aside className="h-fit rounded-xl border border-border bg-card p-6">
-            <p className="text-sm text-muted-foreground">{FINALIDADE_LABEL[imovel.finalidade]} por</p>
+            <p className="text-sm text-muted-foreground">
+              {FINALIDADE_LABEL[imovel.finalidade]} por
+            </p>
             <p className="mt-1 text-3xl font-bold text-primary">{formatBRL(imovel.preco)}</p>
             <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
               {imovel.condominio != null && <li>Condomínio: {formatBRL(imovel.condominio)}</li>}
@@ -182,16 +228,30 @@ function ImovelDetail() {
             <div className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
               Anunciado por <span className="font-medium text-foreground">{tenantNome}</span>
             </div>
-            {corretor?.whatsapp && (() => {
-              const url = typeof window !== "undefined" ? window.location.href : undefined;
-              const link = waLink(corretor.whatsapp, imovelMessage({ titulo: imovel.titulo, url }));
-              return link ? (
-                <a href={link} target="_blank" rel="noreferrer" className="mt-4 flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-700">
-                  <MessageCircle className="h-4 w-4" /> Falar com {corretor.nome.split(" ")[0]} no WhatsApp
-                </a>
-              ) : null;
-            })()}
-            <StartChatButton imovelId={imovel.id} titulo={imovel.titulo} tenantId={imovel.tenant_id} />
+            {corretor?.whatsapp &&
+              (() => {
+                const url = typeof window !== "undefined" ? window.location.href : undefined;
+                const link = waLink(
+                  corretor.whatsapp,
+                  imovelMessage({ titulo: imovel.titulo, url }),
+                );
+                return link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+                  >
+                    <MessageCircle className="h-4 w-4" /> Falar com {corretor.nome.split(" ")[0]} no
+                    WhatsApp
+                  </a>
+                ) : null;
+              })()}
+            <StartChatButton
+              imovelId={imovel.id}
+              titulo={imovel.titulo}
+              tenantId={imovel.tenant_id}
+            />
             <AgendarVisita imovelId={imovel.id} titulo={imovel.titulo} />
             <LeadForm imovelId={imovel.id} titulo={imovel.titulo} />
           </aside>
@@ -290,7 +350,9 @@ function LeadForm({ imovelId, titulo }: { imovelId: string; titulo: string }) {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [mensagem, setMensagem] = useState(`Olá, tenho interesse no imóvel "${titulo}". Pode me enviar mais informações?`);
+  const [mensagem, setMensagem] = useState(
+    `Olá, tenho interesse no imóvel "${titulo}". Pode me enviar mais informações?`,
+  );
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -329,15 +391,30 @@ function LeadForm({ imovelId, titulo }: { imovelId: string; titulo: string }) {
       </div>
       <div>
         <Label className="text-xs">E-mail</Label>
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} />
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          maxLength={255}
+        />
       </div>
       <div>
         <Label className="text-xs">Telefone / WhatsApp</Label>
-        <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} maxLength={40} placeholder="(11) 99999-9999" />
+        <Input
+          value={telefone}
+          onChange={(e) => setTelefone(e.target.value)}
+          maxLength={40}
+          placeholder="(11) 99999-9999"
+        />
       </div>
       <div>
         <Label className="text-xs">Mensagem</Label>
-        <Textarea rows={3} value={mensagem} onChange={(e) => setMensagem(e.target.value)} maxLength={2000} />
+        <Textarea
+          rows={3}
+          value={mensagem}
+          onChange={(e) => setMensagem(e.target.value)}
+          maxLength={2000}
+        />
       </div>
       <Button type="submit" disabled={sending} className="w-full">
         {sending ? "Enviando…" : "Enviar mensagem"}

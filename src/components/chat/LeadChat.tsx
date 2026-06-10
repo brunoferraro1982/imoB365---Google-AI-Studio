@@ -41,10 +41,17 @@ export function LeadChat({ leadId, tenantId }: { leadId: string; tenantId: strin
       .channel(`lead-chat-${leadId}-${Math.random().toString(36).substring(7)}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "lead_mensagens", filter: `lead_id=eq.${leadId}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "lead_mensagens",
+          filter: `lead_id=eq.${leadId}`,
+        },
         (payload) => {
           setMsgs((prev) =>
-            prev.some((m) => m.id === (payload.new as Mensagem).id) ? prev : [...prev, payload.new as Mensagem],
+            prev.some((m) => m.id === (payload.new as Mensagem).id)
+              ? prev
+              : [...prev, payload.new as Mensagem],
           );
         },
       )
@@ -109,7 +116,10 @@ export function LeadChat({ leadId, tenantId }: { leadId: string; tenantId: strin
                   )}
                   <div className="whitespace-pre-wrap">{m.conteudo}</div>
                   <div className="mt-1 text-[10px] opacity-60">
-                    {new Date(m.created_at).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                    {new Date(m.created_at).toLocaleString("pt-BR", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
                   </div>
                 </div>
               </div>

@@ -9,10 +9,16 @@ export const Route = createFileRoute("/api/public/health")({
         let db: "ok" | "error" = "ok";
         let dbError: string | null = null;
         try {
-          const { error } = await supabaseAdmin.from("tenants").select("id", { count: "exact", head: true });
-          if (error) { db = "error"; dbError = error.message; }
+          const { error } = await supabaseAdmin
+            .from("tenants")
+            .select("id", { count: "exact", head: true });
+          if (error) {
+            db = "error";
+            dbError = error.message;
+          }
         } catch (e: any) {
-          db = "error"; dbError = e?.message ?? "unknown";
+          db = "error";
+          dbError = e?.message ?? "unknown";
         }
         const body = {
           status: db === "ok" ? "ok" : "degraded",

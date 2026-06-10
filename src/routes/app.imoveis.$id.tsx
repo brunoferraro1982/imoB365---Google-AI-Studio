@@ -33,7 +33,12 @@ function EditarImovel() {
     setLoading(true);
     const [{ data: imovel, error }, { data: fotosData }] = await Promise.all([
       supabase.from("imoveis").select("*").eq("id", id).maybeSingle(),
-      supabase.from("imovel_fotos").select("*").eq("imovel_id", id).order("ordem").order("created_at"),
+      supabase
+        .from("imovel_fotos")
+        .select("*")
+        .eq("imovel_id", id)
+        .order("ordem")
+        .order("created_at"),
     ]);
     if (error || !imovel) {
       toast.error("Imóvel não encontrado");
@@ -77,7 +82,9 @@ function EditarImovel() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+  }, [id]);
 
   async function save(data: ImovelFormData, action: "save" | "publish" | "unpublish" = "save") {
     setSaving(true);
@@ -94,12 +101,17 @@ function EditarImovel() {
       })
       .eq("id", id);
     setSaving(false);
-    if (error) { toast.error("Erro ao salvar: " + error.message); return; }
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+      return;
+    }
     setSlug(newSlug);
     toast.success(
-      action === "publish" ? "Imóvel publicado no site"
-      : action === "unpublish" ? "Imóvel despublicado"
-      : "Alterações salvas"
+      action === "publish"
+        ? "Imóvel publicado no site"
+        : action === "unpublish"
+          ? "Imóvel despublicado"
+          : "Alterações salvas",
     );
     load();
   }
@@ -119,7 +131,10 @@ function EditarImovel() {
         cacheControl: "3600",
         contentType: file.type,
       });
-      if (upErr) { toast.error("Upload falhou: " + upErr.message); continue; }
+      if (upErr) {
+        toast.error("Upload falhou: " + upErr.message);
+        continue;
+      }
       const { error: insErr } = await supabase.from("imovel_fotos").insert({
         imovel_id: id,
         tenant_id: tenantId,
@@ -136,7 +151,15 @@ function EditarImovel() {
 
   async function geocodeNow() {
     if (!imovel) return;
-    const parts = [imovel.endereco_logradouro, imovel.endereco_numero, imovel.endereco_bairro, imovel.endereco_cidade, imovel.endereco_uf].filter(Boolean).join(", ");
+    const parts = [
+      imovel.endereco_logradouro,
+      imovel.endereco_numero,
+      imovel.endereco_bairro,
+      imovel.endereco_cidade,
+      imovel.endereco_uf,
+    ]
+      .filter(Boolean)
+      .join(", ");
     if (!parts) return toast.error("Preencha o endereço primeiro");
     setGeoLoading(true);
     try {
@@ -145,7 +168,9 @@ function EditarImovel() {
       await supabase.from("imoveis").update({ latitude: r.lat, longitude: r.lon }).eq("id", id);
       toast.success("Coordenadas atualizadas");
       load();
-    } finally { setGeoLoading(false); }
+    } finally {
+      setGeoLoading(false);
+    }
   }
 
   async function toggleDestaque() {
@@ -162,7 +187,9 @@ function EditarImovel() {
     <div className="mx-auto max-w-5xl p-8">
       <div className="mb-4 flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/app/imoveis"><ChevronLeft className="mr-1 h-4 w-4" /> Voltar</Link>
+          <Link to="/app/imoveis">
+            <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
+          </Link>
         </Button>
         {slug && (
           <Button variant="outline" size="sm" asChild>
@@ -180,7 +207,14 @@ function EditarImovel() {
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
             <ImagePlus className="h-4 w-4" />
             {uploading ? "Enviando…" : "Adicionar fotos"}
-            <input type="file" accept="image/*" multiple className="hidden" onChange={handleUpload} disabled={uploading} />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleUpload}
+              disabled={uploading}
+            />
           </label>
         </div>
         <FotosManager fotos={fotos} imovelId={id} onChange={load} />
@@ -198,22 +232,37 @@ function EditarImovel() {
             {geoLoading ? "Buscando…" : "Atualizar coordenadas (mapa)"}
           </Button>
           {imovel?.latitude && imovel?.longitude && (
-            <span className="text-xs text-muted-foreground">{Number(imovel.latitude).toFixed(5)}, {Number(imovel.longitude).toFixed(5)}</span>
+            <span className="text-xs text-muted-foreground">
+              {Number(imovel.latitude).toFixed(5)}, {Number(imovel.longitude).toFixed(5)}
+            </span>
           )}
           {imovel?.selos?.length > 0 && (
             <div className="flex gap-1">
               {imovel.selos.map((s: string) => (
-                <span key={s} className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">{s.replace("_", " ")}</span>
+                <span
+                  key={s}
+                  className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                >
+                  {s.replace("_", " ")}
+                </span>
               ))}
             </div>
           )}
         </div>
       </section>
 
-      <ImovelForm initial={initial} onSubmit={save} submitLabel="Salvar alterações" submitting={saving} mode="edit" />
+      <ImovelForm
+        initial={initial}
+        onSubmit={save}
+        submitLabel="Salvar alterações"
+        submitting={saving}
+        mode="edit"
+      />
 
       <section className="mt-8 rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Histórico de alterações</h2>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Histórico de alterações
+        </h2>
         <ImovelHistorico imovelId={id} />
       </section>
     </div>

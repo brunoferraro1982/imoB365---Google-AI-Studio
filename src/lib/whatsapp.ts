@@ -4,7 +4,10 @@
  */
 
 /** Limpa um número e garante código do país (padrão 55 — Brasil). */
-export function normalizePhone(raw: string | null | undefined, defaultCountry = "55"): string | null {
+export function normalizePhone(
+  raw: string | null | undefined,
+  defaultCountry = "55",
+): string | null {
   if (!raw) return null;
   const digits = raw.replace(/\D/g, "");
   if (!digits) return null;

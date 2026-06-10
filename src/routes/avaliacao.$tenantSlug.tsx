@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/avaliacao/$tenantSlug")({
@@ -14,7 +20,10 @@ export const Route = createFileRoute("/avaliacao/$tenantSlug")({
   head: ({ params }) => ({
     meta: [
       { title: `Avaliação gratuita de imóvel — ${params.tenantSlug}` },
-      { name: "description", content: "Receba uma avaliação profissional gratuita do seu imóvel em até 24h." },
+      {
+        name: "description",
+        content: "Receba uma avaliação profissional gratuita do seu imóvel em até 24h.",
+      },
     ],
   }),
 });
@@ -40,7 +49,11 @@ function AvaliacaoPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("tenants").select("id,nome").eq("slug", tenantSlug).maybeSingle();
+      const { data } = await supabase
+        .from("tenants")
+        .select("id,nome")
+        .eq("slug", tenantSlug)
+        .maybeSingle();
       setTenant(data ?? null);
       setLoading(false);
     })();
@@ -58,7 +71,9 @@ function AvaliacaoPage() {
       area ? `Área: ${area} m²` : "",
       quartos ? `Quartos: ${quartos}` : "",
       observacoes ? `\n${observacoes}` : "",
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     const { data: leadId, error } = await (supabase as any).rpc("public_create_tenant_lead", {
       _tenant_slug: tenantSlug,
@@ -68,21 +83,30 @@ function AvaliacaoPage() {
       _mensagem: mensagem.slice(0, 2000),
     });
 
-    if (error) { setSending(false); return toast.error("Não foi possível enviar: " + error.message); }
+    if (error) {
+      setSending(false);
+      return toast.error("Não foi possível enviar: " + error.message);
+    }
 
     // tenta gravar preferências (pode falhar por RLS — não bloqueia)
     if (leadId && tenant) {
-      await (supabase as any).from("lead_preferencias").insert({
-        tenant_id: tenant.id,
-        lead_id: leadId,
-        tipos: [tipo],
-        finalidade,
-        cidades: cidade ? [cidade] : [],
-        bairros: bairro ? [bairro] : [],
-        quartos_min: quartos ? Number(quartos) : null,
-        area_min: area ? Number(area) : null,
-        observacoes: observacoes || null,
-      }).then(() => {}, () => {});
+      await (supabase as any)
+        .from("lead_preferencias")
+        .insert({
+          tenant_id: tenant.id,
+          lead_id: leadId,
+          tipos: [tipo],
+          finalidade,
+          cidades: cidade ? [cidade] : [],
+          bairros: bairro ? [bairro] : [],
+          quartos_min: quartos ? Number(quartos) : null,
+          area_min: area ? Number(area) : null,
+          observacoes: observacoes || null,
+        })
+        .then(
+          () => {},
+          () => {},
+        );
     }
 
     setSending(false);
@@ -90,13 +114,17 @@ function AvaliacaoPage() {
     toast.success("Solicitação enviada!");
   }
 
-  if (loading) return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
-  if (!tenant) return (
-    <div className="p-16 text-center">
-      <h1 className="text-2xl font-bold">Imobiliária não encontrada</h1>
-      <Link to="/" className="mt-4 inline-block text-primary hover:underline">Voltar</Link>
-    </div>
-  );
+  if (loading)
+    return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
+  if (!tenant)
+    return (
+      <div className="p-16 text-center">
+        <h1 className="text-2xl font-bold">Imobiliária não encontrada</h1>
+        <Link to="/" className="mt-4 inline-block text-primary hover:underline">
+          Voltar
+        </Link>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-background">
@@ -107,7 +135,8 @@ function AvaliacaoPage() {
             Avaliação gratuita do seu imóvel
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {tenant.nome} retorna em até 24h com uma estimativa de mercado baseada em vendas e locações recentes.
+            {tenant.nome} retorna em até 24h com uma estimativa de mercado baseada em vendas e
+            locações recentes.
           </p>
         </div>
 
@@ -116,33 +145,55 @@ function AvaliacaoPage() {
             <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
             <h2 className="mt-3 text-xl font-semibold">Solicitação recebida</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Em breve um especialista de <strong>{tenant.nome}</strong> entrará em contato com a avaliação.
+              Em breve um especialista de <strong>{tenant.nome}</strong> entrará em contato com a
+              avaliação.
             </p>
           </div>
         ) : (
-          <form onSubmit={submit} className="space-y-6 rounded-xl border border-border bg-card p-6 md:p-8">
+          <form
+            onSubmit={submit}
+            className="space-y-6 rounded-xl border border-border bg-card p-6 md:p-8"
+          >
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <Label className="text-xs">Nome *</Label>
-                <Input value={nome} onChange={(e) => setNome(e.target.value)} required maxLength={200} />
+                <Input
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  required
+                  maxLength={200}
+                />
               </div>
               <div>
                 <Label className="text-xs">Telefone / WhatsApp</Label>
-                <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} maxLength={40} />
+                <Input
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  maxLength={40}
+                />
               </div>
               <div className="md:col-span-2">
                 <Label className="text-xs">E-mail</Label>
-                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} />
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  maxLength={255}
+                />
               </div>
             </div>
 
             <div className="border-t pt-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Sobre o imóvel</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Sobre o imóvel
+              </h3>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div>
                   <Label className="text-xs">Tipo</Label>
                   <Select value={tipo} onValueChange={setTipo}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="apartamento">Apartamento</SelectItem>
                       <SelectItem value="casa">Casa</SelectItem>
@@ -155,7 +206,9 @@ function AvaliacaoPage() {
                 <div>
                   <Label className="text-xs">Finalidade</Label>
                   <Select value={finalidade} onValueChange={setFinalidade}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="venda">Venda</SelectItem>
                       <SelectItem value="locacao">Locação</SelectItem>
@@ -165,24 +218,49 @@ function AvaliacaoPage() {
                 </div>
                 <div>
                   <Label className="text-xs">Cidade</Label>
-                  <Input value={cidade} onChange={(e) => setCidade(e.target.value)} maxLength={120} />
+                  <Input
+                    value={cidade}
+                    onChange={(e) => setCidade(e.target.value)}
+                    maxLength={120}
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Bairro</Label>
-                  <Input value={bairro} onChange={(e) => setBairro(e.target.value)} maxLength={120} />
+                  <Input
+                    value={bairro}
+                    onChange={(e) => setBairro(e.target.value)}
+                    maxLength={120}
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Área útil (m²)</Label>
-                  <Input type="number" value={area} onChange={(e) => setArea(e.target.value)} min={0} />
+                  <Input
+                    type="number"
+                    value={area}
+                    onChange={(e) => setArea(e.target.value)}
+                    min={0}
+                  />
                 </div>
                 <div>
                   <Label className="text-xs">Quartos</Label>
-                  <Input type="number" value={quartos} onChange={(e) => setQuartos(e.target.value)} min={0} max={20} />
+                  <Input
+                    type="number"
+                    value={quartos}
+                    onChange={(e) => setQuartos(e.target.value)}
+                    min={0}
+                    max={20}
+                  />
                 </div>
               </div>
               <div className="mt-4">
                 <Label className="text-xs">Observações</Label>
-                <Textarea rows={4} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} maxLength={2000} placeholder="Reformas recentes, vaga, andar, condição geral…" />
+                <Textarea
+                  rows={4}
+                  value={observacoes}
+                  onChange={(e) => setObservacoes(e.target.value)}
+                  maxLength={2000}
+                  placeholder="Reformas recentes, vaga, andar, condição geral…"
+                />
               </div>
             </div>
 

@@ -56,7 +56,9 @@ export const removerBusca = createServerFn({ method: "POST" })
 
 export const toggleAlertaBusca = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ id: z.string().uuid(), alerta_email: z.boolean() }).parse(input))
+  .inputValidator((input) =>
+    z.object({ id: z.string().uuid(), alerta_email: z.boolean() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase

@@ -9,8 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 export function useChatRealtime(conversationId?: string) {
   const qc = useQueryClient();
   useEffect(() => {
-    const channelName = conversationId 
-      ? `chat:${conversationId}-${Math.random().toString(36).substring(7)}` 
+    const channelName = conversationId
+      ? `chat:${conversationId}-${Math.random().toString(36).substring(7)}`
       : `chat:all-${Math.random().toString(36).substring(7)}`;
     let channel = supabase.channel(channelName).on(
       "postgres_changes",

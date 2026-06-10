@@ -13,13 +13,22 @@ export const Route = createFileRoute("/app/contratos/")({
 });
 
 const TIPO_LABEL: Record<string, string> = {
-  venda: "Venda", locacao: "Locação", permuta: "Permuta", outro: "Outro",
+  venda: "Venda",
+  locacao: "Locação",
+  permuta: "Permuta",
+  outro: "Outro",
 };
 const STATUS_LABEL: Record<string, string> = {
-  rascunho: "Rascunho", ativo: "Ativo", encerrado: "Encerrado", cancelado: "Cancelado",
+  rascunho: "Rascunho",
+  ativo: "Ativo",
+  encerrado: "Encerrado",
+  cancelado: "Cancelado",
 };
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  ativo: "default", rascunho: "secondary", encerrado: "outline", cancelado: "destructive",
+  ativo: "default",
+  rascunho: "secondary",
+  encerrado: "outline",
+  cancelado: "destructive",
 };
 
 function ContratosList() {
@@ -37,7 +46,9 @@ function ContratosList() {
     setItems(data ?? []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function remove(id: string) {
     if (!confirm("Excluir este contrato?")) return;
@@ -50,7 +61,9 @@ function ContratosList() {
   const filtered = items.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return (c.numero ?? "").toLowerCase().includes(q) || TIPO_LABEL[c.tipo]?.toLowerCase().includes(q);
+    return (
+      (c.numero ?? "").toLowerCase().includes(q) || TIPO_LABEL[c.tipo]?.toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -58,20 +71,31 @@ function ContratosList() {
       <header className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Jurídico</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Gestão de contratos de venda, locação, parceria e outros instrumentos jurídicos.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Gestão de contratos de venda, locação, parceria e outros instrumentos jurídicos.
+          </p>
         </div>
         <div className="flex gap-2">
           <Link to="/app/contratos/modelos">
-            <Button variant="outline"><LayoutTemplate className="mr-2 h-4 w-4" /> Modelos</Button>
+            <Button variant="outline">
+              <LayoutTemplate className="mr-2 h-4 w-4" /> Modelos
+            </Button>
           </Link>
           <Link to="/app/contratos/novo">
-            <Button><Plus className="mr-2 h-4 w-4" /> Novo contrato</Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Novo contrato
+            </Button>
           </Link>
         </div>
       </header>
 
       <div className="mb-4">
-        <Input placeholder="Buscar por número ou tipo…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
+        <Input
+          placeholder="Buscar por número ou tipo…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md"
+        />
       </div>
 
       {loading ? (
@@ -80,7 +104,9 @@ function ContratosList() {
         <div className="rounded-xl border border-dashed border-border p-12 text-center">
           <FileText className="mx-auto h-10 w-10 text-muted-foreground/60" />
           <p className="mt-3 text-sm text-muted-foreground">Nenhum contrato ainda.</p>
-          <Link to="/app/contratos/novo" className="mt-4 inline-block"><Button size="sm">Criar primeiro contrato</Button></Link>
+          <Link to="/app/contratos/novo" className="mt-4 inline-block">
+            <Button size="sm">Criar primeiro contrato</Button>
+          </Link>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -100,14 +126,22 @@ function ContratosList() {
                 <tr key={c.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium">{c.numero ?? `#${c.id.slice(0, 8)}`}</td>
                   <td className="px-4 py-3">{TIPO_LABEL[c.tipo]}</td>
-                  <td className="px-4 py-3"><Badge variant={STATUS_VARIANT[c.status] ?? "secondary"}>{STATUS_LABEL[c.status]}</Badge></td>
+                  <td className="px-4 py-3">
+                    <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"}>
+                      {STATUS_LABEL[c.status]}
+                    </Badge>
+                  </td>
                   <td className="px-4 py-3 text-right">{formatBRL(c.valor)}</td>
                   <td className="px-4 py-3 text-muted-foreground">{c.data_inicio ?? "—"}</td>
                   <td className="px-4 py-3 text-right">
                     <Link to="/app/contratos/$id" params={{ id: c.id }}>
-                      <Button variant="ghost" size="icon"><Pencil className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" onClick={() => remove(c.id)}><Trash2 className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => remove(c.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}

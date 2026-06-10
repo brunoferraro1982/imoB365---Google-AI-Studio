@@ -62,11 +62,20 @@ export function AgendarVisita({ imovelId, titulo }: { imovelId: string; titulo: 
   }
 
   return (
-    <form onSubmit={submit} className="mt-4 space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+    <form
+      onSubmit={submit}
+      className="mt-4 space-y-3 rounded-lg border border-border bg-muted/30 p-4"
+    >
       <h3 className="text-sm font-semibold">Agendar visita</h3>
       <div>
         <Label className="text-xs">Data e horário *</Label>
-        <Input type="datetime-local" value={dataHora} min={new Date().toISOString().slice(0, 16)} onChange={(e) => setDataHora(e.target.value)} required />
+        <Input
+          type="datetime-local"
+          value={dataHora}
+          min={new Date().toISOString().slice(0, 16)}
+          onChange={(e) => setDataHora(e.target.value)}
+          required
+        />
       </div>
       <div>
         <Label className="text-xs">Seu nome *</Label>
@@ -74,18 +83,36 @@ export function AgendarVisita({ imovelId, titulo }: { imovelId: string; titulo: 
       </div>
       <div>
         <Label className="text-xs">E-mail</Label>
-        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={255} />
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          maxLength={255}
+        />
       </div>
       <div>
         <Label className="text-xs">Telefone / WhatsApp</Label>
-        <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} maxLength={40} placeholder="(11) 99999-9999" />
+        <Input
+          value={telefone}
+          onChange={(e) => setTelefone(e.target.value)}
+          maxLength={40}
+          placeholder="(11) 99999-9999"
+        />
       </div>
       <div>
         <Label className="text-xs">Observação</Label>
-        <Textarea rows={2} value={mensagem} onChange={(e) => setMensagem(e.target.value)} maxLength={2000} placeholder={`Tenho interesse em visitar "${titulo}"`} />
+        <Textarea
+          rows={2}
+          value={mensagem}
+          onChange={(e) => setMensagem(e.target.value)}
+          maxLength={2000}
+          placeholder={`Tenho interesse em visitar "${titulo}"`}
+        />
       </div>
       <div className="flex gap-2">
-        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>Cancelar</Button>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)}>
+          Cancelar
+        </Button>
         <Button type="submit" size="sm" disabled={sending} className="flex-1">
           {sending ? "Enviando…" : "Solicitar visita"}
         </Button>

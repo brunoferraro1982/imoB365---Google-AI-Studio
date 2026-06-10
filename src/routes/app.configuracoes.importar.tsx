@@ -29,21 +29,33 @@ const TEMPLATES: Record<EntityKey, string> = {
 };
 
 function parseCSV(text: string): Record<string, string>[] {
-  const lines = text.replace(/\r/g, "").split("\n").filter((l) => l.trim().length > 0);
+  const lines = text
+    .replace(/\r/g, "")
+    .split("\n")
+    .filter((l) => l.trim().length > 0);
   if (lines.length < 2) return [];
   const header = lines[0].split(",").map((h) => h.trim());
   return lines.slice(1).map((line) => {
     // simple CSV: comma split, no quoting inside fields
     const cells = line.split(",").map((c) => c.trim());
     const row: Record<string, string> = {};
-    header.forEach((h, i) => { row[h] = cells[i] ?? ""; });
+    header.forEach((h, i) => {
+      row[h] = cells[i] ?? "";
+    });
     return row;
   });
 }
 
 function slugify(s: string) {
-  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `item-${Date.now()}`;
+  return (
+    s
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || `item-${Date.now()}`
+  );
 }
 
 function ImportarPage() {
@@ -61,7 +73,8 @@ function ImportarPage() {
       return;
     }
     setBusy(true);
-    let ok = 0, fail = 0;
+    let ok = 0,
+      fail = 0;
     const errors: string[] = [];
 
     if (entity === "imoveis") {
@@ -80,8 +93,10 @@ function ImportarPage() {
         created_by: user?.id ?? null,
       }));
       const { data, error } = await supabase.from("imoveis").insert(payload).select("id");
-      if (error) { fail = rows.length; errors.push(error.message); }
-      else ok = data?.length ?? 0;
+      if (error) {
+        fail = rows.length;
+        errors.push(error.message);
+      } else ok = data?.length ?? 0;
     } else {
       const payload = rows.map((r) => ({
         tenant_id: tenantId,
@@ -92,8 +107,10 @@ function ImportarPage() {
         mensagem: r.mensagem || null,
       }));
       const { data, error } = await supabase.from("leads").insert(payload).select("id");
-      if (error) { fail = rows.length; errors.push(error.message); }
-      else ok = data?.length ?? 0;
+      if (error) {
+        fail = rows.length;
+        errors.push(error.message);
+      } else ok = data?.length ?? 0;
     }
 
     setBusy(false);
@@ -117,8 +134,17 @@ function ImportarPage() {
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
             <Label>Entidade</Label>
-            <Select value={entity} onValueChange={(v: EntityKey) => { setEntity(v); setCsv(""); setResult(null); }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={entity}
+              onValueChange={(v: EntityKey) => {
+                setEntity(v);
+                setCsv("");
+                setResult(null);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="imoveis">Imóveis</SelectItem>
                 <SelectItem value="leads">Leads</SelectItem>
@@ -134,7 +160,12 @@ function ImportarPage() {
 
         <div className="mt-4">
           <Label>CSV</Label>
-          <Textarea rows={10} value={csv} onChange={(e) => setCsv(e.target.value)} className="font-mono text-xs" />
+          <Textarea
+            rows={10}
+            value={csv}
+            onChange={(e) => setCsv(e.target.value)}
+            className="font-mono text-xs"
+          />
         </div>
 
         <div className="mt-4 flex justify-end">
@@ -153,7 +184,11 @@ function ImportarPage() {
                 <AlertTriangle className="h-4 w-4 mt-0.5" />
                 <div>
                   <div>{result.fail} falharam</div>
-                  {result.errors.map((e, i) => <div key={i} className="mt-1 text-xs">{e}</div>)}
+                  {result.errors.map((e, i) => (
+                    <div key={i} className="mt-1 text-xs">
+                      {e}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

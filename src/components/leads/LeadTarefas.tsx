@@ -7,7 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
@@ -61,7 +65,9 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
     setTarefas((data ?? []) as Tarefa[]);
   }
 
-  useEffect(() => { load(); }, [leadId]);
+  useEffect(() => {
+    load();
+  }, [leadId]);
 
   async function criar() {
     if (!titulo.trim()) return;
@@ -71,23 +77,30 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
       lead_id: leadId,
       titulo: titulo.trim(),
       descricao: descricao.trim() || null,
-      tipo, prioridade,
+      tipo,
+      prioridade,
       prazo: prazo ? new Date(prazo).toISOString() : null,
       responsavel_user_id: user?.id ?? null,
       created_by: user?.id ?? null,
     });
     setSaving(false);
     if (error) return toast.error(error.message);
-    setTitulo(""); setDescricao(""); setPrazo(""); setOpen(false);
+    setTitulo("");
+    setDescricao("");
+    setPrazo("");
+    setOpen(false);
     load();
   }
 
   async function toggle(t: Tarefa) {
     const novo = t.status === "concluida" ? "pendente" : "concluida";
-    const { error } = await (supabase as any).from("lead_tarefas").update({
-      status: novo,
-      concluida_em: novo === "concluida" ? new Date().toISOString() : null,
-    }).eq("id", t.id);
+    const { error } = await (supabase as any)
+      .from("lead_tarefas")
+      .update({
+        status: novo,
+        concluida_em: novo === "concluida" ? new Date().toISOString() : null,
+      })
+      .eq("id", t.id);
     if (error) return toast.error(error.message);
     load();
   }
@@ -104,7 +117,9 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
   return (
     <section className="rounded-xl border border-border bg-card p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Tarefas e lembretes</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Tarefas e lembretes
+        </h2>
         <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)}>
           <Plus className="mr-1 h-4 w-4" /> Nova
         </Button>
@@ -112,22 +127,53 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
 
       {open && (
         <div className="mb-4 space-y-2 rounded-lg border border-dashed p-3">
-          <Input placeholder="Título da tarefa" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={200} />
-          <Textarea rows={2} placeholder="Detalhes (opcional)" value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={2000} />
+          <Input
+            placeholder="Título da tarefa"
+            value={titulo}
+            onChange={(e) => setTitulo(e.target.value)}
+            maxLength={200}
+          />
+          <Textarea
+            rows={2}
+            placeholder="Detalhes (opcional)"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            maxLength={2000}
+          />
           <div className="grid gap-2 sm:grid-cols-3">
             <Select value={tipo} onValueChange={setTipo}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{TIPOS.map((t) => <SelectItem key={t.v} value={t.v}>{t.label}</SelectItem>)}</SelectContent>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS.map((t) => (
+                  <SelectItem key={t.v} value={t.v}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Select value={prioridade} onValueChange={setPrioridade}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{PRIORIDADES.map((p) => <SelectItem key={p.v} value={p.v}>{p.label}</SelectItem>)}</SelectContent>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PRIORIDADES.map((p) => (
+                  <SelectItem key={p.v} value={p.v}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             <Input type="datetime-local" value={prazo} onChange={(e) => setPrazo(e.target.value)} />
           </div>
           <div className="flex justify-end gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button size="sm" onClick={criar} disabled={saving || !titulo.trim()}>{saving ? "Salvando…" : "Adicionar"}</Button>
+            <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={criar} disabled={saving || !titulo.trim()}>
+              {saving ? "Salvando…" : "Adicionar"}
+            </Button>
           </div>
         </div>
       )}
@@ -137,24 +183,42 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
         {tarefas.map((t) => {
           const atrasada = t.status === "pendente" && t.prazo && new Date(t.prazo) < now;
           return (
-            <li key={t.id} className={`flex items-start gap-3 rounded-lg border p-3 text-sm ${t.status === "concluida" ? "opacity-60" : ""}`}>
+            <li
+              key={t.id}
+              className={`flex items-start gap-3 rounded-lg border p-3 text-sm ${t.status === "concluida" ? "opacity-60" : ""}`}
+            >
               <button onClick={() => toggle(t)} className="mt-0.5">
-                {t.status === "concluida"
-                  ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  : <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />}
+                {t.status === "concluida" ? (
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                ) : (
+                  <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                )}
               </button>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={t.status === "concluida" ? "line-through" : "font-medium"}>{t.titulo}</span>
-                  <Badge variant="outline" className="text-[10px]">{t.tipo}</Badge>
-                  {t.prioridade === "alta" && <Badge className="bg-rose-600 text-[10px]">alta</Badge>}
+                  <span className={t.status === "concluida" ? "line-through" : "font-medium"}>
+                    {t.titulo}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    {t.tipo}
+                  </Badge>
+                  {t.prioridade === "alta" && (
+                    <Badge className="bg-rose-600 text-[10px]">alta</Badge>
+                  )}
                   {atrasada && (
-                    <Badge variant="outline" className="border-amber-500 text-amber-600 text-[10px]">
+                    <Badge
+                      variant="outline"
+                      className="border-amber-500 text-amber-600 text-[10px]"
+                    >
                       <AlertCircle className="mr-1 h-3 w-3" /> atrasada
                     </Badge>
                   )}
                 </div>
-                {t.descricao && <p className="mt-1 text-xs text-muted-foreground whitespace-pre-wrap">{t.descricao}</p>}
+                {t.descricao && (
+                  <p className="mt-1 text-xs text-muted-foreground whitespace-pre-wrap">
+                    {t.descricao}
+                  </p>
+                )}
                 {t.prazo && (
                   <p className="mt-1 text-xs text-muted-foreground">
                     Prazo: {new Date(t.prazo).toLocaleString("pt-BR")}

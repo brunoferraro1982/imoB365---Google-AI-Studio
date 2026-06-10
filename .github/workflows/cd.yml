@@ -3,8 +3,8 @@ name: CD — Deploy Cloudflare Workers
 on:
   push:
     branches:
-      - main      # → produção
-      - develop   # → staging
+      - main # → produção
+      - develop # → staging
 
   # Deploy manual via workflow_dispatch (útil para rollback ou hotfix)
   workflow_dispatch:
@@ -20,7 +20,7 @@ on:
 
 concurrency:
   group: deploy-${{ github.ref }}
-  cancel-in-progress: false  # não cancelar deploys em andamento
+  cancel-in-progress: false # não cancelar deploys em andamento
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ jobs:
   deploy-production:
     name: 🚀 Deploy → Produção
     runs-on: ubuntu-latest
-    environment: production   # requer aprovação manual configurada no GitHub
+    environment: production # requer aprovação manual configurada no GitHub
     if: |
       (github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')

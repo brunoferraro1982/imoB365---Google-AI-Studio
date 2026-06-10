@@ -39,7 +39,9 @@ export function ImoveisSimilares({
       const max = preco * 1.3;
       let q = (supabase as any)
         .from("imoveis")
-        .select("id,slug,titulo,preco,quartos,banheiros,vagas,area_util,endereco_bairro,endereco_cidade,imovel_fotos(storage_path,capa,ordem)")
+        .select(
+          "id,slug,titulo,preco,quartos,banheiros,vagas,area_util,endereco_bairro,endereco_cidade,imovel_fotos(storage_path,capa,ordem)",
+        )
         .eq("publicado", true)
         .eq("status", "ativo")
         .eq("tipo", tipo)
@@ -51,7 +53,9 @@ export function ImoveisSimilares({
       if (cidade) q = q.ilike("endereco_cidade", cidade.trim());
       const { data } = await q;
       const mapped: Similar[] = (data ?? []).map((i: any) => {
-        const capa = (i.imovel_fotos ?? []).sort((a: any, b: any) => Number(b.capa) - Number(a.capa) || (a.ordem ?? 0) - (b.ordem ?? 0))[0];
+        const capa = (i.imovel_fotos ?? []).sort(
+          (a: any, b: any) => Number(b.capa) - Number(a.capa) || (a.ordem ?? 0) - (b.ordem ?? 0),
+        )[0];
         return { ...i, capa: capa?.storage_path ?? null };
       });
       setItems(mapped);
@@ -77,7 +81,11 @@ export function ImoveisSimilares({
           >
             <div className="aspect-[4/3] overflow-hidden bg-muted">
               {i.capa ? (
-                <img src={publicUrl(i.capa)} alt={i.titulo} className="h-full w-full object-cover transition group-hover:scale-105" />
+                <img
+                  src={publicUrl(i.capa)}
+                  alt={i.titulo}
+                  className="h-full w-full object-cover transition group-hover:scale-105"
+                />
               ) : null}
             </div>
             <div className="p-4">
@@ -89,10 +97,30 @@ export function ImoveisSimilares({
                 </p>
               )}
               <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                {i.quartos != null && <span className="inline-flex items-center gap-1"><Bed className="h-3 w-3" />{i.quartos}</span>}
-                {i.banheiros != null && <span className="inline-flex items-center gap-1"><Bath className="h-3 w-3" />{i.banheiros}</span>}
-                {i.vagas != null && <span className="inline-flex items-center gap-1"><Car className="h-3 w-3" />{i.vagas}</span>}
-                {i.area_util != null && <span className="inline-flex items-center gap-1"><Maximize2 className="h-3 w-3" />{i.area_util}m²</span>}
+                {i.quartos != null && (
+                  <span className="inline-flex items-center gap-1">
+                    <Bed className="h-3 w-3" />
+                    {i.quartos}
+                  </span>
+                )}
+                {i.banheiros != null && (
+                  <span className="inline-flex items-center gap-1">
+                    <Bath className="h-3 w-3" />
+                    {i.banheiros}
+                  </span>
+                )}
+                {i.vagas != null && (
+                  <span className="inline-flex items-center gap-1">
+                    <Car className="h-3 w-3" />
+                    {i.vagas}
+                  </span>
+                )}
+                {i.area_util != null && (
+                  <span className="inline-flex items-center gap-1">
+                    <Maximize2 className="h-3 w-3" />
+                    {i.area_util}m²
+                  </span>
+                )}
               </div>
             </div>
           </Link>

@@ -17,7 +17,9 @@ function VisitaCheckin() {
   const [score, setScore] = useState<number | null>(null);
   const [comentario, setComentario] = useState("");
 
-  useEffect(() => { setStep("checkin"); }, []);
+  useEffect(() => {
+    setStep("checkin");
+  }, []);
 
   async function checkin() {
     const { data, error } = await (supabase.rpc as any)("public_visita_checkin", { _token: token });
@@ -28,7 +30,11 @@ function VisitaCheckin() {
 
   async function enviarNps() {
     if (score === null) return toast.error("Selecione uma nota");
-    const { error } = await (supabase.rpc as any)("public_visita_nps", { _token: token, _score: score, _comentario: comentario });
+    const { error } = await (supabase.rpc as any)("public_visita_nps", {
+      _token: token,
+      _score: score,
+      _comentario: comentario,
+    });
     if (error) return toast.error(error.message);
     setStep("done");
   }
@@ -39,26 +45,42 @@ function VisitaCheckin() {
         {step === "checkin" && (
           <>
             <h1 className="mb-2 text-xl font-semibold">Confirmar visita</h1>
-            <p className="mb-4 text-sm text-muted-foreground">Toque abaixo para registrar sua presença na visita.</p>
-            <Button className="w-full" onClick={checkin}>Confirmar presença</Button>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Toque abaixo para registrar sua presença na visita.
+            </p>
+            <Button className="w-full" onClick={checkin}>
+              Confirmar presença
+            </Button>
           </>
         )}
         {step === "nps" && (
           <>
             <h1 className="mb-2 text-xl font-semibold">Como foi a visita?</h1>
             {imovel && <p className="mb-4 text-sm text-muted-foreground">{imovel}</p>}
-            <p className="mb-3 text-sm">De 0 a 10, qual a chance de você recomendar nossa imobiliária?</p>
+            <p className="mb-3 text-sm">
+              De 0 a 10, qual a chance de você recomendar nossa imobiliária?
+            </p>
             <div className="mb-4 grid grid-cols-11 gap-1">
               {Array.from({ length: 11 }, (_, i) => (
                 <button
                   key={i}
                   onClick={() => setScore(i)}
                   className={`rounded border py-2 text-sm font-medium ${score === i ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-muted"}`}
-                >{i}</button>
+                >
+                  {i}
+                </button>
               ))}
             </div>
-            <Textarea rows={3} placeholder="Conte-nos como foi (opcional)" value={comentario} onChange={(e) => setComentario(e.target.value)} className="mb-3" />
-            <Button className="w-full" onClick={enviarNps}>Enviar avaliação</Button>
+            <Textarea
+              rows={3}
+              placeholder="Conte-nos como foi (opcional)"
+              value={comentario}
+              onChange={(e) => setComentario(e.target.value)}
+              className="mb-3"
+            />
+            <Button className="w-full" onClick={enviarNps}>
+              Enviar avaliação
+            </Button>
           </>
         )}
         {step === "done" && (

@@ -25,7 +25,10 @@ function FavoritosPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { navigate({ to: "/login" }); return; }
+    if (!user) {
+      navigate({ to: "/login" });
+      return;
+    }
     listar()
       .then((r) => setItems(r.favoritos as any[]))
       .catch((e: any) => toast.error(e?.message ?? "Erro ao carregar"))
@@ -62,46 +65,86 @@ function FavoritosPage() {
         ) : items.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-card p-16 text-center">
             <p className="text-sm text-muted-foreground">Você ainda não favoritou nenhum imóvel.</p>
-            <Link to="/buscar"><Button className="mt-4">Buscar imóveis</Button></Link>
+            <Link to="/buscar">
+              <Button className="mt-4">Buscar imóveis</Button>
+            </Link>
           </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((f: any) => {
               const i = f.imoveis;
               if (!i) return null;
-              const fotos = (i.imovel_fotos ?? []).slice().sort((a: any, b: any) => (b.capa ? 1 : 0) - (a.capa ? 1 : 0) || a.ordem - b.ordem);
+              const fotos = (i.imovel_fotos ?? [])
+                .slice()
+                .sort((a: any, b: any) => (b.capa ? 1 : 0) - (a.capa ? 1 : 0) || a.ordem - b.ordem);
               const capa = fotos[0]?.storage_path ?? null;
               return (
-                <div key={f.id} className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg">
+                <div
+                  key={f.id}
+                  className="group overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
+                >
                   <Link to="/imovel/$slug" params={{ slug: i.slug }} className="block">
                     <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                       {capa ? (
-                        <img src={publicUrl(capa)!} alt={i.titulo} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                        <img
+                          src={publicUrl(capa)!}
+                          alt={i.titulo}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">Sem foto</div>
+                        <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                          Sem foto
+                        </div>
                       )}
                     </div>
                   </Link>
                   <div className="p-4">
                     <div className="flex items-center gap-2 text-xs">
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">{FINALIDADE_LABEL[i.finalidade]}</span>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 font-medium text-primary">
+                        {FINALIDADE_LABEL[i.finalidade]}
+                      </span>
                       <span className="text-muted-foreground">{TIPO_LABEL[i.tipo]}</span>
                     </div>
                     <h3 className="mt-2 line-clamp-2 font-semibold leading-tight">{i.titulo}</h3>
                     {(i.endereco_cidade || i.endereco_bairro) && (
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
-                        {[i.endereco_bairro, i.endereco_cidade && `${i.endereco_cidade}/${i.endereco_uf ?? ""}`].filter(Boolean).join(" · ")}
+                        {[
+                          i.endereco_bairro,
+                          i.endereco_cidade && `${i.endereco_cidade}/${i.endereco_uf ?? ""}`,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
                       </p>
                     )}
                     <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      {i.quartos != null && <span className="flex items-center gap-1"><Bed className="h-3 w-3" />{i.quartos}</span>}
-                      {i.banheiros != null && <span className="flex items-center gap-1"><Bath className="h-3 w-3" />{i.banheiros}</span>}
-                      {i.area_util != null && <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3" />{i.area_util} m²</span>}
+                      {i.quartos != null && (
+                        <span className="flex items-center gap-1">
+                          <Bed className="h-3 w-3" />
+                          {i.quartos}
+                        </span>
+                      )}
+                      {i.banheiros != null && (
+                        <span className="flex items-center gap-1">
+                          <Bath className="h-3 w-3" />
+                          {i.banheiros}
+                        </span>
+                      )}
+                      {i.area_util != null && (
+                        <span className="flex items-center gap-1">
+                          <Maximize2 className="h-3 w-3" />
+                          {i.area_util} m²
+                        </span>
+                      )}
                     </div>
                     <div className="mt-3 flex items-center justify-between">
                       <p className="text-lg font-bold text-primary">{formatBRL(i.preco)}</p>
-                      <Button size="sm" variant="ghost" onClick={() => handleRemove(f.imovel_id)} className="text-destructive hover:text-destructive">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemove(f.imovel_id)}
+                        className="text-destructive hover:text-destructive"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>

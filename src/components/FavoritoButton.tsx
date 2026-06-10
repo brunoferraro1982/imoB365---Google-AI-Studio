@@ -17,7 +17,9 @@ type Props = {
 let cachedIds: Set<string> | null = null;
 let cachedUserId: string | null = null;
 const listeners = new Set<() => void>();
-function notify() { listeners.forEach((l) => l()); }
+function notify() {
+  listeners.forEach((l) => l());
+}
 
 export function invalidateFavoritosCache() {
   cachedIds = null;
@@ -62,9 +64,16 @@ export function FavoritoButton({ imovelId, className, size = "md" }: Props) {
     if (cachedIds) {
       sync();
     } else {
-      list().then((r) => { cachedIds = new Set(r.ids); notify(); }).catch(() => {});
+      list()
+        .then((r) => {
+          cachedIds = new Set(r.ids);
+          notify();
+        })
+        .catch(() => {});
     }
-    return () => { listeners.delete(sync); };
+    return () => {
+      listeners.delete(sync);
+    };
   }, [user, imovelId, list]);
 
   async function toggle(e: React.MouseEvent) {

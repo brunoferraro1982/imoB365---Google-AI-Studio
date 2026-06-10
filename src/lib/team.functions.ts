@@ -41,9 +41,13 @@ export const inviteTenantMember = createServerFn({ method: "POST" })
       perPage: 200,
     });
     if (lookupErr) throw new Error(lookupErr.message);
-    const target = list.users.find((u) => (u.email ?? "").toLowerCase() === data.email.toLowerCase());
+    const target = list.users.find(
+      (u) => (u.email ?? "").toLowerCase() === data.email.toLowerCase(),
+    );
     if (!target) {
-      throw new Error("Nenhum usuário com este e-mail. Peça para a pessoa criar a conta primeiro em /signup.");
+      throw new Error(
+        "Nenhum usuário com este e-mail. Peça para a pessoa criar a conta primeiro em /signup.",
+      );
     }
 
     // Garante profile + tenant_id
@@ -71,13 +75,20 @@ export const inviteTenantMember = createServerFn({ method: "POST" })
  */
 export const listTenantMembers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { tenantId: string }) => z.object({ tenantId: z.string().uuid() }).parse(input))
+  .inputValidator((input: { tenantId: string }) =>
+    z.object({ tenantId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role_in_tenant", {
-      _user_id: userId, _tenant_id: data.tenantId, _role: "admin",
+      _user_id: userId,
+      _tenant_id: data.tenantId,
+      _role: "admin",
     });
-    const { data: isSuper } = await supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" });
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
     if (!isAdmin && !isSuper) throw new Error("Sem permissão");
 
     const { data: roles } = await supabaseAdmin
@@ -86,7 +97,16 @@ export const listTenantMembers = createServerFn({ method: "GET" })
       .eq("tenant_id", data.tenantId);
 
     const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
-    if (ids.length === 0) return { members: [] as { user_id: string; nome: string | null; email: string | null; roles: string[]; role_ids: string[] }[] };
+    if (ids.length === 0)
+      return {
+        members: [] as {
+          user_id: string;
+          nome: string | null;
+          email: string | null;
+          roles: string[];
+          role_ids: string[];
+        }[],
+      };
 
     const { data: profiles } = await supabaseAdmin.from("profiles").select("id,nome").in("id", ids);
     const { data: usersList } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
@@ -114,9 +134,14 @@ export const removeTenantMember = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role_in_tenant", {
-      _user_id: userId, _tenant_id: data.tenantId, _role: "admin",
+      _user_id: userId,
+      _tenant_id: data.tenantId,
+      _role: "admin",
     });
-    const { data: isSuper } = await supabase.rpc("has_role", { _user_id: userId, _role: "super_admin" });
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
     if (!isAdmin && !isSuper) throw new Error("Sem permissão");
     if (data.userId === userId) throw new Error("Você não pode remover a si mesmo");
 

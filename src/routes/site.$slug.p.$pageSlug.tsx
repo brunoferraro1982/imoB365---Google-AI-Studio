@@ -23,26 +23,64 @@ function TenantPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: tenant } = await supabase.from("tenants").select("id,slug,nome").eq("slug", slug).maybeSingle();
-      if (!tenant) { setLoading(false); return; }
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("id,slug,nome")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (!tenant) {
+        setLoading(false);
+        return;
+      }
       const [{ data: cfg }, { data: pages }, { data: pg }] = await Promise.all([
-        supabase.from("tenant_site_settings").select("*").eq("tenant_id", tenant.id).eq("publicado", true).maybeSingle(),
-        supabase.from("tenant_pages").select("slug,titulo").eq("tenant_id", tenant.id).eq("publicada", true).order("ordem"),
-        supabase.from("tenant_pages").select("titulo,conteudo_html").eq("tenant_id", tenant.id).eq("slug", pageSlug).eq("publicada", true).maybeSingle(),
+        supabase
+          .from("tenant_site_settings")
+          .select("*")
+          .eq("tenant_id", tenant.id)
+          .eq("publicado", true)
+          .maybeSingle(),
+        supabase
+          .from("tenant_pages")
+          .select("slug,titulo")
+          .eq("tenant_id", tenant.id)
+          .eq("publicada", true)
+          .order("ordem"),
+        supabase
+          .from("tenant_pages")
+          .select("titulo,conteudo_html")
+          .eq("tenant_id", tenant.id)
+          .eq("slug", pageSlug)
+          .eq("publicada", true)
+          .maybeSingle(),
       ]);
-      if (!cfg) { setLoading(false); return; }
-      setCtx({ tenantSlug: tenant.slug, tenantNome: tenant.nome, settings: cfg, pages: (pages ?? []) as any });
+      if (!cfg) {
+        setLoading(false);
+        return;
+      }
+      setCtx({
+        tenantSlug: tenant.slug,
+        tenantNome: tenant.nome,
+        settings: cfg,
+        pages: (pages ?? []) as any,
+      });
       setPage(pg ?? null);
       setLoading(false);
     })();
   }, [slug, pageSlug]);
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Carregando…</div>;
+  if (loading)
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
+        Carregando…
+      </div>
+    );
   if (!ctx || !page) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-center">
         <h1 className="text-2xl font-bold">Página não encontrada</h1>
-        <Link to="/site/$slug" params={{ slug }} className="text-sm text-primary hover:underline">← Voltar</Link>
+        <Link to="/site/$slug" params={{ slug }} className="text-sm text-primary hover:underline">
+          ← Voltar
+        </Link>
       </div>
     );
   }
@@ -51,7 +89,10 @@ function TenantPage() {
     <TenantSiteLayout ctx={ctx}>
       <article className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="mb-6 text-3xl font-bold tracking-tight">{page.titulo}</h1>
-        <div className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6" dangerouslySetInnerHTML={{ __html: page.conteudo_html }} />
+        <div
+          className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
+          dangerouslySetInnerHTML={{ __html: page.conteudo_html }}
+        />
       </article>
     </TenantSiteLayout>
   );

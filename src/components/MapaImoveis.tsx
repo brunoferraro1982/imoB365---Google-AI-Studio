@@ -93,7 +93,9 @@ function ClusterLayer({ pontos }: { pontos: ImovelMapPoint[] }) {
     mapRef.current.addLayer(cluster);
 
     if (pontos.length > 0) {
-      const bounds = L.latLngBounds(pontos.map((p) => [p.latitude, p.longitude] as [number, number]));
+      const bounds = L.latLngBounds(
+        pontos.map((p) => [p.latitude, p.longitude] as [number, number]),
+      );
       mapRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
     }
   }, [pontos]);
@@ -103,7 +105,9 @@ function ClusterLayer({ pontos }: { pontos: ImovelMapPoint[] }) {
       center={[-23.55, -46.63]}
       zoom={5}
       style={{ height: "100%", width: "100%" }}
-      ref={(m) => { mapRef.current = m; }}
+      ref={(m) => {
+        mapRef.current = m;
+      }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -114,7 +118,10 @@ function ClusterLayer({ pontos }: { pontos: ImovelMapPoint[] }) {
 }
 
 function escapeHtml(s: string) {
-  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+  );
 }
 
 export default function MapaImoveis({ pontos }: { pontos: ImovelMapPoint[] }) {

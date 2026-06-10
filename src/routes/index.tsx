@@ -78,7 +78,7 @@ type TenantCard = {
 const PHRASES = [
   "com quem entende do seu bairro.",
   "de acordo com sua necessidade.",
-  "e realize seu sonho."
+  "e realize seu sonho.",
 ];
 
 function Landing() {
@@ -146,9 +146,9 @@ function Landing() {
         .order("updated_at", { ascending: false })
         .limit(8);
       const mapped: ImovelCard[] = (data ?? []).map((d: any) => {
-        const fotos = (d.imovel_fotos ?? []).slice().sort(
-          (a: any, b: any) => (b.capa ? 1 : 0) - (a.capa ? 1 : 0) || a.ordem - b.ordem,
-        );
+        const fotos = (d.imovel_fotos ?? [])
+          .slice()
+          .sort((a: any, b: any) => (b.capa ? 1 : 0) - (a.capa ? 1 : 0) || a.ordem - b.ordem);
         return { ...d, capa: fotos[0]?.storage_path ?? null };
       });
       setImoveis(mapped);
@@ -159,7 +159,7 @@ function Landing() {
         .in("status", ["active", "trial"])
         .limit(12);
       const ids = (ts ?? []).map((t: any) => t.id);
-      let counts: Record<string, number> = {};
+      const counts: Record<string, number> = {};
       if (ids.length) {
         const { data: cs } = await supabase
           .from("imoveis")
@@ -167,7 +167,8 @@ function Landing() {
           .in("tenant_id", ids)
           .eq("publicado", true)
           .eq("status", "ativo");
-        for (const r of cs ?? []) counts[(r as any).tenant_id] = (counts[(r as any).tenant_id] ?? 0) + 1;
+        for (const r of cs ?? [])
+          counts[(r as any).tenant_id] = (counts[(r as any).tenant_id] ?? 0) + 1;
       }
       setTenants(
         (ts ?? []).map((t: any) => ({
@@ -185,14 +186,19 @@ function Landing() {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const schedule = () => {
       if (timer) clearTimeout(timer);
-      timer = setTimeout(async () => {
-        await supabase.auth.signOut();
-      }, 5 * 60 * 1000);
+      timer = setTimeout(
+        async () => {
+          await supabase.auth.signOut();
+        },
+        5 * 60 * 1000,
+      );
     };
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) schedule();
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       if (s) schedule();
       else if (timer) clearTimeout(timer);
     });
@@ -214,28 +220,33 @@ function Landing() {
       {/* HERO + BUSCA */}
       <section className="relative isolate overflow-hidden border-b border-border/60 pb-20 pt-16 md:pb-28 md:pt-24 bg-cover bg-center">
         {/* Real city skyline background image centered and scaled like the image */}
-        <div 
-          className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10" 
+        <div
+          className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10"
           style={{ backgroundImage: `url(${citySkylineHero})` }}
         />
         {/* Soft elegant vignette / gradient overlays to blend beautifully */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/95 via-background/65 to-transparent dark:from-background dark:via-background/80 dark:to-transparent" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--primary-glow)_15%,_transparent_55%)] opacity-35 dark:opacity-20" />
-        
+
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col items-start text-left">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta imobiliárias, corretores e clientes
+              <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
+              imobiliárias, corretores e clientes
             </span>
             <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
-              Encontre o imóvel certo,<br />
+              Encontre o imóvel certo,
+              <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
                 {displayText}
-                <span className="inline-block animate-pulse ml-1 select-none text-foreground font-light">|</span>
+                <span className="inline-block animate-pulse ml-1 select-none text-foreground font-light">
+                  |
+                </span>
               </span>
             </h1>
             <p className="mt-6 max-w-2xl text-base md:text-lg text-muted-foreground font-semibold leading-relaxed">
-              Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil. Atendimento humano, sem burocracia.
+              Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
+              parceiros em todo o Brasil. Atendimento humano, sem burocracia.
             </p>
           </div>
 
@@ -259,12 +270,8 @@ function Landing() {
                 </button>
               ))}
             </div>
-            
-            <form
-              action="/buscar"
-              method="get"
-              className="mt-4 space-y-4"
-            >
+
+            <form action="/buscar" method="get" className="mt-4 space-y-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-center">
                 <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-border bg-neutral-50/50 dark:bg-background px-4 py-2.5 shadow-2xs hover:border-primary/20 transition-all">
                   <MapPin className="h-5 w-5 text-muted-foreground/80 shrink-0" />
@@ -277,9 +284,9 @@ function Landing() {
                   />
                 </div>
                 <input type="hidden" name="finalidade" value={finalidade} />
-                <Button 
-                  type="submit" 
-                  size="lg" 
+                <Button
+                  type="submit"
+                  size="lg"
                   className="rounded-xl px-7 bg-primary hover:bg-[#d65e1b] hover:scale-101 text-white shadow-sm font-bold tracking-wide transition-all duration-200 shrink-0 h-12 flex items-center justify-center gap-2 pointer-events-auto"
                 >
                   <Search className="h-4 w-4 stroke-[2.5px]" /> Buscar imóveis
@@ -295,7 +302,9 @@ function Landing() {
               >
                 <SlidersHorizontal className="h-4 w-4 transition-transform group-hover:scale-110" />
                 <span>Pesquisa avançada</span>
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
+                />
               </button>
 
               {showAdvanced && (
@@ -304,7 +313,12 @@ function Landing() {
                   className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
                 >
                   <Field label="Bairro">
-                    <Input name="bairro" value={adv.bairro} onChange={(e) => setAdv({ ...adv, bairro: e.target.value })} placeholder="Ex: Moema" />
+                    <Input
+                      name="bairro"
+                      value={adv.bairro}
+                      onChange={(e) => setAdv({ ...adv, bairro: e.target.value })}
+                      placeholder="Ex: Moema"
+                    />
                   </Field>
                   <Field label="Tipo de imóvel">
                     <select
@@ -401,7 +415,16 @@ function Landing() {
                       type="button"
                       variant="ghost"
                       onClick={() =>
-                         setAdv({ tipo: "", quartos: "", banheiros: "", vagas: "", precoMin: "", precoMax: "", areaMin: "", bairro: "" })
+                        setAdv({
+                          tipo: "",
+                          quartos: "",
+                          banheiros: "",
+                          vagas: "",
+                          precoMin: "",
+                          precoMax: "",
+                          areaMin: "",
+                          bairro: "",
+                        })
                       }
                     >
                       Limpar
@@ -433,9 +456,14 @@ function Landing() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Imóveis em destaque</h2>
-            <p className="mt-2 text-muted-foreground">As melhores oportunidades publicadas pelas imobiliárias parceiras.</p>
+            <p className="mt-2 text-muted-foreground">
+              As melhores oportunidades publicadas pelas imobiliárias parceiras.
+            </p>
           </div>
-          <Link to="/buscar" className="hidden items-center gap-1 text-sm font-medium text-primary hover:underline md:inline-flex">
+          <Link
+            to="/buscar"
+            className="hidden items-center gap-1 text-sm font-medium text-primary hover:underline md:inline-flex"
+          >
             Ver todos <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -468,27 +496,38 @@ function Landing() {
                     </div>
                   )}
                   <span className="absolute left-3 top-3 rounded-md bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow">
-                    {FINALIDADE_LABEL[i.finalidade as keyof typeof FINALIDADE_LABEL] ?? i.finalidade}
+                    {FINALIDADE_LABEL[i.finalidade as keyof typeof FINALIDADE_LABEL] ??
+                      i.finalidade}
                   </span>
                 </div>
                 <div className="p-4">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">
                     {TIPO_LABEL[i.tipo as keyof typeof TIPO_LABEL] ?? i.tipo}
                   </div>
-                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">{i.titulo}</h3>
+                  <h3 className="mt-1 line-clamp-2 text-sm font-semibold leading-snug">
+                    {i.titulo}
+                  </h3>
                   <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />
-                    {[i.endereco_bairro, i.endereco_cidade, i.endereco_uf].filter(Boolean).join(", ") || "—"}
+                    {[i.endereco_bairro, i.endereco_cidade, i.endereco_uf]
+                      .filter(Boolean)
+                      .join(", ") || "—"}
                   </p>
                   <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                     {i.quartos != null && (
-                      <span className="flex items-center gap-1"><Bed className="h-3 w-3" /> {i.quartos}</span>
+                      <span className="flex items-center gap-1">
+                        <Bed className="h-3 w-3" /> {i.quartos}
+                      </span>
                     )}
                     {i.banheiros != null && (
-                      <span className="flex items-center gap-1"><Bath className="h-3 w-3" /> {i.banheiros}</span>
+                      <span className="flex items-center gap-1">
+                        <Bath className="h-3 w-3" /> {i.banheiros}
+                      </span>
                     )}
                     {i.area_util != null && (
-                      <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3" /> {i.area_util} m²</span>
+                      <span className="flex items-center gap-1">
+                        <Maximize2 className="h-3 w-3" /> {i.area_util} m²
+                      </span>
                     )}
                   </div>
                   <div className="mt-3 text-lg font-bold text-foreground">
@@ -502,7 +541,9 @@ function Landing() {
 
         <div className="mt-8 flex justify-center md:hidden">
           <Link to="/buscar">
-            <Button variant="outline">Ver todos os imóveis <ArrowRight className="ml-2 h-4 w-4" /></Button>
+            <Button variant="outline">
+              Ver todos os imóveis <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
           </Link>
         </div>
       </section>
@@ -512,14 +553,21 @@ function Landing() {
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="flex items-end justify-between">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Imobiliárias parceiras</h2>
-              <p className="mt-2 text-muted-foreground">Trabalhamos lado a lado com quem entende do mercado local.</p>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                Imobiliárias parceiras
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                Trabalhamos lado a lado com quem entende do mercado local.
+              </p>
             </div>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {tenants.length === 0 &&
               Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-28 animate-pulse rounded-xl border border-border bg-card" />
+                <div
+                  key={i}
+                  className="h-28 animate-pulse rounded-xl border border-border bg-card"
+                />
               ))}
             {tenants.map((t) => (
               <Link
@@ -532,7 +580,9 @@ function Landing() {
                   <Building className="h-6 w-6" />
                 </div>
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold group-hover:text-primary">{t.nome}</div>
+                  <div className="truncate text-sm font-semibold group-hover:text-primary">
+                    {t.nome}
+                  </div>
                   <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
                 </div>
               </Link>
@@ -541,7 +591,9 @@ function Landing() {
           <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
             <div>
               <h3 className="text-lg font-semibold">Sua imobiliária ainda não está aqui?</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Cadastre-se grátis e comece a divulgar seus imóveis em minutos.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
+              </p>
             </div>
             <Link to="/signup" className="mt-4 inline-block md:mt-0">
               <Button>Quero cadastrar minha imobiliária</Button>
@@ -552,9 +604,12 @@ function Landing() {
 
       {/* COMO AJUDAMOS */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Como ajudamos a sua imobiliária</h2>
+        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          Como ajudamos a sua imobiliária
+        </h2>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Tecnologia simples de usar, pensada para quem vende e aluga imóveis no dia a dia — sem termos técnicos, sem complicação.
+          Tecnologia simples de usar, pensada para quem vende e aluga imóveis no dia a dia — sem
+          termos técnicos, sem complicação.
         </p>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {servicos.map((s) => (
@@ -572,7 +627,9 @@ function Landing() {
       {/* MÓDULOS / RECURSOS */}
       <section id="recursos" className="border-t border-border bg-secondary/40">
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Tudo o que sua imobiliária precisa</h2>
+          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+            Tudo o que sua imobiliária precisa
+          </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Ative apenas os recursos que você precisa hoje e adicione novos conforme cresce.
           </p>
@@ -606,7 +663,9 @@ function Landing() {
               <Button size="lg">Começar agora</Button>
             </Link>
             <Link to="/planos">
-              <Button size="lg" variant="outline">Ver planos e preços</Button>
+              <Button size="lg" variant="outline">
+                Ver planos e preços
+              </Button>
             </Link>
           </div>
         </div>
@@ -621,7 +680,15 @@ export function SiteHeader() {
   return _SiteHeader();
 }
 
-function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+function Field({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <label className="flex flex-col gap-1">
       <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
@@ -635,7 +702,9 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
 
 function _SiteHeader() {
   const { user } = useAuth();
-  const [activeMenu, setActiveMenu] = useState<"encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | null>(null);
+  const [activeMenu, setActiveMenu] = useState<
+    "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | null
+  >(null);
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico") => {
@@ -660,12 +729,20 @@ function _SiteHeader() {
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
           {/* Email / Telefone */}
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80 w-full">
-            <a href="mailto:contato@imob365.com.br" className="flex items-center gap-2 hover:text-primary transition-colors duration-200">
+            <a
+              href="mailto:contato@imob365.com.br"
+              className="flex items-center gap-2 hover:text-primary transition-colors duration-200"
+            >
               <Mail className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
               <span>contato@imob365.com.br</span>
             </a>
             <span className="hidden sm:inline text-white/20 select-none">|</span>
-            <a href="https://wa.me/5513997794382" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors duration-200">
+            <a
+              href="https://wa.me/5513997794382"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 hover:text-primary transition-colors duration-200"
+            >
               <Phone className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
               <span>(13) 99779-4382</span>
             </a>
@@ -677,30 +754,39 @@ function _SiteHeader() {
         <Link to="/" className="flex items-center transition-transform hover:scale-[1.015]">
           <Logo className="h-9 w-auto" />
         </Link>
-        
+
         {/* DESKTOP NAV WITH MEGA MENU POPUPS */}
         <nav className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex text-[13px] xl:text-sm font-semibold text-foreground/85 tracking-tight xl:tracking-normal shrink-0">
           {/* LINK INICIAL */}
-          <Link to="/" className="px-2 xl:px-3 py-2 rounded-lg hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors duration-150 whitespace-nowrap">
+          <Link
+            to="/"
+            className="px-2 xl:px-3 py-2 rounded-lg hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors duration-150 whitespace-nowrap"
+          >
             Home
           </Link>
 
           {/* MEGA MENU 1: ENCONTRAR IMÓVEIS */}
-          <div 
+          <div
             className="relative"
             onMouseEnter={() => handleMouseEnter("encontrar")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-              activeMenu === "encontrar" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
-            }`}>
+            <button
+              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                activeMenu === "encontrar"
+                  ? "bg-muted text-primary"
+                  : "hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
               <span>Encontrar Imóveis</span>
-              <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "encontrar" ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "encontrar" ? "rotate-180" : ""}`}
+              />
             </button>
 
             <AnimatePresence>
               {activeMenu === "encontrar" && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -708,39 +794,63 @@ function _SiteHeader() {
                   className="absolute left-1/2 -translate-x-[150px] top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Disponíveis</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Disponíveis
+                    </span>
                     <div className="space-y-1">
-                      <Link to="/buscar" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/buscar"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
                           <Building2 className="h-3.5 w-3.5" /> Comprar Imóvel
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Apartamentos, coberturas e casas exclusivas.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Apartamentos, coberturas e casas exclusivas.
+                        </span>
                       </Link>
 
-                      <Link to="/buscar" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/buscar"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
                           <Key className="h-3.5 w-3.5" /> Alugar Imóvel
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Locação ágil, sem burocracia ou fiador tradicional.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Locação ágil, sem burocracia ou fiador tradicional.
+                        </span>
                       </Link>
                     </div>
                   </div>
 
                   <div className="border-l border-border/60 pl-4 space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Inteligência</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Inteligência
+                    </span>
                     <div className="space-y-1">
-                      <Link to="/comparar" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/comparar"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
                           <Layers className="h-3.5 w-3.5 text-emerald-600" /> Comparador
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Compare até 4 imóveis lado a lado em tempo real.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Compare até 4 imóveis lado a lado em tempo real.
+                        </span>
                       </Link>
 
-                      <Link to="/buscar" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/buscar"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
                           <Search className="h-3.5 w-3.5 text-primary" /> Busca por Mapa
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Navegue pelas melhores regiões de forma geométrica.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Navegue pelas melhores regiões de forma geométrica.
+                        </span>
                       </Link>
                     </div>
                   </div>
@@ -750,21 +860,27 @@ function _SiteHeader() {
           </div>
 
           {/* MEGA MENU 2: FERRAMENTAS & SIMULADORES */}
-          <div 
+          <div
             className="relative"
             onMouseEnter={() => handleMouseEnter("ferramentas")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-              activeMenu === "ferramentas" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
-            }`}>
+            <button
+              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                activeMenu === "ferramentas"
+                  ? "bg-muted text-primary"
+                  : "hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
               <span>Ferramentas & Simuladores</span>
-              <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "ferramentas" ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "ferramentas" ? "rotate-180" : ""}`}
+              />
             </button>
 
             <AnimatePresence>
               {activeMenu === "ferramentas" && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -772,34 +888,53 @@ function _SiteHeader() {
                   className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Simuladores</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Simuladores
+                    </span>
                     <div className="space-y-1">
-                      <Link to="/calculadora-financiamento" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/calculadora-financiamento"
+                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Calculator className="h-3.5 w-3.5 text-primary" /> Financiamento SAC
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Estime as parcelas decrescentes do imóvel de forma simples.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Estime as parcelas decrescentes do imóvel de forma simples.
+                        </span>
                       </Link>
 
-                      <Link to="/calculadora-itbi" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/calculadora-itbi"
+                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Calculator className="h-3.5 w-3.5 text-orange-500" /> Imposto de ITBI
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Verifique taxas de prefeitura e cartório de registro.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Verifique taxas de prefeitura e cartório de registro.
+                        </span>
                       </Link>
 
-                      <Link to="/calculadora-mudanca" className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/calculadora-mudanca"
+                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Truck className="h-3.5 w-3.5 text-indigo-500" /> Custo de Mudança
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Planeje custos de frete e logística para o novo lar.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Planeje custos de frete e logística para o novo lar.
+                        </span>
                       </Link>
                     </div>
                   </div>
 
                   <div className="border-l border-border/60 pl-4 space-y-2">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Análise Cadastral</span>
-                    
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Análise Cadastral
+                    </span>
+
                     <div className="p-3 bg-muted/40 rounded-xl border border-border/65 space-y-1.5">
                       <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-sky-200">
                         Novo
@@ -808,7 +943,8 @@ function _SiteHeader() {
                         <ShieldCheck className="h-3.5 w-3.5 text-sky-700" /> Score Serasa Experian
                       </h4>
                       <p className="text-[10px] text-muted-foreground leading-snug">
-                        Validação de CPF de inquilinos e proponentes integrados na hora da proposta (/leads).
+                        Validação de CPF de inquilinos e proponentes integrados na hora da proposta
+                        (/leads).
                       </p>
                     </div>
                   </div>
@@ -818,21 +954,27 @@ function _SiteHeader() {
           </div>
 
           {/* MEGA MENU 3: PARA IMOBILIÁRIAS */}
-          <div 
+          <div
             className="relative"
             onMouseEnter={() => handleMouseEnter("imobiliarias")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-              activeMenu === "imobiliarias" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
-            }`}>
+            <button
+              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                activeMenu === "imobiliarias"
+                  ? "bg-muted text-primary"
+                  : "hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
               <span>Para Imobiliárias</span>
-              <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "imobiliarias" ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "imobiliarias" ? "rotate-180" : ""}`}
+              />
             </button>
 
             <AnimatePresence>
               {activeMenu === "imobiliarias" && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -840,27 +982,47 @@ function _SiteHeader() {
                   className="absolute right-[120px] top-full mt-2 w-[290px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Recursos de Negócio</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Recursos de Negócio
+                    </span>
                     <div className="space-y-1">
-                      <Link to="/planos" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/planos"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <CreditCard className="h-3.5 w-3.5 animate-pulse text-primary" /> Planos & Valores
+                          <CreditCard className="h-3.5 w-3.5 animate-pulse text-primary" /> Planos &
+                          Valores
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Soluções ideais para corretores autônomos e agências de imóveis.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Soluções ideais para corretores autônomos e agências de imóveis.
+                        </span>
                       </Link>
 
-                      <Link to="/app/portais" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/app/portais"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Globe2 className="h-3.5 w-3.5 text-emerald-600" /> Divulgação & Parcerias
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Anuncie automaticamente nos maiores portais de imóveis do país.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Anuncie automaticamente nos maiores portais de imóveis do país.
+                        </span>
                       </Link>
 
-                      <Link to="/app/configuracoes/dominios" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/app/configuracoes/dominios"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <SlidersHorizontal className="h-3.5 w-3.5 text-orange-500" /> Site com sua Marca
+                          <SlidersHorizontal className="h-3.5 w-3.5 text-orange-500" /> Site com sua
+                          Marca
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Crie um portal de imóveis exclusivo com as cores e logotipo da sua empresa.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Crie um portal de imóveis exclusivo com as cores e logotipo da sua
+                          empresa.
+                        </span>
                       </Link>
                     </div>
                   </div>
@@ -870,21 +1032,27 @@ function _SiteHeader() {
           </div>
 
           {/* MEGA MENU 4: ÁREA TÉCNICA */}
-          <div 
+          <div
             className="relative"
             onMouseEnter={() => handleMouseEnter("tecnico")}
             onMouseLeave={handleMouseLeave}
           >
-            <button className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-              activeMenu === "tecnico" ? "bg-muted text-primary" : "hover:bg-muted/50 hover:text-foreground"
-            }`}>
+            <button
+              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                activeMenu === "tecnico"
+                  ? "bg-muted text-primary"
+                  : "hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
               <span>Área Técnica</span>
-              <ChevronDown className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "tecnico" ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "tecnico" ? "rotate-180" : ""}`}
+              />
             </button>
 
             <AnimatePresence>
               {activeMenu === "tecnico" && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
@@ -892,27 +1060,44 @@ function _SiteHeader() {
                   className="absolute right-0 top-full mt-2 w-[280px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
                 >
                   <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">Recursos Integradores</span>
+                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
+                      Recursos Integradores
+                    </span>
                     <div className="space-y-1">
-                      <Link to="/app/configuracoes/golive" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/app/configuracoes/golive"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Sparkles className="h-3.5 w-3.5 text-primary" /> Painel Go-Live
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Auditoria e checklist completo de ativação do portal.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Auditoria e checklist completo de ativação do portal.
+                        </span>
                       </Link>
 
-                      <Link to="/docs/api" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/docs/api"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-emerald-600 group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Terminal className="h-3.5 w-3.5" /> Documentação API
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Disparadores REST e webhooks técnicos para ERPs de imobiliárias.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Disparadores REST e webhooks técnicos para ERPs de imobiliárias.
+                        </span>
                       </Link>
 
-                      <Link to="/status" className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group">
+                      <Link
+                        to="/status"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
                           <Activity className="h-3.5 w-3.5 text-pink-600" /> Servidores & APIs
                         </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">Verificação em tempo real da integridade de bancos de dados.</span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Verificação em tempo real da integridade de bancos de dados.
+                        </span>
                       </Link>
                     </div>
                   </div>
@@ -934,22 +1119,30 @@ function _SiteHeader() {
 
           {/* USER MENU & MOBILE BURGER */}
           <HeaderUserMenu />
-          
+
           {/* MOBILE NAV BURGER */}
           <div className="lg:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60 transition-colors" aria-label="Menu de navegação">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-muted/60 transition-colors"
+                  aria-label="Menu de navegação"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[310px] sm:w-[370px] p-0 flex flex-col bg-background/95 backdrop-blur-md">
+              <SheetContent
+                side="right"
+                className="w-[310px] sm:w-[370px] p-0 flex flex-col bg-background/95 backdrop-blur-md"
+              >
                 <SheetHeader className="px-6 py-5 border-b border-border/50">
                   <SheetTitle className="text-left font-bold tracking-tight text-foreground flex items-center justify-between">
                     <Logo className="h-8 w-auto" />
                   </SheetTitle>
                 </SheetHeader>
-                
+
                 <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 text-xs">
                   {/* MOBILE QUICK CTA FOR ANNOUNCE PROPERTY */}
                   <div className="px-3 pb-2">
@@ -967,34 +1160,49 @@ function _SiteHeader() {
                     <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
                       Encontrar Imóveis
                     </h3>
-                    
-                    <Link to="/buscar" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+
+                    <Link
+                      to="/buscar"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
                         <Building2 className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Comprar Imóvel</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">As melhores residências e prédios</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          As melhores residências e prédios
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/buscar" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/buscar"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
                         <Key className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Alugar Imóvel</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Contratos ágeis e sem fiador</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Contratos ágeis e sem fiador
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/comparar" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/comparar"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-emerald-100/70 text-emerald-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <Layers className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Comparador de Imóveis</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Lado a lado em tempo real</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Lado a lado em tempo real
+                        </span>
                       </div>
                     </Link>
                   </div>
@@ -1005,33 +1213,48 @@ function _SiteHeader() {
                       Simuladores e Cálculos
                     </h3>
 
-                    <Link to="/calculadora-financiamento" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/calculadora-financiamento"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                         <Calculator className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Financiamento SAC</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Parcelas decrescentes de financiamento</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Parcelas decrescentes de financiamento
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/calculadora-itbi" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/calculadora-itbi"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-orange-100 text-orange-700 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
                         <Calculator className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Simulador de ITBI</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Custos de transferência e impostos</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Custos de transferência e impostos
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/calculadora-mudanca" className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/calculadora-mudanca"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                         <Truck className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Custo de Mudança</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Previsão logística e fretes</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Previsão logística e fretes
+                        </span>
                       </div>
                     </Link>
                   </div>
@@ -1042,33 +1265,48 @@ function _SiteHeader() {
                       Para Imobiliárias & Corretores
                     </h3>
 
-                    <Link to="/planos" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/planos"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
                         <CreditCard className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Planos e Preços</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Opções para corretores e agências</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Opções para corretores e agências
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/app/portais" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/app/portais"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <Globe2 className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Divulgação & Parcerias</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Anunciar em múltiplos portais</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Anunciar em múltiplos portais
+                        </span>
                       </div>
                     </Link>
 
-                    <Link to="/app/configuracoes/dominios" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group">
+                    <Link
+                      to="/app/configuracoes/dominios"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
                       <div className="p-2 bg-orange-100 text-orange-850 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
                         <SlidersHorizontal className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
                         <span>Site com sua Marca</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">Layout personalizado e logotipo próprio</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Layout personalizado e logotipo próprio
+                        </span>
                       </div>
                     </Link>
                   </div>
@@ -1078,16 +1316,25 @@ function _SiteHeader() {
                     <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2">
                       Área Técnica (Devs)
                     </h3>
-                    
-                    <Link to="/app/configuracoes/golive" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+
+                    <Link
+                      to="/app/configuracoes/golive"
+                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
+                    >
                       <Sparkles className="h-4 w-4 shrink-0 text-primary" />
                       <span>Painel Go-Live (Checklist)</span>
                     </Link>
-                    <Link to="/docs/api" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+                    <Link
+                      to="/docs/api"
+                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
+                    >
                       <Terminal className="h-4 w-4 shrink-0 text-emerald-600" />
                       <span>Documentação de API</span>
                     </Link>
-                    <Link to="/status" className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors">
+                    <Link
+                      to="/status"
+                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
+                    >
                       <Activity className="h-4 w-4 shrink-0 text-pink-600" />
                       <span>Servidores & APIs (Status)</span>
                     </Link>
@@ -1111,7 +1358,8 @@ export function SiteFooter() {
           <div className="space-y-4">
             <Logo className="h-9 w-auto" variant="white" />
             <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-              A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores e clientes em todo o Brasil.
+              A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores e
+              clientes em todo o Brasil.
             </p>
             <div className="mt-5 flex gap-3">
               {[Instagram, Facebook, Linkedin].map((Icon, i) => (
@@ -1143,11 +1391,18 @@ export function SiteFooter() {
               { label: "Recursos da plataforma", to: "/#recursos", icon: SlidersHorizontal },
               { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
               { label: "Acessar plataforma", to: "/login", icon: Users },
-              { label: "Calculadoras (ITBI, financiamento)", to: "/calculadoras", icon: Calculator, highlight: true },
+              {
+                label: "Calculadoras (ITBI, financiamento)",
+                to: "/calculadoras",
+                icon: Calculator,
+                highlight: true,
+              },
             ]}
           />
           <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">Fale com a gente</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
+              Fale com a gente
+            </h4>
             <ul className="mt-4 space-y-3.5 text-sm opacity-85">
               <li className="flex items-center gap-3">
                 <div className="p-2 bg-white/5 rounded-lg border border-white/10">
@@ -1156,10 +1411,10 @@ export function SiteFooter() {
                 <span>contato@imob365.com.br</span>
               </li>
               <li>
-                <a 
-                  href="https://wa.me/5513997794382" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://wa.me/5513997794382"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:text-primary transition-all duration-200"
                 >
                   <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
@@ -1181,9 +1436,15 @@ export function SiteFooter() {
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
           <span>© {year} imob365. Todos os direitos reservados.</span>
           <div className="flex flex-wrap gap-5">
-            <Link to="/termos" className="hover:text-primary transition-colors">Termos de uso</Link>
-            <Link to="/privacidade" className="hover:text-primary transition-colors">Política de privacidade</Link>
-            <Link to="/lgpd" className="hover:text-primary transition-colors">LGPD</Link>
+            <Link to="/termos" className="hover:text-primary transition-colors">
+              Termos de uso
+            </Link>
+            <Link to="/privacidade" className="hover:text-primary transition-colors">
+              Política de privacidade
+            </Link>
+            <Link to="/lgpd" className="hover:text-primary transition-colors">
+              LGPD
+            </Link>
           </div>
         </div>
       </div>
@@ -1198,13 +1459,7 @@ interface FooterLink {
   highlight?: boolean;
 }
 
-function FooterCol({
-  title,
-  links,
-}: {
-  title: string;
-  links: FooterLink[];
-}) {
+function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
       <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">{title}</h4>
@@ -1213,28 +1468,40 @@ function FooterCol({
           const Icon = l.icon;
           const content = (
             <span className="flex items-center gap-2 mb-0.5">
-              {Icon && <Icon className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`} />}
-              <span className={l.highlight ? "text-primary font-bold tracking-wide relative" : "hover:text-white transition-all"}>
+              {Icon && (
+                <Icon
+                  className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`}
+                />
+              )}
+              <span
+                className={
+                  l.highlight
+                    ? "text-primary font-bold tracking-wide relative"
+                    : "hover:text-white transition-all"
+                }
+              >
                 {l.label}
                 {l.highlight && (
-                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">ITBI</span>
+                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">
+                    ITBI
+                  </span>
                 )}
               </span>
             </span>
           );
-          
+
           return (
             <li key={l.label}>
               {l.to.startsWith("/#") ? (
-                <a 
-                  href={l.to} 
+                <a
+                  href={l.to}
                   className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
                 >
                   {content}
                 </a>
               ) : (
-                <Link 
-                  to={l.to} 
+                <Link
+                  to={l.to}
                   className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
                 >
                   {content}
@@ -1267,10 +1534,34 @@ const servicos = [
 ];
 
 const modulos = [
-  { icon: Building2, title: "Catálogo de imóveis", desc: "Cadastro completo com fotos, planta, vídeo e tour virtual." },
-  { icon: Users, title: "Clientes e oportunidades", desc: "Funil visual de vendas, distribuição automática e histórico de cada lead." },
-  { icon: Globe2, title: "Anúncios nos portais", desc: "Publique automaticamente no OLX, VivaReal, ZAP e Wimóveis com um clique." },
-  { icon: Home, title: "Gestão de locação", desc: "Contratos, repasses, vistorias e ordens de serviço para o setor de aluguel." },
-  { icon: Sparkles, title: "Inteligência artificial", desc: "Gere descrições de imóveis e mensagens personalizadas em segundos." },
-  { icon: ShieldCheck, title: "Contratos digitais", desc: "Modelos prontos, assinatura eletrônica e integração com cartórios." },
+  {
+    icon: Building2,
+    title: "Catálogo de imóveis",
+    desc: "Cadastro completo com fotos, planta, vídeo e tour virtual.",
+  },
+  {
+    icon: Users,
+    title: "Clientes e oportunidades",
+    desc: "Funil visual de vendas, distribuição automática e histórico de cada lead.",
+  },
+  {
+    icon: Globe2,
+    title: "Anúncios nos portais",
+    desc: "Publique automaticamente no OLX, VivaReal, ZAP e Wimóveis com um clique.",
+  },
+  {
+    icon: Home,
+    title: "Gestão de locação",
+    desc: "Contratos, repasses, vistorias e ordens de serviço para o setor de aluguel.",
+  },
+  {
+    icon: Sparkles,
+    title: "Inteligência artificial",
+    desc: "Gere descrições de imóveis e mensagens personalizadas em segundos.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Contratos digitais",
+    desc: "Modelos prontos, assinatura eletrônica e integração com cartórios.",
+  },
 ];

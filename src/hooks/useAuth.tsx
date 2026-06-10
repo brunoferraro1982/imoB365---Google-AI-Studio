@@ -2,13 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type AppRole =
-  | "super_admin"
-  | "admin"
-  | "broker"
-  | "juridico"
-  | "financeiro"
-  | "atendente";
+export type AppRole = "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
 
 export interface UserProfile {
   nome: string | null;
@@ -30,7 +24,9 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
@@ -38,10 +34,7 @@ export function useAuth() {
         // evitando re-entrância. As queries são disparadas assincronamente — o setLoading
         // inicial já é controlado pelo getSession().then() abaixo com Promise.all.
         setTimeout(() => {
-          void Promise.all([
-            loadRoles(s.user.id),
-            loadProfile(s.user.id, s.user),
-          ]);
+          void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
         }, 0);
       } else {
         setRoles([]);
@@ -54,10 +47,7 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        await Promise.all([
-          loadRoles(s.user.id),
-          loadProfile(s.user.id, s.user),
-        ]);
+        await Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
       }
       setLoading(false);
     });
@@ -66,20 +56,19 @@ export function useAuth() {
   }, []);
 
   async function loadRoles(userId: string) {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     setRoles((data ?? []).map((r) => r.role as AppRole));
   }
 
   async function loadProfile(userId: string, currentUser?: User) {
     let profileData: any = null;
-    
+
     // Select approval parameters with a safe try-catch / fallback mechanism
     const { data, error } = await supabase
       .from("profiles")
-      .select("tenant_id, nome, avatar_url, tipo_usuario, plano_pretendido, imobiliaria_nome, aprovado, pagamento_validado, pagamento_metodo")
+      .select(
+        "tenant_id, nome, avatar_url, tipo_usuario, plano_pretendido, imobiliaria_nome, aprovado, pagamento_validado, pagamento_metodo",
+      )
       .eq("id", userId)
       .maybeSingle();
 
@@ -92,7 +81,7 @@ export function useAuth() {
         .select("tenant_id, nome, avatar_url")
         .eq("id", userId)
         .maybeSingle();
-      
+
       if (basicData) {
         profileData = {
           ...basicData,
@@ -108,19 +97,31 @@ export function useAuth() {
 
     if (profileData) {
       setTenantId(profileData.tenant_id ?? null);
-      
+
       const email = currentUser?.email ?? "";
       const isSuper = email === "imob365br@gmail.com";
-      
+
       setProfile({
         nome: profileData.nome ?? null,
         avatar_url: profileData.avatar_url ?? null,
-        tipo_usuario: isSuper ? "imobiliaria" : (profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null),
-        plano_pretendido: isSuper ? "business" : (profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null),
-        imobiliaria_nome: profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
-        aprovado: isSuper ? true : (profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false),
-        pagamento_validado: isSuper ? true : (profileData.pagamento_validado === true || currentUser?.user_metadata?.pagamento_validado === true || false),
-        pagamento_metodo: profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
+        tipo_usuario: isSuper
+          ? "imobiliaria"
+          : (profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null),
+        plano_pretendido: isSuper
+          ? "business"
+          : (profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null),
+        imobiliaria_nome:
+          profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
+        aprovado: isSuper
+          ? true
+          : profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
+        pagamento_validado: isSuper
+          ? true
+          : profileData.pagamento_validado === true ||
+            currentUser?.user_metadata?.pagamento_validado === true ||
+            false,
+        pagamento_metodo:
+          profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
       });
     }
   }

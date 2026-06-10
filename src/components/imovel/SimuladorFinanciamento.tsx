@@ -21,7 +21,13 @@ const BANCOS: BancoPreset[] = [
   { nome: "Banco do Brasil", taxa: 10.2, logo: "🟡" },
 ];
 
-function calcular(valor: number, entrada: number, prazoMeses: number, jurosAA: number, sistema: Sistema) {
+function calcular(
+  valor: number,
+  entrada: number,
+  prazoMeses: number,
+  jurosAA: number,
+  sistema: Sistema,
+) {
   const principal = Math.max(valor - entrada, 0);
   const i = Math.pow(1 + jurosAA / 100, 1 / 12) - 1;
   if (principal <= 0 || prazoMeses <= 0 || i <= 0) {
@@ -79,7 +85,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
     setLoadingConsent(true);
     setTimeout(() => {
       setLoadingConsent(false);
-      toast.success("Solicitação recebida! Um especialista em crédito imobiliário entrará em contato em breve.");
+      toast.success(
+        "Solicitação recebida! Um especialista em crédito imobiliário entrará em contato em breve.",
+      );
     }, 1200);
   };
 
@@ -92,7 +100,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
           </div>
           <div>
             <h2 className="text-lg font-bold tracking-tight">Simulador de Crédito Imobiliário</h2>
-            <p className="text-xs text-muted-foreground">Simule taxas reais com os principais bancos parceiros</p>
+            <p className="text-xs text-muted-foreground">
+              Simule taxas reais com os principais bancos parceiros
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
@@ -102,7 +112,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
 
       {/* Select Banco Preset */}
       <div className="mb-6">
-        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Selecione o Banco</Label>
+        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Selecione o Banco
+        </Label>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
           {BANCOS.map((banco) => {
             const isSelected = bancoSelecionado === banco.nome;
@@ -118,8 +130,12 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                 }`}
               >
                 <span className="text-xl">{banco.logo}</span>
-                <span className="mt-1 block text-xs font-semibold leading-tight">{banco.nome.split(" ")[0]}</span>
-                <span className="mt-0.5 text-[10px] text-muted-foreground font-mono">{banco.taxa}% a.a.</span>
+                <span className="mt-1 block text-xs font-semibold leading-tight">
+                  {banco.nome.split(" ")[0]}
+                </span>
+                <span className="mt-0.5 text-[10px] text-muted-foreground font-mono">
+                  {banco.taxa}% a.a.
+                </span>
               </button>
             );
           })}
@@ -132,7 +148,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
           <div className="space-y-2">
             <div className="flex justify-between">
               <Label className="text-xs font-medium">Valor da Entrada (BRL)</Label>
-              <span className="text-xs font-bold text-primary">{Math.round(percentualEntrada)}%</span>
+              <span className="text-xs font-bold text-primary">
+                {Math.round(percentualEntrada)}%
+              </span>
             </div>
             <div className="flex gap-3">
               <Input
@@ -153,7 +171,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                 />
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground">Financiado: {formatBRL(resultado.principal)} (Requisito mín: 10% do valor)</p>
+            <p className="text-[10px] text-muted-foreground">
+              Financiado: {formatBRL(resultado.principal)} (Requisito mín: 10% do valor)
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -167,7 +187,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                   type="number"
                   value={prazo}
                   className="w-24 text-sm font-mono"
-                  onChange={(e) => setPrazo(Math.min(Math.max(Number(e.target.value) || 12, 12), 420))}
+                  onChange={(e) =>
+                    setPrazo(Math.min(Math.max(Number(e.target.value) || 12, 12), 420))
+                  }
                 />
                 <div className="flex flex-1 items-center">
                   <input
@@ -194,7 +216,9 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                   step="0.05"
                   value={juros}
                   className="w-24 text-sm font-mono"
-                  onChange={(e) => setJuros(Math.min(Math.max(Number(e.target.value) || 0.1, 0.1), 30))}
+                  onChange={(e) =>
+                    setJuros(Math.min(Math.max(Number(e.target.value) || 0.1, 0.1), 30))
+                  }
                 />
                 <div className="flex flex-1 items-center">
                   <input
@@ -218,19 +242,27 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                 type="button"
                 onClick={() => setSistema("sac")}
                 className={`rounded-md p-2 text-center text-xs font-medium transition-all ${
-                  sistema === "sac" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/20"
+                  sistema === "sac"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/20"
                 }`}
               >
-                SAC <span className="text-[10px] block opacity-80">(Parcelas menores com o tempo)</span>
+                SAC{" "}
+                <span className="text-[10px] block opacity-80">(Parcelas menores com o tempo)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setSistema("price")}
                 className={`rounded-md p-2 text-center text-xs font-medium transition-all ${
-                  sistema === "price" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:bg-background/20"
+                  sistema === "price"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-background/20"
                 }`}
               >
-                Tabela Price <span className="text-[10px] block opacity-80">(Parcelas fixas do início ao fim)</span>
+                Tabela Price{" "}
+                <span className="text-[10px] block opacity-80">
+                  (Parcelas fixas do início ao fim)
+                </span>
               </button>
             </div>
           </div>
@@ -240,13 +272,16 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
         <div className="rounded-xl bg-muted/40 p-5 lg:col-span-12 xl:col-span-5 flex flex-col justify-between border border-border/60">
           <div className="space-y-4">
             <div className="text-center sm:text-left">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Valor Estimado das Parcelas</h4>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Valor Estimado das Parcelas
+              </h4>
               <div className="mt-2 text-3xl font-black text-primary font-sans leading-none">
                 {formatBRL(resultado.primeira)}
               </div>
               {sistema === "sac" && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Regredindo até <span className="font-bold">{formatBRL(resultado.ultima)}</span> na última parcela
+                  Regredindo até <span className="font-bold">{formatBRL(resultado.ultima)}</span> na
+                  última parcela
                 </p>
               )}
             </div>
@@ -256,7 +291,13 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
               <div className="relative h-24 w-24 flex-shrink-0 animate-fade-in">
                 <svg className="h-full w-full transform -rotate-90" viewBox="0 0 100 100">
                   {/* Background Circle */}
-                  <circle cx="50" cy="50" r="40" className="stroke-chart-2 fill-none" strokeWidth="12" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    className="stroke-chart-2 fill-none"
+                    strokeWidth="12"
+                  />
                   {/* Foreground Principal Circle */}
                   <circle
                     cx="50"
@@ -269,8 +310,12 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tight">Financiado</span>
-                  <span className="text-xs font-extrabold text-primary font-mono">{Math.round(percentPrincipal)}%</span>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-tight">
+                    Financiado
+                  </span>
+                  <span className="text-xs font-extrabold text-primary font-mono">
+                    {Math.round(percentPrincipal)}%
+                  </span>
                 </div>
               </div>
 
@@ -311,7 +356,8 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
               <ChevronRight className="h-4 w-4" />
             </button>
             <p className="text-[10px] text-center text-muted-foreground leading-normal">
-              Análise instantânea de crédito com inteligência artificial parceira de todos os bancos listados sem compromisso.
+              Análise instantânea de crédito com inteligência artificial parceira de todos os bancos
+              listados sem compromisso.
             </p>
           </div>
         </div>

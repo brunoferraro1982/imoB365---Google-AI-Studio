@@ -156,44 +156,69 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           </div>
           <h1 className="text-xl font-bold tracking-tight">Cadastro em Análise</h1>
           <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-            Olá, <span className="font-semibold text-foreground">{profile.nome || user.email}</span>! Sua conta foi criada com sucesso e está aguardando homologação do Administrador Geral imob365.
+            Olá, <span className="font-semibold text-foreground">{profile.nome || user.email}</span>
+            ! Sua conta foi criada com sucesso e está aguardando homologação do Administrador Geral
+            imob365.
           </p>
 
           <div className="mt-5 border border-border/80 rounded-xl p-4 bg-muted/20 text-left text-xs space-y-3">
             <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
-              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Identificação</span>
+              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
+                Identificação
+              </span>
               <span className="font-mono text-3xs font-medium">{user.email}</span>
             </div>
             {profile.tipo_usuario && (
               <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
-                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Perfil</span>
-                <span className="font-semibold capitalize text-right text-3xs">{profile.tipo_usuario === "imobiliaria" ? "Imobiliária / Agência" : "Corretor de Imóveis"}</span>
+                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
+                  Perfil
+                </span>
+                <span className="font-semibold capitalize text-right text-3xs">
+                  {profile.tipo_usuario === "imobiliaria"
+                    ? "Imobiliária / Agência"
+                    : "Corretor de Imóveis"}
+                </span>
               </div>
             )}
             {profile.plano_pretendido && (
               <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
-                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Plano Pretendido</span>
-                <span className="font-semibold text-right text-3xs">Plano {profile.plano_pretendido}</span>
+                <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
+                  Plano Pretendido
+                </span>
+                <span className="font-semibold text-right text-3xs">
+                  Plano {profile.plano_pretendido}
+                </span>
               </div>
             )}
             {profile.imobiliaria_nome && (
               <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
                 <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
-                  {profile.tipo_usuario === "corretor" ? "Vínculo de Imobiliária" : "Parceiro Comercial"}
+                  {profile.tipo_usuario === "corretor"
+                    ? "Vínculo de Imobiliária"
+                    : "Parceiro Comercial"}
                 </span>
-                <span className="font-semibold text-right text-3xs truncate max-w-[180px]">{profile.imobiliaria_nome}</span>
+                <span className="font-semibold text-right text-3xs truncate max-w-[180px]">
+                  {profile.imobiliaria_nome}
+                </span>
               </div>
             )}
             <div className="flex justify-between items-center">
-              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">Assinatura</span>
-              <span className={`font-semibold text-right text-3xs ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}>
-                {profile.plano_pretendido === "Free" ? "Grátis (Ativação Direta)" : "Aguardando validação do pagamento"}
+              <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
+                Assinatura
+              </span>
+              <span
+                className={`font-semibold text-right text-3xs ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}
+              >
+                {profile.plano_pretendido === "Free"
+                  ? "Grátis (Ativação Direta)"
+                  : "Aguardando validação do pagamento"}
               </span>
             </div>
           </div>
 
           <p className="mt-5 text-balance text-3xs text-muted-foreground leading-normal">
-            Seu acesso e visibilidade aos dados do tenant serão ativados assim que o super-administrador validar os dados no painel global.
+            Seu acesso e visibilidade aos dados do tenant serão ativados assim que o
+            super-administrador validar os dados no painel global.
           </p>
 
           <div className="mt-6 flex flex-col gap-2">
@@ -202,7 +227,11 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 Contatar Suporte
               </Button>
             </a>
-            <Button onClick={signOut} variant="ghost" className="w-full h-9 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10">
+            <Button
+              onClick={signOut}
+              variant="ghost"
+              className="w-full h-9 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10"
+            >
               Sair da minha conta
             </Button>
           </div>
@@ -226,7 +255,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const activeModule =
     tenantModules.find((m) =>
       m.items.some((it) =>
-        it.to === "/app" ? current === "/app" : current === it.to || current.startsWith(it.to + "/"),
+        it.to === "/app"
+          ? current === "/app"
+          : current === it.to || current.startsWith(it.to + "/"),
       ),
     ) ?? tenantModules[0];
 
@@ -252,7 +283,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                       : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   }`}
                 >
-                  <m.icon className={`h-4 w-4 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`} />
+                  <m.icon
+                    className={`h-4 w-4 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                  />
                   {m.label}
                   {active && (
                     <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-primary rounded-full" />
@@ -332,7 +365,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                       : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
                   }`}
                 >
-                  <item.icon className={`h-4.5 w-4.5 transition-all duration-200 group-hover:scale-105 ${active ? "text-primary stroke-[2.25px]" : "text-muted-foreground/70"}`} />
+                  <item.icon
+                    className={`h-4.5 w-4.5 transition-all duration-200 group-hover:scale-105 ${active ? "text-primary stroke-[2.25px]" : "text-muted-foreground/70"}`}
+                  />
                   <span className="flex-1 truncate">{item.label}</span>
                   {active ? (
                     <ChevronRight className="h-3.5 w-3.5 text-primary opacity-100 translate-x-0 transition-transform" />
@@ -376,10 +411,11 @@ function AdminLayout({
             Super-admin
           </span>
         </div>
-        
+
         <nav className="mt-8 flex flex-1 flex-col gap-1.5">
           {items.map((item) => {
-            const active = current === item.to || (item.to !== "/admin" && current.startsWith(item.to));
+            const active =
+              current === item.to || (item.to !== "/admin" && current.startsWith(item.to));
             return (
               <Link
                 key={item.to}
@@ -390,7 +426,9 @@ function AdminLayout({
                     : "text-sidebar-foreground/65 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 }`}
               >
-                <item.icon className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`} />
+                <item.icon
+                  className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                />
                 {item.label}
               </Link>
             );
@@ -398,14 +436,24 @@ function AdminLayout({
         </nav>
 
         <div className="mt-4 border-t border-sidebar-border/80 pt-4">
-          <Link to="/app" className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65 transition-colors">
+          <Link
+            to="/app"
+            className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65 transition-colors"
+          >
             ← Voltar ao app
           </Link>
           <div className="flex items-center justify-between gap-2 px-3 py-2 mb-2 bg-sidebar-accent/30 rounded-lg">
-            <div className="truncate text-xs text-sidebar-foreground/65 font-mono max-w-[140px]">{email}</div>
+            <div className="truncate text-xs text-sidebar-foreground/65 font-mono max-w-[140px]">
+              {email}
+            </div>
             <NotificationBell />
           </div>
-          <Button variant="ghost" size="sm" onClick={onSignOut} className="w-full justify-start text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground rounded-lg transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSignOut}
+            className="w-full justify-start text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground rounded-lg transition-colors"
+          >
             <LogOut className="mr-2 h-4 w-4" /> Sair
           </Button>
         </div>

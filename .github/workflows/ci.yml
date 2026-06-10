@@ -107,7 +107,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # histórico completo para gitleaks
+          fetch-depth: 0 # histórico completo para gitleaks
 
       - name: Run Gitleaks (detecta secrets commitados)
         uses: gitleaks/gitleaks-action@v2
@@ -137,7 +137,7 @@ jobs:
       - name: npm audit (high + critical)
         # Falha apenas em vulnerabilidades high e critical
         run: npm audit --audit-level=high
-        continue-on-error: true  # mudar para false quando todas as deps estiverem limpas
+        continue-on-error: true # mudar para false quando todas as deps estiverem limpas
 
       - name: Report audit result
         if: failure()

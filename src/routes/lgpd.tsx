@@ -5,9 +5,15 @@ export const Route = createFileRoute("/lgpd")({
   head: () => ({
     meta: [
       { title: "LGPD — imob365" },
-      { name: "description", content: "Conformidade da imob365 com a Lei Geral de Proteção de Dados." },
+      {
+        name: "description",
+        content: "Conformidade da imob365 com a Lei Geral de Proteção de Dados.",
+      },
       { property: "og:title", content: "LGPD — imob365" },
-      { property: "og:description", content: "Conformidade da imob365 com a Lei Geral de Proteção de Dados." },
+      {
+        property: "og:description",
+        content: "Conformidade da imob365 com a Lei Geral de Proteção de Dados.",
+      },
     ],
   }),
   component: LgpdPage,
@@ -18,7 +24,9 @@ function LgpdPage() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <main className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">LGPD — Lei Geral de Proteção de Dados</h1>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">
+          LGPD — Lei Geral de Proteção de Dados
+        </h1>
         <p className="mb-10 text-sm text-muted-foreground">
           Nosso compromisso com a proteção dos seus dados pessoais.
         </p>
@@ -36,21 +44,34 @@ function LgpdPage() {
           <section>
             <h2 className="mb-3 text-2xl font-semibold">Nosso Compromisso</h2>
             <p>
-              A imob365 está 100% em conformidade com a LGPD, adotando processos, ferramentas e cultura
-              organizacional voltados à proteção dos dados pessoais de clientes, corretores, imobiliárias
-              e demais usuários da plataforma.
+              A imob365 está 100% em conformidade com a LGPD, adotando processos, ferramentas e
+              cultura organizacional voltados à proteção dos dados pessoais de clientes, corretores,
+              imobiliárias e demais usuários da plataforma.
             </p>
           </section>
 
           <section>
             <h2 className="mb-3 text-2xl font-semibold">Princípios Aplicados</h2>
             <ul className="ml-6 list-disc space-y-2">
-              <li><strong>Finalidade:</strong> tratamento para propósitos legítimos, específicos e informados;</li>
-              <li><strong>Necessidade:</strong> coleta apenas dos dados estritamente necessários;</li>
-              <li><strong>Transparência:</strong> informações claras sobre o tratamento realizado;</li>
-              <li><strong>Segurança:</strong> medidas técnicas e administrativas adequadas;</li>
-              <li><strong>Não discriminação:</strong> vedação ao uso para fins discriminatórios;</li>
-              <li><strong>Responsabilização:</strong> demonstração da adoção de boas práticas.</li>
+              <li>
+                <strong>Finalidade:</strong> tratamento para propósitos legítimos, específicos e
+                informados;
+              </li>
+              <li>
+                <strong>Necessidade:</strong> coleta apenas dos dados estritamente necessários;
+              </li>
+              <li>
+                <strong>Transparência:</strong> informações claras sobre o tratamento realizado;
+              </li>
+              <li>
+                <strong>Segurança:</strong> medidas técnicas e administrativas adequadas;
+              </li>
+              <li>
+                <strong>Não discriminação:</strong> vedação ao uso para fins discriminatórios;
+              </li>
+              <li>
+                <strong>Responsabilização:</strong> demonstração da adoção de boas práticas.
+              </li>
             </ul>
           </section>
 
@@ -81,10 +102,12 @@ function LgpdPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-2xl font-semibold">Encarregado pelo Tratamento de Dados (DPO)</h2>
+            <h2 className="mb-3 text-2xl font-semibold">
+              Encarregado pelo Tratamento de Dados (DPO)
+            </h2>
             <p>
-              Nosso DPO é o canal oficial para esclarecimento de dúvidas, solicitações de titulares e
-              comunicação com a Autoridade Nacional de Proteção de Dados (ANPD).
+              Nosso DPO é o canal oficial para esclarecimento de dúvidas, solicitações de titulares
+              e comunicação com a Autoridade Nacional de Proteção de Dados (ANPD).
             </p>
             <p className="mt-2">
               Contato:{" "}
@@ -98,8 +121,9 @@ function LgpdPage() {
           <section>
             <h2 className="mb-3 text-2xl font-semibold">Como Exercer seus Direitos</h2>
             <p>
-              Envie sua solicitação para o e-mail do DPO informando seu nome completo, o direito que deseja
-              exercer e os detalhes do pedido. Responderemos em até 15 dias, conforme previsto em lei.
+              Envie sua solicitação para o e-mail do DPO informando seu nome completo, o direito que
+              deseja exercer e os detalhes do pedido. Responderemos em até 15 dias, conforme
+              previsto em lei.
             </p>
           </section>
         </div>

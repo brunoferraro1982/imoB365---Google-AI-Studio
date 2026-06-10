@@ -18,10 +18,15 @@ function fmtDate(d?: string | null) {
 }
 
 function partesByPapel(partes: any[], papel: string) {
-  return partes.filter((p) => p.papel === papel).map((p) => {
-    const extras = [p.documento && `CPF/CNPJ ${p.documento}`].filter(Boolean).join(", ");
-    return extras ? `${p.nome} (${extras})` : p.nome;
-  }).join("; ") || "—";
+  return (
+    partes
+      .filter((p) => p.papel === papel)
+      .map((p) => {
+        const extras = [p.documento && `CPF/CNPJ ${p.documento}`].filter(Boolean).join(", ");
+        return extras ? `${p.nome} (${extras})` : p.nome;
+      })
+      .join("; ") || "—"
+  );
 }
 
 function interpolate(template: string, ctx: Record<string, string>) {
@@ -46,15 +51,28 @@ function ImprimirContrato() {
       const [{ data: c }, { data: p }, { data: t }, { data: tpls }] = await Promise.all([
         supabase.from("contratos").select("*").eq("id", id).maybeSingle(),
         supabase.from("contrato_partes").select("*").eq("contrato_id", id).order("created_at"),
-        supabase.from("tenants").select("nome,cnpj,creci_juridico").eq("id", tenantId).maybeSingle(),
-        supabase.from("contrato_templates").select("id,nome,tipo,conteudo").eq("tenant_id", tenantId).eq("ativo", true).order("nome"),
+        supabase
+          .from("tenants")
+          .select("nome,cnpj,creci_juridico")
+          .eq("id", tenantId)
+          .maybeSingle(),
+        supabase
+          .from("contrato_templates")
+          .select("id,nome,tipo,conteudo")
+          .eq("tenant_id", tenantId)
+          .eq("ativo", true)
+          .order("nome"),
       ]);
       setContrato(c);
       setPartes(p ?? []);
       setTenant(t);
       setTemplates(tpls ?? []);
       if (c?.imovel_id) {
-        const { data: i } = await supabase.from("imoveis").select("*").eq("id", c.imovel_id).maybeSingle();
+        const { data: i } = await supabase
+          .from("imoveis")
+          .select("*")
+          .eq("id", c.imovel_id)
+          .maybeSingle();
         setImovel(i);
       }
       const sugest = (tpls ?? []).find((x: any) => x.tipo === c?.tipo);
@@ -69,7 +87,9 @@ function ImprimirContrato() {
         imovel.endereco_numero,
         imovel.endereco_bairro,
         imovel.endereco_cidade && `${imovel.endereco_cidade}/${imovel.endereco_uf ?? ""}`,
-      ].filter(Boolean).join(", ")
+      ]
+        .filter(Boolean)
+        .join(", ")
     : "—";
 
   const ctx = useMemo<Record<string, string>>(() => {
@@ -81,7 +101,9 @@ function ImprimirContrato() {
       "contrato.valor": formatBRL(contrato.valor),
       "contrato.data_inicio": fmtDate(contrato.data_inicio),
       "contrato.data_fim": fmtDate(contrato.data_fim),
-      "contrato.comissao_percentual": contrato.comissao_percentual ? `${contrato.comissao_percentual}%` : "—",
+      "contrato.comissao_percentual": contrato.comissao_percentual
+        ? `${contrato.comissao_percentual}%`
+        : "—",
       "contrato.comissao_valor": formatBRL(contrato.comissao_valor),
       "imovel.titulo": imovel?.titulo ?? "—",
       "imovel.codigo_interno": imovel?.codigo_interno ?? "—",
@@ -108,18 +130,25 @@ function ImprimirContrato() {
   }
 
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
-  if (!contrato) return <div className="p-8 text-sm text-muted-foreground">Contrato não encontrado.</div>;
+  if (!contrato)
+    return <div className="p-8 text-sm text-muted-foreground">Contrato não encontrado.</div>;
 
   return (
     <div className="p-8">
       <div className="print:hidden">
-        <Link to="/app/contratos/$id" params={{ id }} className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/app/contratos/$id"
+          params={{ id }}
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
         <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Imprimir contrato</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Selecione um modelo, revise e imprima ou salve em PDF.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Selecione um modelo, revise e imprima ou salve em PDF.
+            </p>
           </div>
           <div className="flex items-end gap-2">
             <div>
@@ -130,16 +159,25 @@ function ImprimirContrato() {
                 onChange={(e) => setTemplateId(e.target.value)}
               >
                 <option value="">— Selecione —</option>
-                {templates.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nome}
+                  </option>
+                ))}
               </select>
             </div>
-            <Button onClick={imprimir}><Printer className="mr-2 h-4 w-4" /> Imprimir</Button>
+            <Button onClick={imprimir}>
+              <Printer className="mr-2 h-4 w-4" /> Imprimir
+            </Button>
           </div>
         </header>
 
         {templates.length === 0 && (
           <div className="mb-6 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Nenhum modelo cadastrado. <Link to="/app/contratos/modelos" className="text-primary underline">Criar modelo</Link>
+            Nenhum modelo cadastrado.{" "}
+            <Link to="/app/contratos/modelos" className="text-primary underline">
+              Criar modelo
+            </Link>
           </div>
         )}
       </div>

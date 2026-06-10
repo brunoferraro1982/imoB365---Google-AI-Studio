@@ -3,9 +3,20 @@ import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, Copy, Wand2, Megaphone, Type, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
-import { gerarDescricaoImovel, gerarTituloImovel, gerarPostRedesImovel, gerarMetatagsSEO } from "@/lib/ai.functions";
+import {
+  gerarDescricaoImovel,
+  gerarTituloImovel,
+  gerarPostRedesImovel,
+  gerarMetatagsSEO,
+} from "@/lib/ai.functions";
 import type { ImovelFormData } from "./ImovelForm";
 
 type Tom = "profissional" | "acolhedor" | "luxo" | "objetivo";
@@ -41,7 +52,11 @@ export function AiImovelPanel({
   const [busy, setBusy] = useState<"" | "desc" | "title" | "post" | "seo">("");
   const [titulos, setTitulos] = useState<string[]>([]);
   const [post, setPost] = useState("");
-  const [seoResult, setSeoResult] = useState<{ seo_title: string; meta_description: string; keywords: string } | null>(null);
+  const [seoResult, setSeoResult] = useState<{
+    seo_title: string;
+    meta_description: string;
+    keywords: string;
+  } | null>(null);
 
   const gDesc = useServerFn(gerarDescricaoImovel);
   const gTit = useServerFn(gerarTituloImovel);
@@ -69,7 +84,7 @@ export function AiImovelPanel({
             bairro: data.endereco_bairro ?? "",
             cidade: data.endereco_cidade ?? "",
             tipo: data.tipo ?? "apartamento",
-          }
+          },
         });
         setSeoResult(r.seo);
         toast.success("Tags SEO otimizadas com sucesso!");
@@ -87,13 +102,16 @@ export function AiImovelPanel({
         <Sparkles className="h-4 w-4" /> Assistente IA do anúncio
       </div>
       <p className="mb-3 text-xs text-muted-foreground">
-        Usa os campos preenchidos acima para gerar título, descrição, post de redes de engajamento e metatags estruturadas de SEO.
+        Usa os campos preenchidos acima para gerar título, descrição, post de redes de engajamento e
+        metatags estruturadas de SEO.
       </p>
       <div className="mb-3 grid gap-3 sm:grid-cols-[180px,1fr]">
         <div>
           <label className="mb-1 block text-xs font-medium">Tom de voz</label>
           <Select value={tom} onValueChange={(v) => setTom(v as Tom)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="profissional">Profissional</SelectItem>
               <SelectItem value="acolhedor">Acolhedor</SelectItem>
@@ -103,7 +121,9 @@ export function AiImovelPanel({
           </Select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">Características extras (opcional)</label>
+          <label className="mb-1 block text-xs font-medium">
+            Características extras (opcional)
+          </label>
           <Textarea
             rows={2}
             placeholder="Ex: vista mar, próximo da praia, varanda gourmet..."
@@ -113,20 +133,60 @@ export function AiImovelPanel({
         </div>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" size="sm" variant="default" onClick={() => run("desc")} disabled={busy !== ""}>
-          {busy === "desc" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand2 className="mr-2 h-4 w-4" />}
+        <Button
+          type="button"
+          size="sm"
+          variant="default"
+          onClick={() => run("desc")}
+          disabled={busy !== ""}
+        >
+          {busy === "desc" ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Wand2 className="mr-2 h-4 w-4" />
+          )}
           Gerar descrição
         </Button>
-        <Button type="button" size="sm" variant="secondary" onClick={() => run("title")} disabled={busy !== ""}>
-          {busy === "title" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Type className="mr-2 h-4 w-4" />}
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => run("title")}
+          disabled={busy !== ""}
+        >
+          {busy === "title" ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Type className="mr-2 h-4 w-4" />
+          )}
           Sugerir títulos
         </Button>
-        <Button type="button" size="sm" variant="secondary" onClick={() => run("post")} disabled={busy !== ""}>
-          {busy === "post" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Megaphone className="mr-2 h-4 w-4" />}
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          onClick={() => run("post")}
+          disabled={busy !== ""}
+        >
+          {busy === "post" ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Megaphone className="mr-2 h-4 w-4" />
+          )}
           Post para redes
         </Button>
-        <Button type="button" size="sm" variant="outline" onClick={() => run("seo")} disabled={busy !== ""}>
-          {busy === "seo" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Globe className="mr-2 h-4 w-4 text-emerald-600" />}
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => run("seo")}
+          disabled={busy !== ""}
+        >
+          {busy === "seo" ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Globe className="mr-2 h-4 w-4 text-emerald-600" />
+          )}
           Otimizar SEO (Tags)
         </Button>
       </div>
@@ -135,9 +195,20 @@ export function AiImovelPanel({
         <div className="mt-3 space-y-1">
           <div className="text-xs font-medium text-muted-foreground">Sugestões de título:</div>
           {titulos.map((t, i) => (
-            <div key={i} className="flex items-center justify-between gap-2 rounded border bg-background px-2 py-1.5 text-sm">
+            <div
+              key={i}
+              className="flex items-center justify-between gap-2 rounded border bg-background px-2 py-1.5 text-sm"
+            >
               <span className="truncate">{t}</span>
-              <Button type="button" size="sm" variant="ghost" onClick={() => { onApplyTitulo(t); toast.success("Título aplicado"); }}>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  onApplyTitulo(t);
+                  toast.success("Título aplicado");
+                }}
+              >
                 Usar
               </Button>
             </div>
@@ -153,7 +224,10 @@ export function AiImovelPanel({
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => { navigator.clipboard.writeText(post); toast.success("Copiado"); }}
+              onClick={() => {
+                navigator.clipboard.writeText(post);
+                toast.success("Copiado");
+              }}
             >
               <Copy className="mr-1 h-3 w-3" /> Copiar
             </Button>
@@ -165,7 +239,9 @@ export function AiImovelPanel({
       {seoResult && (
         <div className="mt-3 p-3 bg-emerald-500/5 rounded border border-emerald-500/20 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">⚡ Otimização de SEO Concluída</div>
+            <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              ⚡ Otimização de SEO Concluída
+            </div>
             <Button
               type="button"
               size="sm"
@@ -182,16 +258,26 @@ export function AiImovelPanel({
           </div>
           <div className="space-y-2 text-xs">
             <div>
-              <span className="font-bold block text-muted-foreground">SEO Meta Title (Google Search Title)</span>
-              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px] truncate">{seoResult.seo_title}</div>
+              <span className="font-bold block text-muted-foreground">
+                SEO Meta Title (Google Search Title)
+              </span>
+              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px] truncate">
+                {seoResult.seo_title}
+              </div>
             </div>
             <div>
-              <span className="font-bold block text-muted-foreground">Meta Description Spec (snippet)</span>
-              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px] whitespace-pre-wrap">{seoResult.meta_description}</div>
+              <span className="font-bold block text-muted-foreground">
+                Meta Description Spec (snippet)
+              </span>
+              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px] whitespace-pre-wrap">
+                {seoResult.meta_description}
+              </div>
             </div>
             <div>
               <span className="font-bold block text-muted-foreground">Organic Focus Keywords</span>
-              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px]">{seoResult.keywords}</div>
+              <div className="border bg-background px-2 py-1.5 rounded font-mono text-[11px]">
+                {seoResult.keywords}
+              </div>
             </div>
           </div>
         </div>

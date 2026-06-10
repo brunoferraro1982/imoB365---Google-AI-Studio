@@ -14,10 +14,14 @@ export const Route = createFileRoute("/app/comissoes/")({
 });
 
 const STATUS_LABEL: Record<string, string> = {
-  a_pagar: "A pagar", paga: "Paga", cancelada: "Cancelada",
+  a_pagar: "A pagar",
+  paga: "Paga",
+  cancelada: "Cancelada",
 };
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  paga: "default", a_pagar: "secondary", cancelada: "outline",
+  paga: "default",
+  a_pagar: "secondary",
+  cancelada: "outline",
 };
 
 function ComissoesList() {
@@ -30,13 +34,17 @@ function ComissoesList() {
     setLoading(true);
     const { data, error } = await supabase
       .from("comissoes")
-      .select("id,valor,percentual,status,data_prevista,data_pagamento,observacoes,corretor:corretores(id,nome),contrato:contratos(id,numero,valor)")
+      .select(
+        "id,valor,percentual,status,data_prevista,data_pagamento,observacoes,corretor:corretores(id,nome),contrato:contratos(id,numero,valor)",
+      )
       .order("data_prevista", { ascending: false, nullsFirst: false });
     if (error) toast.error(error.message);
     setItems(data ?? []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function marcarPaga(id: string) {
     const hoje = new Date().toISOString().slice(0, 10);
@@ -61,12 +69,15 @@ function ComissoesList() {
     if (filter !== "todos" && c.status !== filter) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return (c.corretor?.nome ?? "").toLowerCase().includes(q)
-      || (c.contrato?.numero ?? "").toLowerCase().includes(q);
+    return (
+      (c.corretor?.nome ?? "").toLowerCase().includes(q) ||
+      (c.contrato?.numero ?? "").toLowerCase().includes(q)
+    );
   });
 
   const totals = useMemo(() => {
-    let aPagar = 0, pagas = 0;
+    let aPagar = 0,
+      pagas = 0;
     for (const c of items) {
       const v = Number(c.valor) || 0;
       if (c.status === "a_pagar") aPagar += v;
@@ -93,9 +104,20 @@ function ComissoesList() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Input placeholder="Buscar por corretor ou contrato…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="Buscar por corretor ou contrato…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
         {(["todos", "a_pagar", "paga", "cancelada"] as const).map((f) => (
-          <Button key={f} type="button" variant={filter === f ? "default" : "outline"} size="sm" onClick={() => setFilter(f)}>
+          <Button
+            key={f}
+            type="button"
+            variant={filter === f ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilter(f)}
+          >
             {f === "todos" ? "Todas" : STATUS_LABEL[f]}
           </Button>
         ))}
@@ -129,15 +151,25 @@ function ComissoesList() {
                   <td className="px-4 py-3 font-medium">{c.corretor?.nome ?? "—"}</td>
                   <td className="px-4 py-3 text-muted-foreground">
                     {c.contrato ? (
-                      <Link to="/app/contratos/$id" params={{ id: c.contrato.id }} className="hover:underline">
+                      <Link
+                        to="/app/contratos/$id"
+                        params={{ id: c.contrato.id }}
+                        className="hover:underline"
+                      >
                         {c.contrato.numero ?? c.contrato.id.slice(0, 8)}
                       </Link>
-                    ) : "—"}
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{c.data_prevista ?? "—"}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"}>{STATUS_LABEL[c.status]}</Badge>
-                    {c.percentual ? <span className="ml-2 text-xs text-muted-foreground">{c.percentual}%</span> : null}
+                    <Badge variant={STATUS_VARIANT[c.status] ?? "secondary"}>
+                      {STATUS_LABEL[c.status]}
+                    </Badge>
+                    {c.percentual ? (
+                      <span className="ml-2 text-xs text-muted-foreground">{c.percentual}%</span>
+                    ) : null}
                   </td>
                   <td className="px-4 py-3 text-right font-medium">{formatBRL(c.valor)}</td>
                   <td className="px-4 py-3 text-right">

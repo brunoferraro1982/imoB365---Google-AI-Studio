@@ -1,31 +1,31 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { 
-  LogOut, 
-  LayoutDashboard, 
-  Heart, 
-  Bookmark, 
-  User, 
-  PlusCircle, 
-  ChevronDown, 
-  Lock, 
-  Sparkles, 
-  ShieldCheck, 
-  Calculator, 
-  Globe2, 
-  FileCheck, 
-  Terminal, 
-  Chrome, 
-  Apple, 
-  Instagram, 
+import {
+  LogOut,
+  LayoutDashboard,
+  Heart,
+  Bookmark,
+  User,
+  PlusCircle,
+  ChevronDown,
+  Lock,
+  Sparkles,
+  ShieldCheck,
+  Calculator,
+  Globe2,
+  FileCheck,
+  Terminal,
+  Chrome,
+  Apple,
+  Instagram,
   Linkedin,
-  Settings2, 
-  Info, 
-  X, 
-  UserCheck, 
+  Settings2,
+  Info,
+  X,
+  UserCheck,
   ArrowRight,
   ShieldAlert,
-  MenuSquare
+  MenuSquare,
 } from "lucide-react";
 import { useAuth, AppRole } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +47,7 @@ function initials(nome: string | null | undefined, email: string | null | undefi
 export function HeaderUserMenu() {
   const { user, profile, roles, loading } = useAuth();
   const navigate = useNavigate();
-  
+
   // Menu visibility states
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -60,9 +60,10 @@ export function HeaderUserMenu() {
   const [authLoading, setAuthLoading] = useState(false);
 
   // Social Authentication simulation modal
-  const [socialModal, setSocialModal] = useState<{ isOpen: boolean; provider: string } | null>(null);
+  const [socialModal, setSocialModal] = useState<{ isOpen: boolean; provider: string } | null>(
+    null,
+  );
   const [socialEmail, setSocialEmail] = useState("");
-
 
   // Close mega menu on click outside
   useEffect(() => {
@@ -144,7 +145,7 @@ export function HeaderUserMenu() {
     const displayName = socialEmail.split("@")[0];
 
     // Try normal sign-in first
-    let result = await supabase.auth.signInWithPassword({
+    const result = await supabase.auth.signInWithPassword({
       email: socialEmail,
       password: mockPassword,
     });
@@ -161,9 +162,9 @@ export function HeaderUserMenu() {
             imobiliaria_nome: displayName + " Negócios",
             aprovado: true,
             pagamento_validado: true,
-            pagamento_metodo: "SocialAuth"
-          }
-        }
+            pagamento_metodo: "SocialAuth",
+          },
+        },
       });
 
       if (signUpResult.error) {
@@ -182,7 +183,6 @@ export function HeaderUserMenu() {
     navigate({ to: "/app" });
   }
 
-
   async function handleSignOut() {
     await supabase.auth.signOut();
     setIsOpen(false);
@@ -195,29 +195,30 @@ export function HeaderUserMenu() {
 
   return (
     <div className="relative font-sans" ref={menuRef}>
-      
       {/* TRIGGER BUTTON (Unified trigger for both states) */}
       {!user ? (
         <button
           id="btn-login-megamenu-trigger"
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
-            isOpen 
-              ? "border-primary bg-primary/5 text-primary" 
+            isOpen
+              ? "border-primary bg-primary/5 text-primary"
               : "border-border/80 bg-card text-foreground/90 hover:border-primary/45 hover:text-primary hover:bg-muted/30"
           }`}
         >
           <Lock className="h-3.5 w-3.5 stroke-[2.2px]" />
           <span>Acessar Portal</span>
-          <ChevronDown className={`h-3 w-3 stroke-[2.2px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            className={`h-3 w-3 stroke-[2.2px] transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
       ) : (
         <button
           id="btn-user-megamenu-trigger"
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-2.5 rounded-full border pl-1.5 pr-3 py-1.5 transition-all duration-200 cursor-pointer shadow-sm ${
-            isOpen 
-              ? "border-primary bg-primary/5 ring-1 ring-primary/25" 
+            isOpen
+              ? "border-primary bg-primary/5 ring-1 ring-primary/25"
               : "border-border/85 bg-card/90 hover:bg-muted/70 hover:border-primary/25"
           }`}
         >
@@ -230,7 +231,9 @@ export function HeaderUserMenu() {
           <span className="hidden max-w-[120px] truncate text-xs font-bold tracking-tight text-foreground md:inline">
             {profile?.nome ?? user.email?.split("@")[0] ?? "Minha Conta"}
           </span>
-          <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+          <ChevronDown
+            className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
       )}
 
@@ -247,7 +250,6 @@ export function HeaderUserMenu() {
           >
             {/* GRID COLUMNS */}
             <div className="grid gap-6 md:grid-cols-12">
-              
               {/* LEFT COLUMN: PUBLIC INTEGRATIONS AND UTILITIES (Always readable in both sessions) */}
               <div className="md:col-span-12 lg:col-span-5 space-y-4 border-b pb-5 md:border-b-0 md:pb-0 lg:border-r lg:pr-5 border-border/60">
                 <div className="space-y-1">
@@ -263,10 +265,9 @@ export function HeaderUserMenu() {
                 </div>
 
                 <div className="space-y-2 pt-1">
-                  
                   {/* CALCULATORS */}
-                  <Link 
-                    to="/calculadoras" 
+                  <Link
+                    to="/calculadoras"
                     onClick={() => setIsOpen(false)}
                     className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-muted/70 transition-all group border border-transparent hover:border-border/40"
                   >
@@ -278,14 +279,15 @@ export function HeaderUserMenu() {
                         Calculadoras de Financiamento
                       </span>
                       <span className="text-[9.5px] text-muted-foreground/80 leading-normal block font-sans">
-                        Simule parcelas SAC e Price com índices de inflação atualizados e taxas reais.
+                        Simule parcelas SAC e Price com índices de inflação atualizados e taxas
+                        reais.
                       </span>
                     </div>
                   </Link>
 
                   {/* ANNOUNCE PROPERTY */}
-                  <Link 
-                    to={user ? "/app" : "/signup"} 
+                  <Link
+                    to={user ? "/app" : "/signup"}
                     onClick={() => setIsOpen(false)}
                     className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-muted/70 transition-all group border border-transparent hover:border-border/40"
                   >
@@ -297,14 +299,15 @@ export function HeaderUserMenu() {
                         Quero Anunciar Grátis
                       </span>
                       <span className="text-[9.5px] text-muted-foreground/80 leading-normal block font-sans">
-                        Insira seu portfólio de imóveis e anuncie no maior portal imobiliário parceiro em segundos.
+                        Insira seu portfólio de imóveis e anuncie no maior portal imobiliário
+                        parceiro em segundos.
                       </span>
                     </div>
                   </Link>
 
                   {/* EXPLORAR IMÓVEIS */}
-                  <Link 
-                    to="/buscar" 
+                  <Link
+                    to="/buscar"
                     onClick={() => setIsOpen(false)}
                     className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-muted/70 transition-all group border border-transparent hover:border-border/40"
                   >
@@ -322,8 +325,8 @@ export function HeaderUserMenu() {
                   </Link>
 
                   {/* PLANOS E ASSINATURAS */}
-                  <Link 
-                    to="/planos" 
+                  <Link
+                    to="/planos"
                     onClick={() => setIsOpen(false)}
                     className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-muted/70 transition-all group border border-transparent hover:border-border/40"
                   >
@@ -335,21 +338,19 @@ export function HeaderUserMenu() {
                         Nossos Planos Starter & Pro
                       </span>
                       <span className="text-[9.5px] text-muted-foreground/80 leading-normal block font-sans">
-                        Escolha o pacote perfeito para o seu crescimento como corretor ou imobiliária.
+                        Escolha o pacote perfeito para o seu crescimento como corretor ou
+                        imobiliária.
                       </span>
                     </div>
                   </Link>
-
                 </div>
               </div>
 
               {/* RIGHT COLUMN: STATE DRIVEN SPACE (MD: 7/12 cols) */}
               <div className="md:col-span-12 lg:col-span-7 space-y-4">
-                
                 {/* STATE A: NOT AUTHENTICATED USER (Embedded Form + Social simulators inside the mega menu) */}
                 {!user ? (
                   <div className="space-y-3.5">
-                    
                     {/* Inline Tab selectors */}
                     <div className="flex border-b border-border p-0.5 bg-muted/60 rounded-lg">
                       <button
@@ -378,34 +379,44 @@ export function HeaderUserMenu() {
                       <form onSubmit={handleLogin} className="space-y-3">
                         <div className="grid gap-2 sm:grid-cols-2">
                           <div className="space-y-1">
-                            <Label htmlFor="menu-email" className="text-3xs font-bold text-muted-foreground uppercase">E-mail</Label>
-                            <Input 
-                              id="menu-email" 
-                              type="email" 
-                              placeholder="exemplo@imob365.com" 
-                              required 
-                              value={email} 
+                            <Label
+                              htmlFor="menu-email"
+                              className="text-3xs font-bold text-muted-foreground uppercase"
+                            >
+                              E-mail
+                            </Label>
+                            <Input
+                              id="menu-email"
+                              type="email"
+                              placeholder="exemplo@imob365.com"
+                              required
+                              value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               className="text-2xs h-8.5"
                             />
                           </div>
                           <div className="space-y-1">
-                            <Label htmlFor="menu-pass" className="text-3xs font-bold text-muted-foreground uppercase">Senha de acesso</Label>
-                            <Input 
-                              id="menu-pass" 
-                              type="password" 
-                              placeholder="Sua senha secreta" 
-                              required 
-                              value={password} 
+                            <Label
+                              htmlFor="menu-pass"
+                              className="text-3xs font-bold text-muted-foreground uppercase"
+                            >
+                              Senha de acesso
+                            </Label>
+                            <Input
+                              id="menu-pass"
+                              type="password"
+                              placeholder="Sua senha secreta"
+                              required
+                              value={password}
                               onChange={(e) => setPassword(e.target.value)}
                               className="text-2xs h-8.5"
                             />
                           </div>
                         </div>
 
-                        <Button 
-                          type="submit" 
-                          disabled={authLoading} 
+                        <Button
+                          type="submit"
+                          disabled={authLoading}
                           className="w-full text-xs font-bold h-8.5 bg-primary hover:bg-primary/95 text-white"
                         >
                           {authLoading ? "Autenticando..." : "Login"}
@@ -416,37 +427,52 @@ export function HeaderUserMenu() {
                         <div className="space-y-2">
                           <div className="grid gap-2 sm:grid-cols-3">
                             <div className="space-y-1 sm:col-span-1">
-                              <Label htmlFor="menu-reg-name" className="text-3xs font-bold text-muted-foreground uppercase">Seu Nome</Label>
-                              <Input 
-                                id="menu-reg-name" 
-                                placeholder="Nome" 
-                                required 
-                                value={nome} 
+                              <Label
+                                htmlFor="menu-reg-name"
+                                className="text-3xs font-bold text-muted-foreground uppercase"
+                              >
+                                Seu Nome
+                              </Label>
+                              <Input
+                                id="menu-reg-name"
+                                placeholder="Nome"
+                                required
+                                value={nome}
                                 onChange={(e) => setNome(e.target.value)}
                                 className="text-2xs h-8.5"
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-1">
-                              <Label htmlFor="menu-reg-email" className="text-3xs font-bold text-muted-foreground uppercase">E-mail</Label>
-                              <Input 
-                                id="menu-reg-email" 
-                                type="email" 
-                                placeholder="exemplo@email.com" 
-                                required 
-                                value={email} 
+                              <Label
+                                htmlFor="menu-reg-email"
+                                className="text-3xs font-bold text-muted-foreground uppercase"
+                              >
+                                E-mail
+                              </Label>
+                              <Input
+                                id="menu-reg-email"
+                                type="email"
+                                placeholder="exemplo@email.com"
+                                required
+                                value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="text-2xs h-8.5"
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-1">
-                              <Label htmlFor="menu-reg-pass" className="text-3xs font-bold text-muted-foreground uppercase">Criar Senha</Label>
-                              <Input 
-                                id="menu-reg-pass" 
-                                type="password" 
+                              <Label
+                                htmlFor="menu-reg-pass"
+                                className="text-3xs font-bold text-muted-foreground uppercase"
+                              >
+                                Criar Senha
+                              </Label>
+                              <Input
+                                id="menu-reg-pass"
+                                type="password"
                                 minLength={8}
-                                placeholder="Mínimo 8 dígitos" 
-                                required 
-                                value={password} 
+                                placeholder="Mínimo 8 dígitos"
+                                required
+                                value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="text-2xs h-8.5"
                               />
@@ -454,9 +480,9 @@ export function HeaderUserMenu() {
                           </div>
                         </div>
 
-                        <Button 
-                          type="submit" 
-                          disabled={authLoading} 
+                        <Button
+                          type="submit"
+                          disabled={authLoading}
                           className="w-full text-xs font-bold h-8.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                           {authLoading ? "Enviando registro..." : "Efetuar Cadastro"}
@@ -472,109 +498,127 @@ export function HeaderUserMenu() {
                         </div>
                         <div className="relative flex justify-center text-[10px] uppercase">
                           <span className="bg-background px-2 text-muted-foreground/85 font-semibold font-sans">
-                            {authTab === "login" ? "Ou acesse rápido com rede social" : "Ou registre-se com rede social"}
+                            {authTab === "login"
+                              ? "Ou acesse rápido com rede social"
+                              : "Ou registre-se com rede social"}
                           </span>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-4 gap-2">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => { setSocialModal({ isOpen: true, provider: "Google" }); setSocialEmail(email); }}
+                          onClick={() => {
+                            setSocialModal({ isOpen: true, provider: "Google" });
+                            setSocialEmail(email);
+                          }}
                         >
                           <Chrome className="h-4 w-4 text-red-500" />
                         </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => { setSocialModal({ isOpen: true, provider: "Instagram" }); setSocialEmail(email); }}
+                          onClick={() => {
+                            setSocialModal({ isOpen: true, provider: "Instagram" });
+                            setSocialEmail(email);
+                          }}
                         >
                           <Instagram className="h-4 w-4 text-pink-600" />
                         </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => { setSocialModal({ isOpen: true, provider: "LinkedIn" }); setSocialEmail(email); }}
+                          onClick={() => {
+                            setSocialModal({ isOpen: true, provider: "LinkedIn" });
+                            setSocialEmail(email);
+                          }}
                         >
                           <Linkedin className="h-4 w-4 text-blue-700" />
                         </Button>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+                        <Button
+                          type="button"
+                          variant="outline"
                           className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => { setSocialModal({ isOpen: true, provider: "Apple" }); setSocialEmail(email); }}
+                          onClick={() => {
+                            setSocialModal({ isOpen: true, provider: "Apple" });
+                            setSocialEmail(email);
+                          }}
                         >
                           <Apple className="h-4 w-4 text-foreground" />
                         </Button>
                       </div>
                     </div>
-
-
                   </div>
                 ) : (
-                  
                   /* STATE B: AUTHENTICATED USER IN PORTAL */
                   <div className="grid gap-4.5 sm:grid-cols-12">
-                    
                     {/* LEFT PANEL: MAIN LINKS */}
                     <div className="sm:col-span-7 space-y-2">
-                      <span className="text-3xs font-black uppercase text-muted-foreground tracking-widest block">Atalhos Operacionais</span>
-                      
+                      <span className="text-3xs font-black uppercase text-muted-foreground tracking-widest block">
+                        Atalhos Operacionais
+                      </span>
+
                       {/* PAINEL (APP / HOME) */}
-                      <Link 
-                        to="/app" 
+                      <Link
+                        to="/app"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
                       >
                         <LayoutDashboard className="h-4 w-4 text-primary" />
                         <div className="flex-1">
                           <span className="block font-bold">Painel Imobiliário</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">Seus imóveis, leads coletados, CRECI e propostas.</span>
+                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                            Seus imóveis, leads coletados, CRECI e propostas.
+                          </span>
                         </div>
                       </Link>
 
                       {/* CONFIGS */}
-                      <Link 
-                        to="/app/configuracoes" 
+                      <Link
+                        to="/app/configuracoes"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
                       >
                         <Settings2 className="h-4 w-4 text-slate-600" />
                         <div className="flex-1">
                           <span className="block font-bold">Configurar Sistema</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">Definição de canais, domínios, equipe e taxas.</span>
+                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                            Definição de canais, domínios, equipe e taxas.
+                          </span>
                         </div>
                       </Link>
 
                       {/* MINHA CONTA */}
-                      <Link 
-                        to="/conta" 
+                      <Link
+                        to="/conta"
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
                       >
                         <User className="h-4 w-4 text-emerald-600" />
                         <div className="flex-1">
                           <span className="block font-bold">Perfil & Perfil Geral</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">Ajuste de cadastro pessoal e segurança securitária.</span>
+                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                            Ajuste de cadastro pessoal e segurança securitária.
+                          </span>
                         </div>
                       </Link>
 
                       {/* MEUS FAVORITOS */}
                       <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/65">
-                        <Link 
-                          to="/conta/favoritos" 
+                        <Link
+                          to="/conta/favoritos"
                           onClick={() => setIsOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
                         >
                           <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-55 animate-pulse" />
                           <span>Meus Favoritos</span>
                         </Link>
-                        <Link 
-                          to="/conta/buscas" 
+                        <Link
+                          to="/conta/buscas"
                           onClick={() => setIsOpen(false)}
                           className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
                         >
@@ -582,12 +626,10 @@ export function HeaderUserMenu() {
                           <span>Minhas Buscas</span>
                         </Link>
                       </div>
-
                     </div>
 
                     {/* RIGHT CARD: GLASSMORPHIC PROFILE OVERVIEW */}
                     <div className="sm:col-span-5 bg-muted/60 p-4 rounded-xl border border-border/80 flex flex-col justify-between space-y-4">
-                      
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10 ring-2 ring-primary/20">
@@ -597,23 +639,36 @@ export function HeaderUserMenu() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <h5 className="text-xs font-bold text-foreground truncate">{nomeExibicao}</h5>
-                            <span className="text-[10px] text-muted-foreground truncate block font-mono mt-0.5">{user.email}</span>
+                            <h5 className="text-xs font-bold text-foreground truncate">
+                              {nomeExibicao}
+                            </h5>
+                            <span className="text-[10px] text-muted-foreground truncate block font-mono mt-0.5">
+                              {user.email}
+                            </span>
                           </div>
                         </div>
 
                         {/* ROLES BADGES */}
                         <div className="space-y-1">
-                          <span className="text-[8px] uppercase tracking-wider text-muted-foreground block font-bold">Papéis do Consórcio</span>
+                          <span className="text-[8px] uppercase tracking-wider text-muted-foreground block font-bold">
+                            Papéis do Consórcio
+                          </span>
                           <div className="flex flex-wrap gap-1">
                             {roles.length > 0 ? (
                               roles.map((r) => (
-                                <Badge key={r} variant="outline" className="text-[9px] font-bold px-1.5 py-0 uppercase bg-blue-50/5 text-primary border-primary/20">
+                                <Badge
+                                  key={r}
+                                  variant="outline"
+                                  className="text-[9px] font-bold px-1.5 py-0 uppercase bg-blue-50/5 text-primary border-primary/20"
+                                >
                                   {r}
                                 </Badge>
                               ))
                             ) : (
-                              <Badge variant="outline" className="text-[9px] font-bold px-1.5 py-0 uppercase bg-amber-50/10 text-amber-800 border-amber-300">
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] font-bold px-1.5 py-0 uppercase bg-amber-50/10 text-amber-800 border-amber-300"
+                              >
                                 Guest / Quarentena
                               </Badge>
                             )}
@@ -622,23 +677,23 @@ export function HeaderUserMenu() {
                       </div>
 
                       <div className="space-y-2 border-t border-border/80 pt-3">
-                        <Link 
-                          to="/app/imoveis/novo" 
+                        <Link
+                          to="/app/imoveis/novo"
                           onClick={() => setIsOpen(false)}
                           className="w-full"
                         >
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:scale-103 transition-transform"
                           >
                             <PlusCircle className="h-3.5 w-3.5" />
                             <span>Anunciar novo imóvel</span>
                           </Button>
                         </Link>
-                        
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={handleSignOut}
                           className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-2xs font-extrabold flex items-center justify-center gap-1.5"
                         >
@@ -646,16 +701,11 @@ export function HeaderUserMenu() {
                           <span>Desconectar Conta</span>
                         </Button>
                       </div>
-
                     </div>
-
                   </div>
                 )}
-
               </div>
-
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -664,34 +714,55 @@ export function HeaderUserMenu() {
       {socialModal?.isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border w-full max-w-sm rounded-2xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
-            <h3 className="text-sm font-bold tracking-tight mb-2">Continuar com {socialModal.provider}</h3>
+            <h3 className="text-sm font-bold tracking-tight mb-2">
+              Continuar com {socialModal.provider}
+            </h3>
             <p className="text-[11px] text-muted-foreground mb-4 leading-normal">
-              Insira seu e-mail para conectar sua conta social via credencial simulada do {socialModal.provider}:
+              Insira seu e-mail para conectar sua conta social via credencial simulada do{" "}
+              {socialModal.provider}:
             </p>
-            
+
             <div className="space-y-3.5 text-left">
               <div className="space-y-1">
-                <Label htmlFor="socialEmail" className="text-3xs font-bold text-muted-foreground uppercase mb-1 block">Seu E-mail</Label>
-                <Input 
-                  id="socialEmail" 
-                  type="email" 
+                <Label
+                  htmlFor="socialEmail"
+                  className="text-3xs font-bold text-muted-foreground uppercase mb-1 block"
+                >
+                  Seu E-mail
+                </Label>
+                <Input
+                  id="socialEmail"
+                  type="email"
                   value={socialEmail}
                   onChange={(e) => setSocialEmail(e.target.value)}
-                  placeholder="nome@social.com" 
-                  required 
+                  placeholder="nome@social.com"
+                  required
                   className="text-2xs h-8.5"
                 />
               </div>
 
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1 text-2xs font-bold" onClick={() => setSocialModal(null)}>Cancelar</Button>
-                <Button type="button" size="sm" className="flex-1 bg-primary hover:bg-primary/95 text-white text-2xs font-bold" onClick={handleSocialAuth}>Sim, conectar</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-2xs font-bold"
+                  onClick={() => setSocialModal(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="flex-1 bg-primary hover:bg-primary/95 text-white text-2xs font-bold"
+                  onClick={handleSocialAuth}
+                >
+                  Sim, conectar
+                </Button>
               </div>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

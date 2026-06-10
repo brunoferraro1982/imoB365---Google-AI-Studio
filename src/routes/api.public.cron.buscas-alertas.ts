@@ -21,7 +21,10 @@ function applyFilters(q: any, f: Record<string, any>) {
 }
 
 function renderEmail(nomeBusca: string, items: any[], siteOrigin: string) {
-  const cards = items.slice(0, MAX_ITEMS_PER_EMAIL).map((i) => `
+  const cards = items
+    .slice(0, MAX_ITEMS_PER_EMAIL)
+    .map(
+      (i) => `
     <div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin:8px 0">
       <a href="${siteOrigin}/imovel/${i.slug}" style="color:#0f172a;text-decoration:none">
         <div style="font-weight:600;font-size:15px">${escapeHtml(i.titulo)}</div>
@@ -30,7 +33,9 @@ function renderEmail(nomeBusca: string, items: any[], siteOrigin: string) {
         </div>
         <div style="color:#2563eb;font-weight:700;margin-top:6px">${formatBRL(i.preco)}</div>
       </a>
-    </div>`).join("");
+    </div>`,
+    )
+    .join("");
 
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#0f172a">
@@ -43,11 +48,18 @@ function renderEmail(nomeBusca: string, items: any[], siteOrigin: string) {
 }
 
 function escapeHtml(s: string) {
-  return (s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+  return (s ?? "").replace(
+    /[&<>"']/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string,
+  );
 }
 function formatBRL(v: number | string | null) {
   const n = Number(v ?? 0);
-  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return n.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    maximumFractionDigits: 0,
+  });
 }
 
 async function processarBuscas(siteOrigin: string) {
@@ -59,7 +71,9 @@ async function processarBuscas(siteOrigin: string) {
     .limit(200);
   if (error) throw new Error(error.message);
 
-  let enviados = 0, processados = 0, semNovos = 0;
+  let enviados = 0,
+    processados = 0,
+    semNovos = 0;
 
   for (const b of buscas ?? []) {
     processados++;
@@ -67,7 +81,9 @@ async function processarBuscas(siteOrigin: string) {
 
     let q = supabaseAdmin
       .from("imoveis")
-      .select("id, slug, titulo, preco, endereco_cidade, endereco_uf, endereco_bairro, publicado_em")
+      .select(
+        "id, slug, titulo, preco, endereco_cidade, endereco_uf, endereco_bairro, publicado_em",
+      )
       .eq("publicado", true)
       .eq("status", "ativo")
       .gt("publicado_em", since)
@@ -76,7 +92,10 @@ async function processarBuscas(siteOrigin: string) {
     q = applyFilters(q, (b.filtros as any) ?? {});
     const { data: novos } = await q;
 
-    if (!novos || novos.length === 0) { semNovos++; continue; }
+    if (!novos || novos.length === 0) {
+      semNovos++;
+      continue;
+    }
 
     // Get user email
     const { data: userResp } = await supabaseAdmin.auth.admin.getUserById(b.user_id);
@@ -115,7 +134,8 @@ export const Route = createFileRoute("/api/public/cron/buscas-alertas")({
     handlers: {
       POST: async ({ request }) => {
         const apikey = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+        const expected =
+          process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
         // FIX [QA-03]: Validar comprimento mínimo (JWT Supabase anon keys têm ~200+ chars).
         // Isso elimina o edge case onde expected="" e apikey="" resultariam em bypass.
         if (!expected || expected.length < 20 || apikey !== expected) {
@@ -133,9 +153,11 @@ export const Route = createFileRoute("/api/public/cron/buscas-alertas")({
       GET: async ({ request }) => {
         // allow GET with apikey for easy manual testing / pg_net flexibility
         const apikey = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+        const expected =
+          process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
         // FIX [QA-03]: Mesma blindagem do handler POST acima.
-        if (!expected || expected.length < 20 || apikey !== expected) return new Response("Unauthorized", { status: 401 });
+        if (!expected || expected.length < 20 || apikey !== expected)
+          return new Response("Unauthorized", { status: 401 });
         const origin = new URL(request.url).origin;
         const siteUrl = process.env.SITE_URL || origin;
         const res = await processarBuscas(siteUrl);

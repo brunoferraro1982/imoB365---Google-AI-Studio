@@ -57,7 +57,7 @@ jobs:
         run: |
           NEW_FILES=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'supabase/migrations/*.sql' 2>/dev/null || echo "")
           if [ -z "$NEW_FILES" ]; then exit 0; fi
-          
+
           FOUND_DESTRUCTIVE=false
           for f in $NEW_FILES; do
             if grep -iE "DROP TABLE|DROP COLUMN|TRUNCATE|DELETE FROM" "$f" > /dev/null 2>&1; then
@@ -66,7 +66,7 @@ jobs:
               FOUND_DESTRUCTIVE=true
             fi
           done
-          
+
           if [ "$FOUND_DESTRUCTIVE" = true ]; then
             echo ""
             echo "::warning::Migrações com operações destrutivas detectadas. Confirme que há backup e que a migração é reversível."

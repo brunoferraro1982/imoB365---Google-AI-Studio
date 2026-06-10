@@ -1,5 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Printer, Banknote, FileText, Send, CheckCircle, ShieldCheck, PenTool, ExternalLink, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  Banknote,
+  FileText,
+  Send,
+  CheckCircle,
+  ShieldCheck,
+  PenTool,
+  ExternalLink,
+  Loader2,
+} from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,22 +31,21 @@ function EditarContrato() {
 
   // ClickSign and PDF states (Sprint 8)
   const [pdfStatus, setPdfStatus] = useState<"idle" | "generating" | "completed">("idle");
-  const [clicksignStatus, setClicksignStatus] = useState<"rascunho" | "enviado" | "assinado_parcial" | "assinado_total">("rascunho");
+  const [clicksignStatus, setClicksignStatus] = useState<
+    "rascunho" | "enviado" | "assinado_parcial" | "assinado_total"
+  >("rascunho");
   const [enviandoClicksign, setEnviandoClicksign] = useState(false);
 
   function handleGerarPdf() {
     setPdfStatus("generating");
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1400)),
-      {
-        loading: "Compilando cláusulas do contrato e anexando laudo de vistoria no PDF...",
-        success: () => {
-          setPdfStatus("completed");
-          return "Arquivo PDF do Contrato compilado com sucesso!";
-        },
-        error: "Erro ao gerar PDF"
-      }
-    );
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1400)), {
+      loading: "Compilando cláusulas do contrato e anexando laudo de vistoria no PDF...",
+      success: () => {
+        setPdfStatus("completed");
+        return "Arquivo PDF do Contrato compilado com sucesso!";
+      },
+      error: "Erro ao gerar PDF",
+    });
   }
 
   function handleEnviarClicksign() {
@@ -44,32 +54,33 @@ function EditarContrato() {
       return;
     }
     setEnviandoClicksign(true);
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1600)),
-      {
-        loading: "Transmitindo envelope de assinaturas para ClickSign API Sandbox...",
-        success: () => {
-          setClicksignStatus("enviado");
-          setEnviandoClicksign(false);
-          return "Envelope ClickSign criado! Links de assinatura gerados para as partes.";
-        },
-        error: () => {
-          setEnviandoClicksign(false);
-          return "Erro ao transmitir envelope.";
-        }
-      }
-    );
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1600)), {
+      loading: "Transmitindo envelope de assinaturas para ClickSign API Sandbox...",
+      success: () => {
+        setClicksignStatus("enviado");
+        setEnviandoClicksign(false);
+        return "Envelope ClickSign criado! Links de assinatura gerados para as partes.";
+      },
+      error: () => {
+        setEnviandoClicksign(false);
+        return "Erro ao transmitir envelope.";
+      },
+    });
   }
 
   function handleSimularAssinatura(papel: "locatario" | "locador") {
-    toast.info(`Simulando fluxo de assinatura ClickSign para papel: ${papel === "locatario" ? "Locatário" : "Locador"}...`);
+    toast.info(
+      `Simulando fluxo de assinatura ClickSign para papel: ${papel === "locatario" ? "Locatário" : "Locador"}...`,
+    );
     setTimeout(() => {
       setClicksignStatus((prev) => {
         if (prev === "enviado") return "assinado_parcial";
         if (prev === "assinado_parcial") return "assinado_total";
         return prev;
       });
-      toast.success(`Assinatura ClickSign processada com sucesso para: ${papel === "locatario" ? "Locatário" : "Locador"}!`);
+      toast.success(
+        `Assinatura ClickSign processada com sucesso para: ${papel === "locatario" ? "Locatário" : "Locador"}!`,
+      );
     }, 1000);
   }
 
@@ -81,9 +92,17 @@ function EditarContrato() {
       .select("id,valor,comissao_valor,comissao_percentual,corretor_id,imovel_id,numero")
       .eq("id", id)
       .maybeSingle();
-    if (error || !c) { setGerando(false); return toast.error(error?.message ?? "Contrato não encontrado"); }
-    const valor = c.comissao_valor ?? (c.comissao_percentual ? Number(c.valor) * Number(c.comissao_percentual) / 100 : 0);
-    if (!valor || valor <= 0) { setGerando(false); return toast.error("Defina comissão (% ou R$) antes de gerar"); }
+    if (error || !c) {
+      setGerando(false);
+      return toast.error(error?.message ?? "Contrato não encontrado");
+    }
+    const valor =
+      c.comissao_valor ??
+      (c.comissao_percentual ? (Number(c.valor) * Number(c.comissao_percentual)) / 100 : 0);
+    if (!valor || valor <= 0) {
+      setGerando(false);
+      return toast.error("Defina comissão (% ou R$) antes de gerar");
+    }
     const { error: insErr } = await supabase.from("lancamentos_financeiros").insert({
       tenant_id: tenantId,
       tipo: "saida" as any,
@@ -104,7 +123,10 @@ function EditarContrato() {
 
   return (
     <div className="p-8">
-      <Link to="/app/contratos" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link
+        to="/app/contratos"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -142,36 +164,54 @@ function EditarContrato() {
                 {/* Integration Status indicators */}
                 <div className="flex items-center justify-between bg-muted/40 p-3 rounded-lg border border-border/50">
                   <span className="font-medium text-muted-foreground">Status do Envelope:</span>
-                  <span className={`font-semibold uppercase tracking-wide px-2 py-0.5 rounded text-[10px] ${
-                    clicksignStatus === "assinado_total" ? "bg-emerald-100 text-emerald-800" :
-                    clicksignStatus === "assinado_parcial" ? "bg-indigo-100 text-indigo-800 animate-pulse" :
-                    clicksignStatus === "enviado" ? "bg-blue-100 text-blue-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
-                    {clicksignStatus === "assinado_total" ? "Contrato Assinado" :
-                     clicksignStatus === "assinado_parcial" ? "Assinatura Pendente (1/2)" :
-                     clicksignStatus === "enviado" ? "Aguardando Signatários" : "Rascunho / Não Enviado"}
+                  <span
+                    className={`font-semibold uppercase tracking-wide px-2 py-0.5 rounded text-[10px] ${
+                      clicksignStatus === "assinado_total"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : clicksignStatus === "assinado_parcial"
+                          ? "bg-indigo-100 text-indigo-800 animate-pulse"
+                          : clicksignStatus === "enviado"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {clicksignStatus === "assinado_total"
+                      ? "Contrato Assinado"
+                      : clicksignStatus === "assinado_parcial"
+                        ? "Assinatura Pendente (1/2)"
+                        : clicksignStatus === "enviado"
+                          ? "Aguardando Signatários"
+                          : "Rascunho / Não Enviado"}
                   </span>
                 </div>
 
                 {/* Step 1: Generate PDF */}
                 <div className="bg-background border border-border p-3.5 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground block">Etapa 1: Geração de PDF Oficial</span>
-                    {pdfStatus === "completed" && <CheckCircle className="h-4 w-4 text-emerald-600" />}
+                    <span className="font-bold text-foreground block">
+                      Etapa 1: Geração de PDF Oficial
+                    </span>
+                    {pdfStatus === "completed" && (
+                      <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    )}
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Compila todas as cláusulas jurídicas cadastradas, termos de reajuste do IGP-M/IPCA e gera o arquivo físico definitivo.
+                    Compila todas as cláusulas jurídicas cadastradas, termos de reajuste do
+                    IGP-M/IPCA e gera o arquivo físico definitivo.
                   </p>
-                  <Button 
-                    type="button" 
-                    variant={pdfStatus === "completed" ? "outline" : "default"} 
+                  <Button
+                    type="button"
+                    variant={pdfStatus === "completed" ? "outline" : "default"}
                     disabled={pdfStatus === "generating"}
                     onClick={handleGerarPdf}
                     className="w-full text-xs h-8 font-sans"
                   >
-                    {pdfStatus === "generating" ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                    {pdfStatus === "completed" ? "PDF Gerado (Clique para Refazer)" : "Gerar PDF do Contrato"}
+                    {pdfStatus === "generating" ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : null}
+                    {pdfStatus === "completed"
+                      ? "PDF Gerado (Clique para Refazer)"
+                      : "Gerar PDF do Contrato"}
                   </Button>
                 </div>
 
@@ -179,21 +219,28 @@ function EditarContrato() {
                 {pdfStatus === "completed" && (
                   <div className="bg-background border border-border p-3.5 rounded-lg space-y-2 animate-fade-in">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground block">Etapa 2: Envelope de Assinatura</span>
-                      {clicksignStatus !== "rascunho" && <CheckCircle className="h-4 w-4 text-emerald-600" />}
+                      <span className="font-bold text-foreground block">
+                        Etapa 2: Envelope de Assinatura
+                      </span>
+                      {clicksignStatus !== "rascunho" && (
+                        <CheckCircle className="h-4 w-4 text-emerald-600" />
+                      )}
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Sincroniza o contrato com a API da ClickSign e dispara links de autenticação automática por e-mail e WhatsApp.
+                      Sincroniza o contrato com a API da ClickSign e dispara links de autenticação
+                      automática por e-mail e WhatsApp.
                     </p>
-                    <Button 
-                      type="button" 
-                      variant={clicksignStatus !== "rascunho" ? "outline" : "default"} 
+                    <Button
+                      type="button"
+                      variant={clicksignStatus !== "rascunho" ? "outline" : "default"}
                       disabled={enviandoClicksign || clicksignStatus !== "rascunho"}
                       onClick={handleEnviarClicksign}
                       className="w-full text-xs h-8 font-sans"
                     >
                       {enviandoClicksign ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                      {clicksignStatus !== "rascunho" ? "Transmitido à ClickSign" : "Disparar para ClickSign"}
+                      {clicksignStatus !== "rascunho"
+                        ? "Transmitido à ClickSign"
+                        : "Disparar para ClickSign"}
                     </Button>
                   </div>
                 )}
@@ -201,32 +248,48 @@ function EditarContrato() {
                 {/* Step 3: Signers and Sign Simulators */}
                 {clicksignStatus !== "rascunho" && (
                   <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-3 animate-fade-in font-sans">
-                    <span className="font-bold text-foreground block text-[11px] uppercase tracking-wider text-muted-foreground">Painel de Laboratório (Sandbox API)</span>
+                    <span className="font-bold text-foreground block text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Painel de Laboratório (Sandbox API)
+                    </span>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between border-b border-border/40 pb-2">
                         <div>
-                          <span className="font-medium block text-[11px]">Locatário (Inquilino)</span>
-                          <span className="text-[9px] text-muted-foreground">Link: sandbox.clicksign.com/s/1a2b...</span>
+                          <span className="font-medium block text-[11px]">
+                            Locatário (Inquilino)
+                          </span>
+                          <span className="text-[9px] text-muted-foreground">
+                            Link: sandbox.clicksign.com/s/1a2b...
+                          </span>
                         </div>
-                        <Button 
-                          type="button" 
-                          size="sm" 
-                          disabled={clicksignStatus === "assinado_parcial" || clicksignStatus === "assinado_total"}
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={
+                            clicksignStatus === "assinado_parcial" ||
+                            clicksignStatus === "assinado_total"
+                          }
                           onClick={() => handleSimularAssinatura("locatario")}
                           className="text-[10px] h-7 px-2"
                         >
-                          {clicksignStatus === "assinado_parcial" || clicksignStatus === "assinado_total" ? "Assinado" : "Simular Assinatura"}
+                          {clicksignStatus === "assinado_parcial" ||
+                          clicksignStatus === "assinado_total"
+                            ? "Assinado"
+                            : "Simular Assinatura"}
                         </Button>
                       </div>
 
                       <div className="flex items-center justify-between pb-1">
                         <div>
-                          <span className="font-medium block text-[11px]">Locador (Sócio/Imobiliária)</span>
-                          <span className="text-[9px] text-muted-foreground">Link: sandbox.clicksign.com/s/3c4d...</span>
+                          <span className="font-medium block text-[11px]">
+                            Locador (Sócio/Imobiliária)
+                          </span>
+                          <span className="text-[9px] text-muted-foreground">
+                            Link: sandbox.clicksign.com/s/3c4d...
+                          </span>
                         </div>
-                        <Button 
-                          type="button" 
-                          size="sm" 
+                        <Button
+                          type="button"
+                          size="sm"
                           disabled={clicksignStatus === "assinado_total"}
                           onClick={() => handleSimularAssinatura("locador")}
                           className="text-[10px] h-7 px-2"
@@ -239,7 +302,10 @@ function EditarContrato() {
                     {clicksignStatus === "assinado_total" && (
                       <div className="pt-2 border-t border-emerald-200 text-[10px] text-emerald-800 bg-emerald-50/50 p-2 rounded flex items-center gap-1.5 leading-snug">
                         <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-600" />
-                        <span>HashSHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao PDF final em conformidade legal.</span>
+                        <span>
+                          HashSHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao PDF
+                          final em conformidade legal.
+                        </span>
                       </div>
                     )}
                   </div>

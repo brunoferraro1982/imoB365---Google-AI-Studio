@@ -39,7 +39,14 @@ function EncurtadorPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
   const [showQr, setShowQr] = useState<string | null>(null);
-  const [form, setForm] = useState({ target_url: "", label: "", slug: "", utm_source: "", utm_medium: "", utm_campaign: "" });
+  const [form, setForm] = useState({
+    target_url: "",
+    label: "",
+    slug: "",
+    utm_source: "",
+    utm_medium: "",
+    utm_campaign: "",
+  });
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -53,7 +60,9 @@ function EncurtadorPage() {
     setLinks((data as Link[]) ?? []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, [tenantId]);
+  useEffect(() => {
+    load();
+  }, [tenantId]);
 
   async function criar() {
     if (!tenantId || !form.target_url) return;
@@ -69,16 +78,29 @@ function EncurtadorPage() {
       utm_campaign: form.utm_campaign || null,
     });
     setCreating(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Link criado");
-    setForm({ target_url: "", label: "", slug: "", utm_source: "", utm_medium: "", utm_campaign: "" });
+    setForm({
+      target_url: "",
+      label: "",
+      slug: "",
+      utm_source: "",
+      utm_medium: "",
+      utm_campaign: "",
+    });
     load();
   }
 
   async function remover(id: string) {
     if (!confirm("Remover este link?")) return;
     const { error } = await (supabase as any).from("short_links").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     load();
   }
 
@@ -88,7 +110,9 @@ function EncurtadorPage() {
     <div className="p-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Encurtador de links & QR Code</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Gere links curtos rastreáveis para anúncios, placas físicas e campanhas.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Gere links curtos rastreáveis para anúncios, placas físicas e campanhas.
+        </p>
       </header>
 
       <div className="mb-6 rounded-xl border border-border bg-card p-5">
@@ -96,27 +120,70 @@ function EncurtadorPage() {
         <div className="grid gap-3 md:grid-cols-2">
           <div className="md:col-span-2">
             <Label>URL de destino *</Label>
-            <Input value={form.target_url} onChange={(e) => setForm((s) => ({ ...s, target_url: e.target.value }))} placeholder="https://imob365.com.br/imovel/..." />
+            <Input
+              value={form.target_url}
+              onChange={(e) => setForm((s) => ({ ...s, target_url: e.target.value }))}
+              placeholder="https://imob365.com.br/imovel/..."
+            />
           </div>
           <div>
             <Label>Descrição interna</Label>
-            <Input value={form.label} onChange={(e) => setForm((s) => ({ ...s, label: e.target.value }))} placeholder="Ex: Placa apto Jardins" />
+            <Input
+              value={form.label}
+              onChange={(e) => setForm((s) => ({ ...s, label: e.target.value }))}
+              placeholder="Ex: Placa apto Jardins"
+            />
           </div>
           <div>
             <Label>Slug (opcional)</Label>
-            <Input value={form.slug} onChange={(e) => setForm((s) => ({ ...s, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "") }))} placeholder="placa-jardins" />
+            <Input
+              value={form.slug}
+              onChange={(e) =>
+                setForm((s) => ({
+                  ...s,
+                  slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                }))
+              }
+              placeholder="placa-jardins"
+            />
           </div>
-          <div><Label>UTM source</Label><Input value={form.utm_source} onChange={(e) => setForm((s) => ({ ...s, utm_source: e.target.value }))} placeholder="placa" /></div>
-          <div><Label>UTM medium</Label><Input value={form.utm_medium} onChange={(e) => setForm((s) => ({ ...s, utm_medium: e.target.value }))} placeholder="offline" /></div>
-          <div className="md:col-span-2"><Label>UTM campaign</Label><Input value={form.utm_campaign} onChange={(e) => setForm((s) => ({ ...s, utm_campaign: e.target.value }))} placeholder="lancamento-2026" /></div>
+          <div>
+            <Label>UTM source</Label>
+            <Input
+              value={form.utm_source}
+              onChange={(e) => setForm((s) => ({ ...s, utm_source: e.target.value }))}
+              placeholder="placa"
+            />
+          </div>
+          <div>
+            <Label>UTM medium</Label>
+            <Input
+              value={form.utm_medium}
+              onChange={(e) => setForm((s) => ({ ...s, utm_medium: e.target.value }))}
+              placeholder="offline"
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label>UTM campaign</Label>
+            <Input
+              value={form.utm_campaign}
+              onChange={(e) => setForm((s) => ({ ...s, utm_campaign: e.target.value }))}
+              placeholder="lancamento-2026"
+            />
+          </div>
         </div>
-        <Button className="mt-4" onClick={criar} disabled={creating || !form.target_url}><Plus className="mr-2 h-4 w-4" />Criar link</Button>
+        <Button className="mt-4" onClick={criar} disabled={creating || !form.target_url}>
+          <Plus className="mr-2 h-4 w-4" />
+          Criar link
+        </Button>
       </div>
 
       {loading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : links.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">Nenhum link curto criado ainda.</div>
+        <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+          Nenhum link curto criado ainda.
+        </div>
       ) : (
         <div className="grid gap-3">
           {links.map((l) => {
@@ -128,20 +195,51 @@ function EncurtadorPage() {
                     <div className="flex items-center gap-2">
                       <Link2 className="h-4 w-4 text-primary" />
                       <span className="font-medium">{l.label ?? l.slug}</span>
-                      <Badge variant="secondary" className="text-[10px]">{l.clicks_count} cliques</Badge>
+                      <Badge variant="secondary" className="text-[10px]">
+                        {l.clicks_count} cliques
+                      </Badge>
                     </div>
                     <div className="mt-2 flex items-center gap-2">
-                      <code className="flex-1 truncate rounded-md border border-border bg-muted/40 px-2 py-1 text-xs">{short}</code>
-                      <Button size="sm" variant="outline" onClick={async () => { await navigator.clipboard.writeText(short); setCopied(l.id); toast.success("Copiado"); setTimeout(() => setCopied(null), 1500); }}>
-                        {copied === l.id ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                      <code className="flex-1 truncate rounded-md border border-border bg-muted/40 px-2 py-1 text-xs">
+                        {short}
+                      </code>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(short);
+                          setCopied(l.id);
+                          toast.success("Copiado");
+                          setTimeout(() => setCopied(null), 1500);
+                        }}
+                      >
+                        {copied === l.id ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setShowQr(showQr === l.id ? null : l.id)}><QrCode className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => remover(l.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowQr(showQr === l.id ? null : l.id)}
+                      >
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => remover(l.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
                     </div>
-                    <div className="mt-1 truncate text-xs text-muted-foreground">→ {l.target_url}</div>
+                    <div className="mt-1 truncate text-xs text-muted-foreground">
+                      → {l.target_url}
+                    </div>
                   </div>
                   {showQr === l.id && (
-                    <img src={qrUrl(short)} alt="QR Code" className="h-32 w-32 rounded border border-border" />
+                    <img
+                      src={qrUrl(short)}
+                      alt="QR Code"
+                      className="h-32 w-32 rounded border border-border"
+                    />
                   )}
                 </div>
               </div>
