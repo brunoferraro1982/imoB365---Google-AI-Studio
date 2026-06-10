@@ -1,9 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo, type FormEvent } from "react";
-import { 
-  Plus, Trash2, Edit, Eye, Sparkles, RefreshCw, Layout, 
-  Settings, MessageSquare, Megaphone, Smartphone, HelpCircle, 
-  Code, Play, AlertCircle, CheckCircle2, Copy, BarChart3, ChevronLeft, ArrowRight
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Eye,
+  Sparkles,
+  RefreshCw,
+  Layout,
+  Settings,
+  MessageSquare,
+  Megaphone,
+  Smartphone,
+  HelpCircle,
+  Code,
+  Play,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  BarChart3,
+  ChevronLeft,
+  ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -109,14 +126,15 @@ function WidgetsManagerPage() {
         ativo: true,
         posicao: "bottom-right",
         texto_cta: "Chamar no WhatsApp",
-        texto_whatsapp: "Olá! Peguei o contato através do site e gostaria de esclarecer uma dúvida.",
+        texto_whatsapp:
+          "Olá! Peguei o contato através do site e gostaria de esclarecer uma dúvida.",
         telefone_whatsapp: "11988887777",
         cor_fundo: "#128C7E",
         cor_texto: "#FFFFFF",
         views_count: 1420,
         leads_count: 85,
         created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
       {
         id: "w2",
@@ -134,8 +152,8 @@ function WidgetsManagerPage() {
         views_count: 540,
         leads_count: 31,
         created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      },
     ];
     setWidgets(defaultWidgets);
     localStorage.setItem(`local_conversion_widgets_${tenantId}`, JSON.stringify(defaultWidgets));
@@ -190,17 +208,22 @@ function WidgetsManagerPage() {
           console.warn("Supabase update indisponível, aplicando localmente", supabaseErr);
         }
 
-        updatedWidgetsList = widgets.map(w => w.id === currentWidget.id ? {
-          ...w,
-          ...payload,
-          updated_at: new Date().toISOString()
-        } as ConversionWidget : w);
+        updatedWidgetsList = widgets.map((w) =>
+          w.id === currentWidget.id
+            ? ({
+                ...w,
+                ...payload,
+                updated_at: new Date().toISOString(),
+              } as ConversionWidget)
+            : w,
+        );
 
         toast.success("Widget atualizado com sucesso!");
       } else {
-        const newId = (currentWidget.id && (currentWidget.id === "w1" || currentWidget.id === "w2"))
-          ? currentWidget.id
-          : Math.random().toString(36).substring(2, 9);
+        const newId =
+          currentWidget.id && (currentWidget.id === "w1" || currentWidget.id === "w2")
+            ? currentWidget.id
+            : Math.random().toString(36).substring(2, 9);
 
         const newWidget = {
           id: newId,
@@ -208,7 +231,7 @@ function WidgetsManagerPage() {
           leads_count: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          ...payload
+          ...payload,
         } as ConversionWidget;
 
         try {
@@ -220,11 +243,15 @@ function WidgetsManagerPage() {
         }
 
         if (currentWidget.id && (currentWidget.id === "w1" || currentWidget.id === "w2")) {
-          updatedWidgetsList = widgets.map(w => w.id === currentWidget.id ? {
-            ...w,
-            ...payload,
-            updated_at: new Date().toISOString()
-          } as ConversionWidget : w);
+          updatedWidgetsList = widgets.map((w) =>
+            w.id === currentWidget.id
+              ? ({
+                  ...w,
+                  ...payload,
+                  updated_at: new Date().toISOString(),
+                } as ConversionWidget)
+              : w,
+          );
           toast.success("Widget atualizado com sucesso!");
         } else {
           updatedWidgetsList = [newWidget, ...widgets];
@@ -233,7 +260,10 @@ function WidgetsManagerPage() {
       }
 
       setWidgets(updatedWidgetsList);
-      localStorage.setItem(`local_conversion_widgets_${tenantId}`, JSON.stringify(updatedWidgetsList));
+      localStorage.setItem(
+        `local_conversion_widgets_${tenantId}`,
+        JSON.stringify(updatedWidgetsList),
+      );
 
       setIsEditing(false);
       setCurrentWidget(EMPTY_WIDGET);
@@ -253,14 +283,20 @@ function WidgetsManagerPage() {
       } catch (supabaseErr) {
         console.warn("Supabase delete indisponível, aplicando localmente", supabaseErr);
       }
-      const updatedWidgetsList = widgets.filter(w => w.id !== id);
+      const updatedWidgetsList = widgets.filter((w) => w.id !== id);
       setWidgets(updatedWidgetsList);
-      localStorage.setItem(`local_conversion_widgets_${tenantId}`, JSON.stringify(updatedWidgetsList));
+      localStorage.setItem(
+        `local_conversion_widgets_${tenantId}`,
+        JSON.stringify(updatedWidgetsList),
+      );
       toast.success("Widget removido com sucesso!");
     } catch (_) {
-      const updatedWidgetsList = widgets.filter(w => w.id !== id);
+      const updatedWidgetsList = widgets.filter((w) => w.id !== id);
       setWidgets(updatedWidgetsList);
-      localStorage.setItem(`local_conversion_widgets_${tenantId}`, JSON.stringify(updatedWidgetsList));
+      localStorage.setItem(
+        `local_conversion_widgets_${tenantId}`,
+        JSON.stringify(updatedWidgetsList),
+      );
       toast.success("Widget removido com sucesso!");
     }
   }
@@ -275,11 +311,16 @@ function WidgetsManagerPage() {
   // Helper para nome do tipo do widget
   const getWidgetTypeName = (tipo: string) => {
     switch (tipo) {
-      case "whatsapp": return "WhatsApp Flutuante";
-      case "captura_leads": return "Popup Captura de Leads";
-      case "calculadora_financ": return "Simulador de Financiamento";
-      case "banner_cta": return "CTA Banner de Conversão";
-      default: return tipo;
+      case "whatsapp":
+        return "WhatsApp Flutuante";
+      case "captura_leads":
+        return "Popup Captura de Leads";
+      case "calculadora_financ":
+        return "Simulador de Financiamento";
+      case "banner_cta":
+        return "CTA Banner de Conversão";
+      default:
+        return tipo;
     }
   };
 
@@ -298,12 +339,18 @@ function WidgetsManagerPage() {
                 Widgets de Conversão
               </h1>
               <p className="mt-1 text-sm text-muted-foreground max-w-2xl">
-                Crie botões inteligentes, simuladores internos e calculadoras interativas que reúnem 
+                Crie botões inteligentes, simuladores internos e calculadoras interativas que reúnem
                 leads automaticamente para suas equipes e mantêm os clientes engajados.
               </p>
             </div>
-            
-            <Button onClick={() => { setCurrentWidget(EMPTY_WIDGET); setIsEditing(true); }} className="shadow-md">
+
+            <Button
+              onClick={() => {
+                setCurrentWidget(EMPTY_WIDGET);
+                setIsEditing(true);
+              }}
+              className="shadow-md"
+            >
               <Plus className="mr-2 h-4 w-4 stroke-[2.5]" /> Novo Widget
             </Button>
           </header>
@@ -311,30 +358,44 @@ function WidgetsManagerPage() {
           {/* STATS BENTO ROW */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4 mb-8">
             <div className="rounded-xl border border-border/80 bg-card p-5 shadow-xs flex flex-col justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Total Instalado</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Total Instalado
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold">{stats.total}</span>
                 <span className="text-xs text-muted-foreground font-medium">unidades</span>
               </div>
             </div>
             <div className="rounded-xl border border-border/80 bg-card p-5 shadow-xs flex flex-col justify-between">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ativos Atualmente</span>
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Ativos Atualmente
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">{stats.active}</span>
-                <span className="text-xs text-emerald-600 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">Exibindo</span>
+                <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                  {stats.active}
+                </span>
+                <span className="text-xs text-emerald-600 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                  Exibindo
+                </span>
               </div>
             </div>
             <div className="rounded-xl border border-border/80 bg-card p-5 shadow-xs flex flex-col justify-between bg-emerald-500/5">
-              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">Geração de Leads</span>
+              <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wide">
+                Geração de Leads
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-emerald-600">{stats.totalLeads}</span>
                 <span className="text-xs text-muted-foreground font-mono">contatos</span>
               </div>
             </div>
             <div className="rounded-xl border border-border/80 bg-card p-5 shadow-xs flex flex-col justify-between bg-primary/5 border-primary/20">
-              <span className="text-xs font-semibold text-primary uppercase tracking-wide">Taxa de Conversão</span>
+              <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+                Taxa de Conversão
+              </span>
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-primary">{stats.conversionRate}%</span>
+                <span className="text-3xl font-extrabold text-primary">
+                  {stats.conversionRate}%
+                </span>
                 <span className="text-xs text-primary/80 font-bold flex items-center gap-1">
                   Média Geral
                 </span>
@@ -348,9 +409,12 @@ function WidgetsManagerPage() {
             <div>
               <span className="font-bold">Como publicar no meu site ou portais?</span>
               <p className="mt-1 text-[11px] text-blue-800/80 dark:text-blue-300/80 leading-normal">
-                Ao criar e ativar um Widget, ele é renderizado <b>automaticamente</b> no seu site imobiliário hospedado na imob365. 
-                Se você também possui sites externos particulares (como WordPress, Wix), você pode facilmente copiar o código de incorporação (tag script) 
-                clicando em <Code className="inline h-3.5 w-3.5 text-blue-600 dark:text-blue-400 mx-0.5" /> e colando em qualquer lugar do seu painel!
+                Ao criar e ativar um Widget, ele é renderizado <b>automaticamente</b> no seu site
+                imobiliário hospedado na imob365. Se você também possui sites externos particulares
+                (como WordPress, Wix), você pode facilmente copiar o código de incorporação (tag
+                script) clicando em{" "}
+                <Code className="inline h-3.5 w-3.5 text-blue-600 dark:text-blue-400 mx-0.5" /> e
+                colando em qualquer lugar do seu painel!
               </p>
             </div>
           </div>
@@ -358,27 +422,43 @@ function WidgetsManagerPage() {
           {/* WIDGETS CARDS GRID */}
           {loading ? (
             <div className="flex items-center justify-center p-20 text-muted-foreground">
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin text-primary" /> Carregando widgets ativos...
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin text-primary" /> Carregando widgets
+              ativos...
             </div>
           ) : widgets.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-16 text-center border-2 border-dashed border-border/60 rounded-2xl bg-muted/5">
               <Layout className="h-10 w-10 text-muted-foreground/50 mb-3" />
-              <p className="text-sm font-semibold text-muted-foreground">Nenhum widget de conversão configurado</p>
-              <p className="text-xs text-muted-foreground/75 mt-1">Crie seu primeiro atendente flutuante de WhatsApp ou calculadora financeira agora mesmo!</p>
+              <p className="text-sm font-semibold text-muted-foreground">
+                Nenhum widget de conversão configurado
+              </p>
+              <p className="text-xs text-muted-foreground/75 mt-1">
+                Crie seu primeiro atendente flutuante de WhatsApp ou calculadora financeira agora
+                mesmo!
+              </p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
               {widgets.map((widget) => (
-                <div key={widget.id} className="group overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md hover:border-primary/30 flex flex-col justify-between">
+                <div
+                  key={widget.id}
+                  className="group overflow-hidden rounded-xl border border-border/80 bg-card p-6 shadow-xs transition-all hover:shadow-md hover:border-primary/30 flex flex-col justify-between"
+                >
                   <div>
                     {/* WIDGET STATUS HEADER */}
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
-                        <span 
+                        <span
                           className="h-6 w-6 rounded-lg flex items-center justify-center text-xs font-bold font-mono"
-                          style={{ backgroundColor: widget.cor_fundo || '#E4E4E7', color: widget.cor_texto || '#18181B' }}
+                          style={{
+                            backgroundColor: widget.cor_fundo || "#E4E4E7",
+                            color: widget.cor_texto || "#18181B",
+                          }}
                         >
-                          {widget.tipo === "whatsapp" ? "WA" : widget.tipo === "calculadora_financ" ? "CAL" : "CTA"}
+                          {widget.tipo === "whatsapp"
+                            ? "WA"
+                            : widget.tipo === "calculadora_financ"
+                              ? "CAL"
+                              : "CTA"}
                         </span>
                         <div>
                           <h4 className="font-bold text-neutral-900 dark:text-white leading-none text-sm group-hover:text-primary transition-colors">
@@ -390,7 +470,10 @@ function WidgetsManagerPage() {
                         </div>
                       </div>
 
-                      <Badge variant={widget.ativo ? "default" : "secondary"} className="font-bold text-[9px]">
+                      <Badge
+                        variant={widget.ativo ? "default" : "secondary"}
+                        className="font-bold text-[9px]"
+                      >
                         {widget.ativo ? "INSTALADO/ATIVO" : "INATIVO"}
                       </Badge>
                     </div>
@@ -398,17 +481,30 @@ function WidgetsManagerPage() {
                     {/* METRICS PREVIEW PANEL */}
                     <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-muted/50 border border-border/40 text-center mb-4">
                       <div>
-                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">Exibições</span>
-                        <span className="text-sm font-bold font-mono text-neutral-800 dark:text-white">{widget.views_count || 0}</span>
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">
+                          Exibições
+                        </span>
+                        <span className="text-sm font-bold font-mono text-neutral-800 dark:text-white">
+                          {widget.views_count || 0}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">Cliques/Leads</span>
-                        <span className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">{widget.leads_count || 0}</span>
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">
+                          Cliques/Leads
+                        </span>
+                        <span className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                          {widget.leads_count || 0}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">Conversão</span>
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase block">
+                          Conversão
+                        </span>
                         <span className="text-xs font-bold block mt-0.5 text-primary">
-                          {widget.views_count > 0 ? ((widget.leads_count / widget.views_count) * 100).toFixed(1) : "0.0"}%
+                          {widget.views_count > 0
+                            ? ((widget.leads_count / widget.views_count) * 100).toFixed(1)
+                            : "0.0"}
+                          %
                         </span>
                       </div>
                     </div>
@@ -417,10 +513,10 @@ function WidgetsManagerPage() {
                   {/* BOTTOM ACTION BUTTONS */}
                   <div className="flex items-center justify-between mt-4 pt-3.5 border-t border-border/50">
                     <div className="flex items-center gap-1.5">
-                      <Button 
-                        onClick={() => handleCopyCode(widget.slug)} 
-                        variant="ghost" 
-                        size="sm" 
+                      <Button
+                        onClick={() => handleCopyCode(widget.slug)}
+                        variant="ghost"
+                        size="sm"
                         className="text-[11px] font-bold h-8 text-neutral-600 hover:text-primary gap-1 px-2 hover:bg-primary/5"
                         title="Copiar código externo para colocar em sites em WordPress ou Wix"
                       >
@@ -429,19 +525,22 @@ function WidgetsManagerPage() {
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <Button 
-                        onClick={() => { setCurrentWidget(widget); setIsEditing(true); }}
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        onClick={() => {
+                          setCurrentWidget(widget);
+                          setIsEditing(true);
+                        }}
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-neutral-600 hover:text-primary hover:bg-primary/5"
                         title="Configurar Aparência"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
+                      <Button
                         onClick={() => handleDelete(widget.id)}
-                        variant="ghost" 
-                        size="icon" 
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-neutral-400 hover:text-destructive hover:bg-destructive/5"
                         title="Remover Widget"
                       >
@@ -460,7 +559,12 @@ function WidgetsManagerPage() {
           {/* HEADER EDITOR */}
           <div className="mb-6 flex items-center justify-between border-b border-border/70 pb-4">
             <div className="flex items-center gap-3">
-              <Button onClick={() => setIsEditing(false)} variant="outline" size="sm" className="h-8">
+              <Button
+                onClick={() => setIsEditing(false)}
+                variant="outline"
+                size="sm"
+                className="h-8"
+              >
                 <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
               </Button>
               <h2 className="text-xl font-extrabold tracking-tight text-neutral-950 dark:text-white">
@@ -468,7 +572,10 @@ function WidgetsManagerPage() {
               </h2>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={currentWidget.ativo ? "default" : "secondary"} className="font-extrabold text-[10px]">
+              <Badge
+                variant={currentWidget.ativo ? "default" : "secondary"}
+                className="font-extrabold text-[10px]"
+              >
                 {currentWidget.ativo ? "ATIVADO" : "PAUSADO/INATIVO"}
               </Badge>
             </div>
@@ -476,7 +583,6 @@ function WidgetsManagerPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-12">
-              
               {/* PRIMARY WIZARD FORM (7 cols) */}
               <div className="lg:col-span-7 space-y-5">
                 {/* CADASTRO PROGRESS TABS */}
@@ -485,7 +591,7 @@ function WidgetsManagerPage() {
                     type="button"
                     onClick={() => setFormActiveTab("geral")}
                     className={`pb-2.5 px-3 md:px-4 text-xs font-bold transition-all relative ${
-                      formActiveTab === "geral" 
+                      formActiveTab === "geral"
                         ? "text-primary border-b-2 border-primary"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -496,7 +602,7 @@ function WidgetsManagerPage() {
                     type="button"
                     onClick={() => setFormActiveTab("design")}
                     className={`pb-2.5 px-3 md:px-4 text-xs font-bold transition-all relative ${
-                      formActiveTab === "design" 
+                      formActiveTab === "design"
                         ? "text-primary border-b-2 border-primary"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -507,7 +613,7 @@ function WidgetsManagerPage() {
                     type="button"
                     onClick={() => setFormActiveTab("tecnico")}
                     className={`pb-2.5 px-3 md:px-4 text-xs font-bold transition-all relative ${
-                      formActiveTab === "tecnico" 
+                      formActiveTab === "tecnico"
                         ? "text-primary border-b-2 border-primary"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
@@ -527,11 +633,13 @@ function WidgetsManagerPage() {
                         id="widget-nome"
                         placeholder="Ex: WhatsApp Flutuante - Home"
                         value={currentWidget.nome || ""}
-                        onChange={(e) => setCurrentWidget(p => ({ 
-                          ...p, 
-                          nome: e.target.value,
-                          slug: p.id ? p.slug : slugify(e.target.value) 
-                        }))}
+                        onChange={(e) =>
+                          setCurrentWidget((p) => ({
+                            ...p,
+                            nome: e.target.value,
+                            slug: p.id ? p.slug : slugify(e.target.value),
+                          }))
+                        }
                         required
                         className="mt-1.5 focus-visible:ring-primary text-xs"
                       />
@@ -546,7 +654,9 @@ function WidgetsManagerPage() {
                           id="widget-slug"
                           placeholder="atendimento-whatsapp"
                           value={currentWidget.slug || ""}
-                          onChange={(e) => setCurrentWidget(p => ({ ...p, slug: slugify(e.target.value) }))}
+                          onChange={(e) =>
+                            setCurrentWidget((p) => ({ ...p, slug: slugify(e.target.value) }))
+                          }
                           className="mt-1.5 font-mono text-xs focus-visible:ring-primary"
                         />
                       </div>
@@ -561,20 +671,38 @@ function WidgetsManagerPage() {
                           onChange={(e) => {
                             const val = e.target.value as any;
                             // preset colors based on type
-                            const color = val === 'whatsapp' ? '#25D366' : val === 'calculadora_financ' ? '#005CAB' : '#F2762E';
-                            setCurrentWidget(p => ({ 
-                              ...p, 
+                            const color =
+                              val === "whatsapp"
+                                ? "#25D366"
+                                : val === "calculadora_financ"
+                                  ? "#005CAB"
+                                  : "#F2762E";
+                            setCurrentWidget((p) => ({
+                              ...p,
                               tipo: val,
                               cor_fundo: color,
-                              texto_cta: val === 'whatsapp' ? 'Chamar no WhatsApp' : val === 'calculadora_financ' ? 'Simular Financiamento' : 'Inscreva-se rápido'
+                              texto_cta:
+                                val === "whatsapp"
+                                  ? "Chamar no WhatsApp"
+                                  : val === "calculadora_financ"
+                                    ? "Simular Financiamento"
+                                    : "Inscreva-se rápido",
                             }));
                           }}
                           className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <option value="whatsapp">Atendente/WhatsApp Flutuante (Suporte Rápido)</option>
-                          <option value="calculadora_financ">Simulador Caixa/Calculadora Habitacional</option>
-                          <option value="captura_leads">Banner/Popup Capturador de Leads (Home)</option>
-                          <option value="banner_cta">CTA Banner Fixo de Anúncio / Oportunidade Única</option>
+                          <option value="whatsapp">
+                            Atendente/WhatsApp Flutuante (Suporte Rápido)
+                          </option>
+                          <option value="calculadora_financ">
+                            Simulador Caixa/Calculadora Habitacional
+                          </option>
+                          <option value="captura_leads">
+                            Banner/Popup Capturador de Leads (Home)
+                          </option>
+                          <option value="banner_cta">
+                            CTA Banner Fixo de Anúncio / Oportunidade Única
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -586,10 +714,14 @@ function WidgetsManagerPage() {
                       <select
                         id="widget-posicao"
                         value={currentWidget.posicao || "bottom-right"}
-                        onChange={(e) => setCurrentWidget(p => ({ ...p, posicao: e.target.value as any }))}
+                        onChange={(e) =>
+                          setCurrentWidget((p) => ({ ...p, posicao: e.target.value as any }))
+                        }
                         className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        <option value="bottom-right">Inferior Direito (Bottom-Right, Padrão)</option>
+                        <option value="bottom-right">
+                          Inferior Direito (Bottom-Right, Padrão)
+                        </option>
                         <option value="bottom-left">Inferior Esquerdo (Bottom-Left)</option>
                         <option value="top-right">Superior Direito (Top-Right)</option>
                         <option value="top-left">Superior Esquerdo (Top-Left)</option>
@@ -617,13 +749,17 @@ function WidgetsManagerPage() {
                             id="widget-fundo"
                             type="color"
                             value={currentWidget.cor_fundo || "#10B981"}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, cor_fundo: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({ ...p, cor_fundo: e.target.value }))
+                            }
                             className="h-9 w-12 p-0 border-none cursor-pointer"
                           />
                           <Input
                             type="text"
                             value={currentWidget.cor_fundo || ""}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, cor_fundo: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({ ...p, cor_fundo: e.target.value }))
+                            }
                             className="text-xs"
                             placeholder="#10B981"
                           />
@@ -631,7 +767,10 @@ function WidgetsManagerPage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="widget-texto-color" className="text-xs font-bold text-foreground">
+                        <Label
+                          htmlFor="widget-texto-color"
+                          className="text-xs font-bold text-foreground"
+                        >
                           Cor do Texto / Ícone
                         </Label>
                         <div className="mt-1.5 flex gap-2">
@@ -639,13 +778,17 @@ function WidgetsManagerPage() {
                             id="widget-texto-color"
                             type="color"
                             value={currentWidget.cor_texto || "#FFFFFF"}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, cor_texto: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({ ...p, cor_texto: e.target.value }))
+                            }
                             className="h-9 w-12 p-0 border-none cursor-pointer"
                           />
                           <Input
                             type="text"
                             value={currentWidget.cor_texto || ""}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, cor_texto: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({ ...p, cor_texto: e.target.value }))
+                            }
                             className="text-xs"
                             placeholder="#FFFFFF"
                           />
@@ -661,7 +804,9 @@ function WidgetsManagerPage() {
                         id="widget-cta"
                         placeholder="Ex: Fale com nossos consultores de vendas"
                         value={currentWidget.texto_cta || ""}
-                        onChange={(e) => setCurrentWidget(p => ({ ...p, texto_cta: e.target.value }))}
+                        onChange={(e) =>
+                          setCurrentWidget((p) => ({ ...p, texto_cta: e.target.value }))
+                        }
                         className="mt-1.5 text-xs"
                       />
                     </div>
@@ -669,23 +814,41 @@ function WidgetsManagerPage() {
                     <div className="pt-2">
                       <span className="text-xs font-bold">Presets de Marca Rápidos</span>
                       <div className="mt-1.5 flex gap-2">
-                        <button 
-                          type="button" 
-                          onClick={() => setCurrentWidget(p => ({ ...p, cor_fundo: "#25D366", cor_texto: "#FFFFFF" }))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCurrentWidget((p) => ({
+                              ...p,
+                              cor_fundo: "#25D366",
+                              cor_texto: "#FFFFFF",
+                            }))
+                          }
                           className="px-2.5 py-1 text-[10px] font-bold bg-[#25D366] text-white rounded hover:opacity-90"
                         >
                           WhatsApp Green
                         </button>
-                        <button 
-                          type="button" 
-                          onClick={() => setCurrentWidget(p => ({ ...p, cor_fundo: "#F2762E", cor_texto: "#FFFFFF" }))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCurrentWidget((p) => ({
+                              ...p,
+                              cor_fundo: "#F2762E",
+                              cor_texto: "#FFFFFF",
+                            }))
+                          }
                           className="px-2.5 py-1 text-[10px] font-bold bg-[#F2762E] text-white rounded hover:opacity-90"
                         >
                           Imob Brand (Premium)
                         </button>
-                        <button 
-                          type="button" 
-                          onClick={() => setCurrentWidget(p => ({ ...p, cor_fundo: "#005CAB", cor_texto: "#FFFFFF" }))}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCurrentWidget((p) => ({
+                              ...p,
+                              cor_fundo: "#005CAB",
+                              cor_texto: "#FFFFFF",
+                            }))
+                          }
                           className="px-2.5 py-1 text-[10px] font-bold bg-[#005CAB] text-white rounded hover:opacity-90"
                         >
                           Caixa Blue (Confiança)
@@ -701,21 +864,34 @@ function WidgetsManagerPage() {
                     {currentWidget.tipo === "whatsapp" ? (
                       <>
                         <div>
-                          <Label htmlFor="widget-phone" className="text-xs font-bold text-foreground">
+                          <Label
+                            htmlFor="widget-phone"
+                            className="text-xs font-bold text-foreground"
+                          >
                             Número de Telefone WhatsApp <span className="text-destructive">*</span>
                           </Label>
                           <Input
                             id="widget-phone"
                             placeholder="Ex: 11999998888 (Apenas números com DDD)"
                             value={currentWidget.telefone_whatsapp || ""}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, telefone_whatsapp: e.target.value.replace(/\D/g, '') }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({
+                                ...p,
+                                telefone_whatsapp: e.target.value.replace(/\D/g, ""),
+                              }))
+                            }
                             className="mt-1.5 text-xs"
                           />
-                          <span className="text-[10px] text-muted-foreground mt-1 block">O widget abrirá a conversa diretamente com este celular associado.</span>
+                          <span className="text-[10px] text-muted-foreground mt-1 block">
+                            O widget abrirá a conversa diretamente com este celular associado.
+                          </span>
                         </div>
 
                         <div>
-                          <Label htmlFor="widget-welcome-msg" className="text-xs font-bold text-foreground">
+                          <Label
+                            htmlFor="widget-welcome-msg"
+                            className="text-xs font-bold text-foreground"
+                          >
                             Mensagem Inicial de Boas-Vindas (Pré-preenchida para o Lead enviar)
                           </Label>
                           <Textarea
@@ -723,7 +899,9 @@ function WidgetsManagerPage() {
                             rows={3}
                             placeholder="Ex: Olá, vim através do portal da Imobiliária e gostaria de agendar uma visita guiada para o final de semana."
                             value={currentWidget.texto_whatsapp || ""}
-                            onChange={(e) => setCurrentWidget(p => ({ ...p, texto_whatsapp: e.target.value }))}
+                            onChange={(e) =>
+                              setCurrentWidget((p) => ({ ...p, texto_whatsapp: e.target.value }))
+                            }
                             className="mt-1.5 text-xs"
                           />
                         </div>
@@ -731,14 +909,18 @@ function WidgetsManagerPage() {
                     ) : (
                       <div className="p-4 rounded-lg bg-muted text-xs text-muted-foreground leading-normal space-y-2">
                         <Settings className="h-5 w-5 text-neutral-500" />
-                        <span className="font-bold text-neutral-800 dark:text-white block">Regras para Simuladores / Popups</span>
+                        <span className="font-bold text-neutral-800 dark:text-white block">
+                          Regras para Simuladores / Popups
+                        </span>
                         <p>
-                          Este tipo de widget exibe um popover overlay diretamente na tela pública, 
-                          coletando nome, telefone, e-mail e intenção de financiamento e inserindo como 
+                          Este tipo de widget exibe um popover overlay diretamente na tela pública,
+                          coletando nome, telefone, e-mail e intenção de financiamento e inserindo
+                          como
                           <b> Lead Automático</b> no módulo imobiário.
                         </p>
                         <p className="text-[11px] text-muted-foreground/80">
-                          Todos os dados informados pelos clientes são consolidados diretamente para sua análise.
+                          Todos os dados informados pelos clientes são consolidados diretamente para
+                          sua análise.
                         </p>
                       </div>
                     )}
@@ -772,7 +954,9 @@ function WidgetsManagerPage() {
                     <div className="relative flex-1 bg-white dark:bg-neutral-900 rounded-2xl p-3 flex flex-col justify-between mt-1 overflow-hidden">
                       {/* Simulated site header */}
                       <div className="border-b border-neutral-100 dark:border-neutral-800 pb-1.5 flex justify-between items-center">
-                        <span className="text-[9px] font-extrabold text-neutral-800 dark:text-white">imob365</span>
+                        <span className="text-[9px] font-extrabold text-neutral-800 dark:text-white">
+                          imob365
+                        </span>
                         <span className="h-1.5 w-4 bg-muted rounded" />
                       </div>
 
@@ -786,19 +970,29 @@ function WidgetsManagerPage() {
                       {/* THE DYNAMIC PREVIEW FLUID COMPONENT */}
                       <div className="relative flex items-end justify-center pt-8 border-t border-neutral-100 dark:border-neutral-800 mb-1">
                         {currentWidget.posicao === "inline" ? (
-                          <div 
+                          <div
                             className="w-full py-1.5 px-2.5 rounded-md text-center text-[10px] font-bold shadow-xs break-all animate-bounce"
-                            style={{ backgroundColor: currentWidget.cor_fundo || '#10B981', color: currentWidget.cor_texto || '#FFFFFF' }}
+                            style={{
+                              backgroundColor: currentWidget.cor_fundo || "#10B981",
+                              color: currentWidget.cor_texto || "#FFFFFF",
+                            }}
                           >
                             {currentWidget.texto_cta || "Inscrição Rápida"}
                           </div>
                         ) : (
-                          <div className={`w-full flex items-center gap-1.5 p-1.5 rounded-full shadow-md text-[9px] font-extrabold ${
-                            currentWidget.posicao?.includes("left") ? "justify-start" : "justify-end"
-                          }`}>
-                            <span 
+                          <div
+                            className={`w-full flex items-center gap-1.5 p-1.5 rounded-full shadow-md text-[9px] font-extrabold ${
+                              currentWidget.posicao?.includes("left")
+                                ? "justify-start"
+                                : "justify-end"
+                            }`}
+                          >
+                            <span
                               className="px-2 py-1 rounded-full cursor-pointer hover:scale-105 active:scale-95 transition-transform"
-                              style={{ backgroundColor: currentWidget.cor_fundo || '#10B981', color: currentWidget.cor_texto || '#FFFFFF' }}
+                              style={{
+                                backgroundColor: currentWidget.cor_fundo || "#10B981",
+                                color: currentWidget.cor_texto || "#FFFFFF",
+                              }}
                             >
                               {currentWidget.texto_cta || "Clique aqui"}
                             </span>
@@ -812,14 +1006,16 @@ function WidgetsManagerPage() {
                 {/* SAVE ACTION BUTTONS */}
                 <div className="space-y-2 lg:pt-2">
                   <div className="flex gap-2">
-                    <Label className="text-xs font-bold text-muted-foreground/90 shrink-0 py-1">Widget Ativo:</Label>
+                    <Label className="text-xs font-bold text-muted-foreground/90 shrink-0 py-1">
+                      Widget Ativo:
+                    </Label>
                     <div className="flex gap-1">
                       <button
                         type="button"
-                        onClick={() => setCurrentWidget(p => ({ ...p, ativo: true }))}
+                        onClick={() => setCurrentWidget((p) => ({ ...p, ativo: true }))}
                         className={`px-2.5 py-1 text-[10px] font-bold rounded-md border ${
-                          currentWidget.ativo 
-                            ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/20" 
+                          currentWidget.ativo
+                            ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/20"
                             : "border-border text-muted-foreground hover:bg-muted"
                         }`}
                       >
@@ -827,10 +1023,10 @@ function WidgetsManagerPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setCurrentWidget(p => ({ ...p, ativo: false }))}
+                        onClick={() => setCurrentWidget((p) => ({ ...p, ativo: false }))}
                         className={`px-2.5 py-1 text-[10px] font-bold rounded-md border ${
-                          !currentWidget.ativo 
-                            ? "bg-amber-500/15 text-amber-600 border-amber-500/20" 
+                          !currentWidget.ativo
+                            ? "bg-amber-500/15 text-amber-600 border-amber-500/20"
                             : "border-border text-muted-foreground hover:bg-muted"
                         }`}
                       >
@@ -840,19 +1036,22 @@ function WidgetsManagerPage() {
                   </div>
 
                   <Button type="submit" disabled={saving} className="w-full font-bold shadow-md">
-                    {saving ? "Instalando..." : currentWidget.id ? "Salvar Alterações" : "Inserir Widget no Site"}
+                    {saving
+                      ? "Instalando..."
+                      : currentWidget.id
+                        ? "Salvar Alterações"
+                        : "Inserir Widget no Site"}
                   </Button>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsEditing(false)} 
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
                     className="w-full text-xs"
                   >
                     Descartar
                   </Button>
                 </div>
               </div>
-
             </div>
           </form>
         </div>

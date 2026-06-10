@@ -7,16 +7,19 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
   httpOptions: {
     headers: {
-      'User-Agent': 'aistudio-build',
-    }
-  }
+      "User-Agent": "aistudio-build",
+    },
+  },
 });
 
 // FIX [AI-MODEL]: "gemini-3.5-flash" não existe na API do Google — causava HTTP 404.
 // Usando gemini-2.0-flash: melhor custo-benefício latência/qualidade para geração de textos imobiliários.
 const DEFAULT_MODEL = "gemini-2.0-flash";
 
-async function callAI(messages: Array<{ role: string; content: string }>, opts?: { jsonMode?: boolean; model?: string }) {
+async function callAI(
+  messages: Array<{ role: string; content: string }>,
+  opts?: { jsonMode?: boolean; model?: string },
+) {
   const systemMessage = messages.find((m) => m.role === "system")?.content;
   const userMessage = messages.find((m) => m.role === "user")?.content || "";
 
@@ -61,12 +64,16 @@ function imovelBriefing(data: z.infer<typeof ImovelInput>) {
     `Finalidade: ${data.finalidade}`,
     `Tipo: ${data.tipo}`,
     data.titulo ? `Título atual: ${data.titulo}` : null,
-    data.bairro || data.cidade ? `Localização: ${[data.bairro, data.cidade].filter(Boolean).join(" / ")}` : null,
+    data.bairro || data.cidade
+      ? `Localização: ${[data.bairro, data.cidade].filter(Boolean).join(" / ")}`
+      : null,
     data.quartos ? `Quartos: ${data.quartos}` : null,
     data.area_util ? `Área útil: ${data.area_util} m²` : null,
     data.preco ? `Preço: R$ ${data.preco.toLocaleString("pt-BR")}` : null,
     data.caracteristicas ? `Características: ${data.caracteristicas}` : null,
-  ].filter(Boolean).join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
   return linhas || "Imóvel residencial.";
 }
 
@@ -90,7 +97,8 @@ export const gerarTituloImovel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => ImovelInput.parse(d))
   .handler(async ({ data }) => {
-    const system = "Você cria títulos de anúncios imobiliários brasileiros. Curto, factual, atrativo, no máximo 80 caracteres. Sem emojis. Sem aspas.";
+    const system =
+      "Você cria títulos de anúncios imobiliários brasileiros. Curto, factual, atrativo, no máximo 80 caracteres. Sem emojis. Sem aspas.";
     const user = `Gere 3 sugestões de título para o anúncio deste imóvel, uma por linha, sem numerar:\n\n${imovelBriefing(data)}`;
     const text = await callAI([
       { role: "system", content: system },
@@ -109,7 +117,8 @@ export const gerarPostRedesImovel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => ImovelInput.parse(d))
   .handler(async ({ data }) => {
-    const system = "Você é social media de imobiliária no Brasil. Crie posts diretos, com gancho, 3–5 hashtags ao final, sem inventar dados.";
+    const system =
+      "Você é social media de imobiliária no Brasil. Crie posts diretos, com gancho, 3–5 hashtags ao final, sem inventar dados.";
     const user = `Gere um post (texto curto, até 600 caracteres) para Instagram/Facebook divulgando este imóvel:\n\n${imovelBriefing(data)}\n\nResponda apenas com o texto do post.`;
     const text = await callAI([
       { role: "system", content: system },
@@ -130,12 +139,16 @@ export const gerarMetatagsSEO = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => SeoInput.parse(d))
   .handler(async ({ data }) => {
-    const system = "Você é um especialista em SEO no mercado imobiliário brasileiro. Retorne apenas um JSON estruturado com chave e valor correspondentes.";
+    const system =
+      "Você é um especialista em SEO no mercado imobiliário brasileiro. Retorne apenas um JSON estruturado com chave e valor correspondentes.";
     const user = `Otimize o SEO para este imóvel:\nTítulo: ${data.titulo}\nDescrição: ${data.descricao}\nLocalização: ${data.bairro} - ${data.cidade}\nTipo: ${data.tipo}\n\nRetorne obrigatoriamente um objeto JSON com as seguintes chaves:\n- "seo_title": título SEO altamente amigável para motores de busca (máximo 60 caracteres)\n- "meta_description": resumo focado em cliques com tags de relevância (máximo 155 caracteres) contendo localização\n- "keywords": lista de até 6 palavras-chave separadas por vírgula.`;
-    const response = await callAI([
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ], { jsonMode: true });
+    const response = await callAI(
+      [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      { jsonMode: true },
+    );
 
     try {
       const parsed = JSON.parse(response);
@@ -145,8 +158,8 @@ export const gerarMetatagsSEO = createServerFn({ method: "POST" })
         seo: {
           seo_title: `${data.tipo} em ${data.bairro}, ${data.cidade} | imob365`,
           meta_description: `Confira este excelente ${data.tipo} em ${data.bairro}, ${data.cidade}. Detalhes completos e fotos profissionais. Solicite sua visita!`,
-          keywords: `${data.tipo}, ${data.bairro}, imóvel em ${data.cidade}, imob365`
-        }
+          keywords: `${data.tipo}, ${data.bairro}, imóvel em ${data.cidade}, imob365`,
+        },
       };
     }
   });
@@ -173,10 +186,13 @@ Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
 
     const user = `Considere a mensagem do usuário:\n"${data.mensagem}"\n\nAnalise e retorne o JSON estruturado correspondente.`;
 
-    const response = await callAI([
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ], { jsonMode: true });
+    const response = await callAI(
+      [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      { jsonMode: true },
+    );
 
     try {
       const parsed = JSON.parse(response);
@@ -184,7 +200,8 @@ Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
     } catch {
       return {
         bot: {
-          resposta_amigavel: "Entendi o seu desejo! Busquei os melhores imóveis disponíveis conforme as suas indicações.",
+          resposta_amigavel:
+            "Entendi o seu desejo! Busquei os melhores imóveis disponíveis conforme as suas indicações.",
           q: "",
           finalidade: "todos",
           tipo: "",
@@ -193,8 +210,8 @@ Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
           precoMax: "",
           precoMin: "",
           areaMin: "",
-          caracteristicasSelecionadas: []
-        }
+          caracteristicasSelecionadas: [],
+        },
       };
     }
   });

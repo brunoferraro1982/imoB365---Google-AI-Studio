@@ -1,12 +1,6 @@
-
 export function LogoIcon({ className = "h-8 w-8" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg viewBox="0 0 24 24" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {/* Top-left clipping half diagonal from bottom-left to top-right over 24x24 box */}
         <clipPath id="logo-icon-clip-top-left">
@@ -17,7 +11,7 @@ export function LogoIcon({ className = "h-8 w-8" }: { className?: string }) {
           <rect x="-24" y="0" width="48" height="48" transform="rotate(-45) translate(0, 0.6)" />
         </clipPath>
       </defs>
-      
+
       {/* Dynamic orange split ring icon */}
       <g transform="translate(12, 12)">
         {/* Top-left shifted half */}
@@ -43,12 +37,7 @@ export function Logo({
   const textColor = variant === "white" ? "#FFFFFF" : "#0F172A";
 
   return (
-    <svg
-      viewBox="0 0 115 32"
-      className={className}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
+    <svg viewBox="0 0 115 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {/* Top-left clipping half diagonal inside a local 40x40 area */}
         <clipPath id="logo-clip-top-left">
@@ -101,13 +90,15 @@ export function Logo({
   );
 }
 
-export function LogoMark({ className = "h-7 w-auto font-display font-extrabold tracking-tight text-foreground" }: { className?: string }) {
+export function LogoMark({
+  className = "h-7 w-auto font-display font-extrabold tracking-tight text-foreground",
+}: {
+  className?: string;
+}) {
   return (
     <div className="flex items-center gap-1.5">
       <LogoIcon className="h-6 w-6" />
-      <span className={className}>
-        imob365
-      </span>
+      <span className={className}>imob365</span>
     </div>
   );
 }

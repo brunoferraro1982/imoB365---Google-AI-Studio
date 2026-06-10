@@ -24,8 +24,16 @@ function EditarCorretor() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await (supabase as any).from("corretores").select("*").eq("id", id).maybeSingle();
-    if (error || !data) { toast.error("Corretor não encontrado"); setLoading(false); return; }
+    const { data, error } = await (supabase as any)
+      .from("corretores")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) {
+      toast.error("Corretor não encontrado");
+      setLoading(false);
+      return;
+    }
     setSlug(data.slug);
     setFotoUrl(data.foto_url);
     setInitial({
@@ -45,14 +53,22 @@ function EditarCorretor() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [id]);
+  useEffect(() => {
+    load();
+  }, [id]);
 
   async function save(data: CorretorFormData) {
     setSaving(true);
     const newSlug = data.slug || slugify(data.nome);
-    const { error } = await (supabase as any).from("corretores").update({ ...data, slug: newSlug }).eq("id", id);
+    const { error } = await (supabase as any)
+      .from("corretores")
+      .update({ ...data, slug: newSlug })
+      .eq("id", id);
     setSaving(false);
-    if (error) { toast.error("Erro ao salvar: " + error.message); return; }
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+      return;
+    }
     setSlug(newSlug);
     toast.success("Alterações salvas");
   }
@@ -69,15 +85,25 @@ function EditarCorretor() {
       contentType: file.type,
       upsert: false,
     });
-    if (upErr) { toast.error("Upload falhou: " + upErr.message); setUploading(false); return; }
+    if (upErr) {
+      toast.error("Upload falhou: " + upErr.message);
+      setUploading(false);
+      return;
+    }
     const url = supabase.storage.from("corretor-fotos").getPublicUrl(path).data.publicUrl;
     if (fotoUrl) {
       const oldPath = fotoUrl.split("/corretor-fotos/")[1];
       if (oldPath) await supabase.storage.from("corretor-fotos").remove([oldPath]);
     }
-    const { error } = await (supabase as any).from("corretores").update({ foto_url: url }).eq("id", id);
+    const { error } = await (supabase as any)
+      .from("corretores")
+      .update({ foto_url: url })
+      .eq("id", id);
     setUploading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setFotoUrl(url);
     toast.success("Foto atualizada");
   }
@@ -91,13 +117,16 @@ function EditarCorretor() {
     toast.success("Foto removida");
   }
 
-  if (loading || !initial) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
+  if (loading || !initial)
+    return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
   return (
     <div className="mx-auto max-w-4xl p-8">
       <div className="mb-4 flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
-          <Link to="/app/corretores"><ChevronLeft className="mr-1 h-4 w-4" /> Voltar</Link>
+          <Link to="/app/corretores">
+            <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
+          </Link>
         </Button>
         {slug && (
           <Button variant="outline" size="sm" asChild>
@@ -116,14 +145,24 @@ function EditarCorretor() {
             <img src={fotoUrl} alt="" className="h-24 w-24 rounded-full object-cover" />
           ) : (
             <div className="flex h-24 w-24 items-center justify-center rounded-full bg-muted text-xl font-medium text-muted-foreground">
-              {(initial.nome ?? "").split(" ").map((p) => p[0]).slice(0, 2).join("")}
+              {(initial.nome ?? "")
+                .split(" ")
+                .map((p) => p[0])
+                .slice(0, 2)
+                .join("")}
             </div>
           )}
           <div className="flex gap-2">
             <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
               <ImagePlus className="h-4 w-4" />
               {uploading ? "Enviando…" : fotoUrl ? "Trocar foto" : "Enviar foto"}
-              <input type="file" accept="image/*" className="hidden" onChange={handleUpload} disabled={uploading} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+                disabled={uploading}
+              />
             </label>
             {fotoUrl && (
               <Button variant="outline" size="sm" onClick={removeFoto}>
@@ -134,7 +173,12 @@ function EditarCorretor() {
         </div>
       </section>
 
-      <CorretorForm initial={initial} onSubmit={save} submitLabel="Salvar alterações" submitting={saving} />
+      <CorretorForm
+        initial={initial}
+        onSubmit={save}
+        submitLabel="Salvar alterações"
+        submitting={saving}
+      />
     </div>
   );
 }

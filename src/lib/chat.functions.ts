@@ -68,15 +68,14 @@ export const listConversations = createServerFn({ method: "POST" })
     const imovelIds = Array.from(new Set(convs.map((c) => c.imovel_id)));
     const userIds = Array.from(
       new Set(
-        convs.flatMap((c) => [c.interessado_user_id, c.corretor_user_id].filter(Boolean) as string[]),
+        convs.flatMap(
+          (c) => [c.interessado_user_id, c.corretor_user_id].filter(Boolean) as string[],
+        ),
       ),
     );
 
     const [{ data: imoveis }, { data: fotos }, { data: profiles }] = await Promise.all([
-      supabase
-        .from("imoveis")
-        .select("id,titulo,slug,preco,finalidade")
-        .in("id", imovelIds),
+      supabase.from("imoveis").select("id,titulo,slug,preco,finalidade").in("id", imovelIds),
       supabase
         .from("imovel_fotos")
         .select("imovel_id,storage_path,capa,ordem")
@@ -93,17 +92,14 @@ export const listConversations = createServerFn({ method: "POST" })
     for (const f of fotos ?? []) {
       if (!fotoByImovel.has(f.imovel_id)) fotoByImovel.set(f.imovel_id, f.storage_path);
     }
-    const nameByUser = new Map(
-      (profiles ?? []).map((p) => [p.id, p.nome ?? "Usuário"] as const),
-    );
+    const nameByUser = new Map((profiles ?? []).map((p) => [p.id, p.nome ?? "Usuário"] as const));
 
     const items = convs
       .map((c) => {
         const im = imovelById.get(c.imovel_id);
         const myRole: "interessado" | "corretor" =
           c.interessado_user_id === userId ? "interessado" : "corretor";
-        const counterpartId =
-          myRole === "interessado" ? c.corretor_user_id : c.interessado_user_id;
+        const counterpartId = myRole === "interessado" ? c.corretor_user_id : c.interessado_user_id;
         return {
           id: c.id,
           tenantId: c.tenant_id,
@@ -120,9 +116,7 @@ export const listConversations = createServerFn({ method: "POST" })
               }
             : null,
           myRole,
-          counterpartName: counterpartId
-            ? nameByUser.get(counterpartId) ?? "Usuário"
-            : "Usuário",
+          counterpartName: counterpartId ? (nameByUser.get(counterpartId) ?? "Usuário") : "Usuário",
           lastMessageAt: c.last_message_at,
           lastMessagePreview: c.last_message_preview,
           unread: myRole === "interessado" ? c.unread_interessado : c.unread_corretor,
@@ -233,8 +227,7 @@ export const getMessages = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!c) throw new Error("Conversa não encontrada");
     const ok =
-      c.interessado_user_id === userId ||
-      (await isTenantMember(supabase, userId, c.tenant_id));
+      c.interessado_user_id === userId || (await isTenantMember(supabase, userId, c.tenant_id));
     if (!ok) throw new Error("Sem acesso");
 
     let q = supabase
@@ -260,12 +253,15 @@ const sendSchema = z.object({
   kind: z.enum(["text", "quick_reply"]).default("text"),
 });
 
-async function deliverMessage(supabase: any, opts: {
-  conversationId: string;
-  senderUserId: string;
-  content: string;
-  kind: "text" | "quick_reply" | "system";
-}) {
+async function deliverMessage(
+  supabase: any,
+  opts: {
+    conversationId: string;
+    senderUserId: string;
+    content: string;
+    kind: "text" | "quick_reply" | "system";
+  },
+) {
   const { data: c, error: cErr } = await supabase
     .from("chat_conversations")
     .select("*")
@@ -306,22 +302,18 @@ async function deliverMessage(supabase: any, opts: {
   const upd =
     senderRole === "interessado"
       ? { ...baseUpd, unread_interessado: 0, unread_corretor: (c.unread_corretor ?? 0) + 1 }
-      : { 
-          ...baseUpd, 
-          unread_corretor: 0, 
+      : {
+          ...baseUpd,
+          unread_corretor: 0,
           unread_interessado: (c.unread_interessado ?? 0) + 1,
-          ...(isCorretorUnset ? { corretor_user_id: opts.senderUserId } : {})
+          ...(isCorretorUnset ? { corretor_user_id: opts.senderUserId } : {}),
         };
   await supabase.from("chat_conversations").update(upd).eq("id", c.id);
 
   // Notificação para a contraparte
-  const recipientId =
-    senderRole === "interessado" ? c.corretor_user_id : c.interessado_user_id;
+  const recipientId = senderRole === "interessado" ? c.corretor_user_id : c.interessado_user_id;
   if (recipientId) {
-    const link =
-      senderRole === "interessado"
-        ? `/app/chat/${c.id}`
-        : `/conta/chat/${c.id}`;
+    const link = senderRole === "interessado" ? `/app/chat/${c.id}` : `/conta/chat/${c.id}`;
     await supabaseAdmin.from("notifications").insert({
       tenant_id: c.tenant_id,
       user_id: recipientId,
@@ -364,9 +356,7 @@ export const markRead = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!c) throw new Error("Conversa não encontrada");
     const isInteressado = c.interessado_user_id === userId;
-    const isMember = !isInteressado
-      ? await isTenantMember(supabase, userId, c.tenant_id)
-      : false;
+    const isMember = !isInteressado ? await isTenantMember(supabase, userId, c.tenant_id) : false;
     if (!isInteressado && !isMember) throw new Error("Sem acesso");
 
     const otherRole = isInteressado ? "corretor" : "interessado";
@@ -377,13 +367,8 @@ export const markRead = createServerFn({ method: "POST" })
       .is("read_at", null)
       .eq("sender_role", otherRole);
 
-    const upd = isInteressado
-      ? { unread_interessado: 0 }
-      : { unread_corretor: 0 };
-    await supabase
-      .from("chat_conversations")
-      .update(upd)
-      .eq("id", data.conversationId);
+    const upd = isInteressado ? { unread_interessado: 0 } : { unread_corretor: 0 };
+    await supabase.from("chat_conversations").update(upd).eq("id", data.conversationId);
     return { ok: true };
   });
 
@@ -408,8 +393,7 @@ export const startConversationFromImovel = createServerFn({ method: "POST" })
       .eq("id", data.imovelId)
       .maybeSingle();
     if (!im) throw new Error("Imóvel não encontrado");
-    if (!im.publicado || im.status !== "ativo")
-      throw new Error("Imóvel indisponível");
+    if (!im.publicado || im.status !== "ativo") throw new Error("Imóvel indisponível");
 
     // Anti-self: dono não fala consigo mesmo
     if (await isTenantMember(supabase, userId, im.tenant_id)) {
@@ -524,10 +508,7 @@ export const getUnreadTotal = createServerFn({ method: "POST" })
       .from("chat_conversations")
       .select("unread_interessado")
       .eq("interessado_user_id", userId);
-    const totalInteressado = (minhas ?? []).reduce(
-      (s, c) => s + (c.unread_interessado ?? 0),
-      0,
-    );
+    const totalInteressado = (minhas ?? []).reduce((s, c) => s + (c.unread_interessado ?? 0), 0);
 
     return { corretor: totalCorretor, interessado: totalInteressado };
   });

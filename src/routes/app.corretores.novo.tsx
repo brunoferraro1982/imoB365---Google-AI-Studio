@@ -30,7 +30,10 @@ function NovoCorretor() {
       .select("id")
       .single();
     setSaving(false);
-    if (error) { toast.error("Erro ao salvar: " + error.message); return; }
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+      return;
+    }
     toast.success("Corretor cadastrado");
     navigate({ to: "/app/corretores/$id", params: { id: inserted!.id } });
   }
@@ -38,7 +41,9 @@ function NovoCorretor() {
   return (
     <div className="mx-auto max-w-4xl p-8">
       <Button variant="ghost" size="sm" asChild className="mb-4">
-        <Link to="/app/corretores"><ChevronLeft className="mr-1 h-4 w-4" /> Voltar</Link>
+        <Link to="/app/corretores">
+          <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
+        </Link>
       </Button>
       <h1 className="mb-6 text-3xl font-bold tracking-tight">Novo corretor</h1>
       <CorretorForm onSubmit={save} submitLabel="Cadastrar corretor" submitting={saving} />

@@ -32,7 +32,13 @@ export function PartesSection({ contratoId }: { contratoId: string }) {
   const { tenantId } = useAuth();
   const [partes, setPartes] = useState<Parte[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ papel: "comprador", nome: "", documento: "", email: "", telefone: "" });
+  const [form, setForm] = useState({
+    papel: "comprador",
+    nome: "",
+    documento: "",
+    email: "",
+    telefone: "",
+  });
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -46,7 +52,9 @@ export function PartesSection({ contratoId }: { contratoId: string }) {
     setPartes((data ?? []) as Parte[]);
     setLoading(false);
   }
-  useEffect(() => { load(); }, [contratoId]);
+  useEffect(() => {
+    load();
+  }, [contratoId]);
 
   async function addParte(e: FormEvent) {
     e.preventDefault();
@@ -87,10 +95,15 @@ export function PartesSection({ contratoId }: { contratoId: string }) {
       ) : (
         <div className="mb-6 space-y-2">
           {partes.map((p) => (
-            <div key={p.id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+            <div
+              key={p.id}
+              className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
+            >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="capitalize">{p.papel}</Badge>
+                  <Badge variant="secondary" className="capitalize">
+                    {p.papel}
+                  </Badge>
                   <span className="font-medium">{p.nome}</span>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground truncate">
@@ -113,25 +126,46 @@ export function PartesSection({ contratoId }: { contratoId: string }) {
             value={form.papel}
             onChange={(e) => setForm((f) => ({ ...f, papel: e.target.value }))}
           >
-            {PAPEIS.map((p) => <option key={p.value} value={p.value}>{p.label}</option>)}
+            {PAPEIS.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
           </select>
         </div>
         <div className="md:col-span-2">
           <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Nome</Label>
-          <Input value={form.nome} onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))} maxLength={200} />
+          <Input
+            value={form.nome}
+            onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
+            maxLength={200}
+          />
         </div>
         <div>
           <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">CPF/CNPJ</Label>
-          <Input value={form.documento} onChange={(e) => setForm((f) => ({ ...f, documento: e.target.value }))} maxLength={40} />
+          <Input
+            value={form.documento}
+            onChange={(e) => setForm((f) => ({ ...f, documento: e.target.value }))}
+            maxLength={40}
+          />
         </div>
         <div>
           <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Email</Label>
-          <Input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} maxLength={255} />
+          <Input
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            maxLength={255}
+          />
         </div>
         <div className="flex items-end gap-2">
           <div className="flex-1">
             <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Telefone</Label>
-            <Input value={form.telefone} onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))} maxLength={40} />
+            <Input
+              value={form.telefone}
+              onChange={(e) => setForm((f) => ({ ...f, telefone: e.target.value }))}
+              maxLength={40}
+            />
           </div>
           <Button type="submit" size="icon" disabled={saving} aria-label="Adicionar">
             <Plus className="h-4 w-4" />

@@ -40,7 +40,7 @@ function Modulos() {
       supabase.from("tenants").select("plano_slug").eq("id", tenantId).maybeSingle(),
     ]);
 
-    let typedMods = (mods as Module[]) ?? [];
+    const typedMods = (mods as Module[]) ?? [];
 
     // Certifica de incluir o módulo de blog e widgets se eles não vierem do banco de dados ainda
     const hasWidgets = typedMods.some((m) => m.slug === "widgets");
@@ -50,11 +50,12 @@ function Modulos() {
       typedMods.push({
         slug: "widgets",
         nome: "Widgets de Conversão",
-        descricao: "Capturadores flutuantes, calculadoras financeiras e CTAs inteligentes para seu site",
+        descricao:
+          "Capturadores flutuantes, calculadoras financeiras e CTAs inteligentes para seu site",
         versao: "1.0.0",
         core: false,
         requires_plan: "pro",
-        depends_on: []
+        depends_on: [],
       });
     }
 
@@ -66,7 +67,7 @@ function Modulos() {
         versao: "1.0.0",
         core: false,
         requires_plan: "pro",
-        depends_on: []
+        depends_on: [],
       });
     }
 
@@ -74,14 +75,20 @@ function Modulos() {
     setEnabled(Object.fromEntries((tm ?? []).map((t: any) => [t.module_slug, t.enabled])));
     setPlanoSlug(tenant?.plano_slug ?? null);
     if (tenant?.plano_slug) {
-      const { data: plano } = await supabase.from("plans").select("nome,limites").eq("slug", tenant.plano_slug).maybeSingle();
+      const { data: plano } = await supabase
+        .from("plans")
+        .select("nome,limites")
+        .eq("slug", tenant.plano_slug)
+        .maybeSingle();
       setPlanoNome((plano?.nome as string) ?? null);
       const limites = (plano?.limites as any) ?? {};
       setQuota(typeof limites.modulos === "number" ? limites.modulos : 0);
     }
     setLoading(false);
   }
-  useEffect(() => { load(); }, [tenantId]);
+  useEffect(() => {
+    load();
+  }, [tenantId]);
 
   const usedCount = useMemo(() => {
     return modules.filter((m) => !m.core && (enabled[m.slug] ?? false)).length;
@@ -107,11 +114,14 @@ function Modulos() {
       return;
     }
 
-    const { error } = await supabase.from("tenant_modules").upsert({
-      tenant_id: tenantId,
-      module_slug: slug,
-      enabled: value,
-    }, { onConflict: "tenant_id,module_slug" });
+    const { error } = await supabase.from("tenant_modules").upsert(
+      {
+        tenant_id: tenantId,
+        module_slug: slug,
+        enabled: value,
+      },
+      { onConflict: "tenant_id,module_slug" },
+    );
     if (error) {
       toast.error(error.message);
       load();
@@ -131,7 +141,9 @@ function Modulos() {
             <p className="text-lg font-semibold">{planoNome ?? planoSlug ?? "—"}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Módulos opcionais</p>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Módulos opcionais
+            </p>
             <p className="text-lg font-semibold">
               {usedCount} <span className="text-muted-foreground">/ {formatQuota(quota)}</span>
             </p>
@@ -161,12 +173,22 @@ function Modulos() {
           const blocked = !m.core && !isOn && !unlimited && usedCount >= quota;
           const canToggle = isAdmin && !m.core && !blocked;
           return (
-            <div key={m.slug} className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-5">
+            <div
+              key={m.slug}
+              className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-5"
+            >
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="font-semibold">{m.nome}</h3>
-                  <Badge variant="outline" className="text-[10px]">v{m.versao}</Badge>
-                  {m.core && <Badge className="text-[10px]"><Check className="mr-1 h-3 w-3" />Core</Badge>}
+                  <Badge variant="outline" className="text-[10px]">
+                    v{m.versao}
+                  </Badge>
+                  {m.core && (
+                    <Badge className="text-[10px]">
+                      <Check className="mr-1 h-3 w-3" />
+                      Core
+                    </Badge>
+                  )}
                   {blocked && (
                     <Badge variant="secondary" className="text-[10px]">
                       <Lock className="mr-1 h-3 w-3" />
@@ -182,11 +204,17 @@ function Modulos() {
                 </div>
                 {m.descricao && <p className="mt-1 text-sm text-muted-foreground">{m.descricao}</p>}
                 {m.depends_on?.length > 0 && (
-                  <p className="mt-2 text-xs text-muted-foreground">Depende de: {m.depends_on.join(", ")}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Depende de: {m.depends_on.join(", ")}
+                  </p>
                 )}
               </div>
               <div className="pt-1">
-                <Switch checked={isOn} disabled={!canToggle} onCheckedChange={(v) => toggle(m.slug, v)} />
+                <Switch
+                  checked={isOn}
+                  disabled={!canToggle}
+                  onCheckedChange={(v) => toggle(m.slug, v)}
+                />
               </div>
             </div>
           );

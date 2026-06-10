@@ -45,7 +45,10 @@ function AuditoriaPage() {
     })();
   }, []);
 
-  const entities = useMemo(() => Array.from(new Set(rows.map((r) => r.entity).filter(Boolean))) as string[], [rows]);
+  const entities = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.entity).filter(Boolean))) as string[],
+    [rows],
+  );
 
   const filtered = rows.filter((r) => {
     if (entity && r.entity !== entity) return false;
@@ -71,7 +74,12 @@ function AuditoriaPage() {
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input className="w-72 pl-9" placeholder="Buscar por entidade, id ou ação…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input
+            className="w-72 pl-9"
+            placeholder="Buscar por entidade, id ou ação…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
         </div>
         <select
           className="rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -79,7 +87,11 @@ function AuditoriaPage() {
           onChange={(e) => setEntity(e.target.value)}
         >
           <option value="">Todas as entidades</option>
-          {entities.map((e) => <option key={e} value={e}>{e}</option>)}
+          {entities.map((e) => (
+            <option key={e} value={e}>
+              {e}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -97,21 +109,42 @@ function AuditoriaPage() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Carregando…</td></tr>
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                  Carregando…
+                </td>
+              </tr>
             )}
             {!loading && filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">Nenhum evento.</td></tr>
+              <tr>
+                <td colSpan={6} className="px-4 py-10 text-center text-muted-foreground">
+                  Nenhum evento.
+                </td>
+              </tr>
             )}
             {filtered.map((r) => (
               <tr key={r.id} className="border-t border-border">
-                <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
+                  {new Date(r.created_at).toLocaleString("pt-BR")}
+                </td>
                 <td className="px-4 py-2">
-                  <Badge className={ACTION_TONE[r.action] ?? "bg-muted text-foreground"} variant="outline">{r.action}</Badge>
+                  <Badge
+                    className={ACTION_TONE[r.action] ?? "bg-muted text-foreground"}
+                    variant="outline"
+                  >
+                    {r.action}
+                  </Badge>
                 </td>
                 <td className="px-4 py-2">{r.entity ?? "—"}</td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{r.entity_id?.slice(0, 8) ?? "—"}</td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{r.tenant_id?.slice(0, 8) ?? "—"}</td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">{r.user_id?.slice(0, 8) ?? "—"}</td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
+                  {r.entity_id?.slice(0, 8) ?? "—"}
+                </td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
+                  {r.tenant_id?.slice(0, 8) ?? "—"}
+                </td>
+                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
+                  {r.user_id?.slice(0, 8) ?? "—"}
+                </td>
               </tr>
             ))}
           </tbody>

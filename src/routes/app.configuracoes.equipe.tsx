@@ -6,7 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { inviteTenantMember, listTenantMembers, removeTenantMember } from "@/lib/team.functions";
 import { toast } from "sonner";
@@ -23,13 +29,14 @@ type Member = {
   role_ids: string[];
 };
 
-const ROLES: { v: "admin" | "broker" | "juridico" | "financeiro" | "atendente"; label: string }[] = [
-  { v: "admin", label: "Admin" },
-  { v: "broker", label: "Corretor" },
-  { v: "atendente", label: "Atendente" },
-  { v: "juridico", label: "Jurídico" },
-  { v: "financeiro", label: "Financeiro" },
-];
+const ROLES: { v: "admin" | "broker" | "juridico" | "financeiro" | "atendente"; label: string }[] =
+  [
+    { v: "admin", label: "Admin" },
+    { v: "broker", label: "Corretor" },
+    { v: "atendente", label: "Atendente" },
+    { v: "juridico", label: "Jurídico" },
+    { v: "financeiro", label: "Financeiro" },
+  ];
 
 function Equipe() {
   const { tenantId, user, isAdmin } = useAuth();
@@ -40,7 +47,7 @@ function Equipe() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<typeof ROLES[number]["v"]>("broker");
+  const [role, setRole] = useState<(typeof ROLES)[number]["v"]>("broker");
   const [submitting, setSubmitting] = useState(false);
 
   async function load() {
@@ -54,7 +61,9 @@ function Equipe() {
     }
     setLoading(false);
   }
-  useEffect(() => { load(); }, [tenantId]);
+  useEffect(() => {
+    load();
+  }, [tenantId]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -84,7 +93,11 @@ function Equipe() {
   }
 
   if (!isAdmin) {
-    return <div className="text-sm text-muted-foreground">Apenas administradores podem gerenciar a equipe.</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        Apenas administradores podem gerenciar a equipe.
+      </div>
+    );
   }
 
   return (
@@ -92,19 +105,36 @@ function Equipe() {
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-1 text-base font-semibold">Adicionar membro</h2>
         <p className="mb-4 text-xs text-muted-foreground">
-          A pessoa precisa ter conta criada em <code>/signup</code>. Informe o e-mail dela e o papel.
+          A pessoa precisa ter conta criada em <code>/signup</code>. Informe o e-mail dela e o
+          papel.
         </p>
         <form onSubmit={submit} className="grid gap-3 md:grid-cols-[1fr_180px_auto]">
           <div>
-            <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">E-mail</Label>
-            <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="pessoa@empresa.com" />
+            <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">
+              E-mail
+            </Label>
+            <Input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="pessoa@empresa.com"
+            />
           </div>
           <div>
-            <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">Papel</Label>
+            <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">
+              Papel
+            </Label>
             <Select value={role} onValueChange={(v) => setRole(v as any)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
-                {ROLES.map((r) => <SelectItem key={r.v} value={r.v}>{r.label}</SelectItem>)}
+                {ROLES.map((r) => (
+                  <SelectItem key={r.v} value={r.v}>
+                    {r.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -123,7 +153,9 @@ function Equipe() {
         {loading ? (
           <div className="p-8 text-center text-sm text-muted-foreground">Carregando…</div>
         ) : members.length === 0 ? (
-          <div className="p-10 text-center text-sm text-muted-foreground">Sem membros vinculados.</div>
+          <div className="p-10 text-center text-sm text-muted-foreground">
+            Sem membros vinculados.
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left text-xs uppercase text-muted-foreground">
@@ -143,7 +175,11 @@ function Equipe() {
                   <td className="px-6 py-3">
                     <div className="flex flex-wrap gap-1">
                       {m.roles.map((r) => (
-                        <Badge key={r} variant={r === "super_admin" ? "default" : "outline"} className="text-[10px]">
+                        <Badge
+                          key={r}
+                          variant={r === "super_admin" ? "default" : "outline"}
+                          className="text-[10px]"
+                        >
                           {r === "super_admin" && <Shield className="mr-1 h-3 w-3" />}
                           {r}
                         </Badge>

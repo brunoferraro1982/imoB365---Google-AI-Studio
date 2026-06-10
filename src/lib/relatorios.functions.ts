@@ -104,10 +104,7 @@ export const getRelatorios = createServerFn({ method: "POST" })
         .select("id,tipo,valor,status,data_vencimento,data_pagamento")
         .eq("tenant_id", tenantId)
         .gte("data_vencimento", isoDay(sixMonthsAgo)),
-      supabase
-        .from("corretores")
-        .select("id,nome,ativo")
-        .eq("tenant_id", tenantId),
+      supabase.from("corretores").select("id,nome,ativo").eq("tenant_id", tenantId),
     ]);
 
     const imoveis = imoveisRes.data ?? [];
@@ -149,7 +146,8 @@ export const getRelatorios = createServerFn({ method: "POST" })
 
     // Funil
     const funilMap = new Map<string, number>();
-    for (const l of leads) funilMap.set(l.status as string, (funilMap.get(l.status as string) ?? 0) + 1);
+    for (const l of leads)
+      funilMap.set(l.status as string, (funilMap.get(l.status as string) ?? 0) + 1);
     const funil = Array.from(funilMap.entries()).map(([status, count]) => ({ status, count }));
 
     // Funil de conversão acumulado (lead que chegou em uma etapa = passou por todas anteriores)
@@ -163,8 +161,10 @@ export const getRelatorios = createServerFn({ method: "POST" })
     };
     // ranking de status (perdido fica fora do funil)
     const rank = (s: string) => ORDEM.indexOf(s as any);
-    const counts = ORDEM.map((etapa) =>
-      leads.filter((l) => l.status !== "perdido" && rank(l.status as string) >= rank(etapa)).length,
+    const counts = ORDEM.map(
+      (etapa) =>
+        leads.filter((l) => l.status !== "perdido" && rank(l.status as string) >= rank(etapa))
+          .length,
     );
     const topo = counts[0] || 0;
     const funil_conversao = ORDEM.map((etapa, i) => ({
@@ -258,25 +258,28 @@ export const getRelatorios = createServerFn({ method: "POST" })
 
     // Desempenho e Performance de Imóveis (Pageviews, WhatsApp Clicks, Favoritado)
     const activeListings = imoveis.filter((x) => x.status === "ativo" && x.publicado);
-    const ranking_imoveis = activeListings.map((im, idx) => {
-      // Calcular índices estáveis derivados realisticamente
-      const hash = im.titulo.length + idx * 7;
-      const pageviews = 85 + (hash % 190) + Math.round(Number(im.preco || 400000) / 120000);
-      const whatsapp_clicks = Math.max(5, Math.round(pageviews * 0.08 + (hash % 11)));
-      const favorited = Math.max(2, Math.round(pageviews * 0.05 + (hash % 7)));
-      const conversion_rate = pageviews > 0 ? Math.round((whatsapp_clicks / pageviews) * 100) : 0;
-      return {
-        id: im.id,
-        titulo: im.titulo || "Sem título",
-        bairro: im.endereco_bairro || "Centro",
-        tipo: im.tipo,
-        preco: Number(im.preco || 0),
-        pageviews,
-        whatsapp_clicks,
-        favorited,
-        conversion_rate,
-      };
-    }).sort((a, b) => b.pageviews - a.pageviews).slice(0, 8);
+    const ranking_imoveis = activeListings
+      .map((im, idx) => {
+        // Calcular índices estáveis derivados realisticamente
+        const hash = im.titulo.length + idx * 7;
+        const pageviews = 85 + (hash % 190) + Math.round(Number(im.preco || 400000) / 120000);
+        const whatsapp_clicks = Math.max(5, Math.round(pageviews * 0.08 + (hash % 11)));
+        const favorited = Math.max(2, Math.round(pageviews * 0.05 + (hash % 7)));
+        const conversion_rate = pageviews > 0 ? Math.round((whatsapp_clicks / pageviews) * 100) : 0;
+        return {
+          id: im.id,
+          titulo: im.titulo || "Sem título",
+          bairro: im.endereco_bairro || "Centro",
+          tipo: im.tipo,
+          preco: Number(im.preco || 0),
+          pageviews,
+          whatsapp_clicks,
+          favorited,
+          conversion_rate,
+        };
+      })
+      .sort((a, b) => b.pageviews - a.pageviews)
+      .slice(0, 8);
 
     return {
       kpis: {

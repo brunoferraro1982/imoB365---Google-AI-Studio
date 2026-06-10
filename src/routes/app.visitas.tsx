@@ -22,8 +22,16 @@ export const Route = createFileRoute("/app/visitas")({
   component: VisitasPage,
 });
 
-function MonthView({ mesRef, onPrev, onNext, items }: {
-  mesRef: Date; onPrev: () => void; onNext: () => void; items: any[];
+function MonthView({
+  mesRef,
+  onPrev,
+  onNext,
+  items,
+}: {
+  mesRef: Date;
+  onPrev: () => void;
+  onNext: () => void;
+  items: any[];
 }) {
   const year = mesRef.getFullYear();
   const month = mesRef.getMonth();
@@ -52,12 +60,20 @@ function MonthView({ mesRef, onPrev, onNext, items }: {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="mb-3 flex items-center justify-between">
-        <button onClick={onPrev} className="rounded px-3 py-1 text-sm hover:bg-muted">←</button>
+        <button onClick={onPrev} className="rounded px-3 py-1 text-sm hover:bg-muted">
+          ←
+        </button>
         <h2 className="text-sm font-semibold capitalize">{titulo}</h2>
-        <button onClick={onNext} className="rounded px-3 py-1 text-sm hover:bg-muted">→</button>
+        <button onClick={onNext} className="rounded px-3 py-1 text-sm hover:bg-muted">
+          →
+        </button>
       </div>
       <div className="grid grid-cols-7 gap-1 text-center text-xs text-muted-foreground">
-        {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map((d) => <div key={d} className="py-1 font-medium">{d}</div>)}
+        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map((d) => (
+          <div key={d} className="py-1 font-medium">
+            {d}
+          </div>
+        ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
         {cells.map((c, i) => {
@@ -65,15 +81,31 @@ function MonthView({ mesRef, onPrev, onNext, items }: {
           const vs = byDate.get(c.date) ?? [];
           const isToday = c.date === todayKey;
           return (
-            <div key={i} className={`aspect-square rounded-md border p-1 text-left text-xs ${isToday ? "border-primary bg-primary/5" : "border-border bg-background"}`}>
-              <div className={`text-[10px] ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}>{c.day}</div>
+            <div
+              key={i}
+              className={`aspect-square rounded-md border p-1 text-left text-xs ${isToday ? "border-primary bg-primary/5" : "border-border bg-background"}`}
+            >
+              <div
+                className={`text-[10px] ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}
+              >
+                {c.day}
+              </div>
               <div className="mt-0.5 space-y-0.5 overflow-hidden">
                 {vs.slice(0, 2).map((v) => (
-                  <div key={v.id} className="truncate rounded bg-primary/10 px-1 py-0.5 text-[10px] text-primary">
-                    {new Date(v.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} {v.imovel?.titulo ?? ""}
+                  <div
+                    key={v.id}
+                    className="truncate rounded bg-primary/10 px-1 py-0.5 text-[10px] text-primary"
+                  >
+                    {new Date(v.data_hora).toLocaleTimeString("pt-BR", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}{" "}
+                    {v.imovel?.titulo ?? ""}
                   </div>
                 ))}
-                {vs.length > 2 && <div className="text-[9px] text-muted-foreground">+{vs.length - 2} mais</div>}
+                {vs.length > 2 && (
+                  <div className="text-[9px] text-muted-foreground">+{vs.length - 2} mais</div>
+                )}
               </div>
             </div>
           );
@@ -107,7 +139,8 @@ function VisitasPage() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"lista" | "mes">("lista");
   const [mesRef, setMesRef] = useState(() => {
-    const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1);
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
   });
 
   const [form, setForm] = useState({
@@ -161,12 +194,23 @@ function VisitasPage() {
     if (error) return toast.error(error.message);
     toast.success("Visita agendada");
     setShowForm(false);
-    setForm({ imovel_id: "", corretor_id: "", lead_id: "", data: "", hora: "", duracao_min: 30, observacoes: "" });
+    setForm({
+      imovel_id: "",
+      corretor_id: "",
+      lead_id: "",
+      data: "",
+      hora: "",
+      duracao_min: 30,
+      observacoes: "",
+    });
     load();
   }
 
   async function setStatus(id: string, status: string) {
-    const { error } = await supabase.from("visitas").update({ status: status as any }).eq("id", id);
+    const { error } = await supabase
+      .from("visitas")
+      .update({ status: status as any })
+      .eq("id", id);
     if (error) return toast.error(error.message);
     load();
   }
@@ -200,12 +244,16 @@ function VisitasPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-md border border-border bg-card p-0.5">
-            <button onClick={() => setView("lista")}
-              className={`flex items-center gap-1 rounded px-3 py-1 text-xs ${view === "lista" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
+            <button
+              onClick={() => setView("lista")}
+              className={`flex items-center gap-1 rounded px-3 py-1 text-xs ${view === "lista" ? "bg-muted font-medium" : "text-muted-foreground"}`}
+            >
               <List className="h-3.5 w-3.5" /> Lista
             </button>
-            <button onClick={() => setView("mes")}
-              className={`flex items-center gap-1 rounded px-3 py-1 text-xs ${view === "mes" ? "bg-muted font-medium" : "text-muted-foreground"}`}>
+            <button
+              onClick={() => setView("mes")}
+              className={`flex items-center gap-1 rounded px-3 py-1 text-xs ${view === "mes" ? "bg-muted font-medium" : "text-muted-foreground"}`}
+            >
               <Calendar className="h-3.5 w-3.5" /> Mês
             </button>
           </div>
@@ -220,53 +268,95 @@ function VisitasPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label>Imóvel *</Label>
-              <Select value={form.imovel_id} onValueChange={(v) => setForm({ ...form, imovel_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <Select
+                value={form.imovel_id}
+                onValueChange={(v) => setForm({ ...form, imovel_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
                 <SelectContent>
-                  {imoveis.map((i) => <SelectItem key={i.id} value={i.id}>{i.titulo}</SelectItem>)}
+                  {imoveis.map((i) => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {i.titulo}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>Corretor</Label>
-              <Select value={form.corretor_id} onValueChange={(v) => setForm({ ...form, corretor_id: v })}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+              <Select
+                value={form.corretor_id}
+                onValueChange={(v) => setForm({ ...form, corretor_id: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
                 <SelectContent>
-                  {corretores.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                  {corretores.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.nome}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div>
               <Label>Lead</Label>
               <Select value={form.lead_id} onValueChange={(v) => setForm({ ...form, lead_id: v })}>
-                <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
                 <SelectContent>
-                  {leads.map((l) => <SelectItem key={l.id} value={l.id}>{l.nome}</SelectItem>)}
+                  {leads.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.nome}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
                 <Label>Data *</Label>
-                <Input type="date" value={form.data} onChange={(e) => setForm({ ...form, data: e.target.value })} />
+                <Input
+                  type="date"
+                  value={form.data}
+                  onChange={(e) => setForm({ ...form, data: e.target.value })}
+                />
               </div>
               <div>
                 <Label>Hora *</Label>
-                <Input type="time" value={form.hora} onChange={(e) => setForm({ ...form, hora: e.target.value })} />
+                <Input
+                  type="time"
+                  value={form.hora}
+                  onChange={(e) => setForm({ ...form, hora: e.target.value })}
+                />
               </div>
               <div>
                 <Label>Duração</Label>
-                <Input type="number" min={10} step={5} value={form.duracao_min}
-                  onChange={(e) => setForm({ ...form, duracao_min: Number(e.target.value) })} />
+                <Input
+                  type="number"
+                  min={10}
+                  step={5}
+                  value={form.duracao_min}
+                  onChange={(e) => setForm({ ...form, duracao_min: Number(e.target.value) })}
+                />
               </div>
             </div>
             <div className="md:col-span-2">
               <Label>Observações</Label>
-              <Textarea value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+              <Textarea
+                value={form.observacoes}
+                onChange={(e) => setForm({ ...form, observacoes: e.target.value })}
+              />
             </div>
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => setShowForm(false)}>
+              Cancelar
+            </Button>
             <Button onClick={add}>Agendar</Button>
           </div>
         </div>
@@ -291,30 +381,47 @@ function VisitasPage() {
           {grouped.map(([dia, vs]) => (
             <section key={dia}>
               <h2 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
-                {new Date(dia + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}
+                {new Date(dia + "T00:00:00").toLocaleDateString("pt-BR", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "long",
+                })}
               </h2>
               <div className="space-y-2">
                 {vs.map((v) => (
-                  <div key={v.id} className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4">
+                  <div
+                    key={v.id}
+                    className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4"
+                  >
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-mono text-sm font-semibold">
-                          {new Date(v.data_hora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                          {new Date(v.data_hora).toLocaleTimeString("pt-BR", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                         <span className="font-medium">{v.imovel?.titulo ?? "—"}</span>
                         <Badge variant={STATUS_VARIANT[v.status]}>{STATUS_LABEL[v.status]}</Badge>
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        {v.duracao_min}min · {v.corretor?.nome ?? "sem corretor"} · {v.lead?.nome ?? "sem lead"}
+                        {v.duracao_min}min · {v.corretor?.nome ?? "sem corretor"} ·{" "}
+                        {v.lead?.nome ?? "sem lead"}
                       </div>
-                      {v.observacoes && <div className="mt-1 text-xs text-muted-foreground">{v.observacoes}</div>}
+                      {v.observacoes && (
+                        <div className="mt-1 text-xs text-muted-foreground">{v.observacoes}</div>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <Select value={v.status} onValueChange={(s) => setStatus(v.id, s)}>
-                        <SelectTrigger className="h-8 w-36"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="h-8 w-36">
+                          <SelectValue />
+                        </SelectTrigger>
                         <SelectContent>
                           {Object.entries(STATUS_LABEL).map(([k, l]) => (
-                            <SelectItem key={k} value={k}>{l}</SelectItem>
+                            <SelectItem key={k} value={k}>
+                              {l}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>

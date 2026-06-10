@@ -39,7 +39,10 @@ function NovoImovel() {
       .select("id")
       .single();
     setSaving(false);
-    if (error) { toast.error("Erro ao salvar: " + error.message); return; }
+    if (error) {
+      toast.error("Erro ao salvar: " + error.message);
+      return;
+    }
     toast.success(action === "publish" ? "Imóvel publicado no site" : "Rascunho salvo");
     navigate({ to: "/app/imoveis/$id", params: { id: inserted!.id } });
   }
@@ -47,7 +50,9 @@ function NovoImovel() {
   return (
     <div className="mx-auto max-w-5xl p-8">
       <Button variant="ghost" size="sm" asChild className="mb-4">
-        <Link to="/app/imoveis"><ChevronLeft className="mr-1 h-4 w-4" /> Voltar</Link>
+        <Link to="/app/imoveis">
+          <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
+        </Link>
       </Button>
       <h1 className="mb-6 text-3xl font-bold tracking-tight">Novo imóvel</h1>
       <ImovelForm onSubmit={save} submitLabel="Criar imóvel" submitting={saving} mode="create" />

@@ -25,9 +25,19 @@ export const PORTAIS: PortalDef[] = [
     descricao: "Maior portal residencial do Brasil. Consome feed VRSync.",
     disponivel: true,
     credentialFields: [
-      { key: "client_id", label: "Client ID", type: "text", placeholder: "ID do cliente no VivaReal" },
+      {
+        key: "client_id",
+        label: "Client ID",
+        type: "text",
+        placeholder: "ID do cliente no VivaReal",
+      },
       { key: "client_secret", label: "Client Secret", type: "password" },
-      { key: "account_id", label: "ID da conta / anunciante", type: "text", helper: "Encontrado no painel do portal" },
+      {
+        key: "account_id",
+        label: "ID da conta / anunciante",
+        type: "text",
+        helper: "Encontrado no painel do portal",
+      },
     ],
   },
   {

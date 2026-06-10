@@ -24,7 +24,9 @@ function ConfigImobiliaria() {
     setData(t);
     setLoading(false);
   }
-  useEffect(() => { load(); }, [tenantId]);
+  useEffect(() => {
+    load();
+  }, [tenantId]);
 
   function update(k: string, v: any) {
     setData((d: any) => ({ ...d, [k]: v }));
@@ -57,16 +59,34 @@ function ConfigImobiliaria() {
         <h2 className="mb-4 text-base font-semibold">Identidade</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Nome fantasia *">
-            <Input required value={data.nome ?? ""} onChange={(e) => update("nome", e.target.value)} maxLength={200} />
+            <Input
+              required
+              value={data.nome ?? ""}
+              onChange={(e) => update("nome", e.target.value)}
+              maxLength={200}
+            />
           </Field>
           <Field label="Slug (URL pública)">
-            <Input value={data.slug ?? ""} onChange={(e) => update("slug", e.target.value)} maxLength={80} />
+            <Input
+              value={data.slug ?? ""}
+              onChange={(e) => update("slug", e.target.value)}
+              maxLength={80}
+            />
           </Field>
           <Field label="CNPJ">
-            <Input value={data.cnpj ?? ""} onChange={(e) => update("cnpj", e.target.value)} maxLength={20} placeholder="00.000.000/0000-00" />
+            <Input
+              value={data.cnpj ?? ""}
+              onChange={(e) => update("cnpj", e.target.value)}
+              maxLength={20}
+              placeholder="00.000.000/0000-00"
+            />
           </Field>
           <Field label="CRECI Jurídico (CRECI-J)">
-            <Input value={data.creci_juridico ?? ""} onChange={(e) => update("creci_juridico", e.target.value)} maxLength={40} />
+            <Input
+              value={data.creci_juridico ?? ""}
+              onChange={(e) => update("creci_juridico", e.target.value)}
+              maxLength={40}
+            />
           </Field>
         </div>
       </section>
@@ -88,14 +108,21 @@ function ConfigImobiliaria() {
 
       <div className="flex items-center justify-between rounded-xl border border-border bg-muted/30 p-4 text-xs text-muted-foreground">
         <div>
-          <div>Plano atual: <span className="font-medium text-foreground">{data.plano_slug ?? "—"}</span></div>
-          <div>Status: <span className="font-medium text-foreground">{data.status}</span></div>
+          <div>
+            Plano atual:{" "}
+            <span className="font-medium text-foreground">{data.plano_slug ?? "—"}</span>
+          </div>
+          <div>
+            Status: <span className="font-medium text-foreground">{data.status}</span>
+          </div>
         </div>
         <span>Para mudar plano ou status, fale com o super-admin.</span>
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={saving}>{saving ? "Salvando…" : "Salvar alterações"}</Button>
+        <Button type="submit" disabled={saving}>
+          {saving ? "Salvando…" : "Salvar alterações"}
+        </Button>
       </div>
     </form>
   );
@@ -104,7 +131,9 @@ function ConfigImobiliaria() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );

@@ -1,7 +1,14 @@
 export type BuiltinTemplate = {
   slug: string;
   nome: string;
-  tipo: "venda" | "locacao" | "permuta" | "parceria" | "administracao" | "prestacao_servico" | "outro";
+  tipo:
+    | "venda"
+    | "locacao"
+    | "permuta"
+    | "parceria"
+    | "administracao"
+    | "prestacao_servico"
+    | "outro";
   descricao: string;
   conteudo: string;
 };
@@ -20,7 +27,8 @@ export const BUILTIN_TEMPLATES: BuiltinTemplate[] = [
     slug: "venda-padrao",
     nome: "Compra e Venda — Padrão",
     tipo: "venda",
-    descricao: "Contrato de compromisso de compra e venda de imóvel, com pagamento à vista ou parcelado.",
+    descricao:
+      "Contrato de compromisso de compra e venda de imóvel, com pagamento à vista ou parcelado.",
     conteudo: `<h1 style="text-align:center">INSTRUMENTO PARTICULAR DE COMPROMISSO DE COMPRA E VENDA</h1>
 <p><b>VENDEDOR(A):</b> {{partes.vendedor}}, doravante denominado VENDEDOR.</p>
 <p><b>COMPRADOR(A):</b> {{partes.comprador}}, doravante denominado COMPRADOR.</p>
@@ -43,7 +51,8 @@ ${ASSINATURAS}`,
     slug: "locacao-residencial",
     nome: "Locação Residencial",
     tipo: "locacao",
-    descricao: "Contrato de locação residencial conforme Lei 8.245/91, com garantia e prazo determinado.",
+    descricao:
+      "Contrato de locação residencial conforme Lei 8.245/91, com garantia e prazo determinado.",
     conteudo: `<h1 style="text-align:center">CONTRATO DE LOCAÇÃO RESIDENCIAL</h1>
 <p><b>LOCADOR(A):</b> {{partes.locador}}.</p>
 <p><b>LOCATÁRIO(A):</b> {{partes.locatario}}.</p>
@@ -70,7 +79,8 @@ ${ASSINATURAS}`,
     slug: "locacao-comercial",
     nome: "Locação Comercial",
     tipo: "locacao",
-    descricao: "Contrato de locação não residencial para fins comerciais, com cláusula de fundo de comércio.",
+    descricao:
+      "Contrato de locação não residencial para fins comerciais, com cláusula de fundo de comércio.",
     conteudo: `<h1 style="text-align:center">CONTRATO DE LOCAÇÃO COMERCIAL</h1>
 <p><b>LOCADOR:</b> {{partes.locador}}.</p>
 <p><b>LOCATÁRIO:</b> {{partes.locatario}}.</p>
@@ -92,7 +102,8 @@ ${ASSINATURAS}`,
     slug: "parceria-imobiliarias",
     nome: "Parceria entre Imobiliárias",
     tipo: "parceria",
-    descricao: "Acordo de parceria para captação/venda compartilhada de imóveis com divisão de comissão.",
+    descricao:
+      "Acordo de parceria para captação/venda compartilhada de imóveis com divisão de comissão.",
     conteudo: `<h1 style="text-align:center">CONTRATO DE PARCERIA IMOBILIÁRIA</h1>
 <p><b>PARCEIRA A (Captadora):</b> {{tenant.nome}}.</p>
 <p><b>PARCEIRA B (Vendedora):</b> {{partes.parceiro_b}}.</p>
@@ -114,7 +125,8 @@ ${ASSINATURAS}`,
     slug: "administracao-locacao",
     nome: "Administração de Imóvel para Locação",
     tipo: "administracao",
-    descricao: "Contrato de administração entre proprietário e imobiliária para gestão de imóvel locado.",
+    descricao:
+      "Contrato de administração entre proprietário e imobiliária para gestão de imóvel locado.",
     conteudo: `<h1 style="text-align:center">CONTRATO DE ADMINISTRAÇÃO DE IMÓVEL</h1>
 <p><b>PROPRIETÁRIO:</b> {{partes.locador}}.</p>
 <p><b>ADMINISTRADORA:</b> {{tenant.nome}}.</p>
@@ -136,7 +148,8 @@ ${ASSINATURAS}`,
     slug: "exclusividade-venda",
     nome: "Autorização de Venda com Exclusividade",
     tipo: "prestacao_servico",
-    descricao: "Autorização do proprietário para que a imobiliária comercialize o imóvel em regime exclusivo.",
+    descricao:
+      "Autorização do proprietário para que a imobiliária comercialize o imóvel em regime exclusivo.",
     conteudo: `<h1 style="text-align:center">AUTORIZAÇÃO DE VENDA COM EXCLUSIVIDADE</h1>
 <p><b>PROPRIETÁRIO:</b> {{partes.vendedor}}.</p>
 <p><b>IMOBILIÁRIA:</b> {{tenant.nome}}.</p>
@@ -156,7 +169,8 @@ ${ASSINATURAS}`,
     slug: "permuta",
     nome: "Permuta de Imóveis",
     tipo: "permuta",
-    descricao: "Contrato de permuta (troca) de imóveis entre duas partes, com ou sem torna em dinheiro.",
+    descricao:
+      "Contrato de permuta (troca) de imóveis entre duas partes, com ou sem torna em dinheiro.",
     conteudo: `<h1 style="text-align:center">CONTRATO DE PERMUTA DE IMÓVEIS</h1>
 <p><b>PERMUTANTE A:</b> {{partes.parceiro_a}}.</p>
 <p><b>PERMUTANTE B:</b> {{partes.parceiro_b}}.</p>

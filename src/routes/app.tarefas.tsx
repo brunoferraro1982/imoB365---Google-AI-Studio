@@ -39,7 +39,8 @@ function TarefasPage() {
       .order("prazo", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false })
       .limit(200);
-    if (filtro === "minhas") q = q.eq("status", "pendente").eq("responsavel_user_id", user?.id ?? "");
+    if (filtro === "minhas")
+      q = q.eq("status", "pendente").eq("responsavel_user_id", user?.id ?? "");
     else if (filtro === "todas") q = q.eq("status", "pendente");
     else q = q.eq("status", "concluida");
     const { data, error } = await q;
@@ -48,14 +49,19 @@ function TarefasPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [tenantId, filtro, user?.id]);
+  useEffect(() => {
+    load();
+  }, [tenantId, filtro, user?.id]);
 
   async function toggle(t: Tarefa) {
     const novo = t.status === "concluida" ? "pendente" : "concluida";
-    await (supabase as any).from("lead_tarefas").update({
-      status: novo,
-      concluida_em: novo === "concluida" ? new Date().toISOString() : null,
-    }).eq("id", t.id);
+    await (supabase as any)
+      .from("lead_tarefas")
+      .update({
+        status: novo,
+        concluida_em: novo === "concluida" ? new Date().toISOString() : null,
+      })
+      .eq("id", t.id);
     load();
   }
 
@@ -92,7 +98,12 @@ function TarefasPage() {
 
       <div className="mb-4 flex gap-2">
         {(["minhas", "todas", "concluidas"] as const).map((f) => (
-          <Button key={f} size="sm" variant={filtro === f ? "default" : "outline"} onClick={() => setFiltro(f)}>
+          <Button
+            key={f}
+            size="sm"
+            variant={filtro === f ? "default" : "outline"}
+            onClick={() => setFiltro(f)}
+          >
             {f === "minhas" ? "Minhas pendentes" : f === "todas" ? "Todas pendentes" : "Concluídas"}
           </Button>
         ))}
@@ -107,19 +118,33 @@ function TarefasPage() {
           {tarefas.map((t) => {
             const atrasada = t.status === "pendente" && t.prazo && new Date(t.prazo) < now;
             return (
-              <li key={t.id} className="flex items-start gap-3 rounded-lg border bg-card p-3 text-sm">
+              <li
+                key={t.id}
+                className="flex items-start gap-3 rounded-lg border bg-card p-3 text-sm"
+              >
                 <button onClick={() => toggle(t)} className="mt-0.5">
-                  {t.status === "concluida"
-                    ? <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                    : <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />}
+                  {t.status === "concluida" ? (
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  ) : (
+                    <Circle className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                  )}
                 </button>
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={t.status === "concluida" ? "line-through" : "font-medium"}>{t.titulo}</span>
-                    <Badge variant="outline" className="text-[10px]">{t.tipo}</Badge>
-                    {t.prioridade === "alta" && <Badge className="bg-rose-600 text-[10px]">alta</Badge>}
+                    <span className={t.status === "concluida" ? "line-through" : "font-medium"}>
+                      {t.titulo}
+                    </span>
+                    <Badge variant="outline" className="text-[10px]">
+                      {t.tipo}
+                    </Badge>
+                    {t.prioridade === "alta" && (
+                      <Badge className="bg-rose-600 text-[10px]">alta</Badge>
+                    )}
                     {atrasada && (
-                      <Badge variant="outline" className="border-amber-500 text-amber-600 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500 text-amber-600 text-[10px]"
+                      >
                         <AlertCircle className="mr-1 h-3 w-3" /> atrasada
                       </Badge>
                     )}
@@ -127,7 +152,11 @@ function TarefasPage() {
                   <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                     {t.prazo && <span>{new Date(t.prazo).toLocaleString("pt-BR")}</span>}
                     {t.lead && (
-                      <Link to="/app/leads/$id" params={{ id: t.lead_id }} className="flex items-center gap-1 hover:text-primary">
+                      <Link
+                        to="/app/leads/$id"
+                        params={{ id: t.lead_id }}
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
                         Lead: {t.lead.nome} <ChevronRight className="h-3 w-3" />
                       </Link>
                     )}

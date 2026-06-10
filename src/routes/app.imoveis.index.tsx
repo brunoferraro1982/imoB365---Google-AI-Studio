@@ -35,14 +35,18 @@ function ImoveisList() {
     setLoading(true);
     const { data, error } = await supabase
       .from("imoveis")
-      .select("id,titulo,codigo_interno,finalidade,tipo,status,preco,endereco_cidade,endereco_uf,publicado,updated_at")
+      .select(
+        "id,titulo,codigo_interno,finalidade,tipo,status,preco,endereco_cidade,endereco_uf,publicado,updated_at",
+      )
       .order("updated_at", { ascending: false });
     if (error) toast.error("Erro ao carregar imóveis: " + error.message);
     setItems((data as Imovel[]) ?? []);
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function remove(id: string) {
     if (!confirm("Excluir este imóvel? Esta ação não pode ser desfeita.")) return;
@@ -71,10 +75,14 @@ function ImoveisList() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link to="/app/imoveis/comparar"><GitCompare className="mr-2 h-4 w-4" /> Comparar</Link>
+            <Link to="/app/imoveis/comparar">
+              <GitCompare className="mr-2 h-4 w-4" /> Comparar
+            </Link>
           </Button>
           <Button asChild>
-            <Link to="/app/imoveis/novo"><Plus className="mr-2 h-4 w-4" /> Novo imóvel</Link>
+            <Link to="/app/imoveis/novo">
+              <Plus className="mr-2 h-4 w-4" /> Novo imóvel
+            </Link>
           </Button>
         </div>
       </div>
@@ -95,7 +103,9 @@ function ImoveisList() {
           <div className="flex flex-col items-center gap-3 p-16 text-center">
             <Building2 className="h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">
-              {items.length === 0 ? "Nenhum imóvel cadastrado ainda." : "Nenhum resultado para a busca."}
+              {items.length === 0
+                ? "Nenhum imóvel cadastrado ainda."
+                : "Nenhum resultado para a busca."}
             </p>
             {items.length === 0 && (
               <Button asChild size="sm">
@@ -120,15 +130,27 @@ function ImoveisList() {
               {filtered.map((i) => (
                 <tr key={i.id} className="border-t border-border hover:bg-muted/30">
                   <td className="px-4 py-3">
-                    <Link to="/app/imoveis/$id" params={{ id: i.id }} className="font-medium hover:text-primary">
+                    <Link
+                      to="/app/imoveis/$id"
+                      params={{ id: i.id }}
+                      className="font-medium hover:text-primary"
+                    >
                       {i.titulo}
                     </Link>
-                    {i.codigo_interno && <div className="text-xs text-muted-foreground">#{i.codigo_interno}</div>}
+                    {i.codigo_interno && (
+                      <div className="text-xs text-muted-foreground">#{i.codigo_interno}</div>
+                    )}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">{TIPO_LABEL[i.tipo] ?? i.tipo}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}</td>
                   <td className="px-4 py-3 text-muted-foreground">
-                    {i.endereco_cidade ? `${i.endereco_cidade}${i.endereco_uf ? "/" + i.endereco_uf : ""}` : "—"}
+                    {TIPO_LABEL[i.tipo] ?? i.tipo}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {i.endereco_cidade
+                      ? `${i.endereco_cidade}${i.endereco_uf ? "/" + i.endereco_uf : ""}`
+                      : "—"}
                   </td>
                   <td className="px-4 py-3 font-medium">{formatBRL(i.preco)}</td>
                   <td className="px-4 py-3">
@@ -140,7 +162,9 @@ function ImoveisList() {
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" asChild>
-                        <Link to="/app/imoveis/$id" params={{ id: i.id }}><Pencil className="h-4 w-4" /></Link>
+                        <Link to="/app/imoveis/$id" params={{ id: i.id }}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(i.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />

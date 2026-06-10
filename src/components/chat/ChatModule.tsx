@@ -35,8 +35,7 @@ function timeAgo(iso: string) {
     return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   }
   if (diff < 2 * day) return "Ontem";
-  if (diff < 7 * day)
-    return d.toLocaleDateString("pt-BR", { weekday: "short" });
+  if (diff < 7 * day) return d.toLocaleDateString("pt-BR", { weekday: "short" });
   return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
@@ -63,9 +62,13 @@ export function ChatModule({
   useChatRealtime(selectedId);
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_320px] rounded-lg border border-border bg-card overflow-hidden ${
-      role === "interessado" ? "h-[500px] md:h-[calc(100vh-14rem)] md:min-h-[480px] md:max-h-[640px]" : "h-[calc(100vh-3.5rem)]"
-    }`}>
+    <div
+      className={`grid grid-cols-1 md:grid-cols-[320px_1fr] xl:grid-cols-[320px_1fr_320px] rounded-lg border border-border bg-card overflow-hidden ${
+        role === "interessado"
+          ? "h-[500px] md:h-[calc(100vh-14rem)] md:min-h-[480px] md:max-h-[640px]"
+          : "h-[calc(100vh-3.5rem)]"
+      }`}
+    >
       {/* Coluna 1: lista */}
       <aside
         className={`flex flex-col border-r border-border bg-card h-full min-h-0 ${
@@ -102,13 +105,9 @@ export function ChatModule({
           )}
         </div>
         <div className="flex-1 overflow-y-auto">
-          {convsQuery.isLoading && (
-            <p className="p-4 text-sm text-muted-foreground">Carregando…</p>
-          )}
+          {convsQuery.isLoading && <p className="p-4 text-sm text-muted-foreground">Carregando…</p>}
           {(convsQuery.data?.items ?? []).length === 0 && !convsQuery.isLoading && (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              Nenhuma conversa ainda.
-            </p>
+            <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma conversa ainda.</p>
           )}
           {(convsQuery.data?.items ?? []).map((c: any) => {
             const active = c.id === selectedId;
@@ -133,16 +132,12 @@ export function ChatModule({
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="truncate text-xs text-muted-foreground">
-                      {c.assunto}
-                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{c.assunto}</p>
                     <span className="shrink-0 text-[10px] text-muted-foreground">
                       {timeAgo(c.lastMessageAt)}
                     </span>
                   </div>
-                  <p className="truncate text-sm font-medium">
-                    {c.counterpartName}
-                  </p>
+                  <p className="truncate text-sm font-medium">{c.counterpartName}</p>
                   <div className="flex items-center justify-between gap-2">
                     <p className="truncate text-xs text-muted-foreground">
                       {c.lastMessagePreview ?? "—"}
@@ -162,11 +157,7 @@ export function ChatModule({
 
       {/* Colunas 2 e 3: conversa */}
       {selectedId ? (
-        <ConversationView
-          id={selectedId}
-          role={role}
-          basePath={basePath}
-        />
+        <ConversationView id={selectedId} role={role} basePath={basePath} />
       ) : (
         <div className="hidden items-center justify-center text-sm text-muted-foreground md:flex md:col-span-1 xl:col-span-2">
           Selecione uma conversa
@@ -176,15 +167,7 @@ export function ChatModule({
   );
 }
 
-function ConversationView({
-  id,
-  role,
-  basePath,
-}: {
-  id: string;
-  role: Role;
-  basePath: string;
-}) {
+function ConversationView({ id, role, basePath }: { id: string; role: Role; basePath: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const getConv = useServerFn(getConversation);
@@ -314,8 +297,12 @@ function ConversationView({
                 )}
               </div>
               <div className="min-w-0">
-                <h4 className="font-semibold text-xs text-foreground truncate max-w-[180px] sm:max-w-xs">{conv.imovel.titulo}</h4>
-                <p className="text-xs font-bold text-primary mt-0.5">{formatBRL(conv.imovel.preco)}</p>
+                <h4 className="font-semibold text-xs text-foreground truncate max-w-[180px] sm:max-w-xs">
+                  {conv.imovel.titulo}
+                </h4>
+                <p className="text-xs font-bold text-primary mt-0.5">
+                  {formatBRL(conv.imovel.preco)}
+                </p>
               </div>
             </div>
             {conv.imovel.disponivel && (
@@ -333,17 +320,16 @@ function ConversationView({
         {/* Mensagens */}
         <div ref={scroller} className="flex-1 space-y-3.5 overflow-y-auto px-4 py-4">
           {msgsQuery.isLoading && (
-            <p className="py-4 text-center text-sm text-muted-foreground">Carregando mensagens...</p>
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              Carregando mensagens...
+            </p>
           )}
           {(msgsQuery.data?.items ?? []).map((m: any) => {
             const mine =
               (role === "interessado" && m.sender_role === "interessado") ||
               (role === "corretor" && m.sender_role === "corretor");
             return (
-              <div
-                key={m.id}
-                className={`flex ${mine ? "justify-end" : "justify-start"}`}
-              >
+              <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${
                     mine
@@ -360,7 +346,13 @@ function ConversationView({
                       })}
                     </span>
                     {mine && (
-                      <span className={m.read_at ? "text-emerald-300 font-bold ml-0.5" : "text-primary-foreground/50 ml-0.5"}>
+                      <span
+                        className={
+                          m.read_at
+                            ? "text-emerald-300 font-bold ml-0.5"
+                            : "text-primary-foreground/50 ml-0.5"
+                        }
+                      >
                         {m.read_at ? "✓✓" : "✓"}
                       </span>
                     )}
@@ -406,9 +398,7 @@ function ConversationView({
               <button
                 key={q.id}
                 type="button"
-                onClick={() =>
-                  sendMut.mutate({ content: q.content, kind: "quick_reply" })
-                }
+                onClick={() => sendMut.mutate({ content: q.content, kind: "quick_reply" })}
                 className="rounded-full border border-border bg-background px-3 py-1 text-xs hover:bg-muted active:scale-95 duration-70"
               >
                 {q.label}
@@ -418,10 +408,7 @@ function ConversationView({
         )}
 
         {/* Composer */}
-        <form
-          onSubmit={submit}
-          className="flex items-end gap-2 border-t border-border bg-card p-3"
-        >
+        <form onSubmit={submit} className="flex items-end gap-2 border-t border-border bg-card p-3">
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -446,17 +433,13 @@ function ConversationView({
       <aside className="hidden flex-col border-l border-border bg-card xl:flex h-full min-h-0">
         {conv.imovel ? (
           <>
-            {imgUrl && (
-              <img src={imgUrl} alt="" className="h-48 w-full object-cover" />
-            )}
+            {imgUrl && <img src={imgUrl} alt="" className="h-48 w-full object-cover" />}
             <div className="p-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">
                 {conv.imovel.finalidade === "venda" ? "Venda" : "Locação"}
               </p>
               <h3 className="mt-1 text-base font-semibold">{conv.imovel.titulo}</h3>
-              <p className="mt-2 text-2xl font-bold text-primary">
-                {formatBRL(conv.imovel.preco)}
-              </p>
+              <p className="mt-2 text-2xl font-bold text-primary">{formatBRL(conv.imovel.preco)}</p>
               {conv.imovel.disponivel ? (
                 <Link
                   to="/imovel/$slug"
@@ -466,9 +449,7 @@ function ConversationView({
                   Ver anúncio →
                 </Link>
               ) : (
-                <p className="mt-4 text-xs text-muted-foreground">
-                  Anúncio indisponível.
-                </p>
+                <p className="mt-4 text-xs text-muted-foreground">Anúncio indisponível.</p>
               )}
             </div>
           </>

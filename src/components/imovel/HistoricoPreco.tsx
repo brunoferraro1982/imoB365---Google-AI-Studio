@@ -10,7 +10,9 @@ export function HistoricoPreco({ imovelId, precoAtual }: { imovelId: string; pre
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase.rpc as any)("public_historico_preco", { _imovel_id: imovelId });
+      const { data } = await (supabase.rpc as any)("public_historico_preco", {
+        _imovel_id: imovelId,
+      });
       setItems((data as Item[]) ?? []);
     })();
   }, [imovelId]);
@@ -30,14 +32,17 @@ export function HistoricoPreco({ imovelId, precoAtual }: { imovelId: string; pre
           const nov = h.valor_novo ? Number(h.valor_novo) : null;
           const diff = ant != null && nov != null ? nov - ant : 0;
           const Icon = diff < 0 ? TrendingDown : diff > 0 ? TrendingUp : Minus;
-          const color = diff < 0 ? "text-emerald-600" : diff > 0 ? "text-red-600" : "text-muted-foreground";
+          const color =
+            diff < 0 ? "text-emerald-600" : diff > 0 ? "text-red-600" : "text-muted-foreground";
           return (
             <li key={i} className="flex items-center justify-between py-2 text-sm">
               <span className="text-muted-foreground">
                 {new Date(h.created_at).toLocaleDateString("pt-BR")}
               </span>
               <span className="flex items-center gap-2">
-                <span className="text-muted-foreground">{ant != null ? formatBRL(ant) : "—"} →</span>
+                <span className="text-muted-foreground">
+                  {ant != null ? formatBRL(ant) : "—"} →
+                </span>
                 <span className="font-medium">{nov != null ? formatBRL(nov) : "—"}</span>
                 <span className={`inline-flex items-center gap-0.5 ${color}`}>
                   <Icon className="h-3.5 w-3.5" />

@@ -1,4 +1,3 @@
-
 # Revisão QA — Fases 1 a 4
 
 Revisei todas as funções implementadas nas últimas fases (favoritos, buscas salvas, comparador, alertas, simulador, histórico de preços, agendamento de visitas, notificações, área `/conta`). Abaixo está o roadmap de correções classificadas por severidade. Quando você liberar créditos, executo tudo na ordem listada.
@@ -69,6 +68,7 @@ Etapa 4 — Polimento
 ```
 
 ### Detalhes técnicos relevantes
+
 - Migrations necessárias: 1 nova RPC `public_historico_preco`, 1 nova RPC ou ajuste em `public_solicitar_visita` para rate-limit. Sem mudanças destrutivas em tabelas.
 - Sem novas dependências npm.
 - Estimativa: ~9 arquivos editados, 2 criados (`reset-password.tsx` + migração), 1 RPC nova.

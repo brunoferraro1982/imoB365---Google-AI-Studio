@@ -23,10 +23,19 @@ function DashboardConta() {
 
   useEffect(() => {
     if (!user) return;
-    listarIds().then((r) => setFavoritos((r.ids ?? []).length)).catch(() => {});
-    listarBuscasFn().then((r) => setBuscas((r.buscas ?? []).length)).catch(() => {});
-    (supabase.rpc as any)("public_minhas_visitas").then(({ data }: any) => setVisitas((data ?? []).length));
-    supabase.from("chat_conversations").select("id", { count: "exact", head: true }).eq("interessado_user_id", user.id)
+    listarIds()
+      .then((r) => setFavoritos((r.ids ?? []).length))
+      .catch(() => {});
+    listarBuscasFn()
+      .then((r) => setBuscas((r.buscas ?? []).length))
+      .catch(() => {});
+    (supabase.rpc as any)("public_minhas_visitas").then(({ data }: any) =>
+      setVisitas((data ?? []).length),
+    );
+    supabase
+      .from("chat_conversations")
+      .select("id", { count: "exact", head: true })
+      .eq("interessado_user_id", user.id)
       .then(({ count }) => setConversas(count ?? 0));
   }, [user, listarIds, listarBuscasFn]);
 
@@ -34,8 +43,12 @@ function DashboardConta() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold tracking-tight">Olá{nome ? `, ${nome.split(" ")[0]}` : ""}!</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Acompanhe seus imóveis salvos, buscas e visitas.</p>
+      <h1 className="text-3xl font-bold tracking-tight">
+        Olá{nome ? `, ${nome.split(" ")[0]}` : ""}!
+      </h1>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Acompanhe seus imóveis salvos, buscas e visitas.
+      </p>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card to="/conta/favoritos" icon={Heart} label="Favoritos" value={favoritos} />
@@ -46,7 +59,10 @@ function DashboardConta() {
 
       <div className="mt-10 rounded-xl border border-dashed border-border bg-card p-8 text-center">
         <p className="text-sm text-muted-foreground">Procurando um imóvel novo?</p>
-        <Link to="/buscar" className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline">
+        <Link
+          to="/buscar"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
           Explorar imóveis disponíveis <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
@@ -54,9 +70,22 @@ function DashboardConta() {
   );
 }
 
-function Card({ to, icon: Icon, label, value }: { to: string; icon: typeof Heart; label: string; value: number }) {
+function Card({
+  to,
+  icon: Icon,
+  label,
+  value,
+}: {
+  to: string;
+  icon: typeof Heart;
+  label: string;
+  value: number;
+}) {
   return (
-    <Link to={to as any} className="group rounded-xl border border-border bg-card p-5 transition hover:shadow-md hover:border-primary/30">
+    <Link
+      to={to as any}
+      className="group rounded-xl border border-border bg-card p-5 transition hover:shadow-md hover:border-primary/30"
+    >
       <div className="flex items-center justify-between">
         <Icon className="h-5 w-5 text-primary" />
         <ArrowRight className="h-4 w-4 text-muted-foreground transition group-hover:translate-x-1" />

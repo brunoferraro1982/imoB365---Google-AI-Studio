@@ -17,7 +17,9 @@ export const Route = createFileRoute("/api/public/webhooks/deliver")({
 
         const { data: pending, error } = await supabaseAdmin
           .from("webhook_deliveries")
-          .select("id,webhook_id,tenant_id,evento,payload,tentativas,tenant_webhooks(url,secret,ativo)")
+          .select(
+            "id,webhook_id,tenant_id,evento,payload,tentativas,tenant_webhooks(url,secret,ativo)",
+          )
           .in("status", ["pendente", "tentando"])
           .lt("tentativas", MAX_ATTEMPTS)
           .order("created_at", { ascending: true })
@@ -25,13 +27,18 @@ export const Route = createFileRoute("/api/public/webhooks/deliver")({
 
         if (error) return new Response(error.message, { status: 500 });
 
-        let ok = 0, fail = 0;
+        let ok = 0,
+          fail = 0;
         for (const d of pending ?? []) {
           const w = (d as any).tenant_webhooks;
           if (!w?.ativo) {
-            await supabaseAdmin.from("webhook_deliveries").update({
-              status: "cancelada", last_error: "Webhook inativo",
-            }).eq("id", d.id);
+            await supabaseAdmin
+              .from("webhook_deliveries")
+              .update({
+                status: "cancelada",
+                last_error: "Webhook inativo",
+              })
+              .eq("id", d.id);
             continue;
           }
           const body = JSON.stringify(d.payload);
@@ -50,22 +57,32 @@ export const Route = createFileRoute("/api/public/webhooks/deliver")({
             });
             const text = await res.text().catch(() => "");
             const success = res.ok;
-            await supabaseAdmin.from("webhook_deliveries").update({
-              status: success ? "entregue" : (d.tentativas + 1 >= MAX_ATTEMPTS ? "falhou" : "tentando"),
-              response_status: res.status,
-              response_body: text.slice(0, 2000),
-              tentativas: d.tentativas + 1,
-              delivered_at: success ? new Date().toISOString() : null,
-              last_error: success ? null : `HTTP ${res.status}`,
-            }).eq("id", d.id);
+            await supabaseAdmin
+              .from("webhook_deliveries")
+              .update({
+                status: success
+                  ? "entregue"
+                  : d.tentativas + 1 >= MAX_ATTEMPTS
+                    ? "falhou"
+                    : "tentando",
+                response_status: res.status,
+                response_body: text.slice(0, 2000),
+                tentativas: d.tentativas + 1,
+                delivered_at: success ? new Date().toISOString() : null,
+                last_error: success ? null : `HTTP ${res.status}`,
+              })
+              .eq("id", d.id);
             success ? ok++ : fail++;
           } catch (e: any) {
             const msg = e?.message ?? String(e);
-            await supabaseAdmin.from("webhook_deliveries").update({
-              status: d.tentativas + 1 >= MAX_ATTEMPTS ? "falhou" : "tentando",
-              tentativas: d.tentativas + 1,
-              last_error: msg.slice(0, 1000),
-            }).eq("id", d.id);
+            await supabaseAdmin
+              .from("webhook_deliveries")
+              .update({
+                status: d.tentativas + 1 >= MAX_ATTEMPTS ? "falhou" : "tentando",
+                tentativas: d.tentativas + 1,
+                last_error: msg.slice(0, 1000),
+              })
+              .eq("id", d.id);
             fail++;
           }
         }

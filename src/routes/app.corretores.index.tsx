@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, UserCircle2, Pencil, Trash2, ExternalLink, Star, Award, HeartHandshake, MessageSquare } from "lucide-react";
+import {
+  Plus,
+  UserCircle2,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  Star,
+  Award,
+  HeartHandshake,
+  MessageSquare,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,8 +50,9 @@ function CorretoresList() {
       atendimento: 5,
       negociacao: 4,
       pontualidade: 5,
-      comentario: "Excelente profissional. Nos acompanhou em 3 visitas no final de semana e foi incansável na negociação de venda do apartamento.",
-      data: "24/05/2026"
+      comentario:
+        "Excelente profissional. Nos acompanhou em 3 visitas no final de semana e foi incansável na negociação de venda do apartamento.",
+      data: "24/05/2026",
     },
     {
       avaliador: "Camila Costa",
@@ -50,8 +61,9 @@ function CorretoresList() {
       atendimento: 5,
       negociacao: 5,
       pontualidade: 5,
-      comentario: "Ótima parceria de co-corretagem! Split de comissão 50/50 pago certinho e contrato rápido.",
-      data: "22/05/2026"
+      comentario:
+        "Ótima parceria de co-corretagem! Split de comissão 50/50 pago certinho e contrato rápido.",
+      data: "22/05/2026",
     },
     {
       avaliador: "Roberto Santos",
@@ -60,9 +72,10 @@ function CorretoresList() {
       atendimento: 4,
       negociacao: 5,
       pontualidade: 4,
-      comentario: "Muito prestativo. Ajudou com as dúvidas técnicas de avaliação patrimonial física.",
-      data: "18/05/2026"
-    }
+      comentario:
+        "Muito prestativo. Ajudou com as dúvidas técnicas de avaliação patrimonial física.",
+      data: "18/05/2026",
+    },
   ]);
 
   const [formAvaliador, setFormAvaliador] = useState("");
@@ -112,7 +125,9 @@ function CorretoresList() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function remove(id: string) {
     if (!confirm("Excluir este corretor?")) return;
@@ -125,7 +140,11 @@ function CorretoresList() {
   const filtered = items.filter((c) => {
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return c.nome.toLowerCase().includes(q) || (c.creci ?? "").toLowerCase().includes(q) || (c.email ?? "").toLowerCase().includes(q);
+    return (
+      c.nome.toLowerCase().includes(q) ||
+      (c.creci ?? "").toLowerCase().includes(q) ||
+      (c.email ?? "").toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -136,12 +155,19 @@ function CorretoresList() {
           <p className="mt-1 text-sm text-muted-foreground">Equipe de corretores da imobiliária</p>
         </div>
         <Button asChild>
-          <Link to="/app/corretores/novo"><Plus className="mr-2 h-4 w-4" /> Novo corretor</Link>
+          <Link to="/app/corretores/novo">
+            <Plus className="mr-2 h-4 w-4" /> Novo corretor
+          </Link>
         </Button>
       </div>
 
       <div className="mt-6">
-        <Input placeholder="Buscar por nome, CRECI ou e-mail…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-md" />
+        <Input
+          placeholder="Buscar por nome, CRECI ou e-mail…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-md"
+        />
       </div>
 
       <div className="mt-6 overflow-hidden rounded-xl border border-border bg-card">
@@ -154,7 +180,9 @@ function CorretoresList() {
               {items.length === 0 ? "Nenhum corretor cadastrado ainda." : "Nenhum resultado."}
             </p>
             {items.length === 0 && (
-              <Button asChild size="sm"><Link to="/app/corretores/novo">Cadastrar primeiro corretor</Link></Button>
+              <Button asChild size="sm">
+                <Link to="/app/corretores/novo">Cadastrar primeiro corretor</Link>
+              </Button>
             )}
           </div>
         ) : (
@@ -174,14 +202,28 @@ function CorretoresList() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {c.foto_url ? (
-                        <img src={c.foto_url} alt="" className="h-9 w-9 rounded-full object-cover" />
+                        <img
+                          src={c.foto_url}
+                          alt=""
+                          className="h-9 w-9 rounded-full object-cover"
+                        />
                       ) : (
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                          {c.nome.split(" ").map((p) => p[0]).slice(0, 2).join("")}
+                          {c.nome
+                            .split(" ")
+                            .map((p) => p[0])
+                            .slice(0, 2)
+                            .join("")}
                         </div>
                       )}
                       <div>
-                        <Link to="/app/corretores/$id" params={{ id: c.id }} className="font-medium hover:text-primary">{c.nome}</Link>
+                        <Link
+                          to="/app/corretores/$id"
+                          params={{ id: c.id }}
+                          className="font-medium hover:text-primary"
+                        >
+                          {c.nome}
+                        </Link>
                         {c.cargo && <div className="text-xs text-muted-foreground">{c.cargo}</div>}
                       </div>
                     </div>
@@ -206,11 +248,15 @@ function CorretoresList() {
                     <div className="flex justify-end gap-1">
                       {c.ativo && c.publico && (
                         <Button size="sm" variant="ghost" asChild>
-                          <a href={`/corretor/${c.slug}`} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a>
+                          <a href={`/corretor/${c.slug}`} target="_blank" rel="noreferrer">
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
                         </Button>
                       )}
                       <Button size="sm" variant="ghost" asChild>
-                        <Link to="/app/corretores/$id" params={{ id: c.id }}><Pencil className="h-4 w-4" /></Link>
+                        <Link to="/app/corretores/$id" params={{ id: c.id }}>
+                          <Pencil className="h-4 w-4" />
+                        </Link>
                       </Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(c.id)}>
                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -231,25 +277,35 @@ function CorretoresList() {
           <div className="flex items-center gap-2">
             <HeartHandshake className="h-5 w-5 text-primary" />
             <div>
-              <h2 className="text-base font-bold text-foreground">Avaliações 360 · Satisfação e Parcerias</h2>
-              <p className="text-xs text-muted-foreground">Índice multidimensional de corretores avaliados por clientes e parceiros de co-corretagem</p>
+              <h2 className="text-base font-bold text-foreground">
+                Avaliações 360 · Satisfação e Parcerias
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Índice multidimensional de corretores avaliados por clientes e parceiros de
+                co-corretagem
+              </p>
             </div>
           </div>
 
           <div className="space-y-4 pt-2">
             {evaluations.length === 0 ? (
-              <p className="text-xs text-muted-foreground">Nenhuma avaliação cadastrada no portal.</p>
+              <p className="text-xs text-muted-foreground">
+                Nenhuma avaliação cadastrada no portal.
+              </p>
             ) : (
               evaluations.map((ev, idx) => (
-                <div key={idx} className="rounded-xl border border-border p-4 space-y-3 bg-muted/20 hover:bg-muted/30 transition-colors">
+                <div
+                  key={idx}
+                  className="rounded-xl border border-border p-4 space-y-3 bg-muted/20 hover:bg-muted/30 transition-colors"
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <span className="font-bold text-xs text-foreground">{ev.avaliador}</span>
-                      <span className="text-[10px] ml-2 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold font-sans capitalize">{ev.relacao}</span>
+                      <span className="text-[10px] ml-2 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold font-sans capitalize">
+                        {ev.relacao}
+                      </span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground font-mono">
-                      {ev.data}
-                    </div>
+                    <div className="text-[11px] text-muted-foreground font-mono">{ev.data}</div>
                   </div>
 
                   <div className="text-xs">
@@ -262,7 +318,10 @@ function CorretoresList() {
                       <div className="font-medium">Atendimento</div>
                       <div className="mt-1 flex justify-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 ${i < ev.atendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${i < ev.atendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                          />
                         ))}
                       </div>
                     </div>
@@ -270,7 +329,10 @@ function CorretoresList() {
                       <div className="font-medium">Negociação</div>
                       <div className="mt-1 flex justify-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 ${i < ev.negociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${i < ev.negociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                          />
                         ))}
                       </div>
                     </div>
@@ -278,7 +340,10 @@ function CorretoresList() {
                       <div className="font-medium">Pontualidade</div>
                       <div className="mt-1 flex justify-center gap-0.5">
                         {Array.from({ length: 5 }).map((_, i) => (
-                          <Star key={i} className={`h-3 w-3 ${i < ev.pontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                          <Star
+                            key={i}
+                            className={`h-3 w-3 ${i < ev.pontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                          />
                         ))}
                       </div>
                     </div>
@@ -301,10 +366,12 @@ function CorretoresList() {
             <Award className="h-5 w-5 text-emerald-600" />
             <h3 className="text-sm font-bold text-foreground">Coletar Novo Feedback</h3>
           </div>
-          
+
           <form onSubmit={handleFormSubmit} className="space-y-3.5 text-xs">
             <div>
-              <label className="mb-1 block font-medium text-muted-foreground">Avaliador (Nome completo)</label>
+              <label className="mb-1 block font-medium text-muted-foreground">
+                Avaliador (Nome completo)
+              </label>
               <Input
                 placeholder="Ex: Mariana Silva"
                 value={formAvaliador}
@@ -328,7 +395,9 @@ function CorretoresList() {
             </div>
 
             <div>
-              <label className="mb-1 block font-medium text-muted-foreground">Corretor do time</label>
+              <label className="mb-1 block font-medium text-muted-foreground">
+                Corretor do time
+              </label>
               <select
                 value={formCorretorId}
                 onChange={(e) => setFormCorretorId(e.target.value)}
@@ -337,18 +406,24 @@ function CorretoresList() {
               >
                 <option value="">Selecione o corretor...</option>
                 {items.map((it) => (
-                  <option key={it.id} value={it.id}>{it.nome}</option>
+                  <option key={it.id} value={it.id}>
+                    {it.nome}
+                  </option>
                 ))}
               </select>
             </div>
 
             <div className="space-y-2 border-t border-border pt-3">
               <div className="flex items-center justify-between">
-                <span className="font-medium text-muted-foreground">Cordialidade & Atendimento</span>
+                <span className="font-medium text-muted-foreground">
+                  Cordialidade & Atendimento
+                </span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((st) => (
                     <button type="button" key={st} onClick={() => setFormAtendimento(st)}>
-                      <Star className={`h-4 w-4 ${st <= formAtendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                      <Star
+                        className={`h-4 w-4 ${st <= formAtendimento ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                      />
                     </button>
                   ))}
                 </div>
@@ -358,17 +433,23 @@ function CorretoresList() {
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((st) => (
                     <button type="button" key={st} onClick={() => setFormNegociacao(st)}>
-                      <Star className={`h-4 w-4 ${st <= formNegociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                      <Star
+                        className={`h-4 w-4 ${st <= formNegociacao ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                      />
                     </button>
                   ))}
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-muted-foreground">Pontualidade & Compromisso</span>
+                <span className="font-medium text-muted-foreground">
+                  Pontualidade & Compromisso
+                </span>
                 <div className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((st) => (
                     <button type="button" key={st} onClick={() => setFormPontualidade(st)}>
-                      <Star className={`h-4 w-4 ${st <= formPontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                      <Star
+                        className={`h-4 w-4 ${st <= formPontualidade ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`}
+                      />
                     </button>
                   ))}
                 </div>
@@ -376,7 +457,9 @@ function CorretoresList() {
             </div>
 
             <div className="border-t border-border pt-3">
-              <label className="mb-1 block font-medium text-muted-foreground">Comentários e Feedbacks</label>
+              <label className="mb-1 block font-medium text-muted-foreground">
+                Comentários e Feedbacks
+              </label>
               <Textarea
                 rows={3}
                 placeholder="Ex: Ótima postura profissional, facilitou mto o fluxo..."
@@ -386,7 +469,9 @@ function CorretoresList() {
               />
             </div>
 
-            <Button type="submit" size="sm" className="w-full h-9">Registrar Avaliação</Button>
+            <Button type="submit" size="sm" className="w-full h-9">
+              Registrar Avaliação
+            </Button>
           </form>
         </div>
       </div>

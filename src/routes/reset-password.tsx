@@ -22,7 +22,9 @@ function ResetPasswordPage() {
 
   useEffect(() => {
     // Supabase coloca o usuário em sessão temporária ao abrir o link de recovery.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
     });
     supabase.auth.getSession().then(({ data }) => {
@@ -56,14 +58,29 @@ function ResetPasswordPage() {
             Abra o link de redefinição que enviamos por e-mail para continuar.
           </p>
         ) : (
-          <form onSubmit={submit} className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6">
+          <form
+            onSubmit={submit}
+            className="mt-6 space-y-4 rounded-xl border border-border bg-card p-6"
+          >
             <div>
               <Label className="text-xs">Nova senha</Label>
-              <Input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} required />
+              <Input
+                type="password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                minLength={8}
+                required
+              />
             </div>
             <div>
               <Label className="text-xs">Confirmar senha</Label>
-              <Input type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} minLength={8} required />
+              <Input
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                minLength={8}
+                required
+              />
             </div>
             <Button type="submit" disabled={saving} className="w-full">
               {saving ? "Salvando…" : "Atualizar senha"}

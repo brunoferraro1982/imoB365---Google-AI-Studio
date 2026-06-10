@@ -8,7 +8,9 @@ export const listarFavoritos = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     const { data, error } = await supabase
       .from("favoritos")
-      .select("id, imovel_id, pasta, created_at, imoveis:imovel_id (id, slug, titulo, finalidade, tipo, preco, quartos, banheiros, vagas, area_util, endereco_cidade, endereco_uf, endereco_bairro, imovel_fotos(storage_path, capa, ordem))")
+      .select(
+        "id, imovel_id, pasta, created_at, imoveis:imovel_id (id, slug, titulo, finalidade, tipo, preco, quartos, banheiros, vagas, area_util, endereco_cidade, endereco_uf, endereco_bairro, imovel_fotos(storage_path, capa, ordem))",
+      )
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -29,12 +31,17 @@ export const listarFavoritoIds = createServerFn({ method: "GET" })
 
 export const adicionarFavorito = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((i) => z.object({ imovel_id: z.string().uuid(), pasta: z.string().max(60).optional() }).parse(i))
+  .inputValidator((i) =>
+    z.object({ imovel_id: z.string().uuid(), pasta: z.string().max(60).optional() }).parse(i),
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { error } = await supabase
       .from("favoritos")
-      .upsert({ user_id: userId, imovel_id: data.imovel_id, pasta: data.pasta ?? null }, { onConflict: "user_id,imovel_id" });
+      .upsert(
+        { user_id: userId, imovel_id: data.imovel_id, pasta: data.pasta ?? null },
+        { onConflict: "user_id,imovel_id" },
+      );
     if (error) throw new Error(error.message);
     return { ok: true };
   });

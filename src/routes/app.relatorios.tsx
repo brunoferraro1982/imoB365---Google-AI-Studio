@@ -26,7 +26,13 @@ import {
 } from "recharts";
 import { getRelatorios } from "@/lib/relatorios.functions";
 import { formatBRL, TIPO_LABEL } from "@/lib/format";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/app/relatorios")({
   component: RelatoriosPage,
@@ -197,15 +203,21 @@ function RelatoriosPage() {
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-3 text-sm">
               <div className="rounded-lg border p-3">
-                <div className="text-xs text-muted-foreground">Tempo médio até primeiro contato</div>
+                <div className="text-xs text-muted-foreground">
+                  Tempo médio até primeiro contato
+                </div>
                 <div className="mt-1 text-lg font-semibold">
-                  {data.tempo_medio_dias.ate_contato !== null ? `${data.tempo_medio_dias.ate_contato} dias` : "—"}
+                  {data.tempo_medio_dias.ate_contato !== null
+                    ? `${data.tempo_medio_dias.ate_contato} dias`
+                    : "—"}
                 </div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-xs text-muted-foreground">Tempo médio até ganho</div>
                 <div className="mt-1 text-lg font-semibold">
-                  {data.tempo_medio_dias.ate_ganho !== null ? `${data.tempo_medio_dias.ate_ganho} dias` : "—"}
+                  {data.tempo_medio_dias.ate_ganho !== null
+                    ? `${data.tempo_medio_dias.ate_ganho} dias`
+                    : "—"}
                 </div>
               </div>
               <div className="rounded-lg border p-3">
@@ -224,26 +236,26 @@ function RelatoriosPage() {
               <h2 className="text-sm font-semibold">Leads por dia</h2>
               <p className="text-xs text-muted-foreground">Volume diário no período selecionado</p>
               <div className="mt-4 h-64">
-                <ClientOnly fallback={<div className="h-full" />}> 
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data.leads_por_dia}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis
-                      dataKey="data"
-                      tick={{ fontSize: 11 }}
-                      tickFormatter={(d: string) => d.slice(5)}
-                    />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                    <Tooltip />
-                    <Line
-                      type="monotone"
-                      dataKey="novos"
-                      stroke="var(--primary)"
-                      strokeWidth={2}
-                      dot={false}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <ClientOnly fallback={<div className="h-full" />}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.leads_por_dia}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis
+                        dataKey="data"
+                        tick={{ fontSize: 11 }}
+                        tickFormatter={(d: string) => d.slice(5)}
+                      />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                      <Tooltip />
+                      <Line
+                        type="monotone"
+                        dataKey="novos"
+                        stroke="var(--primary)"
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </ClientOnly>
               </div>
             </div>
@@ -252,22 +264,32 @@ function RelatoriosPage() {
               <h2 className="text-sm font-semibold">Financeiro — últimos 6 meses</h2>
               <p className="text-xs text-muted-foreground">Entradas vs saídas (R$)</p>
               <div className="mt-4 h-64">
-                <ClientOnly fallback={<div className="h-full" />}> 
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.financeiro_por_mes}>
-                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                    <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip
-                      formatter={(v: number) =>
-                        Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-                      }
-                    />
-                    <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Bar dataKey="entradas" name="Entradas" fill="var(--primary)" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="saidas" name="Saídas" fill="var(--destructive)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <ClientOnly fallback={<div className="h-full" />}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.financeiro_por_mes}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                      <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip
+                        formatter={(v: number) =>
+                          Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                        }
+                      />
+                      <Legend wrapperStyle={{ fontSize: 12 }} />
+                      <Bar
+                        dataKey="entradas"
+                        name="Entradas"
+                        fill="var(--primary)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                      <Bar
+                        dataKey="saidas"
+                        name="Saídas"
+                        fill="var(--destructive)"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </ClientOnly>
               </div>
             </div>
@@ -309,7 +331,10 @@ function RelatoriosPage() {
                   <p className="text-sm text-muted-foreground">Sem leads atribuídos.</p>
                 )}
                 {data.ranking_corretores.map((r, idx) => (
-                  <div key={`${r.corretor}-${idx}`} className="flex items-center justify-between text-sm">
+                  <div
+                    key={`${r.corretor}-${idx}`}
+                    className="flex items-center justify-between text-sm"
+                  >
                     <div className="flex items-center gap-2">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold">
                         {idx + 1}
@@ -355,12 +380,19 @@ function RelatoriosPage() {
           {/* Performance e Conversão do Imóvel widget (Sprint 5) */}
           <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-sm space-y-4">
             <div>
-              <h2 className="text-base font-bold text-foreground">Performance & Desempenho dos Anúncios</h2>
-              <p className="text-xs text-muted-foreground">Monitoramento orgânico de visualizações, contatos via WhatsApp e favoritação por anúncio ativo</p>
+              <h2 className="text-base font-bold text-foreground">
+                Performance & Desempenho dos Anúncios
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Monitoramento orgânico de visualizações, contatos via WhatsApp e favoritação por
+                anúncio ativo
+              </p>
             </div>
-            
-            {(!data.ranking_imoveis || data.ranking_imoveis.length === 0) ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">Nenhum anúncio disponível para análise de performance de tráfego.</p>
+
+            {!data.ranking_imoveis || data.ranking_imoveis.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">
+                Nenhum anúncio disponível para análise de performance de tráfego.
+              </p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse select-none">
@@ -376,10 +408,17 @@ function RelatoriosPage() {
                   </thead>
                   <tbody>
                     {data.ranking_imoveis.map((im) => (
-                      <tr key={im.id} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                      <tr
+                        key={im.id}
+                        className="border-b border-border/60 hover:bg-muted/50 transition-colors"
+                      >
                         <td className="py-4 font-medium max-w-xs truncate">
-                          <span className="block truncate text-foreground text-xs font-bold leading-tight">{im.titulo}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono uppercase">{im.bairro} · {TIPO_LABEL[im.tipo] ?? im.tipo}</span>
+                          <span className="block truncate text-foreground text-xs font-bold leading-tight">
+                            {im.titulo}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-mono uppercase">
+                            {im.bairro} · {TIPO_LABEL[im.tipo] ?? im.tipo}
+                          </span>
                         </td>
                         <td className="py-4 text-center text-xs font-bold font-mono text-primary">
                           {formatBRL(im.preco)}
@@ -395,11 +434,13 @@ function RelatoriosPage() {
                         </td>
                         <td className="py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <span className="font-mono text-xs font-bold text-foreground">{im.conversion_rate}%</span>
+                            <span className="font-mono text-xs font-bold text-foreground">
+                              {im.conversion_rate}%
+                            </span>
                             <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden relative">
-                              <div 
-                                className="h-full bg-emerald-500 rounded-full" 
-                                style={{ width: `${Math.min(im.conversion_rate * 3.5, 100)}%` }} 
+                              <div
+                                className="h-full bg-emerald-500 rounded-full"
+                                style={{ width: `${Math.min(im.conversion_rate * 3.5, 100)}%` }}
                               />
                             </div>
                           </div>

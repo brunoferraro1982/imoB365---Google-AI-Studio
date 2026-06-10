@@ -27,11 +27,28 @@ function AdminPlanos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState<{ nome: string; preco: string; quota: string; imoveis: string; usuarios: string }>({
-    nome: "", preco: "", quota: "", imoveis: "", usuarios: "",
+  const [form, setForm] = useState<{
+    nome: string;
+    preco: string;
+    quota: string;
+    imoveis: string;
+    usuarios: string;
+  }>({
+    nome: "",
+    preco: "",
+    quota: "",
+    imoveis: "",
+    usuarios: "",
   });
   const [creating, setCreating] = useState(false);
-  const [newPlan, setNewPlan] = useState({ slug: "", nome: "", preco: "0", quota: "3", imoveis: "50", usuarios: "3" });
+  const [newPlan, setNewPlan] = useState({
+    slug: "",
+    nome: "",
+    preco: "0",
+    quota: "3",
+    imoveis: "50",
+    usuarios: "3",
+  });
 
   async function load() {
     setLoading(true);
@@ -39,7 +56,9 @@ function AdminPlanos() {
     setPlans((data as unknown as Plan[]) ?? []);
     setLoading(false);
   }
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   function startEdit(p: Plan) {
     setEditing(p.id);
@@ -62,7 +81,10 @@ function AdminPlanos() {
         usuarios: Number(form.usuarios) || 0,
       },
     };
-    const { error } = await supabase.from("plans").update(payload as any).eq("id", id);
+    const { error } = await supabase
+      .from("plans")
+      .update(payload as any)
+      .eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Plano atualizado");
     setEditing(null);
@@ -71,7 +93,10 @@ function AdminPlanos() {
 
   async function createNew(e: FormEvent) {
     e.preventDefault();
-    const slug = newPlan.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-");
+    const slug = newPlan.slug
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "-");
     if (!slug || !newPlan.nome.trim()) return toast.error("Slug e nome são obrigatórios");
     const { error } = await supabase.from("plans").insert({
       slug,
@@ -114,36 +139,69 @@ function AdminPlanos() {
       </header>
 
       {creating && (
-        <form onSubmit={createNew} className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-5 md:grid-cols-6">
+        <form
+          onSubmit={createNew}
+          className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-5 md:grid-cols-6"
+        >
           <div className="md:col-span-1">
             <Label className="text-xs">Slug</Label>
-            <Input value={newPlan.slug} onChange={(e) => setNewPlan({ ...newPlan, slug: e.target.value })} placeholder="enterprise" />
+            <Input
+              value={newPlan.slug}
+              onChange={(e) => setNewPlan({ ...newPlan, slug: e.target.value })}
+              placeholder="enterprise"
+            />
           </div>
           <div className="md:col-span-2">
             <Label className="text-xs">Nome</Label>
-            <Input value={newPlan.nome} onChange={(e) => setNewPlan({ ...newPlan, nome: e.target.value })} placeholder="Enterprise" />
+            <Input
+              value={newPlan.nome}
+              onChange={(e) => setNewPlan({ ...newPlan, nome: e.target.value })}
+              placeholder="Enterprise"
+            />
           </div>
           <div>
             <Label className="text-xs">Preço/mês</Label>
-            <Input type="number" step="0.01" value={newPlan.preco} onChange={(e) => setNewPlan({ ...newPlan, preco: e.target.value })} />
+            <Input
+              type="number"
+              step="0.01"
+              value={newPlan.preco}
+              onChange={(e) => setNewPlan({ ...newPlan, preco: e.target.value })}
+            />
           </div>
           <div>
             <Label className="text-xs">Cota módulos (-1 = ∞)</Label>
-            <Input type="number" value={newPlan.quota} onChange={(e) => setNewPlan({ ...newPlan, quota: e.target.value })} />
+            <Input
+              type="number"
+              value={newPlan.quota}
+              onChange={(e) => setNewPlan({ ...newPlan, quota: e.target.value })}
+            />
           </div>
           <div className="grid grid-cols-2 gap-2 md:col-span-1">
             <div>
               <Label className="text-xs">Imóveis</Label>
-              <Input type="number" value={newPlan.imoveis} onChange={(e) => setNewPlan({ ...newPlan, imoveis: e.target.value })} />
+              <Input
+                type="number"
+                value={newPlan.imoveis}
+                onChange={(e) => setNewPlan({ ...newPlan, imoveis: e.target.value })}
+              />
             </div>
             <div>
               <Label className="text-xs">Usuários</Label>
-              <Input type="number" value={newPlan.usuarios} onChange={(e) => setNewPlan({ ...newPlan, usuarios: e.target.value })} />
+              <Input
+                type="number"
+                value={newPlan.usuarios}
+                onChange={(e) => setNewPlan({ ...newPlan, usuarios: e.target.value })}
+              />
             </div>
           </div>
           <div className="flex items-end gap-2 md:col-span-6">
-            <Button type="submit" size="sm"><Save className="mr-1 h-4 w-4" />Criar</Button>
-            <Button type="button" size="sm" variant="ghost" onClick={() => setCreating(false)}>Cancelar</Button>
+            <Button type="submit" size="sm">
+              <Save className="mr-1 h-4 w-4" />
+              Criar
+            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setCreating(false)}>
+              Cancelar
+            </Button>
           </div>
         </form>
       )}
@@ -156,7 +214,11 @@ function AdminPlanos() {
             <div key={p.id} className="rounded-xl border border-border bg-card p-6">
               <div className="flex items-center justify-between">
                 {editing === p.id ? (
-                  <Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} className="h-8 max-w-[160px]" />
+                  <Input
+                    value={form.nome}
+                    onChange={(e) => setForm({ ...form, nome: e.target.value })}
+                    className="h-8 max-w-[160px]"
+                  />
                 ) : (
                   <h2 className="text-xl font-semibold">{p.nome}</h2>
                 )}
@@ -168,23 +230,52 @@ function AdminPlanos() {
                   {p.ativo ? "Ativo" : "Inativo"}
                 </Badge>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">slug: <span className="font-mono">{p.slug}</span></p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                slug: <span className="font-mono">{p.slug}</span>
+              </p>
 
               {editing === p.id ? (
                 <div className="mt-4 space-y-3">
                   <Field label="Preço/mês (R$)">
-                    <Input type="number" step="0.01" value={form.preco} onChange={(e) => setForm({ ...form, preco: e.target.value })} />
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={form.preco}
+                      onChange={(e) => setForm({ ...form, preco: e.target.value })}
+                    />
                   </Field>
                   <Field label="Cota de módulos (-1 = ilimitado)">
-                    <Input type="number" value={form.quota} onChange={(e) => setForm({ ...form, quota: e.target.value })} />
+                    <Input
+                      type="number"
+                      value={form.quota}
+                      onChange={(e) => setForm({ ...form, quota: e.target.value })}
+                    />
                   </Field>
                   <div className="grid grid-cols-2 gap-2">
-                    <Field label="Imóveis"><Input type="number" value={form.imoveis} onChange={(e) => setForm({ ...form, imoveis: e.target.value })} /></Field>
-                    <Field label="Usuários"><Input type="number" value={form.usuarios} onChange={(e) => setForm({ ...form, usuarios: e.target.value })} /></Field>
+                    <Field label="Imóveis">
+                      <Input
+                        type="number"
+                        value={form.imoveis}
+                        onChange={(e) => setForm({ ...form, imoveis: e.target.value })}
+                      />
+                    </Field>
+                    <Field label="Usuários">
+                      <Input
+                        type="number"
+                        value={form.usuarios}
+                        onChange={(e) => setForm({ ...form, usuarios: e.target.value })}
+                      />
+                    </Field>
                   </div>
                   <div className="flex gap-2 pt-2">
-                    <Button size="sm" onClick={() => saveEdit(p.id)}><Save className="mr-1 h-4 w-4" />Salvar</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditing(null)}><X className="mr-1 h-4 w-4" />Cancelar</Button>
+                    <Button size="sm" onClick={() => saveEdit(p.id)}>
+                      <Save className="mr-1 h-4 w-4" />
+                      Salvar
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
+                      <X className="mr-1 h-4 w-4" />
+                      Cancelar
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -194,17 +285,29 @@ function AdminPlanos() {
                     <span className="text-sm font-normal text-muted-foreground">/mês</span>
                   </p>
                   <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-center">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">Cota de módulos opcionais</p>
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Cota de módulos opcionais
+                    </p>
                     <p className="mt-1 inline-flex items-center gap-1 text-2xl font-bold">
-                      {p.limites?.modulos === -1 ? <InfinityIcon className="h-6 w-6 text-primary" /> : formatQuota(p.limites?.modulos)}
+                      {p.limites?.modulos === -1 ? (
+                        <InfinityIcon className="h-6 w-6 text-primary" />
+                      ) : (
+                        formatQuota(p.limites?.modulos)
+                      )}
                     </p>
                   </div>
                   <div className="mt-4 space-y-1 text-sm">
                     <Row label="Imóveis" value={formatQuota(p.limites?.imoveis ?? 0)} />
                     <Row label="Usuários" value={formatQuota(p.limites?.usuarios ?? 0)} />
                   </div>
-                  <Button size="sm" variant="outline" className="mt-4 w-full" onClick={() => startEdit(p)}>
-                    <Pencil className="mr-1 h-4 w-4" />Editar
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-4 w-full"
+                    onClick={() => startEdit(p)}
+                  >
+                    <Pencil className="mr-1 h-4 w-4" />
+                    Editar
                   </Button>
                 </>
               )}
@@ -219,7 +322,9 @@ function AdminPlanos() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <Label className="mb-1 block text-[10px] uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="mb-1 block text-[10px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );

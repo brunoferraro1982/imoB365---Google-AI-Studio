@@ -4,16 +4,16 @@ Configure em: GitHub → Settings → Secrets and variables → Actions → New 
 
 ## Secrets obrigatórios
 
-| Secret | Descrição | Onde obter |
-|---|---|---|
-| `GEMINI_API_KEY` | Chave da API do Google Gemini | console.cloud.google.com |
-| `SUPABASE_URL` | URL do projeto Supabase (server-side) | Supabase → Settings → API |
-| `SUPABASE_PUBLISHABLE_KEY` | Anon key do Supabase | Supabase → Settings → API |
-| `VITE_SUPABASE_URL` | Mesma URL (para o Vite no build) | Igual ao SUPABASE_URL |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Mesma anon key (para o Vite) | Igual ao SUPABASE_PUBLISHABLE_KEY |
-| `APP_URL` | URL canônica do app (ex: https://imob365.com.br) | Sua configuração de domínio |
-| `CLOUDFLARE_API_TOKEN` | Token da API do Cloudflare | dash.cloudflare.com → API Tokens |
-| `CLOUDFLARE_ACCOUNT_ID` | ID da conta Cloudflare | dash.cloudflare.com → lado direito |
+| Secret                          | Descrição                                        | Onde obter                         |
+| ------------------------------- | ------------------------------------------------ | ---------------------------------- |
+| `GEMINI_API_KEY`                | Chave da API do Google Gemini                    | console.cloud.google.com           |
+| `SUPABASE_URL`                  | URL do projeto Supabase (server-side)            | Supabase → Settings → API          |
+| `SUPABASE_PUBLISHABLE_KEY`      | Anon key do Supabase                             | Supabase → Settings → API          |
+| `VITE_SUPABASE_URL`             | Mesma URL (para o Vite no build)                 | Igual ao SUPABASE_URL              |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Mesma anon key (para o Vite)                     | Igual ao SUPABASE_PUBLISHABLE_KEY  |
+| `APP_URL`                       | URL canônica do app (ex: https://imob365.com.br) | Sua configuração de domínio        |
+| `CLOUDFLARE_API_TOKEN`          | Token da API do Cloudflare                       | dash.cloudflare.com → API Tokens   |
+| `CLOUDFLARE_ACCOUNT_ID`         | ID da conta Cloudflare                           | dash.cloudflare.com → lado direito |
 
 ## Como criar o Cloudflare API Token
 
@@ -30,10 +30,12 @@ Configure em: GitHub → Settings → Secrets and variables → Actions → New 
 Configure dois environments em GitHub → Settings → Environments:
 
 ### staging
+
 - Sem proteções adicionais (deploy automático a cada push em develop)
 - URL: https://staging.imob365.com.br
 
-### production  
+### production
+
 - ✅ Required reviewers: adicione seu usuário (aprovação manual antes do deploy)
 - ✅ Wait timer: 5 minutos (tempo para cancelar se necessário)
 - URL: https://imob365.com.br
@@ -49,12 +51,12 @@ Certifique-se que o wrangler.jsonc do projeto tem os environments configurados:
   "env": {
     "staging": {
       "name": "imob365-staging",
-      "routes": [{ "pattern": "staging.imob365.com.br/*", "zone_name": "imob365.com.br" }]
+      "routes": [{ "pattern": "staging.imob365.com.br/*", "zone_name": "imob365.com.br" }],
     },
     "production": {
-      "name": "imob365-production", 
-      "routes": [{ "pattern": "imob365.com.br/*", "zone_name": "imob365.com.br" }]
-    }
-  }
+      "name": "imob365-production",
+      "routes": [{ "pattern": "imob365.com.br/*", "zone_name": "imob365.com.br" }],
+    },
+  },
 }
 ```

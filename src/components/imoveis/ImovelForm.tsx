@@ -4,7 +4,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL, slugify } from "@/lib/format";
 import { CheckCircle2, FileText, Globe } from "lucide-react";
 import { useEffect } from "react";
@@ -89,7 +95,10 @@ export function ImovelForm({
   mode = "create",
 }: {
   initial?: Partial<ImovelFormData>;
-  onSubmit: (data: ImovelFormData, action: "save" | "publish" | "unpublish") => Promise<void> | void;
+  onSubmit: (
+    data: ImovelFormData,
+    action: "save" | "publish" | "unpublish",
+  ) => Promise<void> | void;
   submitLabel: string;
   submitting?: boolean;
   mode?: "create" | "edit";
@@ -111,7 +120,8 @@ export function ImovelForm({
         .from("tenant_custom_fields")
         .select("*")
         .eq("entidade", "imovel")
-        .order("ordem").order("created_at");
+        .order("ordem")
+        .order("created_at");
       setCustomFields(cf ?? []);
     })();
   }, []);
@@ -134,7 +144,9 @@ export function ImovelForm({
         endereco_cidade: json.localidade ?? d.endereco_cidade,
         endereco_uf: json.uf ?? d.endereco_uf,
       }));
-    } catch {/* silent */}
+    } catch {
+      /* silent */
+    }
   }
 
   function submitWith(action: "save" | "publish" | "unpublish", e?: FormEvent) {
@@ -144,7 +156,11 @@ export function ImovelForm({
       payload = { ...payload, publicado: true, status: "ativo" };
       setData(payload);
     } else if (action === "unpublish") {
-      payload = { ...payload, publicado: false, status: payload.status === "ativo" ? "inativo" : payload.status };
+      payload = {
+        ...payload,
+        publicado: false,
+        status: payload.status === "ativo" ? "inativo" : payload.status,
+      };
       setData(payload);
     }
     setPendingAction(action);
@@ -154,38 +170,60 @@ export function ImovelForm({
   const isPublished = data.publicado && data.status === "ativo";
 
   return (
-    <form onSubmit={(e) => submitWith(mode === "create" ? "save" : "save", e)} className="space-y-8">
+    <form
+      onSubmit={(e) => submitWith(mode === "create" ? "save" : "save", e)}
+      className="space-y-8"
+    >
       <Section title="Informações principais">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Título *">
-            <Input required value={data.titulo} onChange={(e) => update("titulo", e.target.value)} />
+            <Input
+              required
+              value={data.titulo}
+              onChange={(e) => update("titulo", e.target.value)}
+            />
           </Field>
           <Field label="Código interno">
-            <Input value={data.codigo_interno} onChange={(e) => update("codigo_interno", e.target.value)} />
+            <Input
+              value={data.codigo_interno}
+              onChange={(e) => update("codigo_interno", e.target.value)}
+            />
           </Field>
           <Field label="Finalidade">
             <Select value={data.finalidade} onValueChange={(v) => update("finalidade", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {Object.entries(FINALIDADE_LABEL).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                  <SelectItem key={k} value={k}>
+                    {v}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
           <Field label="Tipo">
             <Select value={data.tipo} onValueChange={(v) => update("tipo", v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 {Object.entries(TIPO_LABEL).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>{v}</SelectItem>
+                  <SelectItem key={k} value={k}>
+                    {v}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
         </div>
         <Field label="Descrição">
-          <Textarea rows={5} value={data.descricao} onChange={(e) => update("descricao", e.target.value)} />
+          <Textarea
+            rows={5}
+            value={data.descricao}
+            onChange={(e) => update("descricao", e.target.value)}
+          />
         </Field>
         <AiImovelPanel
           data={data}
@@ -197,31 +235,73 @@ export function ImovelForm({
       <Section title="Valores e medidas">
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Preço (R$) *">
-            <Input type="number" step="0.01" required value={data.preco} onChange={(e) => update("preco", Number(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              required
+              value={data.preco}
+              onChange={(e) => update("preco", Number(e.target.value))}
+            />
           </Field>
           <Field label="Condomínio (R$)">
-            <Input type="number" step="0.01" value={data.condominio ?? ""} onChange={(e) => update("condominio", num(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              value={data.condominio ?? ""}
+              onChange={(e) => update("condominio", num(e.target.value))}
+            />
           </Field>
           <Field label="IPTU (R$)">
-            <Input type="number" step="0.01" value={data.iptu ?? ""} onChange={(e) => update("iptu", num(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              value={data.iptu ?? ""}
+              onChange={(e) => update("iptu", num(e.target.value))}
+            />
           </Field>
           <Field label="Área total (m²)">
-            <Input type="number" step="0.01" value={data.area_total ?? ""} onChange={(e) => update("area_total", num(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              value={data.area_total ?? ""}
+              onChange={(e) => update("area_total", num(e.target.value))}
+            />
           </Field>
           <Field label="Área útil (m²)">
-            <Input type="number" step="0.01" value={data.area_util ?? ""} onChange={(e) => update("area_util", num(e.target.value))} />
+            <Input
+              type="number"
+              step="0.01"
+              value={data.area_util ?? ""}
+              onChange={(e) => update("area_util", num(e.target.value))}
+            />
           </Field>
           <Field label="Quartos">
-            <Input type="number" value={data.quartos ?? ""} onChange={(e) => update("quartos", num(e.target.value))} />
+            <Input
+              type="number"
+              value={data.quartos ?? ""}
+              onChange={(e) => update("quartos", num(e.target.value))}
+            />
           </Field>
           <Field label="Suítes">
-            <Input type="number" value={data.suites ?? ""} onChange={(e) => update("suites", num(e.target.value))} />
+            <Input
+              type="number"
+              value={data.suites ?? ""}
+              onChange={(e) => update("suites", num(e.target.value))}
+            />
           </Field>
           <Field label="Banheiros">
-            <Input type="number" value={data.banheiros ?? ""} onChange={(e) => update("banheiros", num(e.target.value))} />
+            <Input
+              type="number"
+              value={data.banheiros ?? ""}
+              onChange={(e) => update("banheiros", num(e.target.value))}
+            />
           </Field>
           <Field label="Vagas">
-            <Input type="number" value={data.vagas ?? ""} onChange={(e) => update("vagas", num(e.target.value))} />
+            <Input
+              type="number"
+              value={data.vagas ?? ""}
+              onChange={(e) => update("vagas", num(e.target.value))}
+            />
           </Field>
         </div>
       </Section>
@@ -237,22 +317,41 @@ export function ImovelForm({
             />
           </Field>
           <Field label="Logradouro" className="md:col-span-4">
-            <Input value={data.endereco_logradouro} onChange={(e) => update("endereco_logradouro", e.target.value)} />
+            <Input
+              value={data.endereco_logradouro}
+              onChange={(e) => update("endereco_logradouro", e.target.value)}
+            />
           </Field>
           <Field label="Número" className="md:col-span-1">
-            <Input value={data.endereco_numero} onChange={(e) => update("endereco_numero", e.target.value)} />
+            <Input
+              value={data.endereco_numero}
+              onChange={(e) => update("endereco_numero", e.target.value)}
+            />
           </Field>
           <Field label="Complemento" className="md:col-span-2">
-            <Input value={data.endereco_complemento} onChange={(e) => update("endereco_complemento", e.target.value)} />
+            <Input
+              value={data.endereco_complemento}
+              onChange={(e) => update("endereco_complemento", e.target.value)}
+            />
           </Field>
           <Field label="Bairro" className="md:col-span-3">
-            <Input value={data.endereco_bairro} onChange={(e) => update("endereco_bairro", e.target.value)} />
+            <Input
+              value={data.endereco_bairro}
+              onChange={(e) => update("endereco_bairro", e.target.value)}
+            />
           </Field>
           <Field label="Cidade" className="md:col-span-4">
-            <Input value={data.endereco_cidade} onChange={(e) => update("endereco_cidade", e.target.value)} />
+            <Input
+              value={data.endereco_cidade}
+              onChange={(e) => update("endereco_cidade", e.target.value)}
+            />
           </Field>
           <Field label="UF" className="md:col-span-2">
-            <Input maxLength={2} value={data.endereco_uf} onChange={(e) => update("endereco_uf", e.target.value.toUpperCase())} />
+            <Input
+              maxLength={2}
+              value={data.endereco_uf}
+              onChange={(e) => update("endereco_uf", e.target.value.toUpperCase())}
+            />
           </Field>
         </div>
         <Toggle
@@ -264,8 +363,16 @@ export function ImovelForm({
 
       <Section title="Condições">
         <div className="grid gap-3 md:grid-cols-2">
-          <Toggle label="Aceita financiamento" checked={data.aceita_financiamento} onChange={(v) => update("aceita_financiamento", v)} />
-          <Toggle label="Aceita permuta" checked={data.aceita_permuta} onChange={(v) => update("aceita_permuta", v)} />
+          <Toggle
+            label="Aceita financiamento"
+            checked={data.aceita_financiamento}
+            onChange={(v) => update("aceita_financiamento", v)}
+          />
+          <Toggle
+            label="Aceita permuta"
+            checked={data.aceita_permuta}
+            onChange={(v) => update("aceita_permuta", v)}
+          />
         </div>
       </Section>
 
@@ -275,17 +382,22 @@ export function ImovelForm({
             value={data.corretor_responsavel_id ?? "__none__"}
             onValueChange={(v) => update("corretor_responsavel_id", v === "__none__" ? null : v)}
           >
-            <SelectTrigger><SelectValue placeholder="Sem corretor responsável" /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue placeholder="Sem corretor responsável" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">Sem corretor responsável</SelectItem>
               {corretores.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                <SelectItem key={c.id} value={c.id}>
+                  {c.nome}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {corretores.length === 0 && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Nenhum corretor cadastrado ainda. Cadastre em <span className="font-medium">Corretores</span> para vincular.
+              Nenhum corretor cadastrado ainda. Cadastre em{" "}
+              <span className="font-medium">Corretores</span> para vincular.
             </p>
           )}
         </Field>
@@ -307,9 +419,15 @@ export function ImovelForm({
                     </div>
                   ) : f.tipo === "select" ? (
                     <Select value={val ?? ""} onValueChange={setVal}>
-                      <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
                       <SelectContent>
-                        {(f.opcoes ?? []).map((o: string) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        {(f.opcoes ?? []).map((o: string) => (
+                          <SelectItem key={o} value={o}>
+                            {o}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   ) : (
@@ -328,7 +446,9 @@ export function ImovelForm({
 
       <Section title="Situação do imóvel">
         <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
-          <div className={`flex h-9 w-9 items-center justify-center rounded-full ${isPublished ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}>
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-full ${isPublished ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}
+          >
             {isPublished ? <CheckCircle2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
           </div>
           <div className="flex-1">
@@ -344,15 +464,20 @@ export function ImovelForm({
         </div>
         <Field label="Status comercial (avançado)">
           <Select value={data.status} onValueChange={(v) => update("status", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               {Object.entries(STATUS_LABEL).map(([k, v]) => (
-                <SelectItem key={k} value={k}>{v}</SelectItem>
+                <SelectItem key={k} value={k}>
+                  {v}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <p className="mt-1 text-xs text-muted-foreground">
-            Use para marcar como vendido, alugado ou reservado. Imóveis publicados precisam estar com status "Ativo".
+            Use para marcar como vendido, alugado ou reservado. Imóveis publicados precisam estar
+            com status "Ativo".
           </p>
         </Field>
       </Section>
@@ -364,7 +489,11 @@ export function ImovelForm({
           disabled={submitting}
           onClick={() => submitWith("save")}
         >
-          {submitting && pendingAction === "save" ? "Salvando…" : mode === "create" ? "Salvar rascunho" : "Salvar alterações"}
+          {submitting && pendingAction === "save"
+            ? "Salvando…"
+            : mode === "create"
+              ? "Salvar rascunho"
+              : "Salvar alterações"}
         </Button>
         {isPublished ? (
           <Button
@@ -376,11 +505,7 @@ export function ImovelForm({
             {submitting && pendingAction === "unpublish" ? "Despublicando…" : "Despublicar"}
           </Button>
         ) : (
-          <Button
-            type="button"
-            disabled={submitting}
-            onClick={() => submitWith("publish")}
-          >
+          <Button type="button" disabled={submitting} onClick={() => submitWith("publish")}>
             <Globe className="mr-2 h-4 w-4" />
             {submitting && pendingAction === "publish" ? "Publicando…" : "Publicar imóvel"}
           </Button>
@@ -399,16 +524,34 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={className}>
-      <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</Label>
+      <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
       <span className="text-sm">{label}</span>

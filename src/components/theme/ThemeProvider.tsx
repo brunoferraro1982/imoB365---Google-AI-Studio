@@ -26,7 +26,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const local = (typeof window !== "undefined" && localStorage.getItem("imob365_theme")) as Theme | null;
+    const local = (typeof window !== "undefined" &&
+      localStorage.getItem("imob365_theme")) as Theme | null;
     if (local) {
       setThemeState(local);
       setResolved(applyTheme(local));
@@ -37,14 +38,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
       if (!uid) return;
-      supabase.from("profiles").select("tema_preferido").eq("id", uid).maybeSingle().then(({ data: p }) => {
-        const t = (p?.tema_preferido as Theme) || "system";
-        setThemeState(t);
-        setResolved(applyTheme(t));
-      });
+      supabase
+        .from("profiles")
+        .select("tema_preferido")
+        .eq("id", uid)
+        .maybeSingle()
+        .then(({ data: p }) => {
+          const t = (p?.tema_preferido as Theme) || "system";
+          setThemeState(t);
+          setResolved(applyTheme(t));
+        });
     });
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => { if (theme === "system") setResolved(applyTheme("system")); };
+    const onChange = () => {
+      if (theme === "system") setResolved(applyTheme("system"));
+    };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps

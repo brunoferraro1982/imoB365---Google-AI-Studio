@@ -21,8 +21,12 @@ type Prefs = {
 };
 
 const DEFAULTS: Prefs = {
-  email_novo_lead: true, email_visita: true, email_contrato: true, email_comissao: true,
-  inapp_novo_lead: true, inapp_visita: true,
+  email_novo_lead: true,
+  email_visita: true,
+  email_contrato: true,
+  email_comissao: true,
+  inapp_novo_lead: true,
+  inapp_visita: true,
 };
 
 const LABELS: Record<keyof Prefs, string> = {
@@ -41,14 +45,22 @@ function NotificacoesPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("notification_prefs").select("*").eq("user_id", user.id).maybeSingle()
-      .then(({ data }) => { if (data) setPrefs({ ...DEFAULTS, ...data }); });
+    supabase
+      .from("notification_prefs")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setPrefs({ ...DEFAULTS, ...data });
+      });
   }, [user]);
 
   async function save() {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("notification_prefs").upsert({ user_id: user.id, ...prefs });
+    const { error } = await supabase
+      .from("notification_prefs")
+      .upsert({ user_id: user.id, ...prefs });
     setSaving(false);
     if (error) return toast.error(error.message);
     toast.success("Preferências salvas");
@@ -68,7 +80,9 @@ function NotificacoesPage() {
           </label>
         ))}
       </div>
-      <Button onClick={save} disabled={saving}>{saving ? "Salvando…" : "Salvar preferências"}</Button>
+      <Button onClick={save} disabled={saving}>
+        {saving ? "Salvando…" : "Salvar preferências"}
+      </Button>
     </div>
   );
 }

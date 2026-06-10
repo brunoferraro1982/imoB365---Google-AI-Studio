@@ -36,8 +36,16 @@ function EmailCenter() {
     (async () => {
       setLoading(true);
       const [{ data: l }, { data: s }] = await Promise.all([
-        supabase.from("email_send_log").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("suppressed_emails").select("*").order("created_at", { ascending: false }).limit(100),
+        supabase
+          .from("email_send_log")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabase
+          .from("suppressed_emails")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100),
       ]);
       const logs = (l as Log[]) ?? [];
       setLogs(logs);
@@ -57,14 +65,26 @@ function EmailCenter() {
         <Mail className="h-6 w-6 text-primary" />
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Central de e-mails</h1>
-          <p className="text-sm text-muted-foreground">Envios, falhas e supressões de notify.imob365.com.br.</p>
+          <p className="text-sm text-muted-foreground">
+            Envios, falhas e supressões de notify.imob365.com.br.
+          </p>
         </div>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <Card label="Enviados (recentes)" value={counts.enviados} icon={CheckCircle2} tone="text-emerald-600" />
+        <Card
+          label="Enviados (recentes)"
+          value={counts.enviados}
+          icon={CheckCircle2}
+          tone="text-emerald-600"
+        />
         <Card label="Com falha" value={counts.falhas} icon={AlertTriangle} tone="text-amber-600" />
-        <Card label="Endereços suprimidos" value={counts.suprimidos} icon={ShieldAlert} tone="text-rose-600" />
+        <Card
+          label="Endereços suprimidos"
+          value={counts.suprimidos}
+          icon={ShieldAlert}
+          tone="text-rose-600"
+        />
       </div>
 
       <Tabs defaultValue="logs" className="mt-8">
@@ -86,15 +106,33 @@ function EmailCenter() {
                 </tr>
               </thead>
               <tbody>
-                {loading && <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">Carregando…</td></tr>}
-                {!loading && logs.length === 0 && <tr><td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">Nenhum envio ainda.</td></tr>}
+                {loading && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                      Carregando…
+                    </td>
+                  </tr>
+                )}
+                {!loading && logs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                      Nenhum envio ainda.
+                    </td>
+                  </tr>
+                )}
                 {logs.map((r) => (
                   <tr key={r.id} className="border-t border-border">
-                    <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">{new Date(r.created_at).toLocaleString("pt-BR")}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-muted-foreground">
+                      {new Date(r.created_at).toLocaleString("pt-BR")}
+                    </td>
                     <td className="px-4 py-2">{r.template_name}</td>
                     <td className="px-4 py-2 font-mono text-xs">{r.recipient_email}</td>
-                    <td className="px-4 py-2"><Badge variant="outline">{r.status}</Badge></td>
-                    <td className="px-4 py-2 text-xs text-muted-foreground">{r.error_message ?? "—"}</td>
+                    <td className="px-4 py-2">
+                      <Badge variant="outline">{r.status}</Badge>
+                    </td>
+                    <td className="px-4 py-2 text-xs text-muted-foreground">
+                      {r.error_message ?? "—"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -113,12 +151,22 @@ function EmailCenter() {
                 </tr>
               </thead>
               <tbody>
-                {supp.length === 0 && <tr><td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">Nenhum endereço suprimido.</td></tr>}
+                {supp.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-10 text-center text-muted-foreground">
+                      Nenhum endereço suprimido.
+                    </td>
+                  </tr>
+                )}
                 {supp.map((s) => (
                   <tr key={s.id} className="border-t border-border">
-                    <td className="px-4 py-2 text-muted-foreground">{new Date(s.created_at).toLocaleString("pt-BR")}</td>
+                    <td className="px-4 py-2 text-muted-foreground">
+                      {new Date(s.created_at).toLocaleString("pt-BR")}
+                    </td>
                     <td className="px-4 py-2 font-mono text-xs">{s.email}</td>
-                    <td className="px-4 py-2"><Badge variant="outline">{s.reason}</Badge></td>
+                    <td className="px-4 py-2">
+                      <Badge variant="outline">{s.reason}</Badge>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -130,7 +178,17 @@ function EmailCenter() {
   );
 }
 
-function Card({ label, value, icon: Icon, tone }: { label: string; value: number; icon: any; tone: string }) {
+function Card({
+  label,
+  value,
+  icon: Icon,
+  tone,
+}: {
+  label: string;
+  value: number;
+  icon: any;
+  tone: string;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between">

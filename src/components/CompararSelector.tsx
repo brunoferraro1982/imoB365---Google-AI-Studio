@@ -36,12 +36,20 @@ function useCompareList() {
     setIds(readIds());
     const l = (next: string[]) => setIds(next);
     listeners.add(l);
-    return () => { listeners.delete(l); };
+    return () => {
+      listeners.delete(l);
+    };
   }, []);
   return ids;
 }
 
-export function CompararCheckbox({ imovelId, className }: { imovelId: string; className?: string }) {
+export function CompararCheckbox({
+  imovelId,
+  className,
+}: {
+  imovelId: string;
+  className?: string;
+}) {
   const ids = useCompareList();
   const checked = ids.includes(imovelId);
   const disabled = !checked && ids.length >= MAX;
@@ -87,14 +95,19 @@ export function CompararBar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
         <div className="flex items-center gap-2 text-sm">
           <Scale className="h-4 w-4 text-primary" />
-          <span><strong>{ids.length}</strong> {ids.length === 1 ? "imóvel" : "imóveis"} para comparar (máx. {MAX})</span>
+          <span>
+            <strong>{ids.length}</strong> {ids.length === 1 ? "imóvel" : "imóveis"} para comparar
+            (máx. {MAX})
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="ghost" onClick={() => writeIds([])}>
             <X className="mr-1.5 h-4 w-4" /> Limpar
           </Button>
           <Link to="/comparar" search={{ ids: ids.join(",") }}>
-            <Button size="sm" disabled={ids.length < 2}>Comparar agora</Button>
+            <Button size="sm" disabled={ids.length < 2}>
+              Comparar agora
+            </Button>
           </Link>
         </div>
       </div>

@@ -21,16 +21,34 @@ export type SiteCtx = {
 export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: React.ReactNode }) {
   const cor = ctx.settings.cor_destaque || undefined;
   return (
-    <div className="min-h-screen bg-background text-foreground" style={cor ? { ["--site-accent" as any]: cor } : undefined}>
+    <div
+      className="min-h-screen bg-background text-foreground"
+      style={cor ? { ["--site-accent" as any]: cor } : undefined}
+    >
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/site/$slug" params={{ slug: ctx.tenantSlug }} className="text-lg font-semibold tracking-tight">
+          <Link
+            to="/site/$slug"
+            params={{ slug: ctx.tenantSlug }}
+            className="text-lg font-semibold tracking-tight"
+          >
             {ctx.tenantNome}
           </Link>
           <nav className="hidden items-center gap-6 text-sm md:flex">
-            <Link to="/site/$slug" params={{ slug: ctx.tenantSlug }} className="text-muted-foreground hover:text-foreground">Início</Link>
+            <Link
+              to="/site/$slug"
+              params={{ slug: ctx.tenantSlug }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Início
+            </Link>
             {ctx.pages.map((p) => (
-              <Link key={p.slug} to="/site/$slug/p/$pageSlug" params={{ slug: ctx.tenantSlug, pageSlug: p.slug }} className="text-muted-foreground hover:text-foreground">
+              <Link
+                key={p.slug}
+                to="/site/$slug/p/$pageSlug"
+                params={{ slug: ctx.tenantSlug, pageSlug: p.slug }}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 {p.titulo}
               </Link>
             ))}
@@ -54,14 +72,23 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
             <h3 className="mb-3 text-sm font-semibold">Contato</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
               {ctx.settings.contato_telefone && (
-                <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> {ctx.settings.contato_telefone}</li>
+                <li className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" /> {ctx.settings.contato_telefone}
+                </li>
               )}
               {ctx.settings.contato_email && (
-                <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> {ctx.settings.contato_email}</li>
+                <li className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" /> {ctx.settings.contato_email}
+                </li>
               )}
               {ctx.settings.contato_whatsapp && (
                 <li>
-                  <a href={`https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  <a
+                    href={`https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
                     WhatsApp
                   </a>
                 </li>
@@ -71,10 +98,46 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
           <div>
             <h3 className="mb-3 text-sm font-semibold">Redes sociais</h3>
             <div className="flex gap-3">
-              {ctx.settings.instagram_url && <a href={ctx.settings.instagram_url} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
-              {ctx.settings.facebook_url && <a href={ctx.settings.facebook_url} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
-              {ctx.settings.youtube_url && <a href={ctx.settings.youtube_url} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
-              {ctx.settings.linkedin_url && <a href={ctx.settings.linkedin_url} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" /></a>}
+              {ctx.settings.instagram_url && (
+                <a
+                  href={ctx.settings.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </a>
+              )}
+              {ctx.settings.facebook_url && (
+                <a
+                  href={ctx.settings.facebook_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </a>
+              )}
+              {ctx.settings.youtube_url && (
+                <a
+                  href={ctx.settings.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </a>
+              )}
+              {ctx.settings.linkedin_url && (
+                <a
+                  href={ctx.settings.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                </a>
+              )}
             </div>
           </div>
         </div>

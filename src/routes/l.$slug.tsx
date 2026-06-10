@@ -17,7 +17,10 @@ export const Route = createFileRoute("/l/$slug")({
         referrer: typeof document !== "undefined" ? document.referrer : null,
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
       });
-      await (supabase as any).from("short_links").update({ clicks_count: (data.clicks_count ?? 0) + 1 }).eq("id", data.id);
+      await (supabase as any)
+        .from("short_links")
+        .update({ clicks_count: (data.clicks_count ?? 0) + 1 })
+        .eq("id", data.id);
     } catch {}
 
     const url = new URL(data.target_url);

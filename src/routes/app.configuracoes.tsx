@@ -30,19 +30,26 @@ function ConfiguracoesLayout() {
   return (
     <div className="p-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Configurações</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground font-medium">Ajustes da sua imobiliária, equipe e módulos integrados.</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+          Configurações
+        </h1>
+        <p className="mt-1.5 text-sm text-muted-foreground font-medium">
+          Ajustes da sua imobiliária, equipe e módulos integrados.
+        </p>
       </header>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Navigation Sidebar Column */}
         <nav className="lg:col-span-3 space-y-1 bg-white dark:bg-card border border-border/70 rounded-2xl p-4 shadow-sm sticky top-24">
-          <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest block px-3.5 mb-2.5">Menu de Configurações</span>
+          <span className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest block px-3.5 mb-2.5">
+            Menu de Configurações
+          </span>
           <div className="space-y-1 max-h-[80vh] overflow-y-auto pr-1 scrollbar-thin">
             {TABS.map((t) => {
-              const active = path === t.to || (t.to !== "/app/configuracoes" && path.startsWith(t.to));
+              const active =
+                path === t.to || (t.to !== "/app/configuracoes" && path.startsWith(t.to));
               const isGoLive = t.to === "/app/configuracoes/golive";
-              
+
               if (isGoLive) {
                 return (
                   <Link
@@ -55,10 +62,14 @@ function ConfiguracoesLayout() {
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Rocket className={`h-3.5 w-3.5 stroke-[2.25px] ${active ? "text-primary animate-bounce" : "text-amber-500 animate-pulse"}`} />
+                      <Rocket
+                        className={`h-3.5 w-3.5 stroke-[2.25px] ${active ? "text-primary animate-bounce" : "text-amber-500 animate-pulse"}`}
+                      />
                       <span>{t.label}</span>
                     </div>
-                    <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${active ? "bg-primary text-white" : "bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300"}`}>
+                    <span
+                      className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded-full ${active ? "bg-primary text-white" : "bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-300"}`}
+                    >
                       Lançar
                     </span>
                   </Link>

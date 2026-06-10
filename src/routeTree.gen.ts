@@ -23,6 +23,9 @@ import { Route as FavoritosRouteImport } from './routes/favoritos'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CompararRouteImport } from './routes/comparar'
 import { Route as CalculadorasRouteImport } from './routes/calculadoras'
+import { Route as CalculadoraMudancaRouteImport } from './routes/calculadora-mudanca'
+import { Route as CalculadoraItbiRouteImport } from './routes/calculadora-itbi'
+import { Route as CalculadoraFinanciamentoRouteImport } from './routes/calculadora-financiamento'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -40,7 +43,6 @@ import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
-import { Route as ContaChatRouteImport } from './routes/conta.chat'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AppVisitasRouteImport } from './routes/app.visitas'
@@ -49,8 +51,8 @@ import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
 import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
+import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
-import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
@@ -60,6 +62,8 @@ import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
+import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
 import { Route as AppLeadsIndexRouteImport } from './routes/app.leads.index'
 import { Route as AppImoveisIndexRouteImport } from './routes/app.imoveis.index'
@@ -69,7 +73,10 @@ import { Route as AppCorretoresIndexRouteImport } from './routes/app.corretores.
 import { Route as AppContratosIndexRouteImport } from './routes/app.contratos.index'
 import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
 import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.index'
+import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
+import { Route as AppSiteWidgetsRouteImport } from './routes/app.site.widgets'
+import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -189,6 +196,22 @@ const CalculadorasRoute = CalculadorasRouteImport.update({
   path: '/calculadoras',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalculadoraMudancaRoute = CalculadoraMudancaRouteImport.update({
+  id: '/calculadora-mudanca',
+  path: '/calculadora-mudanca',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculadoraItbiRoute = CalculadoraItbiRouteImport.update({
+  id: '/calculadora-itbi',
+  path: '/calculadora-itbi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalculadoraFinanciamentoRoute =
+  CalculadoraFinanciamentoRouteImport.update({
+    id: '/calculadora-financiamento',
+    path: '/calculadora-financiamento',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
@@ -274,11 +297,6 @@ const ContaFavoritosRoute = ContaFavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => ContaRoute,
 } as any)
-const ContaChatRoute = ContaChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => ContaRoute,
-} as any)
 const ContaBuscasRoute = ContaBuscasRouteImport.update({
   id: '/buscas',
   path: '/buscas',
@@ -319,14 +337,14 @@ const AppEncurtadorRoute = AppEncurtadorRouteImport.update({
   path: '/encurtador',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContratacaoRoute = AppContratacaoRouteImport.update({
+  id: '/contratacao',
+  path: '/contratacao',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
   id: '/configuracoes',
   path: '/configuracoes',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppChatRoute = AppChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCartoriosRoute = AppCartoriosRouteImport.update({
@@ -374,6 +392,16 @@ const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   path: '/auditoria',
   getParentRoute: () => AdminRoute,
 } as any)
+const ContaChatIndexRoute = ContaChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => ContaRoute,
+} as any)
+const AppSiteIndexRoute = AppSiteIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppSiteRoute,
+} as any)
 const AppLocacaoIndexRoute = AppLocacaoIndexRouteImport.update({
   id: '/locacao/',
   path: '/locacao/',
@@ -419,10 +447,25 @@ const AppComissoesIndexRoute = AppComissoesIndexRouteImport.update({
   path: '/comissoes/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppChatIndexRoute = AppChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => AppRoute,
+} as any)
 const ContaChatIdRoute = ContaChatIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ContaChatRoute,
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => ContaRoute,
+} as any)
+const AppSiteWidgetsRoute = AppSiteWidgetsRouteImport.update({
+  id: '/widgets',
+  path: '/widgets',
+  getParentRoute: () => AppSiteRoute,
+} as any)
+const AppSiteBlogRoute = AppSiteBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AppSiteRoute,
 } as any)
 const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   id: '/leads/configuracao',
@@ -597,9 +640,9 @@ const AppConfiguracoesApiRoute = AppConfiguracoesApiRouteImport.update({
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
 const AppChatIdRoute = AppChatIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppChatRoute,
+  id: '/chat/$id',
+  path: '/chat/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
@@ -689,6 +732,9 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/buscar': typeof BuscarRoute
+  '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
+  '/calculadora-itbi': typeof CalculadoraItbiRoute
+  '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
   '/conta': typeof ContaRouteWithChildren
@@ -712,17 +758,16 @@ export interface FileRoutesByFullPath {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/app/cartorios': typeof AppCartoriosRoute
-  '/app/chat': typeof AppChatRouteWithChildren
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/site': typeof AppSiteRoute
+  '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
-  '/conta/chat': typeof ContaChatRouteWithChildren
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -770,7 +815,10 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
   '/app/contratos/': typeof AppContratosIndexRoute
@@ -780,6 +828,8 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
+  '/app/site/': typeof AppSiteIndexRoute
+  '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
@@ -798,6 +848,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/buscar': typeof BuscarRoute
+  '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
+  '/calculadora-itbi': typeof CalculadoraItbiRoute
+  '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
   '/favoritos': typeof FavoritosRoute
@@ -820,16 +873,14 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/app/cartorios': typeof AppCartoriosRoute
-  '/app/chat': typeof AppChatRouteWithChildren
+  '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/site': typeof AppSiteRoute
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
-  '/conta/chat': typeof ContaChatRouteWithChildren
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -877,7 +928,10 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/app/chat': typeof AppChatIndexRoute
   '/app/comissoes': typeof AppComissoesIndexRoute
   '/app/configuracoes': typeof AppConfiguracoesIndexRoute
   '/app/contratos': typeof AppContratosIndexRoute
@@ -887,6 +941,8 @@ export interface FileRoutesByTo {
   '/app/imoveis': typeof AppImoveisIndexRoute
   '/app/leads': typeof AppLeadsIndexRoute
   '/app/locacao': typeof AppLocacaoIndexRoute
+  '/app/site': typeof AppSiteIndexRoute
+  '/conta/chat': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
@@ -908,6 +964,9 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/buscar': typeof BuscarRoute
+  '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
+  '/calculadora-itbi': typeof CalculadoraItbiRoute
+  '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
   '/conta': typeof ContaRouteWithChildren
@@ -931,17 +990,16 @@ export interface FileRoutesById {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/app/cartorios': typeof AppCartoriosRoute
-  '/app/chat': typeof AppChatRouteWithChildren
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
+  '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
-  '/app/site': typeof AppSiteRoute
+  '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
-  '/conta/chat': typeof ContaChatRouteWithChildren
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -989,7 +1047,10 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
   '/app/contratos/': typeof AppContratosIndexRoute
@@ -999,6 +1060,8 @@ export interface FileRoutesById {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
+  '/app/site/': typeof AppSiteIndexRoute
+  '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
@@ -1021,6 +1084,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/buscar'
+    | '/calculadora-financiamento'
+    | '/calculadora-itbi'
+    | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
     | '/conta'
@@ -1044,8 +1110,8 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/tenants'
     | '/app/cartorios'
-    | '/app/chat'
     | '/app/configuracoes'
+    | '/app/contratacao'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1054,7 +1120,6 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
-    | '/conta/chat'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -1102,7 +1167,10 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/blog'
+    | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
     | '/app/contratos/'
@@ -1112,6 +1180,8 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
+    | '/app/site/'
+    | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
@@ -1130,6 +1200,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/buscar'
+    | '/calculadora-financiamento'
+    | '/calculadora-itbi'
+    | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
     | '/favoritos'
@@ -1152,16 +1225,14 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/tenants'
     | '/app/cartorios'
-    | '/app/chat'
+    | '/app/contratacao'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
-    | '/app/site'
     | '/app/tarefas'
     | '/app/visitas'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
-    | '/conta/chat'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -1209,7 +1280,10 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/blog'
+    | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/app/chat'
     | '/app/comissoes'
     | '/app/configuracoes'
     | '/app/contratos'
@@ -1219,6 +1293,8 @@ export interface FileRouteTypes {
     | '/app/imoveis'
     | '/app/leads'
     | '/app/locacao'
+    | '/app/site'
+    | '/conta/chat'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
@@ -1239,6 +1315,9 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/buscar'
+    | '/calculadora-financiamento'
+    | '/calculadora-itbi'
+    | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
     | '/conta'
@@ -1262,8 +1341,8 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/tenants'
     | '/app/cartorios'
-    | '/app/chat'
     | '/app/configuracoes'
+    | '/app/contratacao'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1272,7 +1351,6 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
-    | '/conta/chat'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -1320,7 +1398,10 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/blog'
+    | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
     | '/app/contratos/'
@@ -1330,6 +1411,8 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
+    | '/app/site/'
+    | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
@@ -1351,6 +1434,9 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   BuscarRoute: typeof BuscarRoute
+  CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
+  CalculadoraItbiRoute: typeof CalculadoraItbiRoute
+  CalculadoraMudancaRoute: typeof CalculadoraMudancaRoute
   CalculadorasRoute: typeof CalculadorasRoute
   CompararRoute: typeof CompararRoute
   ContaRoute: typeof ContaRouteWithChildren
@@ -1488,6 +1574,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalculadorasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calculadora-mudanca': {
+      id: '/calculadora-mudanca'
+      path: '/calculadora-mudanca'
+      fullPath: '/calculadora-mudanca'
+      preLoaderRoute: typeof CalculadoraMudancaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculadora-itbi': {
+      id: '/calculadora-itbi'
+      path: '/calculadora-itbi'
+      fullPath: '/calculadora-itbi'
+      preLoaderRoute: typeof CalculadoraItbiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculadora-financiamento': {
+      id: '/calculadora-financiamento'
+      path: '/calculadora-financiamento'
+      fullPath: '/calculadora-financiamento'
+      preLoaderRoute: typeof CalculadoraFinanciamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/buscar': {
       id: '/buscar'
       path: '/buscar'
@@ -1607,13 +1714,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContaFavoritosRouteImport
       parentRoute: typeof ContaRoute
     }
-    '/conta/chat': {
-      id: '/conta/chat'
-      path: '/chat'
-      fullPath: '/conta/chat'
-      preLoaderRoute: typeof ContaChatRouteImport
-      parentRoute: typeof ContaRoute
-    }
     '/conta/buscas': {
       id: '/conta/buscas'
       path: '/buscas'
@@ -1670,18 +1770,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEncurtadorRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contratacao': {
+      id: '/app/contratacao'
+      path: '/contratacao'
+      fullPath: '/app/contratacao'
+      preLoaderRoute: typeof AppContratacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/configuracoes': {
       id: '/app/configuracoes'
       path: '/configuracoes'
       fullPath: '/app/configuracoes'
       preLoaderRoute: typeof AppConfiguracoesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/chat': {
-      id: '/app/chat'
-      path: '/chat'
-      fullPath: '/app/chat'
-      preLoaderRoute: typeof AppChatRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/cartorios': {
@@ -1747,6 +1847,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditoriaRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/conta/chat/': {
+      id: '/conta/chat/'
+      path: '/chat'
+      fullPath: '/conta/chat/'
+      preLoaderRoute: typeof ContaChatIndexRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/app/site/': {
+      id: '/app/site/'
+      path: '/'
+      fullPath: '/app/site/'
+      preLoaderRoute: typeof AppSiteIndexRouteImport
+      parentRoute: typeof AppSiteRoute
+    }
     '/app/locacao/': {
       id: '/app/locacao/'
       path: '/locacao'
@@ -1810,12 +1924,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppComissoesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/chat/': {
+      id: '/app/chat/'
+      path: '/chat'
+      fullPath: '/app/chat/'
+      preLoaderRoute: typeof AppChatIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/conta/chat/$id': {
       id: '/conta/chat/$id'
-      path: '/$id'
+      path: '/chat/$id'
       fullPath: '/conta/chat/$id'
       preLoaderRoute: typeof ContaChatIdRouteImport
-      parentRoute: typeof ContaChatRoute
+      parentRoute: typeof ContaRoute
+    }
+    '/app/site/widgets': {
+      id: '/app/site/widgets'
+      path: '/widgets'
+      fullPath: '/app/site/widgets'
+      preLoaderRoute: typeof AppSiteWidgetsRouteImport
+      parentRoute: typeof AppSiteRoute
+    }
+    '/app/site/blog': {
+      id: '/app/site/blog'
+      path: '/blog'
+      fullPath: '/app/site/blog'
+      preLoaderRoute: typeof AppSiteBlogRouteImport
+      parentRoute: typeof AppSiteRoute
     }
     '/app/leads/configuracao': {
       id: '/app/leads/configuracao'
@@ -2043,10 +2178,10 @@ declare module '@tanstack/react-router' {
     }
     '/app/chat/$id': {
       id: '/app/chat/$id'
-      path: '/$id'
+      path: '/chat/$id'
       fullPath: '/app/chat/$id'
       preLoaderRoute: typeof AppChatIdRouteImport
-      parentRoute: typeof AppChatRoute
+      parentRoute: typeof AppRoute
     }
     '/api/public/health': {
       id: '/api/public/health'
@@ -2182,17 +2317,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface AppChatRouteChildren {
-  AppChatIdRoute: typeof AppChatIdRoute
-}
-
-const AppChatRouteChildren: AppChatRouteChildren = {
-  AppChatIdRoute: AppChatIdRoute,
-}
-
-const AppChatRouteWithChildren =
-  AppChatRoute._addFileChildren(AppChatRouteChildren)
-
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
   AppConfiguracoesBrandingRoute: typeof AppConfiguracoesBrandingRoute
@@ -2242,6 +2366,21 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
 const AppConfiguracoesRouteWithChildren =
   AppConfiguracoesRoute._addFileChildren(AppConfiguracoesRouteChildren)
 
+interface AppSiteRouteChildren {
+  AppSiteBlogRoute: typeof AppSiteBlogRoute
+  AppSiteWidgetsRoute: typeof AppSiteWidgetsRoute
+  AppSiteIndexRoute: typeof AppSiteIndexRoute
+}
+
+const AppSiteRouteChildren: AppSiteRouteChildren = {
+  AppSiteBlogRoute: AppSiteBlogRoute,
+  AppSiteWidgetsRoute: AppSiteWidgetsRoute,
+  AppSiteIndexRoute: AppSiteIndexRoute,
+}
+
+const AppSiteRouteWithChildren =
+  AppSiteRoute._addFileChildren(AppSiteRouteChildren)
+
 interface AppContratosIdRouteChildren {
   AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
 }
@@ -2256,15 +2395,16 @@ const AppContratosIdRouteWithChildren = AppContratosIdRoute._addFileChildren(
 
 interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
-  AppChatRoute: typeof AppChatRouteWithChildren
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
+  AppContratacaoRoute: typeof AppContratacaoRoute
   AppEncurtadorRoute: typeof AppEncurtadorRoute
   AppPortaisRoute: typeof AppPortaisRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
-  AppSiteRoute: typeof AppSiteRoute
+  AppSiteRoute: typeof AppSiteRouteWithChildren
   AppTarefasRoute: typeof AppTarefasRoute
   AppVisitasRoute: typeof AppVisitasRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppChatIdRoute: typeof AppChatIdRoute
   AppContratosIdRoute: typeof AppContratosIdRouteWithChildren
   AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
@@ -2278,6 +2418,7 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
+  AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
   AppContratosIndexRoute: typeof AppContratosIndexRoute
   AppCorretoresIndexRoute: typeof AppCorretoresIndexRoute
@@ -2290,15 +2431,16 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
-  AppChatRoute: AppChatRouteWithChildren,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
+  AppContratacaoRoute: AppContratacaoRoute,
   AppEncurtadorRoute: AppEncurtadorRoute,
   AppPortaisRoute: AppPortaisRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
-  AppSiteRoute: AppSiteRoute,
+  AppSiteRoute: AppSiteRouteWithChildren,
   AppTarefasRoute: AppTarefasRoute,
   AppVisitasRoute: AppVisitasRoute,
   AppIndexRoute: AppIndexRoute,
+  AppChatIdRoute: AppChatIdRoute,
   AppContratosIdRoute: AppContratosIdRouteWithChildren,
   AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
@@ -2312,6 +2454,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
+  AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
   AppContratosIndexRoute: AppContratosIndexRoute,
   AppCorretoresIndexRoute: AppCorretoresIndexRoute,
@@ -2324,34 +2467,24 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
-interface ContaChatRouteChildren {
-  ContaChatIdRoute: typeof ContaChatIdRoute
-}
-
-const ContaChatRouteChildren: ContaChatRouteChildren = {
-  ContaChatIdRoute: ContaChatIdRoute,
-}
-
-const ContaChatRouteWithChildren = ContaChatRoute._addFileChildren(
-  ContaChatRouteChildren,
-)
-
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
-  ContaChatRoute: typeof ContaChatRouteWithChildren
   ContaFavoritosRoute: typeof ContaFavoritosRoute
   ContaPerfilRoute: typeof ContaPerfilRoute
   ContaVisitasRoute: typeof ContaVisitasRoute
   ContaIndexRoute: typeof ContaIndexRoute
+  ContaChatIdRoute: typeof ContaChatIdRoute
+  ContaChatIndexRoute: typeof ContaChatIndexRoute
 }
 
 const ContaRouteChildren: ContaRouteChildren = {
   ContaBuscasRoute: ContaBuscasRoute,
-  ContaChatRoute: ContaChatRouteWithChildren,
   ContaFavoritosRoute: ContaFavoritosRoute,
   ContaPerfilRoute: ContaPerfilRoute,
   ContaVisitasRoute: ContaVisitasRoute,
   ContaIndexRoute: ContaIndexRoute,
+  ContaChatIdRoute: ContaChatIdRoute,
+  ContaChatIndexRoute: ContaChatIndexRoute,
 }
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
@@ -2373,6 +2506,9 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   BuscarRoute: BuscarRoute,
+  CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
+  CalculadoraItbiRoute: CalculadoraItbiRoute,
+  CalculadoraMudancaRoute: CalculadoraMudancaRoute,
   CalculadorasRoute: CalculadorasRoute,
   CompararRoute: CompararRoute,
   ContaRoute: ContaRouteWithChildren,
@@ -2415,3 +2551,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
