@@ -1,0 +1,313 @@
+name: imoB365 CI/CD Pipeline
+
+on:
+  push:
+    branches: [develop, main, "feature/**", "fix/**"]
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Ambiente de deploy"
+        required: false
+        default: "staging"
+        type: choice
+        options: [staging, production]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+# ════════════════════════════════════════════════════════════
+jobs:
+# ════════════════════════════════════════════════════════════
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 1: Lint & Type Check
+  # ──────────────────────────────────────────────────────────
+  lint:
+    name: "🔍 Lint & Type Check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Rodar ESLint
+        run: npm run lint
+
+      - name: Verificar formatação (Prettier)
+        run: npx prettier --check "src/**/*.{ts,tsx}"
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 2: Build
+  # ──────────────────────────────────────────────────────────
+  build:
+    name: "🏗️ Build"
+    runs-on: ubuntu-latest
+    needs: lint
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      APP_URL: ${{ secrets.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Upload artefato de build
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 3: Security Scan
+  # ──────────────────────────────────────────────────────────
+  security:
+    name: "🔒 Security Scan"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # histórico completo para Gitleaks
+
+      - name: Gitleaks — detectar segredos expostos
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Audit de dependências npm
+        run: npm audit --audit-level=high
+        continue-on-error: true  # reporta mas não bloqueia
+
+      - name: Verificar .env não commitado
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo "❌ ERRO CRÍTICO: .env está sendo rastreado pelo Git!"
+            exit 1
+          else
+            echo "✅ .env não está no repositório"
+          fi
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 4: QA Verification — valida que os bugs críticos não regridem
+  # ──────────────────────────────────────────────────────────
+  qa-regression:
+    name: "🧪 QA Regression Check"
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: QA-01 — Verificar ausência de toISOString no calendário
+        run: |
+          FILE="src/routes/app.visitas.tsx"
+          if [ -f "$FILE" ]; then
+            if grep -n "toISOString().slice(0, 10)" "$FILE"; then
+              echo "❌ QA-01 REGREDIU: toISOString encontrado em $FILE"
+              exit 1
+            else
+              echo "✅ QA-01 OK: timezone fix presente"
+            fi
+          else
+            echo "⚠️  $FILE não encontrado — pulando QA-01"
+          fi
+
+      - name: QA-02 — Verificar fix do FotosManager
+        run: |
+          FILE="src/components/imoveis/FotosManager.tsx"
+          if [ -f "$FILE" ]; then
+            if grep -n "items.length !== fotos.length" "$FILE"; then
+              echo "❌ QA-02 REGREDIU: comparação por length encontrada em $FILE"
+              exit 1
+            else
+              echo "✅ QA-02 OK: deep check presente"
+            fi
+          else
+            echo "⚠️  $FILE não encontrado — pulando QA-02"
+          fi
+
+      - name: QA-03 — Verificar proteção dos cron endpoints
+        run: |
+          for FILE in \
+            "src/routes/api.public.cron.buscas-alertas.ts" \
+            "src/routes/api.public.cron.visitas-notificacoes.ts"; do
+            if [ -f "$FILE" ]; then
+              # Verificar se o bypass ainda existe (sem a proteção)
+              if grep -n 'if (!expected || apikey !== expected)' "$FILE" | grep -v 'expected === ""'; then
+                echo "❌ QA-03 REGREDIU: bypass de auth em $FILE"
+                exit 1
+              else
+                echo "✅ QA-03 OK: proteção presente em $FILE"
+              fi
+            fi
+          done
+
+      - name: QA-04 — Verificar Promise.all no useAuth
+        run: |
+          FILE="src/hooks/useAuth.tsx"
+          if [ -f "$FILE" ]; then
+            if grep -q "Promise.all" "$FILE"; then
+              echo "✅ QA-04 OK: Promise.all presente em useAuth"
+            else
+              echo "❌ QA-04 REGREDIU: Promise.all não encontrado em $FILE"
+              exit 1
+            fi
+          else
+            echo "⚠️  $FILE não encontrado — pulando QA-04"
+          fi
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 5: Auto-merge feature/* → develop (após todos os checks)
+  # ──────────────────────────────────────────────────────────
+  auto-merge-feature:
+    name: "🔀 Auto-merge feature → develop"
+    runs-on: ubuntu-latest
+    needs: [build, security, qa-regression]
+    if: |
+      github.event_name == 'push' &&
+      startsWith(github.ref, 'refs/heads/feature/')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Configurar Git
+        run: |
+          git config user.name "imoB365 Bot"
+          git config user.email "bot@imob365.com.br"
+
+      - name: Merge feature → develop
+        run: |
+          FEATURE_BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "Mergeando $FEATURE_BRANCH → develop"
+          git checkout develop
+          git pull origin develop
+          git merge --no-ff "origin/$FEATURE_BRANCH" \
+            -m "feat: auto-merge $FEATURE_BRANCH → develop [CI]"
+          git push origin develop
+          echo "✅ Merge concluído"
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 6: Deploy Staging (develop → Cloudflare)
+  # ──────────────────────────────────────────────────────────
+  deploy-staging:
+    name: "🚀 Deploy Staging"
+    runs-on: ubuntu-latest
+    needs: [build, security, qa-regression]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.imob365.com.br
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      APP_URL: https://staging.imob365.com.br
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build para staging
+        run: npm run build
+
+      - name: Deploy para Cloudflare Workers (Staging)
+        run: npx wrangler deploy --env staging
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Notificar deploy staging
+        run: |
+          echo "✅ Deploy staging concluído"
+          echo "🔗 URL: https://staging.imob365.com.br"
+          echo "📦 Commit: ${{ github.sha }}"
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 7: Deploy Production (main → Cloudflare)
+  # ──────────────────────────────────────────────────────────
+  deploy-production:
+    name: "🏭 Deploy Production"
+    runs-on: ubuntu-latest
+    needs: [build, security, qa-regression]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://imob365.com.br
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      APP_URL: https://imob365.com.br
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Build de produção
+        run: npm run build
+
+      - name: Deploy para Cloudflare Workers (Production)
+        run: npx wrangler deploy --env production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Criar GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notificar deploy produção
+        run: |
+          echo "🎉 Deploy produção concluído!"
+          echo "🔗 URL: https://imob365.com.br"
+          echo "📦 Commit: ${{ github.sha }}"
