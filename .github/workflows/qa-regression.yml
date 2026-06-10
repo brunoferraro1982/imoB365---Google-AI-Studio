@@ -1,0 +1,86 @@
+name: QA — Regression Check
+
+on:
+  push:
+    branches: [main, develop, "fix/**", "feat/**", "chore/**"]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa-regression:
+    name: "🧪 QA Regression — Bugs Críticos"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "QA-01 — Timezone shift (app.visitas.tsx)"
+        run: |
+          FILE="src/routes/app.visitas.tsx"
+          if [ ! -f "$FILE" ]; then
+            echo "⚠️  $FILE não encontrado — pulando"; exit 0
+          fi
+          if grep -n "toISOString().slice(0, 10)" "$FILE"; then
+            echo "❌ QA-01 REGREDIU: toISOString encontrado em $FILE"
+            exit 1
+          fi
+          echo "✅ QA-01 OK"
+
+      - name: "QA-02 — UI sync FotosManager (FotosManager.tsx)"
+        run: |
+          FILE="src/components/imoveis/FotosManager.tsx"
+          if [ ! -f "$FILE" ]; then
+            echo "⚠️  $FILE não encontrado — pulando"; exit 0
+          fi
+          if grep -n "items.length !== fotos.length" "$FILE"; then
+            echo "❌ QA-02 REGREDIU: comparação por length encontrada em $FILE"
+            exit 1
+          fi
+          echo "✅ QA-02 OK"
+
+      - name: "QA-03 — Auth bypass cron endpoints"
+        run: |
+          FAILED=false
+          for FILE in \
+            "src/routes/api.public.cron.buscas-alertas.ts" \
+            "src/routes/api.public.cron.visitas-notificacoes.ts"; do
+            if [ ! -f "$FILE" ]; then
+              echo "⚠️  $FILE não encontrado — pulando"; continue
+            fi
+            # Detectar padrão vulnerável: if sem a verificação de string vazia
+            if grep -n 'if (!expected || apikey !== expected)' "$FILE" 2>/dev/null; then
+              echo "❌ QA-03 REGREDIU: bypass de auth em $FILE"
+              FAILED=true
+            else
+              echo "✅ QA-03 OK: $FILE"
+            fi
+          done
+          [ "$FAILED" = true ] && exit 1 || exit 0
+
+      - name: "QA-04 — Race condition useAuth (useAuth.tsx)"
+        run: |
+          FILE="src/hooks/useAuth.tsx"
+          if [ ! -f "$FILE" ]; then
+            echo "⚠️  $FILE não encontrado — pulando"; exit 0
+          fi
+          if ! grep -q "Promise.all" "$FILE"; then
+            echo "❌ QA-04 REGREDIU: Promise.all não encontrado em $FILE"
+            exit 1
+          fi
+          echo "✅ QA-04 OK"
+
+      - name: "Resumo QA"
+        if: always()
+        run: |
+          echo ""
+          echo "══════════════════════════════"
+          echo "  imoB365 — QA Regression"
+          echo "══════════════════════════════"
+          echo "  QA-01: Timezone shift"
+          echo "  QA-02: FotosManager sync"
+          echo "  QA-03: Cron auth bypass"
+          echo "  QA-04: useAuth race condition"
+          echo "══════════════════════════════"
