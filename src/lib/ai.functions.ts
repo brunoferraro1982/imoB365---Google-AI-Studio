@@ -12,7 +12,9 @@ const ai = new GoogleGenAI({
   }
 });
 
-const DEFAULT_MODEL = "gemini-3.5-flash";
+// FIX [AI-MODEL]: "gemini-3.5-flash" não existe na API do Google — causava HTTP 404.
+// Usando gemini-2.0-flash: melhor custo-benefício latência/qualidade para geração de textos imobiliários.
+const DEFAULT_MODEL = "gemini-2.0-flash";
 
 async function callAI(messages: Array<{ role: string; content: string }>, opts?: { jsonMode?: boolean; model?: string }) {
   const systemMessage = messages.find((m) => m.role === "system")?.content;

@@ -1,0 +1,75 @@
+name: Supabase — Validação de Migrações
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/config.toml"
+
+jobs:
+  validate-migrations:
+    name: 🗄️ Validar Migrações SQL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Verificar sintaxe das migrações
+        run: |
+          echo "📋 Migrações encontradas:"
+          ls -la supabase/migrations/
+          echo ""
+          echo "🔍 Verificando arquivos alterados neste PR..."
+          # Lista apenas os arquivos .sql adicionados/modificados no PR
+          git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'supabase/migrations/*.sql' || true
+
+      - name: Lint SQL com sqlfluff
+        run: |
+          pip install sqlfluff --quiet
+          # Lint apenas arquivos novos do PR
+          NEW_FILES=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'supabase/migrations/*.sql' 2>/dev/null || echo "")
+          if [ -z "$NEW_FILES" ]; then
+            echo "Nenhum arquivo SQL novo para validar."
+            exit 0
+          fi
+          echo "Validando: $NEW_FILES"
+          sqlfluff lint $NEW_FILES --dialect postgres --exclude-rules L003,L016,L034 || true
+          echo "✅ Lint SQL concluído (falhas não bloqueiam — apenas warnings)"
+
+      - name: Verificar convenção de nomenclatura
+        run: |
+          echo "Verificando padrão de nomes de migração (timestamp_descricao.sql)..."
+          for f in supabase/migrations/*.sql; do
+            fname=$(basename "$f")
+            if ! echo "$fname" | grep -qE "^[0-9]{14}_.+\.sql$"; then
+              echo "⚠️  AVISO: '$fname' não segue o padrão timestamp_descricao.sql"
+            fi
+          done
+          echo "✅ Verificação concluída"
+
+      - name: Detectar operações destrutivas nas novas migrações
+        run: |
+          NEW_FILES=$(git diff --name-only --diff-filter=AM origin/${{ github.base_ref }}...HEAD -- 'supabase/migrations/*.sql' 2>/dev/null || echo "")
+          if [ -z "$NEW_FILES" ]; then exit 0; fi
+          
+          FOUND_DESTRUCTIVE=false
+          for f in $NEW_FILES; do
+            if grep -iE "DROP TABLE|DROP COLUMN|TRUNCATE|DELETE FROM" "$f" > /dev/null 2>&1; then
+              echo "⚠️  ATENÇÃO: Operação destrutiva detectada em $f:"
+              grep -inE "DROP TABLE|DROP COLUMN|TRUNCATE|DELETE FROM" "$f" || true
+              FOUND_DESTRUCTIVE=true
+            fi
+          done
+          
+          if [ "$FOUND_DESTRUCTIVE" = true ]; then
+            echo ""
+            echo "::warning::Migrações com operações destrutivas detectadas. Confirme que há backup e que a migração é reversível."
+          else
+            echo "✅ Nenhuma operação destrutiva encontrada nas novas migrações."
+          fi
