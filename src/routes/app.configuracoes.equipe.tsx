@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { inviteTenantMember, listTenantMembers, removeTenantMember } from "@/lib/team.functions";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/equipe")({
   component: Equipe,
@@ -40,6 +41,7 @@ const ROLES: { v: "admin" | "broker" | "juridico" | "financeiro" | "atendente"; 
 
 function Equipe() {
   const { tenantId, user, isAdmin } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const invite = useServerFn(inviteTenantMember);
   const list = useServerFn(listTenantMembers);
   const remove = useServerFn(removeTenantMember);
@@ -82,7 +84,7 @@ function Equipe() {
 
   async function handleRemove(memberId: string) {
     if (!tenantId) return;
-    if (!confirm("Remover este membro da imobiliária?")) return;
+    if (!(await confirmDialog("Remover este membro da imobiliária?"))) return;
     try {
       await remove({ data: { tenantId, userId: memberId } });
       toast.success("Membro removido");
@@ -96,6 +98,7 @@ function Equipe() {
     return (
       <div className="text-sm text-muted-foreground">
         Apenas administradores podem gerenciar a equipe.
+        <ConfirmDialog />
       </div>
     );
   }

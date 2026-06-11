@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/dominios")({
   component: DominiosPage,
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/app/configuracoes/dominios")({
 
 function DominiosPage() {
   const { tenantId, isAdmin } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [dominio, setDominio] = useState("");
 
@@ -55,7 +57,7 @@ function DominiosPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Excluir domínio?")) return;
+    if (!(await confirmDialog("Excluir domínio?"))) return;
     await supabase.from("tenant_domains").delete().eq("id", id);
     load();
   }
@@ -135,6 +137,7 @@ function DominiosPage() {
           </div>
         )}
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

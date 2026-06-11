@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/visitas")({
   head: () => ({ meta: [{ title: "Visitas — imob365" }] }),
@@ -132,6 +133,7 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
 
 function VisitasPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [corretores, setCorretores] = useState<any[]>([]);
@@ -216,7 +218,7 @@ function VisitasPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Excluir visita?")) return;
+    if (!(await confirmDialog("Excluir visita?"))) return;
     await supabase.from("visitas").delete().eq("id", id);
     load();
   }
@@ -436,6 +438,7 @@ function VisitasPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

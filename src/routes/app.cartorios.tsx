@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/cartorios")({
   head: () => ({ meta: [{ title: "Cartórios — imob365" }] }),
@@ -46,6 +47,7 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
 
 function CartoriosPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [contratos, setContratos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,7 +124,7 @@ function CartoriosPage() {
     load();
   }
   async function remove(id: string) {
-    if (!confirm("Excluir registro?")) return;
+    if (!(await confirmDialog("Excluir registro?"))) return;
     await supabase.from("cartorio_registros").delete().eq("id", id);
     load();
   }
@@ -318,6 +320,7 @@ function CartoriosPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

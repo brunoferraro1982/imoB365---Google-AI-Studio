@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/site/blog")({
   component: BlogManagerPage,
@@ -68,6 +69,7 @@ const EMPTY_POST: Partial<BlogPost> = {
 
 function BlogManagerPage() {
   const { tenantId, user } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -297,7 +299,8 @@ function BlogManagerPage() {
 
   // Deletar Post
   async function handleDelete(id: string) {
-    if (!confirm("Tem certeza que deseja remover este artigo permanentemente?")) return;
+    if (!(await confirmDialog("Tem certeza que deseja remover este artigo permanentemente?")))
+      return;
     try {
       try {
         await (supabase as any).from("blog_posts").delete().eq("id", id);
@@ -893,6 +896,7 @@ function BlogManagerPage() {
           </form>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

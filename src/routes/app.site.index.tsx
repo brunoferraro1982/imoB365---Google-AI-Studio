@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/site/")({
   component: SitePage,
@@ -77,6 +78,7 @@ const EMPTY: Settings = {
 
 function SitePage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [tenantSlug, setTenantSlug] = useState<string>("");
   const [tenantNome, setTenantNome] = useState<string>("");
   const [s, setS] = useState<Settings>(EMPTY);
@@ -180,7 +182,7 @@ function SitePage() {
   }
 
   async function removePage(id: string) {
-    if (!confirm("Excluir esta página?")) return;
+    if (!(await confirmDialog("Excluir esta página?"))) return;
     const { error } = await supabase.from("tenant_pages").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setPages((p) => p.filter((x) => x.id !== id));
@@ -523,6 +525,7 @@ function SitePage() {
           </div>
         )}
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

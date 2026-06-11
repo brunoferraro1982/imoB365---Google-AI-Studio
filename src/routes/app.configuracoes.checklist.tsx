@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/checklist")({
   component: ChecklistConfig,
@@ -15,6 +16,7 @@ const ETAPAS = ["proposta", "documentacao", "financiamento", "assinatura", "regi
 
 function ChecklistConfig() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [templates, setTemplates] = useState<any[]>([]);
   const [itens, setItens] = useState<any[]>([]);
   const [novoTpl, setNovoTpl] = useState("");
@@ -50,7 +52,7 @@ function ChecklistConfig() {
   }
 
   async function delTpl(id: string) {
-    if (!confirm("Remover modelo e todos os itens?")) return;
+    if (!(await confirmDialog("Remover modelo e todos os itens?"))) return;
     await (supabase as any).from("checklist_templates").delete().eq("id", id);
     load();
   }
@@ -167,6 +169,7 @@ function ChecklistConfig() {
                   </li>
                 ))}
               </ul>
+              <ConfirmDialog />
             </div>
           );
         })}

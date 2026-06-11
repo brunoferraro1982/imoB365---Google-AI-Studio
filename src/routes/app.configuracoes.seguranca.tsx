@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ShieldCheck, KeyRound, Loader2, Trash2 } from "lucide-react";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/seguranca")({
   component: SegurancaPage,
@@ -14,6 +15,7 @@ type Factor = { id: string; status: string; friendly_name?: string | null; facto
 
 function SegurancaPage() {
   const [factors, setFactors] = useState<Factor[]>([]);
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
   const [qr, setQr] = useState<{ factorId: string; qr: string; secret: string } | null>(null);
@@ -67,7 +69,7 @@ function SegurancaPage() {
   }
 
   async function unenroll(factorId: string) {
-    if (!confirm("Remover este fator de autenticação?")) return;
+    if (!(await confirmDialog("Remover este fator de autenticação?"))) return;
     const { error } = await supabase.auth.mfa.unenroll({ factorId });
     if (error) return toast.error(error.message);
     toast.success("Fator removido");
@@ -156,6 +158,7 @@ function SegurancaPage() {
           )}
         </div>
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

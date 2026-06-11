@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/campos")({
   component: CamposPage,
@@ -30,6 +31,7 @@ const TIPOS = [
 
 function CamposPage() {
   const { tenantId, isAdmin } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [rotulo, setRotulo] = useState("");
   const [tipo, setTipo] = useState("texto");
@@ -87,7 +89,7 @@ function CamposPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Excluir campo? Dados existentes em imóveis permanecem.")) return;
+    if (!(await confirmDialog("Excluir campo? Dados existentes em imóveis permanecem."))) return;
     await supabase.from("tenant_custom_fields").delete().eq("id", id);
     load();
   }
@@ -173,6 +175,7 @@ function CamposPage() {
           </div>
         )}
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

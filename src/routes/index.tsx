@@ -677,7 +677,7 @@ function Landing() {
 }
 
 export function SiteHeader() {
-  return _SiteHeader();
+  return <SiteHeaderImpl />;
 }
 
 function Field({
@@ -700,7 +700,7 @@ function Field({
   );
 }
 
-function _SiteHeader() {
+function SiteHeaderImpl() {
   const { user } = useAuth();
   const [activeMenu, setActiveMenu] = useState<
     "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | null

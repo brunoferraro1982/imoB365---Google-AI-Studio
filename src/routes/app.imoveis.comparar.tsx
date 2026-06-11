@@ -2,6 +2,7 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, X, Check, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/app/imoveis/comparar")({
 type Imovel = any;
 
 function CompararPage() {
+  const { tenantId } = useAuth();
   const { ids } = useSearch({ from: "/app/imoveis/comparar" });
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [busca, setBusca] = useState("");
@@ -39,7 +41,11 @@ function CompararPage() {
     (async () => {
       setLoading(true);
       if (selectedIds.length > 0) {
-        const { data } = await supabase.from("imoveis").select("*").in("id", selectedIds);
+        const { data } = await supabase
+          .from("imoveis")
+          .select("*")
+          .in("id", selectedIds)
+          .eq("tenant_id", tenantId ?? "");
         setImoveis(data ?? []);
       } else {
         setImoveis([]);
@@ -53,6 +59,7 @@ function CompararPage() {
       const q = supabase
         .from("imoveis")
         .select("id,titulo,codigo_interno")
+        .eq("tenant_id", tenantId ?? "")
         .order("updated_at", { ascending: false })
         .limit(20);
       const { data } = busca.trim() ? await q.ilike("titulo", `%${busca.trim()}%`) : await q;

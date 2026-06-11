@@ -12,11 +12,13 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/corretores/")({
   component: CorretoresList,
@@ -38,6 +40,8 @@ type Corretor = {
 
 function CorretoresList() {
   const [items, setItems] = useState<Corretor[]>([]);
+  const { tenantId, user } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -116,9 +120,14 @@ function CorretoresList() {
 
   async function load() {
     setLoading(true);
-    const { data, error } = await (supabase as any)
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
+    const { data, error } = await supabase
       .from("corretores")
       .select("id,nome,email,telefone,creci,creci_uf,foto_url,slug,ativo,publico,cargo")
+      .eq("tenant_id", tenantId)
       .order("nome");
     if (error) toast.error("Erro ao carregar: " + error.message);
     setItems((data as Corretor[]) ?? []);
@@ -130,8 +139,12 @@ function CorretoresList() {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Excluir este corretor?")) return;
-    const { error } = await (supabase as any).from("corretores").delete().eq("id", id);
+    if (!(await confirmDialog("Excluir este corretor?"))) return;
+    const { error } = await supabase
+      .from("corretores")
+      .delete()
+      .eq("id", id)
+      .eq("tenant_id", tenantId ?? "");
     if (error) return toast.error(error.message);
     toast.success("Corretor excluído");
     load();
@@ -475,6 +488,7 @@ function CorretoresList() {
           </form>
         </div>
       </div>
+      <ConfirmDialog />
     </div>
   );
 }

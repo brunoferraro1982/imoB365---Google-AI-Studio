@@ -2,11 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, Building2, Pencil, Trash2, GitCompare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL, FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/imoveis/")({
   component: ImoveisList,
@@ -28,16 +30,23 @@ type Imovel = {
 
 function ImoveisList() {
   const [items, setItems] = useState<Imovel[]>([]);
+  const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   async function load() {
     setLoading(true);
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("imoveis")
       .select(
         "id,titulo,codigo_interno,finalidade,tipo,status,preco,endereco_cidade,endereco_uf,publicado,updated_at",
       )
+      .eq("tenant_id", tenantId)
       .order("updated_at", { ascending: false });
     if (error) toast.error("Erro ao carregar imóveis: " + error.message);
     setItems((data as Imovel[]) ?? []);
@@ -49,8 +58,12 @@ function ImoveisList() {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Excluir este imóvel? Esta ação não pode ser desfeita.")) return;
-    const { error } = await supabase.from("imoveis").delete().eq("id", id);
+    if (!(await confirmDialog("Excluir este imóvel? Esta ação não pode ser desfeita."))) return;
+    const { error } = await supabase
+      .from("imoveis")
+      .delete()
+      .eq("id", id)
+      .eq("tenant_id", tenantId ?? "");
     if (error) return toast.error(error.message);
     toast.success("Imóvel excluído");
     load();
@@ -177,6 +190,7 @@ function ImoveisList() {
           </table>
         )}
       </div>
+      <ConfirmDialog />
     </div>
   );
 }

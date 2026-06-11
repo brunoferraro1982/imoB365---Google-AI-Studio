@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/encurtador")({
   component: EncurtadorPage,
@@ -35,6 +36,7 @@ function qrUrl(text: string) {
 
 function EncurtadorPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
@@ -95,7 +97,7 @@ function EncurtadorPage() {
   }
 
   async function remover(id: string) {
-    if (!confirm("Remover este link?")) return;
+    if (!(await confirmDialog("Remover este link?"))) return;
     const { error } = await (supabase as any).from("short_links").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
@@ -242,6 +244,7 @@ function EncurtadorPage() {
                     />
                   )}
                 </div>
+                <ConfirmDialog />
               </div>
             );
           })}

@@ -25,6 +25,7 @@ import {
   Search,
   Plus,
 } from "lucide-react";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/admin/tenants")({
   component: AdminTenants,
@@ -62,6 +63,7 @@ function AdminTenants() {
   const [users, setUsers] = useState<ProfileUser[]>([]);
   const [plans, setPlans] = useState<{ slug: string; nome: string }[]>([]);
 
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -240,7 +242,7 @@ function AdminTenants() {
 
   // Delete/Revoke user
   async function revokeUser(userId: string) {
-    if (!confirm("Deseja realmente remover/negar a licença deste cadastro?")) return;
+    if (!(await confirmDialog("Deseja realmente remover/negar a licença deste cadastro?"))) return;
     setLoading(true);
     const { error } = await supabase.from("profiles").delete().eq("id", userId);
     setLoading(false);
@@ -671,6 +673,7 @@ function AdminTenants() {
           </div>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

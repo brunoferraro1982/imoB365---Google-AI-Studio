@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Building, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/empreendimentos/")({
   component: EmpreendimentosPage,
@@ -22,6 +23,7 @@ function slugify(s: string) {
 
 function EmpreendimentosPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [list, setList] = useState<any[]>([]);
   const [nome, setNome] = useState("");
 
@@ -51,7 +53,7 @@ function EmpreendimentosPage() {
   }
 
   async function del(id: string) {
-    if (!confirm("Excluir empreendimento e todas as unidades?")) return;
+    if (!(await confirmDialog("Excluir empreendimento e todas as unidades?"))) return;
     await (supabase as any).from("empreendimentos").delete().eq("id", id);
     load();
   }
@@ -103,6 +105,7 @@ function EmpreendimentosPage() {
           <li className="text-sm text-muted-foreground">Nenhum empreendimento cadastrado.</li>
         )}
       </ul>
+      <ConfirmDialog />
     </div>
   );
 }

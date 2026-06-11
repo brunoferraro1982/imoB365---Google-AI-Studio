@@ -30,6 +30,7 @@ import { LeadPreferenciasMatch } from "@/components/leads/LeadPreferenciasMatch"
 import { LeadTarefas } from "@/components/leads/LeadTarefas";
 import { LeadTimeline } from "@/components/leads/LeadTimeline";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/leads/$id")({
   component: LeadDetail,
@@ -47,6 +48,7 @@ const STATUS = [
 function LeadDetail() {
   const { id } = Route.useParams();
   const { user } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [lead, setLead] = useState<any>(null);
   const [imovel, setImovel] = useState<any>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
@@ -182,7 +184,7 @@ function LeadDetail() {
   }
 
   async function remove() {
-    if (!confirm("Excluir este lead?")) return;
+    if (!(await confirmDialog("Excluir este lead?"))) return;
     const { error } = await (supabase as any).from("leads").delete().eq("id", id);
     if (error) return toast.error(error.message);
     window.location.href = "/app/leads";
@@ -482,6 +484,7 @@ function LeadDetail() {
           </div>
         </aside>
       </div>
+      <ConfirmDialog />
     </div>
   );
 }

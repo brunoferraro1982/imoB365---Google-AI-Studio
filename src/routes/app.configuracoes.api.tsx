@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/api")({
   component: ApiKeysPage,
@@ -30,6 +31,7 @@ async function sha256Hex(s: string) {
 
 function ApiKeysPage() {
   const { tenantId, isAdmin, user } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [nome, setNome] = useState("");
   const [newKey, setNewKey] = useState<string | null>(null);
@@ -65,7 +67,7 @@ function ApiKeysPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Revogar esta chave?")) return;
+    if (!(await confirmDialog("Revogar esta chave?"))) return;
     await supabase.from("tenant_api_keys").delete().eq("id", id);
     load();
   }
@@ -172,6 +174,7 @@ function ApiKeysPage() {
           </li>
         </ul>
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

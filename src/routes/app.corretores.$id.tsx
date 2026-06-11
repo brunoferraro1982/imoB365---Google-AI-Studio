@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { CorretorForm, type CorretorFormData } from "@/components/corretores/CorretorForm";
 import { slugify } from "@/lib/format";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/corretores/$id")({
   component: EditarCorretor,
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/app/corretores/$id")({
 function EditarCorretor() {
   const { id } = Route.useParams();
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [initial, setInitial] = useState<Partial<CorretorFormData> | null>(null);
   const [slug, setSlug] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
@@ -109,7 +111,7 @@ function EditarCorretor() {
   }
 
   async function removeFoto() {
-    if (!fotoUrl || !confirm("Remover a foto?")) return;
+    if (!fotoUrl || !(await confirmDialog("Remover a foto?"))) return;
     const oldPath = fotoUrl.split("/corretor-fotos/")[1];
     if (oldPath) await supabase.storage.from("corretor-fotos").remove([oldPath]);
     await (supabase as any).from("corretores").update({ foto_url: null }).eq("id", id);
@@ -179,6 +181,7 @@ function EditarCorretor() {
         submitLabel="Salvar alterações"
         submitting={saving}
       />
+      <ConfirmDialog />
     </div>
   );
 }

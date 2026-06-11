@@ -164,13 +164,43 @@ export const gerarMetatagsSEO = createServerFn({ method: "POST" })
     }
   });
 
+// Rate limiting simples por IP via Map em memória (reset a cada reinício do Worker).
+// Para produção com múltiplas instâncias, usar Cloudflare KV.
+const _aiRateLimit = new Map<string, { count: number; resetAt: number }>();
+const AI_RATE_LIMIT_MAX = 10; // máx 10 req por janela
+const AI_RATE_LIMIT_WINDOW = 60_000; // janela de 60 segundos
+
+function checkAiRateLimit(ip: string): { allowed: boolean; retryAfterMs: number } {
+  const now = Date.now();
+  const entry = _aiRateLimit.get(ip);
+  if (!entry || now > entry.resetAt) {
+    _aiRateLimit.set(ip, { count: 1, resetAt: now + AI_RATE_LIMIT_WINDOW });
+    return { allowed: true, retryAfterMs: 0 };
+  }
+  if (entry.count >= AI_RATE_LIMIT_MAX) {
+    return { allowed: false, retryAfterMs: entry.resetAt - now };
+  }
+  entry.count++;
+  return { allowed: true, retryAfterMs: 0 };
+}
+
 const InterpretadorInput = z.object({
-  mensagem: z.string().max(800),
+  mensagem: z.string().min(3).max(400), // limite reduzido de 800 → 400 chars para reduzir custo
+  _ip: z.string().optional(), // IP passado pelo cliente (best-effort, sem autenticação)
 });
 
 export const interpretarBuscaConversacional = createServerFn({ method: "POST" })
   .inputValidator((d) => InterpretadorInput.parse(d))
   .handler(async ({ data }) => {
+    // Rate limiting por IP — o IP é passado opcionalmente pelo cliente como _ip.
+    // Em produção, usar Cloudflare Workers KV para rate limiting multi-instância.
+    const ip = (data._ip ?? "unknown").slice(0, 64); // limita tamanho do campo _ip
+    const rl = checkAiRateLimit(ip);
+    if (!rl.allowed) {
+      throw new Error(
+        `Muitas requisições. Tente novamente em ${Math.ceil(rl.retryAfterMs / 1000)}s.`,
+      );
+    }
     const system = `Você é o corretor virtual inteligente da imob365. Sua tarefa é interpretar o que o usuário quer em linguagem natural e responder com dados estruturados para filtrar imóveis no portal.
 Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
 - "resposta_amigavel": mensagem curta e simpática direcionada ao cliente resumindo o que você entendeu e quais filtros foram aplicados (em português, sem aspas extras, máximo 250 caracteres).

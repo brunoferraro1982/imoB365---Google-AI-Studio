@@ -2,11 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, Banknote, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/financeiro/")({
   component: FinanceiroList,
@@ -27,15 +29,22 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
 
 function FinanceiroList() {
   const [items, setItems] = useState<any[]>([]);
+  const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todos" | "receita" | "despesa">("todos");
 
   async function load() {
     setLoading(true);
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("lancamentos_financeiros")
       .select("id,tipo,categoria,descricao,valor,data_vencimento,data_pagamento,status")
+      .eq("tenant_id", tenantId)
       .order("data_vencimento", { ascending: false });
     if (error) toast.error(error.message);
     setItems(data ?? []);
@@ -46,8 +55,12 @@ function FinanceiroList() {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Excluir este lançamento?")) return;
-    const { error } = await supabase.from("lancamentos_financeiros").delete().eq("id", id);
+    if (!(await confirmDialog("Excluir este lançamento?"))) return;
+    const { error } = await supabase
+      .from("lancamentos_financeiros")
+      .delete()
+      .eq("id", id)
+      .eq("tenant_id", tenantId ?? "");
     if (error) return toast.error(error.message);
     toast.success("Lançamento excluído");
     load();
@@ -191,6 +204,7 @@ function FinanceiroList() {
           </table>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

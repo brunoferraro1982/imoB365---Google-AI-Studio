@@ -2,11 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, FileText, Pencil, Trash2, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/contratos/")({
   component: ContratosList,
@@ -33,14 +35,21 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
 
 function ContratosList() {
   const [items, setItems] = useState<any[]>([]);
+  const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   async function load() {
     setLoading(true);
+    if (!tenantId) {
+      setLoading(false);
+      return;
+    }
     const { data, error } = await supabase
       .from("contratos")
       .select("id,numero,tipo,status,valor,data_inicio,data_fim,updated_at,imovel_id")
+      .eq("tenant_id", tenantId)
       .order("updated_at", { ascending: false });
     if (error) toast.error(error.message);
     setItems(data ?? []);
@@ -51,8 +60,12 @@ function ContratosList() {
   }, []);
 
   async function remove(id: string) {
-    if (!confirm("Excluir este contrato?")) return;
-    const { error } = await supabase.from("contratos").delete().eq("id", id);
+    if (!(await confirmDialog("Excluir este contrato?"))) return;
+    const { error } = await supabase
+      .from("contratos")
+      .delete()
+      .eq("id", id)
+      .eq("tenant_id", tenantId ?? "");
     if (error) return toast.error(error.message);
     toast.success("Contrato excluído");
     load();
@@ -149,6 +162,7 @@ function ContratosList() {
           </table>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

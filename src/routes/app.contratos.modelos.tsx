@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BUILTIN_TEMPLATES, type BuiltinTemplate } from "@/lib/contractTemplatesLibrary";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/contratos/modelos")({
   component: ModelosPage,
@@ -41,6 +42,7 @@ const PLACEHOLDER_HINT = `Variáveis disponíveis (use entre chaves):
 
 function ModelosPage() {
   const { tenantId, user } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Template | null>(null);
@@ -102,13 +104,13 @@ function ModelosPage() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Excluir este modelo?")) return;
+    if (!(await confirmDialog("Excluir este modelo?"))) return;
     const { error } = await supabase.from("contrato_templates").delete().eq("id", id);
     if (error) return toast.error(error.message);
     load();
   }
 
-  async function useBuiltin(tpl: BuiltinTemplate) {
+  async function applyBuiltinTemplate(tpl: BuiltinTemplate) {
     if (!tenantId) return;
     setCloning(tpl.slug);
     const { error } = await supabase.from("contrato_templates").insert({
@@ -183,7 +185,7 @@ function ModelosPage() {
                     size="sm"
                     variant="outline"
                     disabled={cloning === tpl.slug}
-                    onClick={() => useBuiltin(tpl)}
+                    onClick={() => applyBuiltinTemplate(tpl)}
                   >
                     {cloning === tpl.slug ? "Adicionando…" : "Usar este modelo"}
                   </Button>
@@ -296,6 +298,7 @@ function ModelosPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

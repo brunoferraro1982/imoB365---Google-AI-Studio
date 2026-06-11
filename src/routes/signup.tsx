@@ -67,6 +67,7 @@ function SignupPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [tipoUsuario, setTipoUsuario] = useState<"imobiliaria" | "corretor">("imobiliaria");
 
   // Imobiliaria Fields
@@ -128,6 +129,24 @@ function SignupPage() {
 
     toast.success(`Cadastro via ${socialModal?.provider} iniciado com sucesso! Aguarde aprovação.`);
     navigate({ to: "/login" });
+  }
+
+  // Indicador de força de senha
+  function passwordStrength(pwd: string): { score: number; label: string; color: string } {
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    const labels = ["Muito fraca", "Fraca", "Razoável", "Forte", "Muito forte"];
+    const colors = [
+      "bg-red-500",
+      "bg-orange-500",
+      "bg-yellow-500",
+      "bg-green-500",
+      "bg-emerald-600",
+    ];
+    return { score, label: labels[score] ?? "Muito fraca", color: colors[score] ?? "bg-red-500" };
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -284,6 +303,43 @@ function SignupPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
                 />
+                {password.length > 0 &&
+                  (() => {
+                    const s = passwordStrength(password);
+                    return (
+                      <div className="space-y-1">
+                        <div className="flex gap-1">
+                          {[0, 1, 2, 3].map((i) => (
+                            <div
+                              key={i}
+                              className={`h-1 flex-1 rounded-full transition-colors ${i < s.score ? s.color : "bg-muted"}`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                      </div>
+                    );
+                  })()}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repita a senha"
+                  className={
+                    confirmPassword && password !== confirmPassword
+                      ? "border-red-500 focus-visible:ring-red-500"
+                      : ""
+                  }
+                />
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-red-500">As senhas não conferem</p>
+                )}
               </div>
 
               {/* SOCIAL LOGINS */}
@@ -352,6 +408,14 @@ function SignupPage() {
                 onClick={() => {
                   if (!nome || !email || !password) {
                     toast.error("Por favor, preencha todos os campos.");
+                    return;
+                  }
+                  if (password.length < 8) {
+                    toast.error("A senha deve ter pelo menos 8 caracteres.");
+                    return;
+                  }
+                  if (password !== confirmPassword) {
+                    toast.error("As senhas não conferem.");
                     return;
                   }
                   setStep(2);

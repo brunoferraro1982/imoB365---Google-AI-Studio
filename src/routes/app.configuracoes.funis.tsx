@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Trash2, GitBranch } from "lucide-react";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/funis")({
   component: FunisPage,
@@ -25,6 +26,7 @@ type Etapa = {
 
 function FunisPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [funis, setFunis] = useState<Funil[]>([]);
   const [etapas, setEtapas] = useState<Etapa[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -69,7 +71,7 @@ function FunisPage() {
   }
 
   async function delFunil(id: string) {
-    if (!confirm("Excluir o funil e suas etapas?")) return;
+    if (!(await confirmDialog("Excluir o funil e suas etapas?"))) return;
     await (supabase as any).from("lead_funis").delete().eq("id", id);
     if (selected === id) setSelected(null);
     load();
@@ -215,6 +217,7 @@ function FunisPage() {
           </section>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

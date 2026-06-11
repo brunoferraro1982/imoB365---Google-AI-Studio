@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/configuracoes/webhooks")({
   component: WebhooksPage,
@@ -25,6 +26,7 @@ const EVENTS = [
 
 function WebhooksPage() {
   const { tenantId, isAdmin } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [nome, setNome] = useState("");
   const [url, setUrl] = useState("");
@@ -59,7 +61,7 @@ function WebhooksPage() {
     load();
   }
   async function remove(id: string) {
-    if (!confirm("Excluir webhook?")) return;
+    if (!(await confirmDialog("Excluir webhook?"))) return;
     await supabase.from("tenant_webhooks").delete().eq("id", id);
     load();
   }
@@ -155,6 +157,7 @@ function WebhooksPage() {
           </div>
         )}
       </section>
+      <ConfirmDialog />
     </div>
   );
 }

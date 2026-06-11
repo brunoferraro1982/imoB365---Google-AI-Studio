@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/site/widgets")({
   component: WidgetsManagerPage,
@@ -70,6 +71,7 @@ const EMPTY_WIDGET: Partial<ConversionWidget> = {
 
 function WidgetsManagerPage() {
   const { tenantId } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [widgets, setWidgets] = useState<ConversionWidget[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -276,7 +278,12 @@ function WidgetsManagerPage() {
 
   // Deletar Widget
   async function handleDelete(id: string) {
-    if (!confirm("Remover este widget de conversão? Ele deixará de funcionar no seu site.")) return;
+    if (
+      !(await confirmDialog(
+        "Remover este widget de conversão? Ele deixará de funcionar no seu site.",
+      ))
+    )
+      return;
     try {
       try {
         await ((supabase as any).from("conversion_widgets").delete().eq("id", id) as any);
@@ -1056,6 +1063,7 @@ function WidgetsManagerPage() {
           </form>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }
