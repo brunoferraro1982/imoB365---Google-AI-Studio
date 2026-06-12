@@ -508,9 +508,9 @@ export function HeaderUserMenu() {
                   </div>
                 ) : (
                   /* STATE B: AUTHENTICATED USER IN PORTAL */
-                  <div className="grid gap-4 md:grid-cols-12">
+                  <div className="grid gap-4.5 sm:grid-cols-12">
                     {/* LEFT PANEL: MAIN LINKS */}
-                    <div className="md:col-span-7 space-y-2">
+                    <div className="sm:col-span-7 space-y-2">
                       <span className="text-3xs font-black uppercase text-muted-foreground tracking-widest block">
                         Atalhos Operacionais
                       </span>
@@ -582,7 +582,7 @@ export function HeaderUserMenu() {
                     </div>
 
                     {/* RIGHT CARD: GLASSMORPHIC PROFILE OVERVIEW */}
-                    <div className="md:col-span-5 min-w-0 bg-muted/60 p-4 rounded-xl border border-border/80 flex flex-col justify-between space-y-4">
+                    <div className="sm:col-span-5 bg-muted/60 p-4 rounded-xl border border-border/80 flex flex-col justify-between space-y-4">
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-10 w-10 ring-2 ring-primary/20">
@@ -608,7 +608,7 @@ export function HeaderUserMenu() {
                           </span>
                           <div className="flex flex-wrap gap-1">
                             {roles.length > 0 ? (
-                              [...new Set(roles)].map((r) => (
+                              roles.map((r) => (
                                 <Badge
                                   key={r}
                                   variant="outline"
@@ -637,10 +637,10 @@ export function HeaderUserMenu() {
                         >
                           <Button
                             size="sm"
-                            className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:opacity-90 transition-opacity overflow-hidden"
+                            className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:scale-103 transition-transform"
                           >
-                            <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">Anunciar novo imóvel</span>
+                            <PlusCircle className="h-3.5 w-3.5" />
+                            <span>Anunciar novo imóvel</span>
                           </Button>
                         </Link>
 
