@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { PartnersSection } from "@/components/portal/PartnersSection";
 import { TestimonialsSection } from "@/components/portal/TestimonialsSection";
 import { Building2, BarChart3, ShieldCheck, ArrowRight } from "lucide-react";
+import { SiteHeader, SiteFooter } from '@/components/site-layout'
 
 export const Route = createFileRoute("/sobre")({
   head: () => ({
@@ -15,7 +16,9 @@ export const Route = createFileRoute("/sobre")({
 
 function SobrePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SiteHeader />
+      <div className="min-h-screen bg-background">
       {/* Hero */}
       <section className="py-16 px-4 bg-gradient-to-b from-muted/40 to-background">
         <div className="container max-w-3xl mx-auto text-center space-y-4">
@@ -114,5 +117,7 @@ function SobrePage() {
         </div>
       </section>
     </div>
+    <SiteFooter />
+  </>
   );
 }

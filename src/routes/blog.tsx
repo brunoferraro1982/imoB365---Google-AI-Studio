@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
 import { Calendar, Tag } from "lucide-react";
+import { SiteHeader, SiteFooter } from '@/components/site-layout'
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -57,7 +58,9 @@ export default function BlogPage() {
     iso ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(iso)) : "";
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SiteHeader />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-12 px-4 bg-gradient-to-b from-muted/40 to-background">
         <div className="container max-w-4xl mx-auto text-center space-y-3">
@@ -151,5 +154,7 @@ export default function BlogPage() {
         </div>
       </section>
     </div>
+    <SiteFooter />
+  </>
   );
 }

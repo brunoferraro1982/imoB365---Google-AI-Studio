@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Phone } from "lucide-react";
+import { SiteHeader, SiteFooter } from '@/components/site-layout'
 
 export const Route = createFileRoute("/consultoria")({
   head: () => ({
@@ -34,7 +35,9 @@ function ConsultoriaPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <SiteHeader />
+      <div className="min-h-screen bg-background">
       {/* Header */}
       <section className="py-14 px-4 bg-gradient-to-b from-muted/40 to-background">
         <div className="container max-w-3xl mx-auto text-center space-y-3">
@@ -107,5 +110,7 @@ function ConsultoriaPage() {
         </div>
       </section>
     </div>
+    <SiteFooter />
+  </>
   );
 }
