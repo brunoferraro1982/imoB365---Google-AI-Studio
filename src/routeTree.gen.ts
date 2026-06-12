@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -22,13 +24,16 @@ import { Route as MinhasBuscasRouteImport } from './routes/minhas-buscas'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LgpdRouteImport } from './routes/lgpd'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ContaRouteImport } from './routes/conta'
+import { Route as ConsultoriaRouteImport } from './routes/consultoria'
 import { Route as CompararRouteImport } from './routes/comparar'
 import { Route as CalculadorasRouteImport } from './routes/calculadoras'
 import { Route as CalculadoraMudancaRouteImport } from './routes/calculadora-mudanca'
 import { Route as CalculadoraItbiRouteImport } from './routes/calculadora-itbi'
 import { Route as CalculadoraFinanciamentoRouteImport } from './routes/calculadora-financiamento'
 import { Route as BuscarRouteImport } from './routes/buscar'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -65,6 +70,7 @@ import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as BlogRouteImport } from './routes/blog.'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
@@ -140,6 +146,11 @@ const StatusRoute = StatusRouteImport.update({
   path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -158,6 +169,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
+  id: '/politica-de-privacidade',
+  path: '/politica-de-privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosRoute = PlanosRouteImport.update({
@@ -195,9 +211,19 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContatoRoute = ContatoRouteImport.update({
+  id: '/contato',
+  path: '/contato',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContaRoute = ContaRouteImport.update({
   id: '/conta',
   path: '/conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsultoriaRoute = ConsultoriaRouteImport.update({
+  id: '/consultoria',
+  path: '/consultoria',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompararRoute = CompararRouteImport.update({
@@ -229,6 +255,11 @@ const CalculadoraFinanciamentoRoute =
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -410,6 +441,11 @@ const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
   getParentRoute: () => AdminRoute,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
 } as any)
 const ContaChatIndexRoute = ContaChatIndexRouteImport.update({
   id: '/chat/',
@@ -755,13 +791,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
+  '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
+  '/consultoria': typeof ConsultoriaRoute
   '/conta': typeof ContaRouteWithChildren
+  '/contato': typeof ContatoRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -769,12 +808,15 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/blog/': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -881,6 +923,8 @@ export interface FileRoutesByTo {
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
+  '/consultoria': typeof ConsultoriaRoute
+  '/contato': typeof ContatoRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -888,12 +932,15 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/blog': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -995,13 +1042,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
+  '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
   '/calculadoras': typeof CalculadorasRoute
   '/comparar': typeof CompararRoute
+  '/consultoria': typeof ConsultoriaRoute
   '/conta': typeof ContaRouteWithChildren
+  '/contato': typeof ContatoRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -1009,12 +1059,15 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/signup': typeof SignupRoute
+  '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/blog/': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1119,13 +1172,16 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/app'
+    | '/blog'
     | '/buscar'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
     | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
+    | '/consultoria'
     | '/conta'
+    | '/contato'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1133,12 +1189,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/signup'
+    | '/sobre'
     | '/status'
     | '/termos'
+    | '/blog/'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1245,6 +1304,8 @@ export interface FileRouteTypes {
     | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
+    | '/consultoria'
+    | '/contato'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1252,12 +1313,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/signup'
+    | '/sobre'
     | '/status'
     | '/termos'
+    | '/blog'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1358,13 +1422,16 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/app'
+    | '/blog'
     | '/buscar'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
     | '/calculadora-mudanca'
     | '/calculadoras'
     | '/comparar'
+    | '/consultoria'
     | '/conta'
+    | '/contato'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1372,12 +1439,15 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
     | '/robots.txt'
     | '/signup'
+    | '/sobre'
     | '/status'
     | '/termos'
+    | '/blog/'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1481,13 +1551,16 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
+  BlogRoute: typeof BlogRouteWithChildren
   BuscarRoute: typeof BuscarRoute
   CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
   CalculadoraItbiRoute: typeof CalculadoraItbiRoute
   CalculadoraMudancaRoute: typeof CalculadoraMudancaRoute
   CalculadorasRoute: typeof CalculadorasRoute
   CompararRoute: typeof CompararRoute
+  ConsultoriaRoute: typeof ConsultoriaRoute
   ContaRoute: typeof ContaRouteWithChildren
+  ContatoRoute: typeof ContatoRoute
   FavoritosRoute: typeof FavoritosRoute
   LgpdRoute: typeof LgpdRoute
   LoginRoute: typeof LoginRoute
@@ -1495,10 +1568,12 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PendingApprovalRoute: typeof PendingApprovalRoute
   PlanosRoute: typeof PlanosRoute
+  PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SignupRoute: typeof SignupRoute
+  SobreRoute: typeof SobreRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -1541,6 +1616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -1567,6 +1649,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politica-de-privacidade': {
+      id: '/politica-de-privacidade'
+      path: '/politica-de-privacidade'
+      fullPath: '/politica-de-privacidade'
+      preLoaderRoute: typeof PoliticaDePrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos': {
@@ -1618,11 +1707,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contato': {
+      id: '/contato'
+      path: '/contato'
+      fullPath: '/contato'
+      preLoaderRoute: typeof ContatoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/conta': {
       id: '/conta'
       path: '/conta'
       fullPath: '/conta'
       preLoaderRoute: typeof ContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consultoria': {
+      id: '/consultoria'
+      path: '/consultoria'
+      fullPath: '/consultoria'
+      preLoaderRoute: typeof ConsultoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/comparar': {
@@ -1665,6 +1768,13 @@ declare module '@tanstack/react-router' {
       path: '/buscar'
       fullPath: '/buscar'
       preLoaderRoute: typeof BuscarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app': {
@@ -1918,6 +2028,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/auditoria'
       preLoaderRoute: typeof AdminAuditoriaRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/conta/chat/': {
       id: '/conta/chat/'
@@ -2548,6 +2665,16 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface BlogRouteChildren {
+  BlogRoute: typeof BlogRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogRoute: BlogRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -2586,13 +2713,16 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
+  BlogRoute: BlogRouteWithChildren,
   BuscarRoute: BuscarRoute,
   CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
   CalculadoraItbiRoute: CalculadoraItbiRoute,
   CalculadoraMudancaRoute: CalculadoraMudancaRoute,
   CalculadorasRoute: CalculadorasRoute,
   CompararRoute: CompararRoute,
+  ConsultoriaRoute: ConsultoriaRoute,
   ContaRoute: ContaRouteWithChildren,
+  ContatoRoute: ContatoRoute,
   FavoritosRoute: FavoritosRoute,
   LgpdRoute: LgpdRoute,
   LoginRoute: LoginRoute,
@@ -2600,10 +2730,12 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PendingApprovalRoute: PendingApprovalRoute,
   PlanosRoute: PlanosRoute,
+  PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SignupRoute: SignupRoute,
+  SobreRoute: SobreRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
   AuthCallbackRoute: AuthCallbackRoute,
