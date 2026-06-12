@@ -492,65 +492,6 @@ export function HeaderUserMenu() {
 
                     {/* SOCIAL LOGINS COMPACT */}
                     <div className="pt-3 border-t border-border/50">
-                      <div className="relative mb-3">
-                        <div className="absolute inset-0 flex items-center">
-                          <span className="w-full border-t border-border/60" />
-                        </div>
-                        <div className="relative flex justify-center text-[10px] uppercase">
-                          <span className="bg-background px-2 text-muted-foreground/85 font-semibold font-sans">
-                            {authTab === "login"
-                              ? "Ou acesse rápido com rede social"
-                              : "Ou registre-se com rede social"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => {
-                            setSocialModal({ isOpen: true, provider: "Google" });
-                            setSocialEmail(email);
-                          }}
-                        >
-                          <Chrome className="h-4 w-4 text-red-500" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => {
-                            setSocialModal({ isOpen: true, provider: "Instagram" });
-                            setSocialEmail(email);
-                          }}
-                        >
-                          <Instagram className="h-4 w-4 text-pink-600" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => {
-                            setSocialModal({ isOpen: true, provider: "LinkedIn" });
-                            setSocialEmail(email);
-                          }}
-                        >
-                          <Linkedin className="h-4 w-4 text-blue-700" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="p-1 h-8 w-full flex items-center justify-center cursor-pointer border-border/60 hover:bg-muted/50 rounded-xl"
-                          onClick={() => {
-                            setSocialModal({ isOpen: true, provider: "Apple" });
-                            setSocialEmail(email);
-                          }}
-                        >
-                          <Apple className="h-4 w-4 text-foreground" />
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 ) : (
