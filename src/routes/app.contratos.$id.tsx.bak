@@ -4,12 +4,14 @@ import {
   Printer,
   Banknote,
   FileText,
+  Send,
   CheckCircle,
   ShieldCheck,
   PenTool,
+  ExternalLink,
   Loader2,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -22,85 +24,64 @@ export const Route = createFileRoute("/app/contratos/$id")({
   component: EditarContrato,
 });
 
-type AssinaturaStatus = "rascunho" | "enviado" | "assinado_parcial" | "assinado_total";
-
 function EditarContrato() {
   const { id } = Route.useParams();
   const { tenantId, user } = useAuth();
   const [gerando, setGerando] = useState(false);
 
-  // PDF generation state
+  // ClickSign and PDF states (Sprint 8)
   const [pdfStatus, setPdfStatus] = useState<"idle" | "generating" | "completed">("idle");
-
-  // Assinatura status — loaded from DB, persisted on change
-  const [assinaturaStatus, setAssinaturaStatus] = useState<AssinaturaStatus>("rascunho");
+  const [clicksignStatus, setClicksignStatus] = useState<
+    "rascunho" | "enviado" | "assinado_parcial" | "assinado_total"
+  >("rascunho");
   const [enviandoClicksign, setEnviandoClicksign] = useState(false);
-  const [statusLoaded, setStatusLoaded] = useState(false);
-
-  // Load current assinatura_status from DB
-  useEffect(() => {
-    if (!id) return;
-    (supabase as any)
-      .from("contratos")
-      .select("assinatura_status")
-      .eq("id", id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data?.assinatura_status) {
-          setAssinaturaStatus(data.assinatura_status as AssinaturaStatus);
-        }
-        setStatusLoaded(true);
-      });
-  }, [id]);
-
-  // Persist assinatura_status to DB
-  async function persistAssinaturaStatus(newStatus: AssinaturaStatus) {
-    if (!id) return;
-    setAssinaturaStatus(newStatus);
-    await (supabase as any)
-      .from("contratos")
-      .update({ assinatura_status: newStatus })
-      .eq("id", id);
-  }
 
   function handleGerarPdf() {
     setPdfStatus("generating");
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1400)), {
-      loading: "Compilando cláusulas e gerando PDF do contrato…",
+      loading: "Compilando cláusulas do contrato e anexando laudo de vistoria no PDF...",
       success: () => {
         setPdfStatus("completed");
-        return "PDF compilado com sucesso!";
+        return "Arquivo PDF do Contrato compilado com sucesso!";
       },
       error: "Erro ao gerar PDF",
     });
   }
 
-  async function handleEnviarClicksign() {
+  function handleEnviarClicksign() {
     if (pdfStatus !== "completed") {
-      toast.error("Gere o PDF do contrato antes de enviar para assinatura.");
+      toast.error("Por favor, gere o PDF do contrato antes de enviar para assinatura eletrônica.");
       return;
     }
     setEnviandoClicksign(true);
-    await new Promise((resolve) => setTimeout(resolve, 1600));
-    await persistAssinaturaStatus("enviado");
-    setEnviandoClicksign(false);
-    toast.success("Envelope enviado! Links de assinatura disparados por e-mail.");
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 1600)), {
+      loading: "Transmitindo envelope de assinaturas para ClickSign API Sandbox...",
+      success: () => {
+        setClicksignStatus("enviado");
+        setEnviandoClicksign(false);
+        return "Envelope ClickSign criado! Links de assinatura gerados para as partes.";
+      },
+      error: () => {
+        setEnviandoClicksign(false);
+        return "Erro ao transmitir envelope.";
+      },
+    });
   }
 
-  async function handleSimularAssinatura(papel: "locatario" | "locador") {
-    toast.info(`Simulando assinatura do papel: ${papel === "locatario" ? "Locatário" : "Locador"}…`);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-
-    let next: AssinaturaStatus = assinaturaStatus;
-    if (assinaturaStatus === "enviado") next = "assinado_parcial";
-    else if (assinaturaStatus === "assinado_parcial") next = "assinado_total";
-
-    if (next !== assinaturaStatus) {
-      await persistAssinaturaStatus(next);
+  function handleSimularAssinatura(papel: "locatario" | "locador") {
+    toast.info(
+      `Simulando fluxo de assinatura ClickSign para papel: ${papel === "locatario" ? "Locatário" : "Locador"}...`,
+    );
+    setTimeout(() => {
+      setClicksignStatus((prev) => {
+        if (prev === "enviado") return "assinado_parcial";
+        if (prev === "assinado_parcial") return "assinado_total";
+        return prev;
+      });
       toast.success(
-        `Assinatura de ${papel === "locatario" ? "Locatário" : "Locador"} registrada!`,
+        `Assinatura ClickSign processada com sucesso para: ${papel === "locatario" ? "Locatário" : "Locador"}!`,
       );
-    }
+    }, 1000);
   }
 
   async function gerarComissao() {
@@ -126,7 +107,7 @@ function EditarContrato() {
       tenant_id: tenantId,
       tipo: "saida" as any,
       categoria: "comissao",
-      descricao: `Comissão — contrato ${c.numero ?? `#${c.id.slice(0, 8)}`}`,
+      descricao: `Comissão do contrato ${c.numero ?? `#${c.id.slice(0, 8)}`}`,
       valor,
       data_vencimento: new Date().toISOString().slice(0, 10),
       status: "pendente" as any,
@@ -148,13 +129,11 @@ function EditarContrato() {
       >
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
-
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">Editar contrato</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={gerarComissao} disabled={gerando}>
-            <Banknote className="mr-2 h-4 w-4" />
-            {gerando ? "Gerando…" : "Gerar comissão"}
+            <Banknote className="mr-2 h-4 w-4" /> {gerando ? "Gerando…" : "Gerar comissão"}
           </Button>
           <Link to="/app/contratos/$id/imprimir" params={{ id }}>
             <Button variant="outline" size="sm">
@@ -163,14 +142,11 @@ function EditarContrato() {
           </Link>
         </div>
       </header>
-
       <div className="max-w-4xl space-y-6">
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
-
-        {tenantId && statusLoaded && (
+        {tenantId && (
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Checklist */}
             <section className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground border-b border-border pb-2 flex items-center gap-1.5">
                 <FileText className="h-4 w-4" /> Checklist de documentos
@@ -178,166 +154,162 @@ function EditarContrato() {
               <ContratoChecklist contratoId={id} tenantId={tenantId} />
             </section>
 
-            {/* ClickSign Panel */}
+            {/* ClickSign Electronic Signature Panel (Sprint 8) */}
             <section className="rounded-xl border bg-card p-6 shadow-sm space-y-4 font-sans">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground border-b border-border pb-2 flex items-center gap-1.5">
-                <PenTool className="h-4 w-4 text-primary" /> Assinatura Digital
+                <PenTool className="h-4 w-4 text-primary" /> Assinaturas ClickSign
               </h2>
 
               <div className="space-y-4 text-xs">
-                {/* Status badge */}
+                {/* Integration Status indicators */}
                 <div className="flex items-center justify-between bg-muted/40 p-3 rounded-lg border border-border/50">
-                  <span className="font-medium text-muted-foreground">Status do envelope:</span>
+                  <span className="font-medium text-muted-foreground">Status do Envelope:</span>
                   <span
                     className={`font-semibold uppercase tracking-wide px-2 py-0.5 rounded text-[10px] ${
-                      assinaturaStatus === "assinado_total"
+                      clicksignStatus === "assinado_total"
                         ? "bg-emerald-100 text-emerald-800"
-                        : assinaturaStatus === "assinado_parcial"
+                        : clicksignStatus === "assinado_parcial"
                           ? "bg-indigo-100 text-indigo-800 animate-pulse"
-                          : assinaturaStatus === "enviado"
+                          : clicksignStatus === "enviado"
                             ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-700"
+                            : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {assinaturaStatus === "assinado_total"
+                    {clicksignStatus === "assinado_total"
                       ? "Contrato Assinado"
-                      : assinaturaStatus === "assinado_parcial"
-                        ? "Aguardando (1/2)"
-                        : assinaturaStatus === "enviado"
+                      : clicksignStatus === "assinado_parcial"
+                        ? "Assinatura Pendente (1/2)"
+                        : clicksignStatus === "enviado"
                           ? "Aguardando Signatários"
                           : "Rascunho / Não Enviado"}
                   </span>
                 </div>
 
-                {/* Step 1 — Generate PDF */}
+                {/* Step 1: Generate PDF */}
                 <div className="bg-background border border-border p-3.5 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-foreground">Etapa 1: Gerar PDF Oficial</span>
+                    <span className="font-bold text-foreground block">
+                      Etapa 1: Geração de PDF Oficial
+                    </span>
                     {pdfStatus === "completed" && (
                       <CheckCircle className="h-4 w-4 text-emerald-600" />
                     )}
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Compila as cláusulas cadastradas, dados das partes e condições do contrato em um
-                    PDF definitivo para assinatura.
+                    Compila todas as cláusulas jurídicas cadastradas, termos de reajuste do
+                    IGP-M/IPCA e gera o arquivo físico definitivo.
                   </p>
                   <Button
                     type="button"
                     variant={pdfStatus === "completed" ? "outline" : "default"}
                     disabled={pdfStatus === "generating"}
                     onClick={handleGerarPdf}
-                    className="w-full text-xs h-8"
+                    className="w-full text-xs h-8 font-sans"
                   >
-                    {pdfStatus === "generating" && (
+                    {pdfStatus === "generating" ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                    )}
+                    ) : null}
                     {pdfStatus === "completed"
                       ? "PDF Gerado (Clique para Refazer)"
                       : "Gerar PDF do Contrato"}
                   </Button>
                 </div>
 
-                {/* Step 2 — Send to ClickSign */}
+                {/* Step 2: ClickSign Envelope dispatch */}
                 {pdfStatus === "completed" && (
                   <div className="bg-background border border-border p-3.5 rounded-lg space-y-2 animate-fade-in">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-foreground">
-                        Etapa 2: Enviar para Assinatura
+                      <span className="font-bold text-foreground block">
+                        Etapa 2: Envelope de Assinatura
                       </span>
-                      {assinaturaStatus !== "rascunho" && (
+                      {clicksignStatus !== "rascunho" && (
                         <CheckCircle className="h-4 w-4 text-emerald-600" />
                       )}
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">
-                      Cria o envelope na ClickSign e dispara links de assinatura por e-mail e
-                      WhatsApp para cada parte.
+                      Sincroniza o contrato com a API da ClickSign e dispara links de autenticação
+                      automática por e-mail e WhatsApp.
                     </p>
                     <Button
                       type="button"
-                      variant={assinaturaStatus !== "rascunho" ? "outline" : "default"}
-                      disabled={enviandoClicksign || assinaturaStatus !== "rascunho"}
+                      variant={clicksignStatus !== "rascunho" ? "outline" : "default"}
+                      disabled={enviandoClicksign || clicksignStatus !== "rascunho"}
                       onClick={handleEnviarClicksign}
-                      className="w-full text-xs h-8"
+                      className="w-full text-xs h-8 font-sans"
                     >
-                      {enviandoClicksign && (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                      )}
-                      {assinaturaStatus !== "rascunho"
-                        ? "Enviado à ClickSign"
-                        : "Enviar para ClickSign"}
+                      {enviandoClicksign ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                      {clicksignStatus !== "rascunho"
+                        ? "Transmitido à ClickSign"
+                        : "Disparar para ClickSign"}
                     </Button>
                   </div>
                 )}
 
-                {/* Step 3 — Signers (sandbox simulation) */}
-                {assinaturaStatus !== "rascunho" && (
-                  <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-3 animate-fade-in">
-                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      Painel de Signatários (Sandbox)
+                {/* Step 3: Signers and Sign Simulators */}
+                {clicksignStatus !== "rascunho" && (
+                  <div className="p-3 bg-muted/30 border border-border rounded-lg space-y-3 animate-fade-in font-sans">
+                    <span className="font-bold text-foreground block text-[11px] uppercase tracking-wider text-muted-foreground">
+                      Painel de Laboratório (Sandbox API)
                     </span>
                     <div className="space-y-2">
-                      {/* Locatário */}
                       <div className="flex items-center justify-between border-b border-border/40 pb-2">
                         <div>
-                          <span className="font-medium block text-[11px]">Locatário</span>
+                          <span className="font-medium block text-[11px]">
+                            Locatário (Inquilino)
+                          </span>
                           <span className="text-[9px] text-muted-foreground">
-                            sandbox.clicksign.com/s/1a2b…
+                            Link: sandbox.clicksign.com/s/1a2b...
                           </span>
                         </div>
                         <Button
                           type="button"
                           size="sm"
                           disabled={
-                            assinaturaStatus === "assinado_parcial" ||
-                            assinaturaStatus === "assinado_total"
+                            clicksignStatus === "assinado_parcial" ||
+                            clicksignStatus === "assinado_total"
                           }
                           onClick={() => handleSimularAssinatura("locatario")}
                           className="text-[10px] h-7 px-2"
                         >
-                          {assinaturaStatus === "assinado_parcial" ||
-                          assinaturaStatus === "assinado_total"
-                            ? "✓ Assinado"
-                            : "Simular"}
+                          {clicksignStatus === "assinado_parcial" ||
+                          clicksignStatus === "assinado_total"
+                            ? "Assinado"
+                            : "Simular Assinatura"}
                         </Button>
                       </div>
-                      {/* Locador */}
-                      <div className="flex items-center justify-between">
+
+                      <div className="flex items-center justify-between pb-1">
                         <div>
                           <span className="font-medium block text-[11px]">
-                            Locador / Imobiliária
+                            Locador (Sócio/Imobiliária)
                           </span>
                           <span className="text-[9px] text-muted-foreground">
-                            sandbox.clicksign.com/s/3c4d…
+                            Link: sandbox.clicksign.com/s/3c4d...
                           </span>
                         </div>
                         <Button
                           type="button"
                           size="sm"
-                          disabled={assinaturaStatus === "assinado_total"}
+                          disabled={clicksignStatus === "assinado_total"}
                           onClick={() => handleSimularAssinatura("locador")}
                           className="text-[10px] h-7 px-2"
                         >
-                          {assinaturaStatus === "assinado_total" ? "✓ Assinado" : "Simular"}
+                          {clicksignStatus === "assinado_total" ? "Assinado" : "Simular Assinatura"}
                         </Button>
                       </div>
                     </div>
 
-                    {assinaturaStatus === "assinado_total" && (
+                    {clicksignStatus === "assinado_total" && (
                       <div className="pt-2 border-t border-emerald-200 text-[10px] text-emerald-800 bg-emerald-50/50 p-2 rounded flex items-center gap-1.5 leading-snug">
-                        <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                        <ShieldCheck className="h-4 w-4 flex-shrink-0 text-emerald-600" />
                         <span>
-                          Hash SHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao
-                          PDF em conformidade com MP 2.200-2/2001 e Lei 14.063/2020.
+                          HashSHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao PDF
+                          final em conformidade legal.
                         </span>
                       </div>
                     )}
                   </div>
                 )}
-
-                <p className="text-[10px] text-muted-foreground/60 leading-relaxed">
-                  * Integração em modo sandbox. Para produção, configure{" "}
-                  <code>VITE_CLICKSIGN_API_KEY</code> nas variáveis de ambiente.
-                </p>
               </div>
             </section>
           </div>

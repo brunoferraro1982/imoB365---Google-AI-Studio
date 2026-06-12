@@ -10,43 +10,13 @@ import { toast } from "sonner";
 
 type Props = { contratoId?: string };
 
-export const TIPOS_CONTRATO = [
-  { value: "venda", label: "Venda" },
-  { value: "locacao", label: "Locação" },
-  { value: "permuta", label: "Permuta" },
-  { value: "parceria", label: "Parceria" },
-  { value: "administracao", label: "Administração" },
-  { value: "prestacao_servico", label: "Prestação de Serviço" },
-  { value: "outro", label: "Outro" },
-] as const;
-
-export const STATUS_CONTRATO = [
-  { value: "rascunho", label: "Rascunho" },
-  { value: "ativo", label: "Ativo" },
-  { value: "encerrado", label: "Encerrado" },
-  { value: "cancelado", label: "Cancelado" },
-] as const;
-
-type Template = { id: string; nome: string; tipo: string };
+const TIPOS = ["venda", "locacao", "permuta", "outro"] as const;
+const STATUSES = ["rascunho", "ativo", "encerrado", "cancelado"] as const;
 
 export function ContratoForm({ contratoId }: Props) {
   const { tenantId, user } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState<{
-    numero: string;
-    tipo: string;
-    status: string;
-    valor: number | string;
-    comissao_percentual: number | string;
-    comissao_valor: number | string;
-    data_inicio: string;
-    data_fim: string;
-    observacoes: string;
-    imovel_id: string;
-    lead_id: string;
-    corretor_id: string;
-    template_id: string;
-  }>({
+  const [form, setForm] = useState<any>({
     numero: "",
     tipo: "venda",
     status: "rascunho",
@@ -59,21 +29,17 @@ export function ContratoForm({ contratoId }: Props) {
     imovel_id: "",
     lead_id: "",
     corretor_id: "",
-    template_id: "",
   });
-
-  const [imoveis, setImoveis] = useState<Array<{ id: string; titulo: string; codigo_interno: string | null }>>([]);
-  const [leads, setLeads] = useState<Array<{ id: string; nome: string }>>([]);
-  const [corretores, setCorretores] = useState<Array<{ id: string; nome: string }>>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [imoveis, setImoveis] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [corretores, setCorretores] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!contratoId);
 
-  // Load relational data
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [{ data: i }, { data: l }, { data: c }, { data: tpl }] = await Promise.all([
+      const [{ data: i }, { data: l }, { data: c }] = await Promise.all([
         supabase
           .from("imoveis")
           .select("id,titulo,codigo_interno")
@@ -86,20 +52,13 @@ export function ContratoForm({ contratoId }: Props) {
           .eq("tenant_id", tenantId)
           .eq("ativo", true)
           .order("nome"),
-        supabase
-          .from("contrato_templates")
-          .select("id,nome,tipo")
-          .eq("ativo", true)
-          .order("nome"),
       ]);
       setImoveis(i ?? []);
       setLeads(l ?? []);
       setCorretores(c ?? []);
-      setTemplates((tpl ?? []) as Template[]);
     })();
   }, [tenantId]);
 
-  // Load existing contrato for edit
   useEffect(() => {
     if (!contratoId) return;
     (async () => {
@@ -108,57 +67,32 @@ export function ContratoForm({ contratoId }: Props) {
         .select("*")
         .eq("id", contratoId)
         .maybeSingle();
-      if (data) {
+      if (data)
         setForm({
-          numero: data.numero ?? "",
-          tipo: data.tipo ?? "venda",
-          status: data.status ?? "rascunho",
-          valor: data.valor ?? 0,
-          comissao_percentual: data.comissao_percentual ?? "",
-          comissao_valor: data.comissao_valor ?? "",
-          data_inicio: data.data_inicio ?? "",
-          data_fim: data.data_fim ?? "",
-          observacoes: data.observacoes ?? "",
+          ...data,
           imovel_id: data.imovel_id ?? "",
           lead_id: data.lead_id ?? "",
           corretor_id: data.corretor_id ?? "",
-          template_id: "",
+          numero: data.numero ?? "",
+          data_inicio: data.data_inicio ?? "",
+          data_fim: data.data_fim ?? "",
+          observacoes: data.observacoes ?? "",
+          comissao_percentual: data.comissao_percentual ?? "",
+          comissao_valor: data.comissao_valor ?? "",
         });
-      }
       setLoading(false);
     })();
   }, [contratoId]);
 
-  function set(k: string, v: string | number) {
-    setForm((f) => ({ ...f, [k]: v }));
-  }
-
-  async function applyChecklistTemplate(contratoId: string) {
-    if (!form.template_id || !tenantId) return;
-    const { data: tplItens } = await supabase
-      .from("checklist_template_itens")
-      .select("*")
-      .eq("template_id", form.template_id)
-      .order("ordem");
-    if (!tplItens?.length) return;
-    const rows = (tplItens as Array<{
-      etapa: string; titulo: string; obrigatorio: boolean; ordem: number;
-    }>).map((i) => ({
-      tenant_id: tenantId,
-      contrato_id: contratoId,
-      etapa: i.etapa,
-      titulo: i.titulo,
-      obrigatorio: i.obrigatorio,
-      ordem: i.ordem,
-    }));
-    await supabase.from("contrato_checklist").insert(rows as any);
+  function set(k: string, v: any) {
+    setForm((f: any) => ({ ...f, [k]: v }));
   }
 
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!tenantId) return toast.error("Sem tenant");
     setSaving(true);
-    const payload = {
+    const payload: any = {
       tenant_id: tenantId,
       numero: form.numero || null,
       tipo: form.tipo,
@@ -174,25 +108,25 @@ export function ContratoForm({ contratoId }: Props) {
       lead_id: form.lead_id || null,
       corretor_id: form.corretor_id || null,
     };
-
     if (contratoId) {
       const { error } = await supabase.from("contratos").update(payload).eq("id", contratoId);
-      setSaving(false);
-      if (error) return toast.error(error.message);
+      if (error) {
+        setSaving(false);
+        return toast.error(error.message);
+      }
       toast.success("Contrato atualizado");
     } else {
+      payload.created_by = user?.id;
       const { data, error } = await supabase
         .from("contratos")
-        .insert({ ...payload, created_by: user?.id })
+        .insert(payload)
         .select("id")
         .single();
-      setSaving(false);
-      if (error) return toast.error(error.message);
-      // Auto-apply checklist template if selected
-      if (form.template_id) {
-        await applyChecklistTemplate(data.id);
+      if (error) {
+        setSaving(false);
+        return toast.error(error.message);
       }
-      toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
+      toast.success("Contrato criado");
       navigate({ to: "/app/contratos/$id", params: { id: data.id } });
       return;
     }
@@ -203,7 +137,6 @@ export function ContratoForm({ contratoId }: Props) {
 
   return (
     <form onSubmit={save} className="max-w-4xl space-y-6">
-      {/* Dados gerais */}
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-base font-semibold">Dados gerais</h2>
         <div className="grid gap-4 md:grid-cols-3">
@@ -212,70 +145,58 @@ export function ContratoForm({ contratoId }: Props) {
               value={form.numero}
               onChange={(e) => set("numero", e.target.value)}
               maxLength={60}
-              placeholder="Ex.: CONT-2024-001"
             />
           </Field>
-
           <Field label="Tipo">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.tipo}
               onChange={(e) => set("tipo", e.target.value)}
             >
-              {TIPOS_CONTRATO.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
+              {TIPOS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
                 </option>
               ))}
             </select>
           </Field>
-
           <Field label="Status">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.status}
               onChange={(e) => set("status", e.target.value)}
             >
-              {STATUS_CONTRATO.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
                 </option>
               ))}
             </select>
           </Field>
-
           <Field label="Valor (R$)">
             <Input
               type="number"
               step="0.01"
-              min="0"
               value={form.valor}
               onChange={(e) => set("valor", e.target.value)}
             />
           </Field>
-
           <Field label="Comissão (%)">
             <Input
               type="number"
               step="0.01"
-              min="0"
-              max="100"
               value={form.comissao_percentual}
               onChange={(e) => set("comissao_percentual", e.target.value)}
-              placeholder="Ex.: 6"
             />
           </Field>
-
           <Field label="Comissão (R$)">
             <Input
               type="number"
               step="0.01"
-              min="0"
               value={form.comissao_valor}
               onChange={(e) => set("comissao_valor", e.target.value)}
             />
           </Field>
-
           <Field label="Data início">
             <Input
               type="date"
@@ -283,8 +204,7 @@ export function ContratoForm({ contratoId }: Props) {
               onChange={(e) => set("data_inicio", e.target.value)}
             />
           </Field>
-
-          <Field label="Data fim / vencimento">
+          <Field label="Data fim">
             <Input
               type="date"
               value={form.data_fim}
@@ -294,7 +214,6 @@ export function ContratoForm({ contratoId }: Props) {
         </div>
       </section>
 
-      {/* Vínculos */}
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-base font-semibold">Vínculos</h2>
         <div className="grid gap-4 md:grid-cols-3">
@@ -304,7 +223,7 @@ export function ContratoForm({ contratoId }: Props) {
               value={form.imovel_id}
               onChange={(e) => set("imovel_id", e.target.value)}
             >
-              <option value="">— Nenhum —</option>
+              <option value="">—</option>
               {imoveis.map((i) => (
                 <option key={i.id} value={i.id}>
                   {i.codigo_interno ? `[${i.codigo_interno}] ` : ""}
@@ -313,14 +232,13 @@ export function ContratoForm({ contratoId }: Props) {
               ))}
             </select>
           </Field>
-
-          <Field label="Lead / Cliente">
+          <Field label="Lead">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.lead_id}
               onChange={(e) => set("lead_id", e.target.value)}
             >
-              <option value="">— Nenhum —</option>
+              <option value="">—</option>
               {leads.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.nome}
@@ -328,14 +246,13 @@ export function ContratoForm({ contratoId }: Props) {
               ))}
             </select>
           </Field>
-
-          <Field label="Corretor responsável">
+          <Field label="Corretor">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.corretor_id}
               onChange={(e) => set("corretor_id", e.target.value)}
             >
-              <option value="">— Nenhum —</option>
+              <option value="">—</option>
               {corretores.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nome}
@@ -346,57 +263,18 @@ export function ContratoForm({ contratoId }: Props) {
         </div>
       </section>
 
-      {/* Template de checklist (só na criação) */}
-      {!contratoId && (
-        <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-base font-semibold">Checklist de documentos</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Selecione um template para gerar automaticamente o checklist ao criar o contrato.
-          </p>
-          <Field label="Template de checklist">
-            <select
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={form.template_id}
-              onChange={(e) => set("template_id", e.target.value)}
-            >
-              <option value="">— Não aplicar —</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nome} ({TIPOS_CONTRATO.find((x) => x.value === t.tipo)?.label ?? t.tipo})
-                </option>
-              ))}
-            </select>
-          </Field>
-          {templates.length === 0 && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Nenhum template ativo.{" "}
-              <a href="/app/contratos/modelos" className="underline">
-                Criar templates
-              </a>
-              .
-            </p>
-          )}
-        </section>
-      )}
-
-      {/* Observações */}
       <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-4 text-base font-semibold">Observações internas</h2>
+        <h2 className="mb-4 text-base font-semibold">Observações</h2>
         <Textarea
           value={form.observacoes}
           onChange={(e) => set("observacoes", e.target.value)}
           rows={4}
           maxLength={4000}
-          placeholder="Notas, cláusulas especiais, condições…"
         />
       </section>
 
       <div className="flex justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => navigate({ to: "/app/contratos" })}
-        >
+        <Button type="button" variant="outline" onClick={() => navigate({ to: "/app/contratos" })}>
           Cancelar
         </Button>
         <Button type="submit" disabled={saving}>
