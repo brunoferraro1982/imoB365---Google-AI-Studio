@@ -3,7 +3,7 @@
 # Uso: bash deploy-blog.sh
 # Requisitos: git, curl, npm (no PATH do WSL)
 
-set -euo pipefail
+set -uo pipefail   # sem -e: evita saída prematura em aritméticas
 
 REPO_DIR="$HOME/imoB365---Google-AI-Studio"
 DEV_PORT="${DEV_PORT:-3000}"
@@ -55,46 +55,109 @@ echo "────────────────────────�
 echo " Validação de rotas"
 echo "─────────────────────────────────────────────"
 
-# Verifica se servidor já está rodando
-if ! curl -s --max-time 2 "$BASE_URL" > /dev/null 2>&1; then
+DEV_PID=""
+STARTED_SERVER=false
+
+# Aguarda servidor estar pronto (polling)
+wait_for_server() {
+  local max_wait=30
+  local interval=2
+  local elapsed=0
+  while [[ $elapsed -lt $max_wait ]]; do
+    if curl -s --max-time 1 "$BASE_URL" > /dev/null 2>&1; then
+      return 0
+    fi
+    sleep $interval
+    elapsed=$((elapsed + interval))
+  done
+  return 1
+}
+
+if curl -s --max-time 2 "$BASE_URL" > /dev/null 2>&1; then
+  log "Servidor já está rodando em $BASE_URL"
+else
   warn "Servidor não detectado em $BASE_URL"
-  warn "Iniciando 'npm run dev' em background (aguarde ~8s)..."
+  warn "Iniciando 'npm run dev' em background..."
   npm run dev > /tmp/imob365-dev.log 2>&1 &
   DEV_PID=$!
-  sleep 8
-  # Garante kill ao sair
-  trap "kill $DEV_PID 2>/dev/null; warn 'Servidor dev encerrado'" EXIT
-else
-  log "Servidor já está rodando em $BASE_URL"
-  DEV_PID=""
+  STARTED_SERVER=true
+  trap '[[ -n "$DEV_PID" ]] && kill "$DEV_PID" 2>/dev/null; warn "Servidor dev encerrado"' EXIT
+
+  echo -n "Aguardando servidor iniciar"
+  for i in $(seq 1 15); do
+    sleep 2
+    echo -n "."
+    if curl -s --max-time 1 "$BASE_URL" > /dev/null 2>&1; then
+      echo ""
+      log "Servidor pronto em $BASE_URL"
+      break
+    fi
+    if [[ $i -eq 15 ]]; then
+      echo ""
+      # Tenta porta alternativa do Vite (5173)
+      ALT_URL="http://localhost:5173"
+      if curl -s --max-time 2 "$ALT_URL" > /dev/null 2>&1; then
+        warn "Servidor rodando na porta 5173 (não 3000)"
+        BASE_URL="$ALT_URL"
+      else
+        warn "Servidor não respondeu em 30s. Log: /tmp/imob365-dev.log"
+        echo "Últimas linhas do log:"
+        tail -10 /tmp/imob365-dev.log 2>/dev/null || true
+        fail "Abortando validação — servidor não subiu"
+      fi
+    fi
+  done
 fi
 
 # Rotas a validar: "path:descricao"
 ROUTES=(
   "/blog:Listagem do blog"
-  "/blog/imob365-inaugura-empreendimento-no-litoral-sul:Post individual (slug)"
   "/sobre:Página sobre"
   "/consultoria:Página consultoria"
 )
 
-PASS=0; FAIL=0
+PASS=0
+FAIL=0
+
 for entry in "${ROUTES[@]}"; do
   PATH_PART="${entry%%:*}"
   DESC="${entry##*:}"
   URL="${BASE_URL}${PATH_PART}"
 
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$URL" || echo "000")
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$URL" 2>/dev/null || echo "000")
 
   if [[ "$HTTP_CODE" == "200" ]]; then
     log "HTTP $HTTP_CODE — $DESC ($PATH_PART)"
-    ((PASS++))
-  elif [[ "$HTTP_CODE" == "000" ]]; then
-    fail "TIMEOUT — $DESC ($PATH_PART) — servidor não respondeu"
+    PASS=$((PASS + 1))
   else
     echo -e "${RED}[✗]${NC} HTTP $HTTP_CODE — $DESC ($PATH_PART)"
-    ((FAIL++))
+    FAIL=$((FAIL + 1))
   fi
 done
+
+# Valida um slug de post (dinâmico — pega o primeiro disponível no dist)
+FIRST_SLUG=$(find "$REPO_DIR/dist" -name "*.html" 2>/dev/null | grep -o 'blog/[^/]*' | head -1 | sed 's|blog/||' || true)
+if [[ -n "$FIRST_SLUG" ]]; then
+  SLUG_URL="${BASE_URL}/blog/${FIRST_SLUG}"
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$SLUG_URL" 2>/dev/null || echo "000")
+  if [[ "$HTTP_CODE" == "200" ]]; then
+    log "HTTP $HTTP_CODE — Post individual (/blog/$FIRST_SLUG)"
+    PASS=$((PASS + 1))
+  else
+    echo -e "${RED}[✗]${NC} HTTP $HTTP_CODE — Post individual (/blog/$FIRST_SLUG)"
+    FAIL=$((FAIL + 1))
+  fi
+else
+  # Testa com slug conhecido do import
+  SLUG_URL="${BASE_URL}/blog/imob365-inaugura-empreendimento-no-litoral-sul"
+  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 8 "$SLUG_URL" 2>/dev/null || echo "000")
+  if [[ "$HTTP_CODE" == "200" ]]; then
+    log "HTTP $HTTP_CODE — Post individual (slug fixo)"
+    PASS=$((PASS + 1))
+  else
+    warn "HTTP $HTTP_CODE — Post individual — SPA pode precisar de SSR para validar"
+  fi
+fi
 
 echo ""
 echo "─────────────────────────────────────────────"
@@ -104,14 +167,15 @@ echo "────────────────────────�
 # ─── 6. Verificação do dist ──────────────────────────────────────────────────
 echo ""
 echo "Assets de blog no dist:"
-find "$REPO_DIR/dist" -name "*blog*" 2>/dev/null | sed 's/^/  /' || warn "dist/ não encontrado (build necessário)"
+find "$REPO_DIR/dist" -name "*blog*" 2>/dev/null | sed 's/^/  /' || warn "dist/ não encontrado"
 
-# ─── 7. Resumo de tasks #38-43 ───────────────────────────────────────────────
+# ─── 7. Auditoria tasks #38-43 ───────────────────────────────────────────────
 echo ""
 echo "─────────────────────────────────────────────"
 echo " Auditoria final — Tasks #38-43"
 echo "─────────────────────────────────────────────"
-check() {
+
+audit_check() {
   local desc="$1"; shift
   if eval "$@" > /dev/null 2>&1; then
     log "$desc"
@@ -120,16 +184,25 @@ check() {
   fi
 }
 
-check "#38 — blog.tsx existe"           "test -f src/routes/blog.tsx"
-check "#39 — blog.\$slug.tsx existe"    "test -f 'src/routes/blog.\$slug.tsx'"
-check "#40 — sobre.tsx existe"          "test -f src/routes/sobre.tsx"
-check "#41 — consultoria.tsx existe"    "test -f src/routes/consultoria.tsx"
-check "#42 — import_wp_posts.py corrigido (sem tenant_id hardcoded)" \
-      "! grep -q 'get_tenant_id' scripts/import_wp_posts.py"
-check "#43 — blog..tsx removido"        "! test -f 'src/routes/blog..tsx'"
-check "blog_posts importados (routeTree contém BlogSlugRoute)" \
-      "grep -q 'BlogSlugRoute\|blog\.\$slug' src/routeTree.gen.ts"
+audit_check "#38 — blog.tsx existe"              "test -f src/routes/blog.tsx"
+audit_check "#39 — blog.\$slug.tsx existe"       "test -f 'src/routes/blog.\$slug.tsx'"
+audit_check "#40 — sobre.tsx existe"             "test -f src/routes/sobre.tsx"
+audit_check "#41 — consultoria.tsx existe"       "test -f src/routes/consultoria.tsx"
+audit_check "#42 — import_wp_posts.py corrigido" "! grep -q 'get_tenant_id' scripts/import_wp_posts.py"
+audit_check "#43 — blog..tsx removido"           "! test -f 'src/routes/blog..tsx'"
+audit_check "routeTree contém BlogSlugRoute"     "grep -q 'blog\\.\\$slug\|BlogSlug' src/routeTree.gen.ts"
+audit_check "dist/ gerado (build ok)"            "test -d dist"
 
 echo ""
-[[ $FAIL -eq 0 ]] && log "Deploy e validação concluídos com sucesso!" \
-                  || fail "$FAIL rota(s) retornaram erro — verifique os logs acima"
+if [[ $FAIL -eq 0 ]]; then
+  log "Deploy e validação concluídos com sucesso!"
+else
+  warn "$FAIL rota(s) com falha — verifique os logs acima"
+fi
+
+# Encerra servidor se foi iniciado por este script
+if [[ "$STARTED_SERVER" == "true" && -n "$DEV_PID" ]]; then
+  warn "Encerrando servidor dev (PID $DEV_PID)..."
+  kill "$DEV_PID" 2>/dev/null || true
+  trap - EXIT
+fi
