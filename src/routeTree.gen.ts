@@ -70,7 +70,6 @@ import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
-import { Route as BlogRouteImport } from './routes/blog.'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
@@ -442,11 +441,6 @@ const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   path: '/auditoria',
   getParentRoute: () => AdminRoute,
 } as any)
-const BlogRoute = BlogRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BlogRoute,
-} as any)
 const ContaChatIndexRoute = ContaChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -791,7 +785,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -816,7 +810,6 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/blog/': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -917,6 +910,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -940,7 +934,6 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/blog': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1042,7 +1035,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -1067,7 +1060,6 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/blog/': typeof BlogRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1197,7 +1189,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/blog/'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1298,6 +1289,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blog'
     | '/buscar'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
@@ -1321,7 +1313,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/blog'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1447,7 +1438,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/blog/'
     | '/admin/auditoria'
     | '/admin/emails'
     | '/admin/flags'
@@ -1551,7 +1541,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
-  BlogRoute: typeof BlogRouteWithChildren
+  BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
   CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
   CalculadoraItbiRoute: typeof CalculadoraItbiRoute
@@ -2028,13 +2018,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/auditoria'
       preLoaderRoute: typeof AdminAuditoriaRouteImport
       parentRoute: typeof AdminRoute
-    }
-    '/blog/': {
-      id: '/blog/'
-      path: '/'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogRouteImport
-      parentRoute: typeof BlogRoute
     }
     '/conta/chat/': {
       id: '/conta/chat/'
@@ -2665,16 +2648,6 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
-interface BlogRouteChildren {
-  BlogRoute: typeof BlogRoute
-}
-
-const BlogRouteChildren: BlogRouteChildren = {
-  BlogRoute: BlogRoute,
-}
-
-const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
-
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -2713,7 +2686,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
-  BlogRoute: BlogRouteWithChildren,
+  BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
   CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
   CalculadoraItbiRoute: CalculadoraItbiRoute,
