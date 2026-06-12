@@ -502,7 +502,7 @@ function BlogManagerPage() {
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {post.publicado_em
-                          ? new Date(post.publicado_em).toLocaleDateString()
+                          ? new Date(post.publicado_em).toLocaleDateString('pt-BR')
                           : "Não publicado"}
                       </span>
                       <span className="flex items-center gap-1 font-mono">

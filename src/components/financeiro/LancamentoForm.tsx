@@ -201,14 +201,14 @@ export function LancamentoForm({ lancamentoId }: Props) {
             <Input
               required
               type="date"
-              value={form.data_vencimento}
+              value={new Date(form.data_vencimento + 'T12:00:00').toLocaleDateString('pt-BR')}
               onChange={(e) => set("data_vencimento", e.target.value)}
             />
           </Field>
           <Field label="Data de pagamento">
             <Input
               type="date"
-              value={form.data_pagamento}
+              value={new Date(form.data_pagamento + 'T12:00:00').toLocaleDateString('pt-BR')}
               onChange={(e) => set("data_pagamento", e.target.value)}
             />
           </Field>

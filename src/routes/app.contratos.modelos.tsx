@@ -60,9 +60,7 @@ function ModelosPage() {
     setItems((data ?? []) as Template[]);
     setLoading(false);
   }
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { if (tenantId) load(); }, [tenantId]);
 
   function novo() {
     setEditing({ id: "", nome: "", tipo: "venda", conteudo: "", ativo: true, updated_at: "" });

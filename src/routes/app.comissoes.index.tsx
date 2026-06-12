@@ -51,9 +51,7 @@ function ComissoesList() {
     setItems(data ?? []);
     setLoading(false);
   }
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { if (tenantId) load(); }, [tenantId]);
 
   async function marcarPaga(id: string) {
     const hoje = new Date().toISOString().slice(0, 10);

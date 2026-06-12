@@ -134,9 +134,7 @@ function CorretoresList() {
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { if (tenantId) load(); }, [tenantId]);
 
   async function remove(id: string) {
     if (!(await confirmDialog("Excluir este corretor?"))) return;

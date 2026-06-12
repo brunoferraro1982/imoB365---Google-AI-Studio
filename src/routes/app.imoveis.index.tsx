@@ -53,9 +53,7 @@ function ImoveisList() {
     setLoading(false);
   }
 
-  useEffect(() => {
-    load();
-  }, []);
+  useEffect(() => { if (tenantId) load(); }, [tenantId]);
 
   async function remove(id: string) {
     if (!(await confirmDialog("Excluir este imóvel? Esta ação não pode ser desfeita."))) return;
