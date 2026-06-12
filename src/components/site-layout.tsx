@@ -236,7 +236,10 @@ function Landing() {
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
               <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
               imobiliárias, corretores e clientes
-            </span>
+            
+            <Link to="/blog">Blog</Link>
+            <Link to="/consultoria">Consultoria</Link>
+</span>
             <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
