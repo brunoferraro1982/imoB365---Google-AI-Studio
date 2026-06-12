@@ -51,6 +51,7 @@ import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppVisitasRouteImport } from './routes/app.visitas'
@@ -345,6 +346,11 @@ const ContaBuscasRoute = ContaBuscasRouteImport.update({
   id: '/buscas',
   path: '/buscas',
   getParentRoute: () => ContaRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
 } as any)
 const AvaliacaoTenantSlugRoute = AvaliacaoTenantSlugRouteImport.update({
   id: '/avaliacao/$tenantSlug',
@@ -785,7 +791,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -829,6 +835,7 @@ export interface FileRoutesByFullPath {
   '/app/visitas': typeof AppVisitasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
@@ -910,7 +917,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -951,6 +958,7 @@ export interface FileRoutesByTo {
   '/app/visitas': typeof AppVisitasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
@@ -1035,7 +1043,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRoute
+  '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -1079,6 +1087,7 @@ export interface FileRoutesById {
   '/app/visitas': typeof AppVisitasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
@@ -1208,6 +1217,7 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
+    | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
     | '/conta/perfil'
@@ -1330,6 +1340,7 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
+    | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
     | '/conta/perfil'
@@ -1457,6 +1468,7 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
+    | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
     | '/conta/perfil'
@@ -1541,7 +1553,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
-  BlogRoute: typeof BlogRoute
+  BlogRoute: typeof BlogRouteWithChildren
   BuscarRoute: typeof BuscarRoute
   CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
   CalculadoraItbiRoute: typeof CalculadoraItbiRoute
@@ -1885,6 +1897,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/conta/buscas'
       preLoaderRoute: typeof ContaBuscasRouteImport
       parentRoute: typeof ContaRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/avaliacao/$tenantSlug': {
       id: '/avaliacao/$tenantSlug'
@@ -2648,6 +2667,16 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -2686,7 +2715,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
-  BlogRoute: BlogRoute,
+  BlogRoute: BlogRouteWithChildren,
   BuscarRoute: BuscarRoute,
   CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
   CalculadoraItbiRoute: CalculadoraItbiRoute,
