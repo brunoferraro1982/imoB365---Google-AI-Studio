@@ -1,20 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { createClient } from '@supabase/supabase-js'
 import { ArrowLeft, Calendar, Tag } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { supabase } from '@/integrations/supabase/client'
 
 // ─── Server function ────────────────────────────────────────────────────────
 
 const fetchPostBySlug = createServerFn({ method: 'GET' })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
-    const supabase = createClient(
-      process.env['SUPABASE_URL'] ?? import.meta.env['VITE_SUPABASE_URL'],
-      process.env['SUPABASE_ANON_KEY'] ?? import.meta.env['VITE_SUPABASE_ANON_KEY'],
-    )
 
     const { data, error } = await supabase
       .from('blog_posts')

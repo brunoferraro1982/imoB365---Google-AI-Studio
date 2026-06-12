@@ -17,7 +17,6 @@
 
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { createClient } from '@supabase/supabase-js'
 import {
   ArrowRight,
   BarChart3,
@@ -43,6 +42,7 @@ import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { supabase } from '@/integrations/supabase/client'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -59,10 +59,7 @@ type BlogPost = {
 // ─── Server functions ─────────────────────────────────────────────────────────
 
 const fetchLatestPosts = createServerFn({ method: 'GET' }).handler(async () => {
-  const supabase = createClient(
-    process.env['SUPABASE_URL'] ?? import.meta.env['VITE_SUPABASE_URL'],
-    process.env['SUPABASE_ANON_KEY'] ?? import.meta.env['VITE_SUPABASE_ANON_KEY'],
-  )
+
 
   const { data } = await supabase
     .from('blog_posts')
