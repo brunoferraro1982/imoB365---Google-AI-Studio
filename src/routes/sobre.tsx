@@ -106,7 +106,7 @@ function SobrePage() {
             Agendar Consultoria <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
-            to="/imoveis"
+            to="/buscar"
             className="inline-flex items-center gap-2 rounded-xl border border-border px-5 py-2.5 text-sm font-bold hover:bg-muted transition-colors"
           >
             Ver Imóveis
