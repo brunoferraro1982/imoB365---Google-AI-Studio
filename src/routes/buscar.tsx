@@ -36,7 +36,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { useServerFn } from "@tanstack/react-start";
 import { salvarBusca } from "@/lib/buscas-salvas.functions";
 import { interpretarBuscaConversacional } from "@/lib/ai.functions";

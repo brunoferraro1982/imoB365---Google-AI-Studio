@@ -4,7 +4,7 @@ import { Calculator, ArrowLeft, BookOpen, FileText, CheckCircle2, AlertCircle } 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/calculadora-itbi")({
   component: ItbiPage,

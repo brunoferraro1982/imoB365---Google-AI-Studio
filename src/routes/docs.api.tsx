@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Code2 } from "lucide-react";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/docs/api")({
   head: () => ({

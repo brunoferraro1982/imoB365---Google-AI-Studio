@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 import { Calculator, Home, Wallet } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/calculadoras")({
   component: CalculadorasPage,

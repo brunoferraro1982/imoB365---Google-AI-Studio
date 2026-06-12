@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
 import { useServerFn } from "@tanstack/react-start";
 import { startConversationFromImovel } from "@/lib/chat.functions";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { FavoritoButton } from "@/components/FavoritoButton";
 import { CompararCheckbox } from "@/components/CompararSelector";
 import { SimuladorFinanciamento } from "@/components/imovel/SimuladorFinanciamento";

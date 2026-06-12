@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mail, Phone, MessageCircle, MapPin, BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { SiteHeader, SiteFooter } from "@/routes/index";
+import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
 
 export const Route = createFileRoute("/corretor/$slug")({
