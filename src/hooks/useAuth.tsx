@@ -32,25 +32,14 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // FIX [QA-04]: Usar setTimeout(0) para defer fora do callback síncrono do Supabase,
-        // evitando re-entrância. As queries são disparadas assincronamente — o setLoading
-        // inicial já é controlado pelo getSession().then() abaixo com Promise.all.
         setTimeout(() => {
           void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
         }, 0);
       } else {
         setRoles([]);
-      // Carregar módulos habilitados do tenant
-      const { data: tenantModsData } = await supabase
-        .from("tenant_modules")
-        .select("module")
-        .eq("tenant_id", profileData.tenant_id)
-        .eq("enabled", true);
-      const mods = (tenantModsData ?? []).map((m) => m.module as AppModule);
-      setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
-
         setTenantId(null);
         setProfile(null);
+        setEnabledModules([]);
       }
     });
 
@@ -74,7 +63,6 @@ export function useAuth() {
   async function loadProfile(userId: string, currentUser?: User) {
     let profileData: any = null;
 
-    // Select approval parameters with a safe try-catch / fallback mechanism
     const { data, error } = await supabase
       .from("profiles")
       .select(
@@ -86,7 +74,6 @@ export function useAuth() {
     if (!error && data) {
       profileData = data;
     } else {
-      // Fallback
       const { data: basicData } = await supabase
         .from("profiles")
         .select("tenant_id, nome, avatar_url")
@@ -109,21 +96,28 @@ export function useAuth() {
     if (profileData) {
       setTenantId(profileData.tenant_id ?? null);
 
-      // Auth via role only — no hardcoded email bypass
+      if (profileData.tenant_id) {
+        const { data: tenantModsData } = await supabase
+          .from("tenant_modules")
+          .select("module_slug")
+          .eq("tenant_id", profileData.tenant_id)
+          .eq("enabled", true);
+        const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
+        setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+      }
 
       setProfile({
         nome: profileData.nome ?? null,
         avatar_url: profileData.avatar_url ?? null,
-        tipo_usuario: (profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null),
-        plano_pretendido: (profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null),
-        imobiliaria_nome:
-          profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
+        tipo_usuario: profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null,
+        plano_pretendido: profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null,
+        imobiliaria_nome: profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
         aprovado: profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
-        pagamento_validado: profileData.pagamento_validado === true ||
-            currentUser?.user_metadata?.pagamento_validado === true ||
-            false,
-        pagamento_metodo:
-          profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
+        pagamento_validado:
+          profileData.pagamento_validado === true ||
+          currentUser?.user_metadata?.pagamento_validado === true ||
+          false,
+        pagamento_metodo: profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
       });
     }
   }
@@ -131,6 +125,5 @@ export function useAuth() {
   const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
 
-  return { session, user, roles,
-    enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
+  return { session, user, roles, enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
 }
