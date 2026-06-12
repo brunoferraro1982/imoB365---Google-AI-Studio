@@ -15,7 +15,6 @@ import {
   Globe2,
   FileCheck,
   Terminal,
-  Chrome,
   Apple,
   Instagram,
   Linkedin,
@@ -59,11 +58,7 @@ export function HeaderUserMenu() {
   const [nome, setNome] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
-  // Social Authentication simulation modal
-  const [socialModal, setSocialModal] = useState<{ isOpen: boolean; provider: string } | null>(
-    null,
-  );
-  const [socialEmail, setSocialEmail] = useState("");
+
 
   // Close mega menu on click outside
   useEffect(() => {
@@ -132,58 +127,25 @@ export function HeaderUserMenu() {
     setAuthTab("login");
   }
 
-  async function handleSocialAuth() {
-    if (!socialEmail || !socialEmail.includes("@")) {
-      toast.error("Por favor, informe um e-mail válido.");
-      return;
-    }
+  async function handleOAuthLogin(
+    provider: "google" | "apple" | "linkedin_oidc" | "facebook",
+  ) {
+    const providerLabel =
+      provider === "linkedin_oidc" ? "LinkedIn"
+      : provider === "facebook" ? "Instagram"
+      : provider.charAt(0).toUpperCase() + provider.slice(1);
     setAuthLoading(true);
-    const providerName = socialModal?.provider || "Social";
-    setSocialModal(null);
-
-    const mockPassword = "SocialPasswordMock123!";
-    const displayName = socialEmail.split("@")[0];
-
-    // Try normal sign-in first
-    const result = await supabase.auth.signInWithPassword({
-      email: socialEmail,
-      password: mockPassword,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
-
-    if (result.error) {
-      // If sign in fails, simulate sign up
-      const signUpResult = await supabase.auth.signUp({
-        email: socialEmail,
-        password: mockPassword,
-        options: {
-          data: {
-            nome: displayName,
-            tipo_usuario: "corretor",
-            imobiliaria_nome: displayName + " Negócios",
-            aprovado: true,
-            pagamento_validado: true,
-            pagamento_metodo: "SocialAuth",
-          },
-        },
-      });
-
-      if (signUpResult.error) {
-        toast.error(signUpResult.error.message);
-        setAuthLoading(false);
-        return;
-      }
-
-      toast.success(`Conta criada e conectada via ${providerName}!`);
-    } else {
-      toast.success(`Bem-vindo de volta via ${providerName}!`);
-    }
-
     setAuthLoading(false);
-    setIsOpen(false);
-    navigate({ to: "/app" });
+    if (error) {
+      toast.error(`Erro ao conectar com ${providerLabel}: ${error.message}`);
+    }
   }
 
-  async function handleSignOut() {
+    async function handleSignOut() {
     await supabase.auth.signOut();
     setIsOpen(false);
     toast.success("Desconectado com sucesso.");
@@ -490,8 +452,58 @@ export function HeaderUserMenu() {
                       </form>
                     )}
 
-                    {/* SOCIAL LOGINS COMPACT */}
+                    {/* SOCIAL LOGINS — Real OAuth */}
                     <div className="pt-3 border-t border-border/50">
+                      <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider mb-2">
+                        Ou acesse com
+                      </p>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {/* Google */}
+                        <button
+                          type="button"
+                          onClick={() => handleOAuthLogin("google")}
+                          disabled={authLoading}
+                          className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border/60 hover:border-primary/30 hover:bg-muted/40 transition-all group disabled:opacity-50"
+                        >
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                          </svg>
+                          <span className="text-[8px] font-bold text-muted-foreground group-hover:text-foreground">Google</span>
+                        </button>
+                        {/* Apple */}
+                        <button
+                          type="button"
+                          onClick={() => handleOAuthLogin("apple")}
+                          disabled={authLoading}
+                          className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border/60 hover:border-primary/30 hover:bg-muted/40 transition-all group disabled:opacity-50"
+                        >
+                          <Apple className="h-4 w-4" />
+                          <span className="text-[8px] font-bold text-muted-foreground group-hover:text-foreground">Apple</span>
+                        </button>
+                        {/* LinkedIn */}
+                        <button
+                          type="button"
+                          onClick={() => handleOAuthLogin("linkedin_oidc")}
+                          disabled={authLoading}
+                          className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border/60 hover:border-primary/30 hover:bg-muted/40 transition-all group disabled:opacity-50"
+                        >
+                          <Linkedin className="h-4 w-4 text-[#0A66C2]" />
+                          <span className="text-[8px] font-bold text-muted-foreground group-hover:text-foreground">LinkedIn</span>
+                        </button>
+                        {/* Instagram (via Meta/Facebook OAuth) */}
+                        <button
+                          type="button"
+                          onClick={() => handleOAuthLogin("facebook")}
+                          disabled={authLoading}
+                          className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border/60 hover:border-primary/30 hover:bg-muted/40 transition-all group disabled:opacity-50"
+                        >
+                          <Instagram className="h-4 w-4 text-[#E1306C]" />
+                          <span className="text-[8px] font-bold text-muted-foreground group-hover:text-foreground">Instagram</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -651,59 +663,7 @@ export function HeaderUserMenu() {
         )}
       </AnimatePresence>
 
-      {/* SOCIALAUTH DIALOG SIMULATOR */}
-      {socialModal?.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 p-4 animate-in fade-in duration-200">
-          <div className="bg-card border border-border w-full max-w-sm rounded-2xl p-6 shadow-2xl relative animate-in zoom-in-95 duration-200">
-            <h3 className="text-sm font-bold tracking-tight mb-2">
-              Continuar com {socialModal.provider}
-            </h3>
-            <p className="text-[11px] text-muted-foreground mb-4 leading-normal">
-              Insira seu e-mail para conectar sua conta social via credencial simulada do{" "}
-              {socialModal.provider}:
-            </p>
 
-            <div className="space-y-3.5 text-left">
-              <div className="space-y-1">
-                <Label
-                  htmlFor="socialEmail"
-                  className="text-3xs font-bold text-muted-foreground uppercase mb-1 block"
-                >
-                  Seu E-mail
-                </Label>
-                <Input
-                  id="socialEmail"
-                  type="email"
-                  value={socialEmail}
-                  onChange={(e) => setSocialEmail(e.target.value)}
-                  placeholder="nome@social.com"
-                  required
-                  className="text-2xs h-8.5"
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 text-2xs font-bold"
-                  onClick={() => setSocialModal(null)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="flex-1 bg-primary hover:bg-primary/95 text-white text-2xs font-bold"
-                  onClick={handleSocialAuth}
-                >
-                  Sim, conectar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

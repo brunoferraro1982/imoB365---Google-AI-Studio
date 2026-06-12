@@ -16,6 +16,8 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PlanosRouteImport } from './routes/planos'
+import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MinhasBuscasRouteImport } from './routes/minhas-buscas'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LgpdRouteImport } from './routes/lgpd'
@@ -45,6 +47,7 @@ import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppVisitasRouteImport } from './routes/app.visitas'
 import { Route as AppTarefasRouteImport } from './routes/app.tarefas'
 import { Route as AppSiteRouteImport } from './routes/app.site'
@@ -110,6 +113,7 @@ import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesBrandingRouteImport } from './routes/app.configuracoes.branding'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug.p.$pageSlug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -159,6 +163,16 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const PlanosRoute = PlanosRouteImport.update({
   id: '/planos',
   path: '/planos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PendingApprovalRoute = PendingApprovalRouteImport.update({
+  id: '/pending-approval',
+  path: '/pending-approval',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MinhasBuscasRoute = MinhasBuscasRouteImport.update({
@@ -305,6 +319,11 @@ const ContaBuscasRoute = ContaBuscasRouteImport.update({
 const AvaliacaoTenantSlugRoute = AvaliacaoTenantSlugRouteImport.update({
   id: '/avaliacao/$tenantSlug',
   path: '/avaliacao/$tenantSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppVisitasRoute = AppVisitasRouteImport.update({
@@ -644,6 +663,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminAprovacoesRoute = AppAdminAprovacoesRouteImport.update({
+  id: '/admin/aprovacoes',
+  path: '/admin/aprovacoes',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
   path: '/api/public/health',
@@ -742,6 +766,8 @@ export interface FileRoutesByFullPath {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
+  '/onboarding': typeof OnboardingRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -766,6 +792,7 @@ export interface FileRoutesByFullPath {
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -782,6 +809,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
@@ -857,6 +885,8 @@ export interface FileRoutesByTo {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
+  '/onboarding': typeof OnboardingRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -879,6 +909,7 @@ export interface FileRoutesByTo {
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -895,6 +926,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
@@ -974,6 +1006,8 @@ export interface FileRoutesById {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
+  '/onboarding': typeof OnboardingRoute
+  '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -998,6 +1032,7 @@ export interface FileRoutesById {
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1014,6 +1049,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
@@ -1094,6 +1130,8 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/login'
     | '/minhas-buscas'
+    | '/onboarding'
+    | '/pending-approval'
     | '/planos'
     | '/privacidade'
     | '/reset-password'
@@ -1118,6 +1156,7 @@ export interface FileRouteTypes {
     | '/app/site'
     | '/app/tarefas'
     | '/app/visitas'
+    | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
     | '/conta/favoritos'
@@ -1134,6 +1173,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/conta/'
     | '/api/public/health'
+    | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
     | '/app/configuracoes/branding'
@@ -1209,6 +1249,8 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/login'
     | '/minhas-buscas'
+    | '/onboarding'
+    | '/pending-approval'
     | '/planos'
     | '/privacidade'
     | '/reset-password'
@@ -1231,6 +1273,7 @@ export interface FileRouteTypes {
     | '/app/relatorios'
     | '/app/tarefas'
     | '/app/visitas'
+    | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
     | '/conta/favoritos'
@@ -1247,6 +1290,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/conta'
     | '/api/public/health'
+    | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
     | '/app/configuracoes/branding'
@@ -1325,6 +1369,8 @@ export interface FileRouteTypes {
     | '/lgpd'
     | '/login'
     | '/minhas-buscas'
+    | '/onboarding'
+    | '/pending-approval'
     | '/planos'
     | '/privacidade'
     | '/reset-password'
@@ -1349,6 +1395,7 @@ export interface FileRouteTypes {
     | '/app/site'
     | '/app/tarefas'
     | '/app/visitas'
+    | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/conta/buscas'
     | '/conta/favoritos'
@@ -1365,6 +1412,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/conta/'
     | '/api/public/health'
+    | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
     | '/app/configuracoes/branding'
@@ -1444,6 +1492,8 @@ export interface RootRouteChildren {
   LgpdRoute: typeof LgpdRoute
   LoginRoute: typeof LoginRoute
   MinhasBuscasRoute: typeof MinhasBuscasRoute
+  OnboardingRoute: typeof OnboardingRoute
+  PendingApprovalRoute: typeof PendingApprovalRoute
   PlanosRoute: typeof PlanosRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1451,6 +1501,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   DocsApiRoute: typeof DocsApiRoute
@@ -1523,6 +1574,20 @@ declare module '@tanstack/react-router' {
       path: '/planos'
       fullPath: '/planos'
       preLoaderRoute: typeof PlanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pending-approval': {
+      id: '/pending-approval'
+      path: '/pending-approval'
+      fullPath: '/pending-approval'
+      preLoaderRoute: typeof PendingApprovalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/minhas-buscas': {
@@ -1726,6 +1791,13 @@ declare module '@tanstack/react-router' {
       path: '/avaliacao/$tenantSlug'
       fullPath: '/avaliacao/$tenantSlug'
       preLoaderRoute: typeof AvaliacaoTenantSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/visitas': {
@@ -2183,6 +2255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin/aprovacoes': {
+      id: '/app/admin/aprovacoes'
+      path: '/admin/aprovacoes'
+      fullPath: '/app/admin/aprovacoes'
+      preLoaderRoute: typeof AppAdminAprovacoesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/public/health': {
       id: '/api/public/health'
       path: '/api/public/health'
@@ -2404,6 +2483,7 @@ interface AppRouteChildren {
   AppTarefasRoute: typeof AppTarefasRoute
   AppVisitasRoute: typeof AppVisitasRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppContratosIdRoute: typeof AppContratosIdRouteWithChildren
   AppContratosModelosRoute: typeof AppContratosModelosRoute
@@ -2440,6 +2520,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTarefasRoute: AppTarefasRoute,
   AppVisitasRoute: AppVisitasRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppContratosIdRoute: AppContratosIdRouteWithChildren,
   AppContratosModelosRoute: AppContratosModelosRoute,
@@ -2516,6 +2597,8 @@ const rootRouteChildren: RootRouteChildren = {
   LgpdRoute: LgpdRoute,
   LoginRoute: LoginRoute,
   MinhasBuscasRoute: MinhasBuscasRoute,
+  OnboardingRoute: OnboardingRoute,
+  PendingApprovalRoute: PendingApprovalRoute,
   PlanosRoute: PlanosRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
@@ -2523,6 +2606,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   DocsApiRoute: DocsApiRoute,

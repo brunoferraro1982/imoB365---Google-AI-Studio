@@ -57,7 +57,7 @@ export function useAuth() {
 
   async function loadRoles(userId: string) {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    setRoles((data ?? []).map((r) => r.role as AppRole));
+    setRoles([...new Set((data ?? []).map((r) => r.role as AppRole))]);
   }
 
   async function loadProfile(userId: string, currentUser?: User) {
