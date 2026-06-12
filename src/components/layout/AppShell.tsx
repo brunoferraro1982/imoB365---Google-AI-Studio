@@ -34,7 +34,7 @@ import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
 import { useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessModule } from "@/lib/permissions";
+import { canAccessModule, isModuleEnabled } from "@/lib/permissions";
 import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -267,8 +267,8 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const visibleModules = tenantModules.filter((m) => {
     // Guard 1: role tem acesso ao módulo
     const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
-    // Guard 2: plano do tenant inclui o módulo
-    const planOk = !m.requiredModule || enabledModules.includes(m.requiredModule as string);
+    // Guard 2: plano do tenant inclui o módulo (lista vazia = tudo habilitado — fallback para Tenant 0)
+    const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
     return roleOk && planOk;
   });
 

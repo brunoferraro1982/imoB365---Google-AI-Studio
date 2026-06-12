@@ -105,7 +105,8 @@ export function useAuth() {
           .eq("tenant_id", profileData.tenant_id)
           .eq("enabled", true);
         const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
-        setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+        // Lista vazia = tenant sem configuração de módulos → isModuleEnabled() trata como "tudo habilitado"
+        setEnabledModules(mods);
       }
 
       setProfile({
