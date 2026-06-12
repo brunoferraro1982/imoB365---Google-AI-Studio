@@ -31,14 +31,18 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
+import { useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { canAccessModule } from "@/lib/permissions";
+import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
-type Module = { id: string; label: string; icon: typeof Building2; items: Item[] };
+type Module = { id: string; label: string; icon: typeof Building2; items: Item[]; requiredModule?: AppModule };
 
 const tenantModules: Module[] = [
   {
@@ -58,6 +62,7 @@ const tenantModules: Module[] = [
   },
   {
     id: "juridico",
+    requiredModule: "juridico" as AppModule,
     label: "Jurídico",
     icon: Scale,
     items: [
@@ -68,17 +73,19 @@ const tenantModules: Module[] = [
   },
   {
     id: "financeiro",
+    requiredModule: "financeiro" as AppModule,
     label: "Financeiro",
     icon: Banknote,
     items: [
       { to: "/app/financeiro", label: "Contas a pagar e receber", icon: Banknote },
       { to: "/app/comissoes", label: "Comissões", icon: Wallet },
-      { to: "/app/configuracoes/plano-contas", label: "Plano de contas", icon: FileText },
-      { to: "/app/configuracoes/centros-custo", label: "Centros de custo", icon: Building },
+      { to: "/app/financeiro/plano-contas", label: "Plano de contas", icon: FileText },
+      { to: "/app/financeiro/centros-custo", label: "Centros de custo", icon: Building },
     ],
   },
   {
     id: "marketing",
+    requiredModule: "marketing" as AppModule,
     label: "Marketing & Site",
     icon: Megaphone,
     items: [
@@ -92,6 +99,7 @@ const tenantModules: Module[] = [
   },
   {
     id: "ajustes",
+    requiredModule: "ajustes" as AppModule,
     label: "Ajustes",
     icon: Settings,
     items: [
@@ -114,7 +122,10 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin, profile } = useAuth();
+  const { user, loading, isSuperAdmin, profile, roles, enabledModules } = useAuth();
+  // Detectar redirect de acesso negado
+  const searchParams = useSearch({ strict: false }) as { forbidden?: string };
+  const showForbidden = searchParams.forbidden === "1";
   const navigate = useNavigate();
   const router = useRouterState();
 
@@ -252,6 +263,15 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   }
 
   // Tenant: top module bar + filtered sidebar
+  // IAM: filtrar módulos pelo que o usuário tem acesso
+  const visibleModules = tenantModules.filter((m) => {
+    // Guard 1: role tem acesso ao módulo
+    const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
+    // Guard 2: plano do tenant inclui o módulo
+    const planOk = !m.requiredModule || enabledModules.includes(m.requiredModule as string);
+    return roleOk && planOk;
+  });
+
   const activeModule =
     tenantModules.find((m) =>
       m.items.some((it) =>
@@ -270,7 +290,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
             <Logo className="h-8.5 w-auto" variant="white" />
           </Link>
           <nav className="flex flex-1 items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
-            {tenantModules.map((m) => {
+            {visibleModules.map((m) => {
               const active = m.id === activeModule.id;
               const first = m.items[0];
               return (

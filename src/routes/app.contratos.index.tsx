@@ -1,3 +1,4 @@
+import { moduleGuard } from "@/lib/routeGuard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, FileText, Pencil, Trash2, LayoutTemplate } from "lucide-react";
@@ -10,7 +11,8 @@ import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
 
-export const Route = createFileRoute("/app/contratos/")({
+export const Route = createFileRoute("/app/contratos/")({ 
+  beforeLoad: moduleGuard("juridico"),
   component: ContratosList,
 });
 

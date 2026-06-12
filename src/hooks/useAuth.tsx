@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
+import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
@@ -18,6 +19,7 @@ export interface UserProfile {
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [enabledModules, setEnabledModules] = useState<AppModule[]>([]);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -38,6 +40,15 @@ export function useAuth() {
         }, 0);
       } else {
         setRoles([]);
+      // Carregar módulos habilitados do tenant
+      const { data: tenantModsData } = await supabase
+        .from("tenant_modules")
+        .select("module")
+        .eq("tenant_id", profileData.tenant_id)
+        .eq("enabled", true);
+      const mods = (tenantModsData ?? []).map((m) => m.module as AppModule);
+      setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+
         setTenantId(null);
         setProfile(null);
       }
@@ -98,26 +109,17 @@ export function useAuth() {
     if (profileData) {
       setTenantId(profileData.tenant_id ?? null);
 
-      const email = currentUser?.email ?? "";
-      const isSuper = email === "imob365br@gmail.com";
+      // Auth via role only — no hardcoded email bypass
 
       setProfile({
         nome: profileData.nome ?? null,
         avatar_url: profileData.avatar_url ?? null,
-        tipo_usuario: isSuper
-          ? "imobiliaria"
-          : (profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null),
-        plano_pretendido: isSuper
-          ? "business"
-          : (profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null),
+        tipo_usuario: (profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null),
+        plano_pretendido: (profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null),
         imobiliaria_nome:
           profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
-        aprovado: isSuper
-          ? true
-          : profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
-        pagamento_validado: isSuper
-          ? true
-          : profileData.pagamento_validado === true ||
+        aprovado: profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
+        pagamento_validado: profileData.pagamento_validado === true ||
             currentUser?.user_metadata?.pagamento_validado === true ||
             false,
         pagamento_metodo:
@@ -126,8 +128,9 @@ export function useAuth() {
     }
   }
 
-  const isSuperAdmin = roles.includes("super_admin") || user?.email === "imob365br@gmail.com";
+  const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
 
-  return { session, user, roles, tenantId, profile, isSuperAdmin, isAdmin, loading };
+  return { session, user, roles,
+    enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
 }
