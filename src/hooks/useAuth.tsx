@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
+import { invalidateRolesCache } from "@/lib/routeGuard";
 
 export type AppRole = "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
 
@@ -32,10 +33,11 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => {
-          void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
-        }, 0);
+        // Invalida o cache de roles do routeGuard quando o auth state muda
+        invalidateRolesCache();
+        void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
       } else {
+        invalidateRolesCache();
         setRoles([]);
         setTenantId(null);
         setProfile(null);

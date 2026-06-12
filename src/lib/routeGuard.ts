@@ -15,15 +15,34 @@ import type { AppModule, AppAction } from "@/lib/permissions";
 import type { AppRole } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-/** Carrega roles do usuário atual diretamente do servidor (não depende de estado React) */
+// Cache de roles por usuário com TTL de 5 minutos para evitar queries repetidas a cada navegação
+let _rolesCache: { userId: string; roles: AppRole[]; at: number } | null = null;
+const CACHE_TTL_MS = 5 * 60_000;
+
+export function invalidateRolesCache() {
+  _rolesCache = null;
+}
+
+/**
+ * Carrega roles via sessão local (sem HTTP ao servidor Auth) + cache de DB.
+ * getSession() lê do storage local — não faz request de rede, eliminando o travamento na navegação.
+ */
 async function getServerRoles(): Promise<AppRole[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+
+  const now = Date.now();
+  if (_rolesCache && _rolesCache.userId === session.user.id && now - _rolesCache.at < CACHE_TTL_MS) {
+    return _rolesCache.roles;
+  }
+
   const { data } = await supabase
     .from("user_roles")
     .select("role")
-    .eq("user_id", user.id);
-  return (data ?? []).map((r) => r.role as AppRole);
+    .eq("user_id", session.user.id);
+  const roles = (data ?? []).map((r) => r.role as AppRole);
+  _rolesCache = { userId: session.user.id, roles, at: now };
+  return roles;
 }
 
 /**
