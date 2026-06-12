@@ -1,6 +1,6 @@
 import { sendLovableEmail } from "@lovable.dev/email-js";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createFileRoute } from "@tanstack/react-router";
+import { supabase } from '@/integrations/supabase/client'
 
 const MAX_RETRIES = 5;
 const DEFAULT_BATCH_SIZE = 10;

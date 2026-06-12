@@ -63,6 +63,7 @@ import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
+import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
@@ -406,6 +407,11 @@ const AppCartoriosRoute = AppCartoriosRouteImport.update({
   id: '/cartorios',
   path: '/cartorios',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
+  id: '/api/sitemap.xml',
+  path: '/api/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminTenantsRoute = AdminTenantsRouteImport.update({
   id: '/tenants',
@@ -824,6 +830,7 @@ export interface FileRoutesByFullPath {
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
@@ -949,6 +956,7 @@ export interface FileRoutesByTo {
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
@@ -1076,6 +1084,7 @@ export interface FileRoutesById {
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
@@ -1206,6 +1215,7 @@ export interface FileRouteTypes {
     | '/admin/modulos'
     | '/admin/planos'
     | '/admin/tenants'
+    | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
@@ -1331,6 +1341,7 @@ export interface FileRouteTypes {
     | '/admin/modulos'
     | '/admin/planos'
     | '/admin/tenants'
+    | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/contratacao'
     | '/app/encurtador'
@@ -1457,6 +1468,7 @@ export interface FileRouteTypes {
     | '/admin/modulos'
     | '/admin/planos'
     | '/admin/tenants'
+    | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
@@ -1578,6 +1590,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
+  ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
@@ -1981,6 +1994,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/cartorios'
       preLoaderRoute: typeof AppCartoriosRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/sitemap.xml': {
+      id: '/api/sitemap.xml'
+      path: '/api/sitemap.xml'
+      fullPath: '/api/sitemap.xml'
+      preLoaderRoute: typeof ApiSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/tenants': {
       id: '/admin/tenants'
@@ -2740,6 +2760,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
+  ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
   CorretorSlugRoute: CorretorSlugRoute,
