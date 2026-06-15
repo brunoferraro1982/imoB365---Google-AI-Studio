@@ -16,6 +16,7 @@ export type AppModule =
   | "financeiro"
   | "marketing"
   | "ajustes"
+  | "elearning"
   | "admin";
 
 export type AppAction = "read" | "write" | "delete" | "config";
@@ -28,6 +29,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  ["read", "write", "delete", "config"],
     marketing:   ["read", "write", "delete", "config"],
     ajustes:     ["read", "write", "delete", "config"],
+    elearning:   ["read", "write", "delete", "config"],
     admin:       ["read", "write", "delete", "config"],
   },
   admin: {
@@ -36,6 +38,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  ["read", "write", "delete", "config"],
     marketing:   ["read", "write", "delete", "config"],
     ajustes:     ["read", "write", "config"],
+    elearning:   ["read", "write", "config"],
     admin:       [], // sem acesso ao painel super-admin
   },
   broker: {
@@ -44,6 +47,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  [],              // SEM ACESSO — dados financeiros protegidos
     marketing:   ["read"],
     ajustes:     [],
+    elearning:   ["read"],
   },
   juridico: {
     imobiliario: ["read"],
@@ -51,6 +55,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  [],
     marketing:   [],
     ajustes:     [],
+    elearning:   ["read"],
   },
   financeiro: {
     imobiliario: ["read"],
@@ -58,6 +63,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  ["read", "write", "delete", "config"],
     marketing:   [],
     ajustes:     [],
+    elearning:   ["read"],
   },
   atendente: {
     imobiliario: ["read", "write"], // leads e visitas
@@ -65,6 +71,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     financeiro:  [],
     marketing:   ["read"],
     ajustes:     [],
+    elearning:   ["read"],
   },
 };
 

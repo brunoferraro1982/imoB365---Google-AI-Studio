@@ -50,15 +50,17 @@ const PLAN_HIGHLIGHTS: Record<string, string[]> = {
     "Tudo do Basic",
     "Integração com portais (VivaReal, ZAP, OLX)",
     "Jurídico com modelos de contrato",
+    "E-Learning: acesso aos cursos da plataforma",
     "Suporte prioritário",
   ],
   Pro: [
     "Tudo do Standard",
     "Financeiro completo",
     "Campos customizados e CMS",
+    "E-Learning: gerenciamento de cursos e trilhas",
     "Webhooks e API pública",
   ],
-  Business: ["Tudo do Pro", "White-label completo", "Módulos ilimitados", "Suporte dedicado + SLA"],
+  Business: ["Tudo do Pro", "E-Learning ilimitado + cursos exclusivos", "White-label completo", "Módulos ilimitados", "Suporte dedicado + SLA"],
 };
 
 const FALLBACK_PLANS: Plan[] = [

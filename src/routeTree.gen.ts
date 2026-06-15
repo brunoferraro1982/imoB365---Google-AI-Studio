@@ -79,6 +79,7 @@ import { Route as AppLeadsIndexRouteImport } from './routes/app.leads.index'
 import { Route as AppImoveisIndexRouteImport } from './routes/app.imoveis.index'
 import { Route as AppFinanceiroIndexRouteImport } from './routes/app.financeiro.index'
 import { Route as AppEmpreendimentosIndexRouteImport } from './routes/app.empreendimentos.index'
+import { Route as AppElearningIndexRouteImport } from './routes/app.elearning.index'
 import { Route as AppCorretoresIndexRouteImport } from './routes/app.corretores.index'
 import { Route as AppContratosIndexRouteImport } from './routes/app.contratos.index'
 import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
@@ -97,6 +98,8 @@ import { Route as AppFinanceiroNovoRouteImport } from './routes/app.financeiro.n
 import { Route as AppFinanceiroCentrosCustoRouteImport } from './routes/app.financeiro.centros-custo'
 import { Route as AppFinanceiroIdRouteImport } from './routes/app.financeiro.$id'
 import { Route as AppEmpreendimentosIdRouteImport } from './routes/app.empreendimentos.$id'
+import { Route as AppElearningAdminRouteImport } from './routes/app.elearning.admin'
+import { Route as AppElearningCursoIdRouteImport } from './routes/app.elearning.$cursoId'
 import { Route as AppCorretoresNovoRouteImport } from './routes/app.corretores.novo'
 import { Route as AppCorretoresIdRouteImport } from './routes/app.corretores.$id'
 import { Route as AppContratosNovoRouteImport } from './routes/app.contratos.novo'
@@ -490,6 +493,11 @@ const AppEmpreendimentosIndexRoute = AppEmpreendimentosIndexRouteImport.update({
   path: '/empreendimentos/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppElearningIndexRoute = AppElearningIndexRouteImport.update({
+  id: '/elearning/',
+  path: '/elearning/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCorretoresIndexRoute = AppCorretoresIndexRouteImport.update({
   id: '/corretores/',
   path: '/corretores/',
@@ -580,6 +588,16 @@ const AppFinanceiroIdRoute = AppFinanceiroIdRouteImport.update({
 const AppEmpreendimentosIdRoute = AppEmpreendimentosIdRouteImport.update({
   id: '/empreendimentos/$id',
   path: '/empreendimentos/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppElearningAdminRoute = AppElearningAdminRouteImport.update({
+  id: '/elearning/admin',
+  path: '/elearning/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppElearningCursoIdRoute = AppElearningCursoIdRouteImport.update({
+  id: '/elearning/$cursoId',
+  path: '/elearning/$cursoId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCorretoresNovoRoute = AppCorretoresNovoRouteImport.update({
@@ -898,6 +916,8 @@ export interface FileRoutesByFullPath {
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
+  '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
+  '/app/elearning/admin': typeof AppElearningAdminRoute
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
@@ -916,6 +936,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
   '/app/contratos/': typeof AppContratosIndexRoute
   '/app/corretores/': typeof AppCorretoresIndexRoute
+  '/app/elearning/': typeof AppElearningIndexRoute
   '/app/empreendimentos/': typeof AppEmpreendimentosIndexRoute
   '/app/financeiro/': typeof AppFinanceiroIndexRoute
   '/app/imoveis/': typeof AppImoveisIndexRoute
@@ -1024,6 +1045,8 @@ export interface FileRoutesByTo {
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
+  '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
+  '/app/elearning/admin': typeof AppElearningAdminRoute
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
@@ -1042,6 +1065,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes': typeof AppConfiguracoesIndexRoute
   '/app/contratos': typeof AppContratosIndexRoute
   '/app/corretores': typeof AppCorretoresIndexRoute
+  '/app/elearning': typeof AppElearningIndexRoute
   '/app/empreendimentos': typeof AppEmpreendimentosIndexRoute
   '/app/financeiro': typeof AppFinanceiroIndexRoute
   '/app/imoveis': typeof AppImoveisIndexRoute
@@ -1156,6 +1180,8 @@ export interface FileRoutesById {
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
+  '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
+  '/app/elearning/admin': typeof AppElearningAdminRoute
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
@@ -1174,6 +1200,7 @@ export interface FileRoutesById {
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
   '/app/contratos/': typeof AppContratosIndexRoute
   '/app/corretores/': typeof AppCorretoresIndexRoute
+  '/app/elearning/': typeof AppElearningIndexRoute
   '/app/empreendimentos/': typeof AppEmpreendimentosIndexRoute
   '/app/financeiro/': typeof AppFinanceiroIndexRoute
   '/app/imoveis/': typeof AppImoveisIndexRoute
@@ -1289,6 +1316,8 @@ export interface FileRouteTypes {
     | '/app/contratos/novo'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
+    | '/app/elearning/$cursoId'
+    | '/app/elearning/admin'
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
@@ -1307,6 +1336,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/'
     | '/app/contratos/'
     | '/app/corretores/'
+    | '/app/elearning/'
     | '/app/empreendimentos/'
     | '/app/financeiro/'
     | '/app/imoveis/'
@@ -1415,6 +1445,8 @@ export interface FileRouteTypes {
     | '/app/contratos/novo'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
+    | '/app/elearning/$cursoId'
+    | '/app/elearning/admin'
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
@@ -1433,6 +1465,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes'
     | '/app/contratos'
     | '/app/corretores'
+    | '/app/elearning'
     | '/app/empreendimentos'
     | '/app/financeiro'
     | '/app/imoveis'
@@ -1546,6 +1579,8 @@ export interface FileRouteTypes {
     | '/app/contratos/novo'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
+    | '/app/elearning/$cursoId'
+    | '/app/elearning/admin'
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
@@ -1564,6 +1599,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/'
     | '/app/contratos/'
     | '/app/corretores/'
+    | '/app/elearning/'
     | '/app/empreendimentos/'
     | '/app/financeiro/'
     | '/app/imoveis/'
@@ -2133,6 +2169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmpreendimentosIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/elearning/': {
+      id: '/app/elearning/'
+      path: '/elearning'
+      fullPath: '/app/elearning/'
+      preLoaderRoute: typeof AppElearningIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/corretores/': {
       id: '/app/corretores/'
       path: '/corretores'
@@ -2257,6 +2300,20 @@ declare module '@tanstack/react-router' {
       path: '/empreendimentos/$id'
       fullPath: '/app/empreendimentos/$id'
       preLoaderRoute: typeof AppEmpreendimentosIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/elearning/admin': {
+      id: '/app/elearning/admin'
+      path: '/elearning/admin'
+      fullPath: '/app/elearning/admin'
+      preLoaderRoute: typeof AppElearningAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/elearning/$cursoId': {
+      id: '/app/elearning/$cursoId'
+      path: '/elearning/$cursoId'
+      fullPath: '/app/elearning/$cursoId'
+      preLoaderRoute: typeof AppElearningCursoIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/corretores/novo': {
@@ -2669,6 +2726,8 @@ interface AppRouteChildren {
   AppContratosNovoRoute: typeof AppContratosNovoRoute
   AppCorretoresIdRoute: typeof AppCorretoresIdRoute
   AppCorretoresNovoRoute: typeof AppCorretoresNovoRoute
+  AppElearningCursoIdRoute: typeof AppElearningCursoIdRoute
+  AppElearningAdminRoute: typeof AppElearningAdminRoute
   AppEmpreendimentosIdRoute: typeof AppEmpreendimentosIdRoute
   AppFinanceiroIdRoute: typeof AppFinanceiroIdRoute
   AppFinanceiroCentrosCustoRoute: typeof AppFinanceiroCentrosCustoRoute
@@ -2683,6 +2742,7 @@ interface AppRouteChildren {
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
   AppContratosIndexRoute: typeof AppContratosIndexRoute
   AppCorretoresIndexRoute: typeof AppCorretoresIndexRoute
+  AppElearningIndexRoute: typeof AppElearningIndexRoute
   AppEmpreendimentosIndexRoute: typeof AppEmpreendimentosIndexRoute
   AppFinanceiroIndexRoute: typeof AppFinanceiroIndexRoute
   AppImoveisIndexRoute: typeof AppImoveisIndexRoute
@@ -2708,6 +2768,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppContratosNovoRoute: AppContratosNovoRoute,
   AppCorretoresIdRoute: AppCorretoresIdRoute,
   AppCorretoresNovoRoute: AppCorretoresNovoRoute,
+  AppElearningCursoIdRoute: AppElearningCursoIdRoute,
+  AppElearningAdminRoute: AppElearningAdminRoute,
   AppEmpreendimentosIdRoute: AppEmpreendimentosIdRoute,
   AppFinanceiroIdRoute: AppFinanceiroIdRoute,
   AppFinanceiroCentrosCustoRoute: AppFinanceiroCentrosCustoRoute,
@@ -2722,6 +2784,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppComissoesIndexRoute: AppComissoesIndexRoute,
   AppContratosIndexRoute: AppContratosIndexRoute,
   AppCorretoresIndexRoute: AppCorretoresIndexRoute,
+  AppElearningIndexRoute: AppElearningIndexRoute,
   AppEmpreendimentosIndexRoute: AppEmpreendimentosIndexRoute,
   AppFinanceiroIndexRoute: AppFinanceiroIndexRoute,
   AppImoveisIndexRoute: AppImoveisIndexRoute,

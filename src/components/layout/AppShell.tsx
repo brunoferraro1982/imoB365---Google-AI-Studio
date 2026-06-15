@@ -29,6 +29,9 @@ import {
   Gauge,
   ChevronRight,
   Sparkles,
+  GraduationCap,
+  BookOpen,
+  PlayCircle,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -58,6 +61,16 @@ const tenantModules: Module[] = [
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
       { to: "/app/corretores", label: "Corretores", icon: UserCircle2 },
+    ],
+  },
+  {
+    id: "elearning",
+    requiredModule: "elearning" as AppModule,
+    label: "E-Learning",
+    icon: GraduationCap,
+    items: [
+      { to: "/app/elearning", label: "Meus cursos", icon: BookOpen },
+      { to: "/app/elearning/admin", label: "Gerenciar cursos", icon: PlayCircle },
     ],
   },
   {
