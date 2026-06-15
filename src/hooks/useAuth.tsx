@@ -16,16 +16,6 @@ export interface UserProfile {
   pagamento_metodo: string | null;
 }
 
-// FIX [super_admin]: super_admin bypassa restrição de tenant_modules e vê todos os módulos
-// NOTA: apenas slugs presentes em AppModule (src/lib/permissions.ts) — "elearning" adicionado separado
-const ALL_MODULES: AppModule[] = [
-  "imobiliario",
-  "financeiro",
-  "juridico",
-  "marketing",
-  "ajustes",
-];
-
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -43,18 +33,15 @@ export function useAuth() {
       setUser(s?.user ?? null);
       if (s?.user) {
         // FIX [QA-04]: setTimeout(0) para defer fora do callback síncrono do Supabase.
-        // FIX [super_admin]: loadRoles sequencial antes de loadProfile para passar roles.
+        // O setLoading(false) é controlado pelo getSession().then() com Promise.all abaixo.
         setTimeout(() => {
-          void (async () => {
-            const userRoles = await loadRoles(s.user.id);
-            await loadProfile(s.user.id, s.user, userRoles);
-          })();
+          void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
         }, 0);
       } else {
         setRoles([]);
+        setEnabledModules([]);
         setTenantId(null);
         setProfile(null);
-        setEnabledModules([]);
       }
     });
 
@@ -62,9 +49,10 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // FIX [super_admin]: sequencial — roles primeiro, depois profile com roles.
-        const userRoles = await loadRoles(s.user.id);
-        await loadProfile(s.user.id, s.user, userRoles);
+        // FIX [QA-04]: Aguarda roles E profile antes de liberar loading.
+        // Evita race condition onde setLoading(false) ocorria antes de loadRoles()
+        // e ejetava super_admin para /app por roles=[].
+        await Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
       }
       setLoading(false);
     });
@@ -72,16 +60,12 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // FIX [super_admin]: retorna o array de roles para uso sequencial em loadProfile.
-  async function loadRoles(userId: string): Promise<AppRole[]> {
+  async function loadRoles(userId: string) {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    const userRoles = [...new Set((data ?? []).map((r) => r.role as AppRole))];
-    setRoles(userRoles);
-    return userRoles;
+    setRoles([...new Set((data ?? []).map((r) => r.role as AppRole))]);
   }
 
-  // FIX [super_admin]: aceita userRoles para bypassar tenant_modules quando super_admin.
-  async function loadProfile(userId: string, currentUser?: User, userRoles: AppRole[] = []) {
+  async function loadProfile(userId: string, currentUser?: User) {
     let profileData: any = null;
 
     const { data, error } = await supabase
@@ -95,7 +79,7 @@ export function useAuth() {
     if (!error && data) {
       profileData = data;
     } else {
-      // Fallback com campos básicos
+      // Fallback para perfis sem todas as colunas
       const { data: basicData } = await supabase
         .from("profiles")
         .select("tenant_id, nome, avatar_url")
@@ -118,11 +102,29 @@ export function useAuth() {
     if (profileData) {
       setTenantId(profileData.tenant_id ?? null);
 
-      // FIX [super_admin]: super_admin vê TODOS os módulos — sem restrição de plano.
-      if (userRoles.includes("super_admin")) {
-        setEnabledModules(ALL_MODULES);
-      } else if (profileData.tenant_id) {
-        // Demais roles: carregar módulos habilitados do tenant
+      setProfile({
+        nome: profileData.nome ?? null,
+        avatar_url: profileData.avatar_url ?? null,
+        tipo_usuario: profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null,
+        plano_pretendido:
+          profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null,
+        imobiliaria_nome:
+          profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
+        aprovado:
+          profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
+        pagamento_validado:
+          profileData.pagamento_validado === true ||
+          currentUser?.user_metadata?.pagamento_validado === true ||
+          false,
+        pagamento_metodo:
+          profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
+      });
+
+      // FIX [QA-04 / tenant_modules]: Carregar módulos habilitados aqui, dentro de
+      // loadProfile(), onde tenant_id está disponível. O código estava incorretamente
+      // no bloco else{} do onAuthStateChange (escopo errado — profileData não existia
+      // lá e o await estava dentro de callback não-async).
+      if (profileData.tenant_id) {
         const { data: tenantModsData } = await supabase
           .from("tenant_modules")
           .select("module_slug")
@@ -130,21 +132,10 @@ export function useAuth() {
           .eq("enabled", true);
         const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
         setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+      } else {
+        // super_admin sem tenant ou perfil incompleto — habilita tudo
+        setEnabledModules(["imobiliario", "ajustes"]);
       }
-
-      setProfile({
-        nome: profileData.nome ?? null,
-        avatar_url: profileData.avatar_url ?? null,
-        tipo_usuario: profileData.tipo_usuario ?? currentUser?.user_metadata?.tipo_usuario ?? null,
-        plano_pretendido: profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null,
-        imobiliaria_nome: profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
-        aprovado: profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
-        pagamento_validado:
-          profileData.pagamento_validado === true ||
-          currentUser?.user_metadata?.pagamento_validado === true ||
-          false,
-        pagamento_metodo: profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
-      });
     }
   }
 
