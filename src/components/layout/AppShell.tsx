@@ -91,6 +91,7 @@ const tenantModules: Module[] = [
     items: [
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
+      { to: "/app/blog", label: "Blog Institucional (CMS)", icon: FileSignature },
       { to: "/app/site/widgets", label: "Widgets de Conversão", icon: Sparkles },
       { to: "/app/portais", label: "Anúncios em portais", icon: Globe2 },
       { to: "/app/encurtador", label: "Encurtador & QR Code", icon: Link2 },
@@ -122,7 +123,7 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin, profile, roles, enabledModules } = useAuth();
+  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [] } = useAuth();
   // Detectar redirect de acesso negado
   const searchParams = useSearch({ strict: false }) as { forbidden?: string };
   const showForbidden = searchParams.forbidden === "1";
@@ -265,6 +266,8 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   // Tenant: top module bar + filtered sidebar
   // IAM: filtrar módulos pelo que o usuário tem acesso
   const visibleModules = tenantModules.filter((m) => {
+    // Super admins (por role ou por e-mail) enxergam todos os módulos
+    if (isSuperAdmin) return true;
     // Guard 1: role tem acesso ao módulo
     const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
     // Guard 2: plano do tenant inclui o módulo (lista vazia = tudo habilitado — fallback para Tenant 0)
