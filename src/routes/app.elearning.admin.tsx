@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -768,7 +768,7 @@ const EMPTY_MODULO: ModuloForm = { titulo: "", descricao: "", ordem: 0 };
 const EMPTY_AULA: AulaForm = { titulo: "", tipo: "texto", conteudo_html: "", video_url: "", arquivo_url: "", link_externo: "", duracao_min: 5, ordem: 0, gratuita: false };
 
 function ElearningAdmin() {
-  const { isAdmin, roles } = useAuth();
+  const { isAdmin, roles, tenantId } = useAuth();
   const db = supabase as any;
   const { confirmDialog, ConfirmDialog } = useConfirm();
 
@@ -780,8 +780,9 @@ function ElearningAdmin() {
   const [selectedModulo, setSelectedModulo] = useState<Modulo | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [seeding, setSeeding] = useState(false);
   const [migrationError, setMigrationError] = useState(false);
+
+  const autoSeedDone = useRef(false);
 
   // Modals
   const [cursoModal, setCursoModal] = useState(false);
@@ -793,6 +794,14 @@ function ElearningAdmin() {
   const [aulaForm, setAulaForm] = useState<AulaForm>(EMPTY_AULA);
 
   useEffect(() => { loadCursos(); }, []);
+
+  // Auto-seed: popula com exemplos na primeira vez que o tenant não tem cursos
+  useEffect(() => {
+    if (!loading && tenantId && cursos.length === 0 && !migrationError && !autoSeedDone.current) {
+      autoSeedDone.current = true;
+      void seedCursosAuto(tenantId);
+    }
+  }, [loading, tenantId, cursos.length, migrationError]);
 
   async function loadCursos() {
     setLoading(true);
@@ -833,7 +842,7 @@ function ElearningAdmin() {
   async function saveCurso() {
     if (!cursoForm.titulo) return toast.error("Título obrigatório");
     setSaving(true);
-    const payload = { ...cursoForm, slug: cursoForm.slug || slugify(cursoForm.titulo), updated_at: new Date().toISOString() };
+    const payload = { ...cursoForm, tenant_id: tenantId, slug: cursoForm.slug || slugify(cursoForm.titulo), updated_at: new Date().toISOString() };
     const { error } = editingId
       ? await db.from("elearning_cursos").update(payload).eq("id", editingId)
       : await db.from("elearning_cursos").insert(payload);
@@ -869,7 +878,7 @@ function ElearningAdmin() {
   async function saveModulo() {
     if (!selectedCurso || !moduloForm.titulo) return toast.error("Título obrigatório");
     setSaving(true);
-    const payload = { ...moduloForm, curso_id: selectedCurso.id };
+    const payload = { ...moduloForm, curso_id: selectedCurso.id, tenant_id: tenantId };
     const { error } = editingId
       ? await db.from("elearning_modulos").update(payload).eq("id", editingId)
       : await db.from("elearning_modulos").insert(payload);
@@ -908,6 +917,7 @@ function ElearningAdmin() {
     const payload = {
       ...aulaForm,
       modulo_id: selectedModulo.id,
+      tenant_id: tenantId,
       conteudo_html: aulaForm.conteudo_html || null,
       video_url: aulaForm.video_url || null,
       arquivo_url: aulaForm.arquivo_url || null,
@@ -931,19 +941,16 @@ function ElearningAdmin() {
 
   // ── Seed ──
 
-  async function seedCursos() {
-    if (!(await confirmDialog("Inserir os 3 cursos de exemplo? Isso pode duplicar conteúdo se já existirem."))) return;
-    setSeeding(true);
+  async function seedCursosAuto(tid: string) {
     let inserted = 0;
     try {
       for (const curso of SEED_CURSOS) {
         const { modulos: mods, ...cursoData } = curso;
         const { data: c, error: ce } = await db.from("elearning_cursos")
-          .upsert({ ...cursoData, updated_at: new Date().toISOString() }, { onConflict: "slug" })
+          .upsert({ ...cursoData, tenant_id: tid, updated_at: new Date().toISOString() }, { onConflict: "slug,tenant_id" })
           .select("id").single();
         if (ce) {
-          toast.error(`Erro ao criar curso "${curso.titulo}": ${ce.message}. Verifique se a migração SQL foi aplicada no Supabase.`);
-          setSeeding(false);
+          toast.error(`Erro ao criar curso "${curso.titulo}": ${ce.message}.`);
           return;
         }
         if (!c) continue;
@@ -951,13 +958,14 @@ function ElearningAdmin() {
         for (const mod of mods) {
           const { aulas: als, ...modData } = mod;
           const { data: m, error: me } = await db.from("elearning_modulos")
-            .insert({ ...modData, curso_id: c.id }).select("id").single();
+            .insert({ ...modData, curso_id: c.id, tenant_id: tid }).select("id").single();
           if (me || !m) continue;
 
           for (const aula of als) {
             await db.from("elearning_aulas").insert({
               ...aula,
               modulo_id: m.id,
+              tenant_id: tid,
               conteudo_html: aula.conteudo_html ?? null,
               video_url: (aula as any).video_url ?? null,
               arquivo_url: (aula as any).arquivo_url ?? null,
@@ -972,7 +980,6 @@ function ElearningAdmin() {
     } catch (e: any) {
       toast.error("Erro ao inserir cursos: " + e.message);
     }
-    setSeeding(false);
   }
 
   // ── Navigation ──
@@ -1042,11 +1049,7 @@ function ElearningAdmin() {
         <div className="flex gap-2">
           {view === "cursos" && (
             <>
-              <Button variant="outline" size="sm" onClick={seedCursos} disabled={seeding} className="gap-1.5">
-                <Sparkles className="h-4 w-4" />
-                {seeding ? "Inserindo…" : "Inserir exemplos"}
-              </Button>
-              <Button size="sm" onClick={openNewCurso} className="gap-1.5">
+<Button size="sm" onClick={openNewCurso} className="gap-1.5">
                 <Plus className="h-4 w-4" /> Novo curso
               </Button>
             </>
@@ -1072,10 +1075,8 @@ function ElearningAdmin() {
           ) : cursos.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-12 text-center">
               <GraduationCap className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3"/>
-              <p className="text-sm text-muted-foreground mb-4">Nenhum curso criado ainda.</p>
-              <Button variant="outline" size="sm" onClick={seedCursos} className="gap-2">
-                <Sparkles className="h-4 w-4"/> Inserir cursos de exemplo
-              </Button>
+              <p className="text-sm text-muted-foreground">Nenhum curso criado ainda. Carregando exemplos…</p>
+
             </div>
           ) : (
             <div className="rounded-xl border border-border overflow-hidden">

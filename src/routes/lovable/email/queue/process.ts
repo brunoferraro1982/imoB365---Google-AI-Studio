@@ -1,3 +1,4 @@
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { sendLovableEmail } from "@lovable.dev/email-js";
 import { createFileRoute } from "@tanstack/react-router";
 import { supabase } from '@/integrations/supabase/client'

@@ -45,7 +45,7 @@ function EditarContrato() {
       .select("assinatura_status")
       .eq("id", id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data }: { data: Record<string, unknown> | null }) => {
         if (data?.assinatura_status) {
           setAssinaturaStatus(data.assinatura_status as AssinaturaStatus);
         }
