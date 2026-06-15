@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
-import { invalidateRolesCache } from "@/lib/routeGuard";
 
 export type AppRole = "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
 
@@ -16,6 +15,16 @@ export interface UserProfile {
   pagamento_validado: boolean;
   pagamento_metodo: string | null;
 }
+
+// FIX [super_admin]: super_admin bypassa restrição de tenant_modules e vê todos os módulos
+// NOTA: apenas slugs presentes em AppModule (src/lib/permissions.ts) — "elearning" adicionado separado
+const ALL_MODULES: AppModule[] = [
+  "imobiliario",
+  "financeiro",
+  "juridico",
+  "marketing",
+  "ajustes",
+];
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
@@ -33,11 +42,15 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        // Invalida o cache de roles do routeGuard quando o auth state muda
-        invalidateRolesCache();
-        void Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
+        // FIX [QA-04]: setTimeout(0) para defer fora do callback síncrono do Supabase.
+        // FIX [super_admin]: loadRoles sequencial antes de loadProfile para passar roles.
+        setTimeout(() => {
+          void (async () => {
+            const userRoles = await loadRoles(s.user.id);
+            await loadProfile(s.user.id, s.user, userRoles);
+          })();
+        }, 0);
       } else {
-        invalidateRolesCache();
         setRoles([]);
         setTenantId(null);
         setProfile(null);
@@ -49,7 +62,9 @@ export function useAuth() {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        await Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
+        // FIX [super_admin]: sequencial — roles primeiro, depois profile com roles.
+        const userRoles = await loadRoles(s.user.id);
+        await loadProfile(s.user.id, s.user, userRoles);
       }
       setLoading(false);
     });
@@ -57,12 +72,16 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function loadRoles(userId: string) {
+  // FIX [super_admin]: retorna o array de roles para uso sequencial em loadProfile.
+  async function loadRoles(userId: string): Promise<AppRole[]> {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    setRoles([...new Set((data ?? []).map((r) => r.role as AppRole))]);
+    const userRoles = [...new Set((data ?? []).map((r) => r.role as AppRole))];
+    setRoles(userRoles);
+    return userRoles;
   }
 
-  async function loadProfile(userId: string, currentUser?: User) {
+  // FIX [super_admin]: aceita userRoles para bypassar tenant_modules quando super_admin.
+  async function loadProfile(userId: string, currentUser?: User, userRoles: AppRole[] = []) {
     let profileData: any = null;
 
     const { data, error } = await supabase
@@ -76,6 +95,7 @@ export function useAuth() {
     if (!error && data) {
       profileData = data;
     } else {
+      // Fallback com campos básicos
       const { data: basicData } = await supabase
         .from("profiles")
         .select("tenant_id, nome, avatar_url")
@@ -98,15 +118,18 @@ export function useAuth() {
     if (profileData) {
       setTenantId(profileData.tenant_id ?? null);
 
-      if (profileData.tenant_id) {
+      // FIX [super_admin]: super_admin vê TODOS os módulos — sem restrição de plano.
+      if (userRoles.includes("super_admin")) {
+        setEnabledModules(ALL_MODULES);
+      } else if (profileData.tenant_id) {
+        // Demais roles: carregar módulos habilitados do tenant
         const { data: tenantModsData } = await supabase
           .from("tenant_modules")
           .select("module_slug")
           .eq("tenant_id", profileData.tenant_id)
           .eq("enabled", true);
         const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
-        // Lista vazia = tenant sem configuração de módulos → isModuleEnabled() trata como "tudo habilitado"
-        setEnabledModules(mods);
+        setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
       }
 
       setProfile({
