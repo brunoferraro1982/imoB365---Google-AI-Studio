@@ -781,6 +781,7 @@ function ElearningAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [migrationError, setMigrationError] = useState(false);
 
   // Modals
   const [cursoModal, setCursoModal] = useState(false);
@@ -795,8 +796,13 @@ function ElearningAdmin() {
 
   async function loadCursos() {
     setLoading(true);
-    const { data } = await db.from("elearning_cursos").select("*").order("ordem");
-    setCursos(data ?? []);
+    const { data, error } = await db.from("elearning_cursos").select("*").order("ordem");
+    if (error) {
+      setMigrationError(true);
+    } else {
+      setMigrationError(false);
+      setCursos(data ?? []);
+    }
     setLoading(false);
   }
 
@@ -928,13 +934,19 @@ function ElearningAdmin() {
   async function seedCursos() {
     if (!(await confirmDialog("Inserir os 3 cursos de exemplo? Isso pode duplicar conteúdo se já existirem."))) return;
     setSeeding(true);
+    let inserted = 0;
     try {
       for (const curso of SEED_CURSOS) {
         const { modulos: mods, ...cursoData } = curso;
         const { data: c, error: ce } = await db.from("elearning_cursos")
           .upsert({ ...cursoData, updated_at: new Date().toISOString() }, { onConflict: "slug" })
           .select("id").single();
-        if (ce || !c) continue;
+        if (ce) {
+          toast.error(`Erro ao criar curso "${curso.titulo}": ${ce.message}. Verifique se a migração SQL foi aplicada no Supabase.`);
+          setSeeding(false);
+          return;
+        }
+        if (!c) continue;
 
         for (const mod of mods) {
           const { aulas: als, ...modData } = mod;
@@ -953,8 +965,9 @@ function ElearningAdmin() {
             });
           }
         }
+        inserted++;
       }
-      toast.success("3 cursos de exemplo inseridos com sucesso!");
+      toast.success(`${inserted} curso(s) inserido(s) com sucesso!`);
       loadCursos();
     } catch (e: any) {
       toast.error("Erro ao inserir cursos: " + e.message);
@@ -988,6 +1001,19 @@ function ElearningAdmin() {
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <ConfirmDialog />
+
+      {/* Migration warning */}
+      {migrationError && (
+        <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+          <p className="font-semibold text-destructive mb-1">Tabelas do E-Learning não encontradas no banco de dados.</p>
+          <p className="text-muted-foreground mb-2">Execute a migração SQL no Supabase antes de usar este módulo:</p>
+          <ol className="list-decimal list-inside space-y-0.5 text-muted-foreground text-xs">
+            <li>Acesse o painel do Supabase → SQL Editor</li>
+            <li>Cole o conteúdo de <code className="bg-muted px-1 rounded">supabase/migrations/20260615000001_elearning_module.sql</code></li>
+            <li>Execute e recarregue esta página</li>
+          </ol>
+        </div>
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
