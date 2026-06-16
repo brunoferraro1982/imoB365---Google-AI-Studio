@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { ChatBadge } from "@/components/chat/ChatBadge";
+import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import {
   Building2,
   Users,
@@ -125,6 +126,7 @@ const tenantModules: Module[] = [
 
 const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
+  { to: "/admin/tenants", label: "Aprovações", icon: ShieldCheck },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
   { to: "/admin/planos", label: "Planos", icon: Banknote },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
@@ -465,7 +467,7 @@ function AdminLayout({
                 <item.icon
                   className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
                 />
-                {item.label}
+                {item.label}{item.label === "Aprovações" && <ApprovalsNavBadge />}
               </Link>
             );
           })}

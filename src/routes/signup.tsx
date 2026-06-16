@@ -361,8 +361,7 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      setSocialModal({ isOpen: true, provider: "Google" });
-                      setSocialEmail(email);
+                      void supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } }).then(({ error }) => { if (error) toast.error(`Erro ao conectar com Google: ${error.message}`); });
                     }}
                   >
                     <Chrome className="h-4 w-4 text-red-500" />
@@ -372,8 +371,7 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      setSocialModal({ isOpen: true, provider: "Instagram" });
-                      setSocialEmail(email);
+                      toast("Login via Instagram chega em breve.");
                     }}
                   >
                     <Instagram className="h-4 w-4 text-pink-600" />
@@ -383,8 +381,7 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      setSocialModal({ isOpen: true, provider: "LinkedIn" });
-                      setSocialEmail(email);
+                      toast("Login via LinkedIn chega em breve.");
                     }}
                   >
                     <Linkedin className="h-4 w-4 text-blue-700" />
@@ -394,8 +391,7 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      setSocialModal({ isOpen: true, provider: "Apple" });
-                      setSocialEmail(email);
+                      toast("Login via Apple chega em breve.");
                     }}
                   >
                     <Apple className="h-4 w-4 text-foreground" />

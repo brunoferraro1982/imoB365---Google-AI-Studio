@@ -92,7 +92,7 @@ export function useAuth() {
           tipo_usuario: currentUser?.user_metadata?.tipo_usuario ?? null,
           plano_pretendido: currentUser?.user_metadata?.plano_pretendido ?? null,
           imobiliaria_nome: currentUser?.user_metadata?.imobiliaria_nome ?? null,
-          aprovado: currentUser?.user_metadata?.aprovado === true,
+          aprovado: false,
           pagamento_validado: currentUser?.user_metadata?.pagamento_validado === true,
           pagamento_metodo: currentUser?.user_metadata?.pagamento_metodo ?? null,
         };
@@ -111,7 +111,7 @@ export function useAuth() {
         imobiliaria_nome:
           profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
         aprovado:
-          profileData.aprovado === true || currentUser?.user_metadata?.aprovado === true || false,
+          profileData.aprovado === true,
         pagamento_validado:
           profileData.pagamento_validado === true ||
           currentUser?.user_metadata?.pagamento_validado === true ||

@@ -164,10 +164,18 @@ function AdminTenants() {
             nome: newTenantName.trim(),
             slug,
             status: "active",
-            plano_slug:
-              user.plano_pretendido === "Free"
-                ? "plan-free"
-                : `plan-${user.plano_pretendido?.toLowerCase()}`,
+            plano_slug: (() => {
+                const norm = (x) =>
+                  (x ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                const want = norm(user.plano_pretendido);
+                const found = plans.find((pl) => norm(pl.nome) === want || pl.slug === want);
+                return (
+                  found?.slug ??
+                  plans.find((pl) => /free|gratis/.test(norm(pl.nome)))?.slug ??
+                  plans[0]?.slug ??
+                  "free"
+                );
+              })(),
           } as any)
           .select()
           .maybeSingle();
