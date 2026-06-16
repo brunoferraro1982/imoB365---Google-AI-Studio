@@ -709,11 +709,11 @@ function Field({
 function SiteHeaderImpl() {
   const { user } = useAuth();
   const [activeMenu, setActiveMenu] = useState<
-    "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | null
+    "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365" | null
   >(null);
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico") => {
+  const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365") => {
     if (menuTimeout) {
       clearTimeout(menuTimeout);
       setMenuTimeout(null);
@@ -763,13 +763,75 @@ function SiteHeaderImpl() {
 
         {/* DESKTOP NAV WITH MEGA MENU POPUPS */}
         <nav className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex text-[13px] xl:text-sm font-semibold text-foreground/85 tracking-tight xl:tracking-normal shrink-0">
-          {/* LINK INICIAL */}
-          <Link
-            to="/"
-            className="px-2 xl:px-3 py-2 rounded-lg hover:bg-muted/50 text-foreground/80 hover:text-foreground transition-colors duration-150 whitespace-nowrap"
+          {/* MEGA MENU: A imoB365 (substitui Home) */}
+          <div
+            className="relative"
+            onMouseEnter={() => handleMouseEnter("a-imob365")}
+            onMouseLeave={handleMouseLeave}
           >
-            Home
-          </Link>
+            <button
+              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
+                activeMenu === "a-imob365"
+                  ? "bg-muted text-primary"
+                  : "hover:bg-muted/50 hover:text-foreground"
+              }`}
+            >
+              <span>A imoB365</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "a-imob365" ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            <AnimatePresence>
+              {activeMenu === "a-imob365" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="absolute left-1/2 -translate-x-[200px] top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50"
+                >
+                  <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80 mb-3">
+                    Conheça a imoB365
+                  </span>
+                  <div className="space-y-1">
+                    {[
+                      { anchor: "quem-somos",       label: "Quem Somos",          desc: "Missão, visão e valores" },
+                      { anchor: "nossa-abordagem",  label: "Nossa Abordagem",     desc: "Os 3 pilares da nossa metodologia" },
+                      { anchor: "litoral-sul",      label: "Por que o Litoral Sul", desc: "Potencial de valorização da região" },
+                      { anchor: "numeros",          label: "Nossos Números",       desc: "365 dias, 3 cidades, R$3MI+" },
+                      { anchor: "servicos",         label: "Serviços",             desc: "Tudo que oferecemos" },
+                      { anchor: "depoimentos",      label: "Depoimentos",          desc: "O que nossos clientes dizem" },
+                    ].map((item) => (
+                      <Link
+                        key={item.anchor}
+                        to="/a-imob365"
+                        hash={item.anchor}
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                          {item.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          {item.desc}
+                        </span>
+                      </Link>
+                    ))}
+                    <div className="pt-2 mt-1 border-t border-border/40">
+                      <Link
+                        to="/contato"
+                        className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-[11px] font-bold text-white hover:bg-primary/90 transition-colors"
+                        onClick={() => setActiveMenu(null)}
+                      >
+                        Agendar Consultoria
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* MEGA MENU 1: ENCONTRAR IMÓVEIS */}
           <div
@@ -1159,6 +1221,33 @@ function SiteHeaderImpl() {
                       <PlusCircle className="h-4.5 w-4.5 shrink-0" />
                       <span>Anunciar meu Imóvel</span>
                     </Link>
+                  </div>
+
+                  {/* A imoB365 Mobile */}
+                  <div className="space-y-1">
+                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
+                      A imoB365
+                    </h3>
+                    {[
+                      { anchor: "quem-somos",       label: "Quem Somos" },
+                      { anchor: "nossa-abordagem",  label: "Nossa Abordagem" },
+                      { anchor: "litoral-sul",      label: "Por que o Litoral Sul" },
+                      { anchor: "numeros",          label: "Nossos Números" },
+                      { anchor: "servicos",         label: "Serviços" },
+                      { anchor: "depoimentos",      label: "Depoimentos" },
+                    ].map((item) => (
+                      <Link
+                        key={item.anchor}
+                        to="/a-imob365"
+                        hash={item.anchor}
+                        className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                      >
+                        <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                          <ChevronRight className="h-4 w-4" />
+                        </div>
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
                   </div>
 
                   {/* Category 1 Mobile */}
