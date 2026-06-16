@@ -60,7 +60,21 @@ function Onboarding() {
 
       if (profileError) throw profileError;
 
-      // Cadastro consolidado em profiles; revisão feita na fila de aprovação (/admin).
+      // Insert pending registration for admin review
+      const { error: regError } = await supabase
+        .from("pending_registrations")
+        .insert({
+          user_id: userId,
+          email: session.user.email!,
+          nome: displayName,
+          tipo_usuario: tipo,
+          creci: tipo === "corretor" && creci ? creci : null,
+          cnpj: tipo === "imobiliaria" && cnpj ? cnpj : null,
+          imobiliaria_nome:
+            tipo === "imobiliaria" && imobiliariaNome ? imobiliariaNome : null,
+        } as any);
+
+      if (regError) throw regError;
 
       void navigate({ to: "/pending-approval", replace: true });
     } catch (err: unknown) {
