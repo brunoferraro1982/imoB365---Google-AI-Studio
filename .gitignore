@@ -42,3 +42,6 @@ dist-ssr
 # Claude Code — config local nunca vai pro repo
 .claude/settings.local.json
 .env
+
+*.bak
+*.bak.*
