@@ -36,6 +36,7 @@ import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AImob365RouteImport } from './routes/a-imob365'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
@@ -276,6 +277,11 @@ const AppRoute = AppRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AImob365Route = AImob365RouteImport.update({
+  id: '/a-imob365',
+  path: '/a-imob365',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -827,6 +833,7 @@ const ApiPublicFeedsTenantSlugOlxDotxmlRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -961,6 +968,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/a-imob365': typeof AImob365Route
   '/blog': typeof BlogRouteWithChildren
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
@@ -1091,6 +1099,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRouteWithChildren
@@ -1227,6 +1236,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/a-imob365'
     | '/admin'
     | '/app'
     | '/blog'
@@ -1361,6 +1371,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/a-imob365'
     | '/blog'
     | '/buscar'
     | '/calculadora-financiamento'
@@ -1490,6 +1501,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/a-imob365'
     | '/admin'
     | '/app'
     | '/blog'
@@ -1625,6 +1637,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AImob365Route: typeof AImob365Route
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRouteWithChildren
@@ -1866,6 +1879,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/a-imob365': {
+      id: '/a-imob365'
+      path: '/a-imob365'
+      fullPath: '/a-imob365'
+      preLoaderRoute: typeof AImob365RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -2840,6 +2860,7 @@ const SiteSlugRouteWithChildren = SiteSlugRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AImob365Route: AImob365Route,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRouteWithChildren,

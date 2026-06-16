@@ -1,3 +1,4 @@
+import { InstitutionalNav } from "@/components/site/InstitutionalNav";
 // site-layout.tsx — Componentes compartilhados de layout público
 // Auto-extraído de index.tsx durante refatoração da home page
 
@@ -734,7 +735,7 @@ function SiteHeaderImpl() {
       <div className="bg-neutral-950 text-white text-[11px] font-semibold py-2 px-6 border-b border-white/5">
         <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
           {/* Email / Telefone */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80 w-full">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80 w-full sm:w-auto">
             <a
               href="mailto:contato@imob365.com.br"
               className="flex items-center gap-2 hover:text-primary transition-colors duration-200"
@@ -753,6 +754,7 @@ function SiteHeaderImpl() {
               <span>(13) 99779-4382</span>
             </a>
           </div>
+            <InstitutionalNav />
         </div>
       </div>
 
