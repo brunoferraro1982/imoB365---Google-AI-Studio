@@ -46,41 +46,7 @@ function CorretoresList() {
   const [search, setSearch] = useState("");
 
   // 360 Evaluations State & Actions (Sprint 6)
-  const [evaluations, setEvaluations] = useState<any[]>([
-    {
-      avaliador: "Mariana Silva",
-      relacao: "Cliente Comprador",
-      corretorNome: "Gustavo Reis",
-      atendimento: 5,
-      negociacao: 4,
-      pontualidade: 5,
-      comentario:
-        "Excelente profissional. Nos acompanhou em 3 visitas no final de semana e foi incansável na negociação de venda do apartamento.",
-      data: "24/05/2026",
-    },
-    {
-      avaliador: "Camila Costa",
-      relacao: "Corretor Parceiro",
-      corretorNome: "Aline Souza",
-      atendimento: 5,
-      negociacao: 5,
-      pontualidade: 5,
-      comentario:
-        "Ótima parceria de co-corretagem! Split de comissão 50/50 pago certinho e contrato rápido.",
-      data: "22/05/2026",
-    },
-    {
-      avaliador: "Roberto Santos",
-      relacao: "Cliente Proprietário",
-      corretorNome: "Felipe Dias",
-      atendimento: 4,
-      negociacao: 5,
-      pontualidade: 4,
-      comentario:
-        "Muito prestativo. Ajudou com as dúvidas técnicas de avaliação patrimonial física.",
-      data: "18/05/2026",
-    },
-  ]);
+  const [evaluations, setEvaluations] = useState<any[]>([]);
 
   const [formAvaliador, setFormAvaliador] = useState("");
   const [formRelacao, setFormRelacao] = useState("Cliente Comprador");
