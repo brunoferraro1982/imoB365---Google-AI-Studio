@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
 import { toast } from "sonner";
 import {
-import { signInWithSocial } from "@/lib/auth-social";
   Apple,
   Instagram,
   Chrome,
@@ -382,7 +381,7 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      void signInWithSocial("linkedin_oidc");
+                      toast("Login via LinkedIn chega em breve.");
                     }}
                   >
                     <Linkedin className="h-4 w-4 text-blue-700" />
