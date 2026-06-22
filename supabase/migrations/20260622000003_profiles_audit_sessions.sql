@@ -21,9 +21,10 @@ INSERT INTO user_profiles (code, name) VALUES
 ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name;
 
 -- ── Permissões base por perfil ───────────────────────────────────────────
+-- FK usa modules(slug) — schema real confirmado 22/06/2026
 CREATE TABLE IF NOT EXISTS profile_permissions (
-  profile_code TEXT NOT NULL REFERENCES user_profiles(code) ON DELETE CASCADE,
-  feature_code TEXT NOT NULL REFERENCES modules(code) ON DELETE CASCADE,
+  profile_code TEXT NOT NULL REFERENCES user_profiles(code)  ON DELETE CASCADE,
+  feature_slug TEXT NOT NULL REFERENCES public.modules(slug) ON DELETE CASCADE,
   can_view     BOOLEAN NOT NULL DEFAULT FALSE,
   can_create   BOOLEAN NOT NULL DEFAULT FALSE,
   can_edit     BOOLEAN NOT NULL DEFAULT FALSE,
@@ -31,30 +32,30 @@ CREATE TABLE IF NOT EXISTS profile_permissions (
   can_approve  BOOLEAN NOT NULL DEFAULT FALSE,
   can_export   BOOLEAN NOT NULL DEFAULT FALSE,
   can_admin    BOOLEAN NOT NULL DEFAULT FALSE,
-  PRIMARY KEY (profile_code, feature_code)
+  PRIMARY KEY (profile_code, feature_slug)
 );
 
--- Permissões: Corretor Autônomo (acesso básico imobiliário)
-INSERT INTO profile_permissions (profile_code, feature_code, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+-- Permissões: Corretor Autônomo (slugs alinhados com migration 002)
+INSERT INTO profile_permissions (profile_code, feature_slug, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
 VALUES
-  ('perfil-corretor', 'mod-imob-cad',      TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-cadim',    TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-leads',    TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-leadshis', TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-chat',     TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-agenda',   TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-nps',      TRUE, TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-imob-comp',     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-mkt-brand',     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-mkt-url',       TRUE, TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-elearn-cursos', TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
-  ('perfil-corretor', 'mod-elearn-cert',   TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,  FALSE)
+  ('perfil-corretor', 'imob-cad',      TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-galeria',  TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-leads',    TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-hist',     TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-chat',     TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-agenda',   TRUE, TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-nps',      TRUE, TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'imob-comp',     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'mkt-brand',     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'mkt-url',       TRUE, TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'elearn-cursos', TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE),
+  ('perfil-corretor', 'elearn-cert',   TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,  FALSE)
 ON CONFLICT DO NOTHING;
 
 -- Permissões: Gestor de Imobiliária (acesso total ao tenant)
-INSERT INTO profile_permissions (profile_code, feature_code, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-SELECT 'perfil-adm-imob', code, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE
-FROM modules WHERE parent_code IS NOT NULL
+INSERT INTO profile_permissions (profile_code, feature_slug, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+SELECT 'perfil-adm-imob', slug, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE
+FROM public.modules WHERE parent_slug IS NOT NULL
 ON CONFLICT DO NOTHING;
 
 -- ── Tabela de audit log (append-only) ────────────────────────────────────
