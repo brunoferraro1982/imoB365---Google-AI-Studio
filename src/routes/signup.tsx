@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
 import { toast } from "sonner";
-import {
 import { signInWithSocial } from "@/lib/auth-social";
+import {
   Apple,
   Instagram,
   Chrome,
