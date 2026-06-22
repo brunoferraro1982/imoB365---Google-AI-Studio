@@ -134,13 +134,14 @@ BEGIN
     SELECT 1 FROM information_schema.columns
     WHERE table_name = 'tenants' AND column_name = 'plan_code'
   ) THEN
-    ALTER TABLE tenants ADD COLUMN plan_code TEXT REFERENCES plans(code) DEFAULT 'plan-free';
+    -- ATENÇÃO: plans usa PK 'slug' (não 'code') e slug padrão é 'free' (não 'plan-free')
+    ALTER TABLE tenants ADD COLUMN plan_code TEXT REFERENCES plans(slug) DEFAULT 'free';
     ALTER TABLE tenants ADD COLUMN plan_status TEXT NOT NULL DEFAULT 'trial'
       CHECK (plan_status IN ('trial', 'active', 'past_due', 'canceled', 'suspended', 'free'));
     ALTER TABLE tenants ADD COLUMN trial_ends_at TIMESTAMPTZ;
     ALTER TABLE tenants ADD COLUMN plan_starts_at TIMESTAMPTZ;
     ALTER TABLE tenants ADD COLUMN plan_ends_at TIMESTAMPTZ;
-    COMMENT ON COLUMN tenants.plan_code IS 'Plano atual — FK para plans.code';
+    COMMENT ON COLUMN tenants.plan_code IS 'Plano atual — FK para plans.slug (ex: free, basic, standard, pro, business)';
     COMMENT ON COLUMN tenants.plan_status IS 'trial|active|past_due|canceled|suspended|free';
   END IF;
 END $$;
