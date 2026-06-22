@@ -2,19 +2,30 @@
  * imoB365 — Auth Social (OAuth unificado)
  *
  * Segurança:
- * - Providers ativos: google, linkedin_oidc, facebook
- * - Instagram: usa facebook (Meta) — não é provider nativo
- * - Apple: desabilitado até Apple Developer estar configurado
- * - redirectTo: somente URLs na allowlist do Supabase Dashboard
- *   → Authentication > URL Configuration (NUNCA wildcard)
+ * - redirectTo: somente URLs na allowlist do Supabase Dashboard (NUNCA wildcard)
  * - PKCE ativo por padrão no supabase-js v2
+ *
+ * PROVIDERS_ENABLED: controla quais providers estão ativos no Supabase.
+ * Providers não listados exibem toast "em breve" sem chamar o OAuth.
  */
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export type SocialProvider = "google" | "linkedin_oidc" | "facebook";
 
+// ── Alterar aqui quando habilitar cada provider no Supabase Dashboard ─────
+const PROVIDERS_ENABLED: SocialProvider[] = [
+  "google",
+  // "linkedin_oidc",  // habilitar quando configurar no Supabase
+  // "facebook",       // habilitar quando configurar no Supabase
+];
+
 export async function signInWithSocial(provider: SocialProvider): Promise<void> {
+  if (!PROVIDERS_ENABLED.includes(provider)) {
+    toast.info(`Login via ${PROVIDER_LABELS[provider]} em breve.`);
+    return;
+  }
+
   const redirectTo = `${window.location.origin}/auth/callback`;
 
   const { error } = await supabase.auth.signInWithOAuth({
