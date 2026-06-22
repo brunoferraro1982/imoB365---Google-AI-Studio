@@ -56,7 +56,7 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
 
   // ── 2. Aguardando aprovação (plano pago) ────────────────────────────────
   // aprovado = FALSE e plano_pretendido != free → na fila
-  if (!profile.aprovado && profile.plano_pretendido !== "plan-free") {
+  if (!profile.aprovado && profile.plano_pretendido !== "free") {
     return { redirect: "/pending-approval", reason: "pending_approval" };
   }
 
@@ -100,8 +100,8 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
  * ou para fila de aprovação (pago).
  */
 export function requiresApproval(planCode: string | null | undefined): boolean {
-  if (!planCode || planCode === "plan-free") return false;
-  return true; // Basic, Standard, Pro, Business → fila
+  if (!planCode || planCode === "free") return false;
+  return true; // basic, standard, pro, business → fila de aprovação
 }
 
 /**

@@ -90,6 +90,7 @@ export function useAuth() {
         profileData = {
           ...basicData,
           // INFO: user_metadata usado como fallback informativo (não como gate de acesso)
+          // INFO: user_metadata usado como fallback informativo (não como gate de acesso)
           tipo_usuario: currentUser?.user_metadata?.tipo_usuario ?? null,
           plano_pretendido: currentUser?.user_metadata?.plano_pretendido ?? null,
           imobiliaria_nome: currentUser?.user_metadata?.imobiliaria_nome ?? null,

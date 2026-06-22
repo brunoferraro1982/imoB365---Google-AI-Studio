@@ -89,11 +89,12 @@ export function useAuth() {
       if (basicData) {
         profileData = {
           ...basicData,
+          // INFO: user_metadata usado como fallback informativo (não como gate de acesso)
           tipo_usuario: currentUser?.user_metadata?.tipo_usuario ?? null,
           plano_pretendido: currentUser?.user_metadata?.plano_pretendido ?? null,
           imobiliaria_nome: currentUser?.user_metadata?.imobiliaria_nome ?? null,
           aprovado: false,
-          pagamento_validado: currentUser?.user_metadata?.pagamento_validado === true,
+          pagamento_validado: false, // SEGURANÇA: user_metadata é gravável pelo usuário — nunca como gate de auth
           pagamento_metodo: currentUser?.user_metadata?.pagamento_metodo ?? null,
         };
       }
@@ -113,9 +114,7 @@ export function useAuth() {
         aprovado:
           profileData.aprovado === true,
         pagamento_validado:
-          profileData.pagamento_validado === true ||
-          currentUser?.user_metadata?.pagamento_validado === true ||
-          false,
+          profileData.pagamento_validado === true, // SEGURANÇA: removido fallback user_metadata (Sprint 1 — OWASP A01)
         pagamento_metodo:
           profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
       });
