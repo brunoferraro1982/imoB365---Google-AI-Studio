@@ -173,7 +173,7 @@ function AdminTenants() {
                   found?.slug ??
                   plans.find((pl) => /free|gratis/.test(norm(pl.nome)))?.slug ??
                   plans[0]?.slug ??
-                  "free"
+                  "plan-free"
                 );
               })(),
           } as any)

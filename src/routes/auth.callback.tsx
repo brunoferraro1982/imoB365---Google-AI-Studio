@@ -11,7 +11,6 @@ function AuthCallback() {
 
   useEffect(() => {
     void (async () => {
-      // Exchange PKCE code for session (Supabase handles this automatically)
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -21,35 +20,24 @@ function AuthCallback() {
         return;
       }
 
-      const user = session.user;
-      const provider = user.app_metadata?.provider as string | undefined;
-
-      // Email/password users: go straight to app (no onboarding needed)
-      if (!provider || provider === "email") {
-        void navigate({ to: "/app", replace: true });
-        return;
-      }
-
-      // OAuth users: check onboarding / approval status
       const { data: profile } = await supabase
         .from("profiles")
-        .select("tipo_usuario, status, aprovado")
-        .eq("id", user.id)
+        .select("onboarding_completed_at, aprovado")
+        .eq("id", session.user.id)
         .maybeSingle();
 
-      // No tipo_usuario → new OAuth user → onboarding wizard
-      if (!profile?.tipo_usuario) {
-        void navigate({ to: "/onboarding", replace: true });
+      // Onboarding não concluído → wizard
+      if (!profile?.onboarding_completed_at) {
+        void navigate({ to: "/onboarding/perfil", replace: true });
         return;
       }
 
-      // Pending approval
-      if ((profile as any).status === "pending_approval" || !profile.aprovado) {
+      // Aprovação pendente
+      if (!profile.aprovado) {
         void navigate({ to: "/pending-approval", replace: true });
         return;
       }
 
-      // Approved & complete
       void navigate({ to: "/app", replace: true });
     })();
   }, [navigate]);

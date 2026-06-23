@@ -33,29 +33,11 @@ export const Route = createFileRoute("/signup")({
 type Step = 1 | 2 | 3 | 4;
 
 const PLANS = [
-  { id: "free", name: "Free", value: "Free", price: 0, desc: "Essencial para começar" },
-  {
-    id: "basic",
-    name: "Basic",
-    value: "basic",
-    price: 99,
-    desc: "Ideal para corretores individuais",
-  },
-  {
-    id: "standard",
-    name: "Standard",
-    value: "standard",
-    price: 199,
-    desc: "Ideal para pequenas imobiliárias",
-  },
-  { id: "pro", name: "Pro", value: "pro", price: 399, desc: "Para imobiliárias em crescimento" },
-  {
-    id: "business",
-    name: "Business",
-    value: "business",
-    price: 899,
-    desc: "White-label e recursos avançados",
-  },
+  { id: "plan-free",  name: "Free",     value: "plan-free",  price: 0,   desc: "Essencial para começar" },
+  { id: "plan-basic", name: "Basic",    value: "plan-basic", price: 99,  desc: "Ideal para corretores individuais" },
+  { id: "plan-stand", name: "Standard", value: "plan-stand", price: 199, desc: "Ideal para pequenas imobiliárias" },
+  { id: "plan-pro",   name: "Pro",      value: "plan-pro",   price: 399, desc: "Para imobiliárias em crescimento" },
+  { id: "plan-busi",  name: "Business", value: "plan-busi",  price: 899, desc: "White-label e recursos avançados" },
 ];
 
 function SignupPage() {

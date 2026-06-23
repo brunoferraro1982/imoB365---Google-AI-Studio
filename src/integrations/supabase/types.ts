@@ -3013,6 +3013,7 @@ export type Database = {
           id: string
           imobiliaria_nome: string | null
           nome: string | null
+          onboarding_completed_at: string | null
           pagamento_metodo: string | null
           pagamento_validado: boolean | null
           plano_pretendido: string | null
@@ -3029,6 +3030,7 @@ export type Database = {
           id: string
           imobiliaria_nome?: string | null
           nome?: string | null
+          onboarding_completed_at?: string | null
           pagamento_metodo?: string | null
           pagamento_validado?: boolean | null
           plano_pretendido?: string | null
@@ -3045,6 +3047,7 @@ export type Database = {
           id?: string
           imobiliaria_nome?: string | null
           nome?: string | null
+          onboarding_completed_at?: string | null
           pagamento_metodo?: string | null
           pagamento_validado?: boolean | null
           plano_pretendido?: string | null
@@ -3702,6 +3705,7 @@ export type Database = {
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
           tema: Json
+          trial_ends_at: string | null
           updated_at: string
           watermark: Json
         }
@@ -3716,6 +3720,7 @@ export type Database = {
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
@@ -3730,6 +3735,7 @@ export type Database = {
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
