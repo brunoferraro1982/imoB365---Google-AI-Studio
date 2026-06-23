@@ -124,6 +124,7 @@ import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.c
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
 import { Route as AppConfiguracoesBrandingRouteImport } from './routes/app.configuracoes.branding'
+import { Route as AppConfiguracoesAssinaturaRouteImport } from './routes/app.configuracoes.assinatura'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
@@ -138,6 +139,7 @@ import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.lea
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
+import { Route as ApiPublicCronInadimplenciaRouteImport } from './routes/api.public.cron.inadimplencia'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
@@ -733,6 +735,12 @@ const AppConfiguracoesBrandingRoute =
     path: '/branding',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesAssinaturaRoute =
+  AppConfiguracoesAssinaturaRouteImport.update({
+    id: '/assinatura',
+    path: '/assinatura',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesApiRoute = AppConfiguracoesApiRouteImport.update({
   id: '/api',
   path: '/api',
@@ -806,6 +814,12 @@ const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
   path: '/api/public/cron/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronInadimplenciaRoute =
+  ApiPublicCronInadimplenciaRouteImport.update({
+    id: '/api/public/cron/inadimplencia',
+    path: '/api/public/cron/inadimplencia',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronBuscasAlertasRoute =
   ApiPublicCronBuscasAlertasRouteImport.update({
     id: '/api/public/cron/buscas-alertas',
@@ -900,6 +914,7 @@ export interface FileRoutesByFullPath {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura': typeof AppConfiguracoesAssinaturaRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -952,6 +967,7 @@ export interface FileRoutesByFullPath {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1030,6 +1046,7 @@ export interface FileRoutesByTo {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura': typeof AppConfiguracoesAssinaturaRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -1082,6 +1099,7 @@ export interface FileRoutesByTo {
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1166,6 +1184,7 @@ export interface FileRoutesById {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura': typeof AppConfiguracoesAssinaturaRoute
   '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -1218,6 +1237,7 @@ export interface FileRoutesById {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1303,6 +1323,7 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura'
     | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -1355,6 +1376,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1433,6 +1455,7 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura'
     | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -1485,6 +1508,7 @@ export interface FileRouteTypes {
     | '/app/site'
     | '/conta/chat'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1568,6 +1592,7 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura'
     | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -1620,6 +1645,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1677,6 +1703,7 @@ export interface RootRouteChildren {
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
+  ApiPublicCronInadimplenciaRoute: typeof ApiPublicCronInadimplenciaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRoute
@@ -2497,6 +2524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesBrandingRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/assinatura': {
+      id: '/app/configuracoes/assinatura'
+      path: '/assinatura'
+      fullPath: '/app/configuracoes/assinatura'
+      preLoaderRoute: typeof AppConfiguracoesAssinaturaRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/api': {
       id: '/app/configuracoes/api'
       path: '/api'
@@ -2595,6 +2629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSnapshotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/inadimplencia': {
+      id: '/api/public/cron/inadimplencia'
+      path: '/api/public/cron/inadimplencia'
+      fullPath: '/api/public/cron/inadimplencia'
+      preLoaderRoute: typeof ApiPublicCronInadimplenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/buscas-alertas': {
       id: '/api/public/cron/buscas-alertas'
       path: '/api/public/cron/buscas-alertas'
@@ -2654,6 +2695,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
+  AppConfiguracoesAssinaturaRoute: typeof AppConfiguracoesAssinaturaRoute
   AppConfiguracoesBrandingRoute: typeof AppConfiguracoesBrandingRoute
   AppConfiguracoesCadenciasRoute: typeof AppConfiguracoesCadenciasRoute
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
@@ -2677,6 +2719,7 @@ interface AppConfiguracoesRouteChildren {
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesApiRoute: AppConfiguracoesApiRoute,
+  AppConfiguracoesAssinaturaRoute: AppConfiguracoesAssinaturaRoute,
   AppConfiguracoesBrandingRoute: AppConfiguracoesBrandingRoute,
   AppConfiguracoesCadenciasRoute: AppConfiguracoesCadenciasRoute,
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
@@ -2900,6 +2943,7 @@ const rootRouteChildren: RootRouteChildren = {
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
+  ApiPublicCronInadimplenciaRoute: ApiPublicCronInadimplenciaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRoute,

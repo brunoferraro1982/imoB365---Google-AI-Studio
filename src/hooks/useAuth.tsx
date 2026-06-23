@@ -16,6 +16,12 @@ export interface UserProfile {
   pagamento_metodo: string | null;
 }
 
+export interface TenantInfo {
+  plano_slug: string | null;
+  status: "trial" | "active" | "suspended" | "cancelled";
+  billing_due_at: string | null;
+}
+
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -23,6 +29,7 @@ export function useAuth() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +49,7 @@ export function useAuth() {
         setEnabledModules([]);
         setTenantId(null);
         setProfile(null);
+        setTenantInfo(null);
       }
     });
 
@@ -125,16 +133,31 @@ export function useAuth() {
       // no bloco else{} do onAuthStateChange (escopo errado — profileData não existia
       // lá e o await estava dentro de callback não-async).
       if (profileData.tenant_id) {
-        const { data: tenantModsData } = await supabase
-          .from("tenant_modules")
-          .select("module_slug")
-          .eq("tenant_id", profileData.tenant_id)
-          .eq("enabled", true);
+        const [{ data: tenantModsData }, { data: tenantData }] = await Promise.all([
+          supabase
+            .from("tenant_modules")
+            .select("module_slug")
+            .eq("tenant_id", profileData.tenant_id)
+            .eq("enabled", true),
+          supabase
+            .from("tenants")
+            .select("plano_slug, status, billing_due_at")
+            .eq("id", profileData.tenant_id)
+            .maybeSingle(),
+        ]);
         const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
         setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+        if (tenantData) {
+          setTenantInfo({
+            plano_slug: tenantData.plano_slug ?? null,
+            status: (tenantData.status as TenantInfo["status"]) ?? "active",
+            billing_due_at: tenantData.billing_due_at ?? null,
+          });
+        }
       } else {
         // super_admin sem tenant ou perfil incompleto — habilita tudo
         setEnabledModules(["imobiliario", "ajustes"]);
+        setTenantInfo(null);
       }
     }
   }
@@ -142,5 +165,5 @@ export function useAuth() {
   const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
 
-  return { session, user, roles, enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
+  return { session, user, roles, enabledModules, tenantId, profile, tenantInfo, isSuperAdmin, isAdmin, loading };
 }
