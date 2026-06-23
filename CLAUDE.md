@@ -187,5 +187,5 @@ Custom domain components live in:
 - Health score de tenant para CS (Customer Success)
 - WhatsApp via Evolution API (integração real — substituir deep-link atual em `whatsapp.ts`)
 - Deploy em produção (Cloudflare Workers)
-- Gateway de pagamento (Stripe / Pagar.me)
+- Gateway de pagamento (NuBank / Pagar.me — NuBank adquiriu Pagar.me em 2021)
 - CI/CD com SAST/DAST (GitHub Actions)
