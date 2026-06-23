@@ -1,5 +1,6 @@
 /**
  * Hook utilitário para verificação de permissões IAM nos componentes React.
+ * Considera overrides explícitos de user_permissions antes da matriz de roles.
  *
  * Uso:
  *   const canEdit = usePermission("juridico", "write");
@@ -9,12 +10,12 @@
  */
 
 import { useAuth } from "@/hooks/useAuth";
-import { can, canAccessModule } from "@/lib/permissions";
+import { canAccessModule, canWithOverrides } from "@/lib/permissions";
 import type { AppModule, AppAction } from "@/lib/permissions";
 
 export function usePermission(module: AppModule, action: AppAction): boolean {
-  const { roles } = useAuth();
-  return can(roles, module, action);
+  const { roles, userPermissions } = useAuth();
+  return canWithOverrides(roles, userPermissions, module, action);
 }
 
 export function useModuleAccess(module: AppModule): boolean {
@@ -31,11 +32,11 @@ export function useModuleAccess(module: AppModule): boolean {
  *   {perms.write && <Button>Novo lançamento</Button>}
  */
 export function useModulePermissions(module: AppModule) {
-  const { roles } = useAuth();
+  const { roles, userPermissions } = useAuth();
   return {
-    read:   can(roles, module, "read"),
-    write:  can(roles, module, "write"),
-    delete: can(roles, module, "delete"),
-    config: can(roles, module, "config"),
+    read:   canWithOverrides(roles, userPermissions, module, "read"),
+    write:  canWithOverrides(roles, userPermissions, module, "write"),
+    delete: canWithOverrides(roles, userPermissions, module, "delete"),
+    config: canWithOverrides(roles, userPermissions, module, "config"),
   };
 }

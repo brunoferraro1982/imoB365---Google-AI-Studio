@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
-import type { AppModule } from "@/lib/permissions";
+import type { AppModule, UserPermissionOverride } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
@@ -23,6 +23,7 @@ export function useAuth() {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userPermissions, setUserPermissions] = useState<UserPermissionOverride[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +43,7 @@ export function useAuth() {
         setEnabledModules([]);
         setTenantId(null);
         setProfile(null);
+        setUserPermissions([]);
       }
     });
 
@@ -125,16 +127,31 @@ export function useAuth() {
       // no bloco else{} do onAuthStateChange (escopo errado — profileData não existia
       // lá e o await estava dentro de callback não-async).
       if (profileData.tenant_id) {
-        const { data: tenantModsData } = await supabase
-          .from("tenant_modules")
-          .select("module_slug")
-          .eq("tenant_id", profileData.tenant_id)
-          .eq("enabled", true);
+        const [{ data: tenantModsData }, { data: permsData }] = await Promise.all([
+          supabase
+            .from("tenant_modules")
+            .select("module_slug")
+            .eq("tenant_id", profileData.tenant_id)
+            .eq("enabled", true),
+          supabase
+            .from("user_permissions")
+            .select("module, action, granted")
+            .eq("tenant_id", profileData.tenant_id)
+            .eq("user_id", userId),
+        ]);
         const mods = (tenantModsData ?? []).map((m) => m.module_slug as AppModule);
         setEnabledModules(mods.length > 0 ? mods : ["imobiliario", "ajustes"]);
+        setUserPermissions(
+          (permsData ?? []).map((p) => ({
+            module: p.module as AppModule,
+            action: p.action as UserPermissionOverride["action"],
+            granted: p.granted,
+          }))
+        );
       } else {
         // super_admin sem tenant ou perfil incompleto — habilita tudo
         setEnabledModules(["imobiliario", "ajustes"]);
+        setUserPermissions([]);
       }
     }
   }
@@ -142,5 +159,5 @@ export function useAuth() {
   const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
 
-  return { session, user, roles, enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
+  return { session, user, roles, enabledModules, tenantId, profile, userPermissions, isSuperAdmin, isAdmin, loading };
 }

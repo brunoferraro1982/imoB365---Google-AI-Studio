@@ -21,6 +21,13 @@ export type AppModule =
 
 export type AppAction = "read" | "write" | "delete" | "config";
 
+/** Override explícito de permissão carregado de user_permissions. */
+export type UserPermissionOverride = {
+  module: AppModule;
+  action: AppAction;
+  granted: boolean;
+};
+
 // Matriz RBAC: role → módulo → ações permitidas
 const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>> = {
   super_admin: {
@@ -118,6 +125,22 @@ export function isModuleEnabled(enabledModules: AppModule[], module: AppModule):
   // Se lista vazia, considerar tudo habilitado (fallback seguro para tenant 0)
   if (enabledModules.length === 0) return true;
   return enabledModules.includes(module);
+}
+
+/**
+ * Verifica permissão considerando overrides explícitos antes da matriz de roles.
+ * Override granted=true concede acesso mesmo que a role não permita.
+ * Override granted=false revoga acesso mesmo que a role permita.
+ */
+export function canWithOverrides(
+  roles: AppRole[],
+  overrides: UserPermissionOverride[],
+  module: AppModule,
+  action: AppAction
+): boolean {
+  const override = overrides.find((o) => o.module === module && o.action === action);
+  if (override !== undefined) return override.granted;
+  return can(roles, module, action);
 }
 
 /**
