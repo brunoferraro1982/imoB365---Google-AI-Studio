@@ -111,6 +111,7 @@ import { Route as AppConfiguracoesSegurancaRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.configuracoes.scoring'
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
+import { Route as AppConfiguracoesPermissoesRouteImport } from './routes/app.configuracoes.permissoes'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
 import { Route as AppConfiguracoesModulosRouteImport } from './routes/app.configuracoes.modulos'
 import { Route as AppConfiguracoesImportarRouteImport } from './routes/app.configuracoes.importar'
@@ -660,6 +661,12 @@ const AppConfiguracoesPlanoContasRoute =
     path: '/plano-contas',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesPermissoesRoute =
+  AppConfiguracoesPermissoesRouteImport.update({
+    id: '/permissoes',
+    path: '/permissoes',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesNotificacoesRoute =
   AppConfiguracoesNotificacoesRouteImport.update({
     id: '/notificacoes',
@@ -913,6 +920,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
+  '/app/configuracoes/permissoes': typeof AppConfiguracoesPermissoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
@@ -1043,6 +1051,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
+  '/app/configuracoes/permissoes': typeof AppConfiguracoesPermissoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
@@ -1179,6 +1188,7 @@ export interface FileRoutesById {
   '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
+  '/app/configuracoes/permissoes': typeof AppConfiguracoesPermissoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
@@ -1316,6 +1326,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
+    | '/app/configuracoes/permissoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
     | '/app/configuracoes/scoring'
@@ -1446,6 +1457,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
+    | '/app/configuracoes/permissoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
     | '/app/configuracoes/scoring'
@@ -1581,6 +1593,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
+    | '/app/configuracoes/permissoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
     | '/app/configuracoes/scoring'
@@ -2406,6 +2419,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesPlanoContasRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/permissoes': {
+      id: '/app/configuracoes/permissoes'
+      path: '/permissoes'
+      fullPath: '/app/configuracoes/permissoes'
+      preLoaderRoute: typeof AppConfiguracoesPermissoesRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/notificacoes': {
       id: '/app/configuracoes/notificacoes'
       path: '/notificacoes'
@@ -2667,6 +2687,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesImportarRoute: typeof AppConfiguracoesImportarRoute
   AppConfiguracoesModulosRoute: typeof AppConfiguracoesModulosRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
+  AppConfiguracoesPermissoesRoute: typeof AppConfiguracoesPermissoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
   AppConfiguracoesScoringRoute: typeof AppConfiguracoesScoringRoute
@@ -2690,6 +2711,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesImportarRoute: AppConfiguracoesImportarRoute,
   AppConfiguracoesModulosRoute: AppConfiguracoesModulosRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
+  AppConfiguracoesPermissoesRoute: AppConfiguracoesPermissoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
   AppConfiguracoesScoringRoute: AppConfiguracoesScoringRoute,
