@@ -1,192 +1,159 @@
-# CLAUDE.md — imoB365 SaaS
+# imoB365 SaaS — Contexto para Claude Code
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> Leia este arquivo inteiro antes de qualquer ação no projeto.
+> Atualizado: 2026-06-22
 
-## Project Context
+## O Projeto
 
-**imoB365** is a multi-tenant SaaS platform for the Brazilian real estate market.
-The imoB365 imobiliária itself is **Tenant 0** — the primary validation case (luxury segment, Litoral Sul de SP).
+imoB365 é um SaaS imobiliário multi-tenant brasileiro.
+Stack: React 19 + TypeScript + TanStack Router/Query + Supabase (PostgreSQL + RLS + Auth) + Cloudflare Workers + Gemini API.
 
-### Strategic Goal
-
-Transform imoB365 (luxury real estate agency) into a SaaS product, using its own operation as the validation case before go-to-market to other regional brokers and agencies.
-
-### Modules (5 Pillars)
-
-1. **Vendas** — properties, leads, pipeline CRM
-2. **Financeiro** — commissions, billing, accounting
-3. **Marketing** — automated campaigns, WhatsApp via Evolution API
-4. **Jurídico** — contracts, digital signature, compliance
-5. **E-Learning** — broker training, courses, certifications
+Repo GitHub: `brunoferraro1982/imoB365---Google-AI-Studio`
+Especificação funcional completa: `/mnt/c/Users/bruno/Claude/Projects/imoB365 SAAS/imoB365-EspecificacaoFuncional-v1.0.docx`
 
 ---
 
-## Commands
-
-```bash
-# Development
-npm run dev          # Start dev server (Vite, port 8080)
-npm run build        # Production build
-npm run build:dev    # Development build
-npm run preview      # Preview production build
-
-# Code quality
-npm run lint         # ESLint
-npm run format       # Prettier (write)
-```
-
-No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
-
----
-
-## Architecture Overview
-
-### Stack
-
-- **Framework**: TanStack Start (SSR + file-based routing) + React 19
-- **Routing**: TanStack Router — `src/routeTree.gen.ts` is auto-generated; **never edit manually**
-- **State/Data**: TanStack Query (`@tanstack/react-query`)
-- **Backend/DB**: Supabase (Postgres + Auth + Realtime + RLS)
-- **AI**: Google Gemini via `@google/genai` (`src/lib/ai.functions.ts`)
-- **Styling**: Tailwind CSS v4 + shadcn/ui (Radix UI primitives in `src/components/ui/`)
-- **Maps**: Leaflet + react-leaflet (`src/components/MapaImoveis.tsx`)
-- **Deployment**: Cloudflare Workers (via `@cloudflare/vite-plugin`)
-
-### Route Segments
-
-| Segment           | Purpose                                                        |
-| ----------------- | -------------------------------------------------------------- |
-| `/` (`index.tsx`) | Public landing page / property search portal                   |
-| `/app/*`          | Authenticated back-office (tenant CRM) — guarded by `AppShell` |
-| `/admin/*`        | Super-admin panel (multi-tenant management)                    |
-| `/conta/*`        | End-user account area (saved searches, favorites, chat)        |
-| `/site.$slug/*`   | White-label public site per tenant                             |
-| `/api/public/*`   | Server-only API routes (REST + XML feeds + cron)               |
-| `/lovable/*`      | Email queue and webhook infrastructure                         |
-
-### Multi-Tenancy
-
-Every tenant has a `tenant_id` UUID in the `tenants` table. Supabase RLS enforces isolation.
-The authenticated user's `tenant_id` is loaded by `useAuth()` from `profiles` and **must be passed to all Supabase queries** in the `/app` area.
-
-### Auth & Roles
-
-`src/hooks/useAuth.tsx` is the single source of truth for session state.
-
-Roles stored in `user_roles` and exposed as `AppRole`:
-
-- `super_admin` / `admin` / `broker` / `juridico` / `financeiro` / `atendente`
-
-Server functions use `requireSupabaseAuth` middleware (`src/integrations/supabase/auth-middleware.ts`).
-
-### Server Functions vs. Client Queries
-
-- **Server functions** (`createServerFn`): in `src/lib/*.functions.ts` — always protected with `requireSupabaseAuth`. Use for mutations or anything touching secrets.
-- **Direct Supabase client queries**: in route components for reads. Import from `@/integrations/supabase/client` (client) or `@/integrations/supabase/client.server` (server-only, has admin key).
-
-### Key `src/lib/` Modules
-
-| File                          | Purpose                                                                      |
-| ----------------------------- | ---------------------------------------------------------------------------- |
-| `ai.functions.ts`             | Gemini-powered text generation (property descriptions, scoring, chat)        |
-| `chat.functions.ts`           | Real-time chat between leads and brokers                                     |
-| `favoritos.functions.ts`      | Property favorites                                                           |
-| `buscas-salvas.functions.ts`  | Saved searches with email alert cron                                         |
-| `portais.ts`                  | Portal definitions (VivaReal, ZAP, OLX) — XML feeds at `/api/public/feeds/*` |
-| `contractTemplatesLibrary.ts` | Built-in contract template library                                           |
-| `format.ts`                   | Brazilian currency/number formatting (`formatBRL`, etc.)                     |
-| `whatsapp.ts`                 | WhatsApp deep-link generation                                                |
-
-### Environment Variables
+## Arquitetura de Autorização
 
 ```
-GEMINI_API_KEY                  # Google Gemini API (server-side only)
-SUPABASE_URL                    # Server-side Supabase URL
-SUPABASE_PUBLISHABLE_KEY        # Client-safe anon key
-VITE_SUPABASE_URL               # Build-time Supabase URL
-VITE_SUPABASE_PUBLISHABLE_KEY   # Build-time anon key
-APP_URL                         # Canonical URL (OAuth callbacks)
+Plano → Módulo → Feature → Perfil → Usuário
 ```
 
-> `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
+**Planos** (tabela `plans`, PK = `slug`):
+- `free` | `basic` | `standard` | `pro` | `business`
+- NÃO usar códigos `plan-free`, `plan-basic` etc. — slugs são sem prefixo
+
+**Módulos** (tabela `modules`, PK = `slug`):
+- Schema real: `slug, nome, descricao, requires_plan, core, parent_slug, sort_order, is_active`
+- `parent_slug IS NULL` = macro-módulo; `parent_slug IS NOT NULL` = feature
+- Macro-módulos: `imobiliario`, `financeiro`, `marketing`, `juridico`, `elearning`
+
+**Tenant×Módulo** (tabela `tenant_modules`):
+- Usa ENUM `app_module`: `imobiliario, juridico, financeiro, marketing, ajustes, admin`
+- RLS por tenant ativo
+
+**Plan×Módulo** (tabelas `plan_modules`, `plan_features` — criadas Sprint 1):
+- FK usa `module_slug TEXT REFERENCES modules(slug)`
+- Trigger `fn_auto_plan_features`: liberar módulo → auto-libera todas as features filhas
+
+**Perfis de usuário** (tabela `user_profiles`, PK = `code`):
+- `perfil-corretor` | `perfil-corret-imob` | `perfil-adm-imob`
+- `perfil-finac-imob` | `perfil-mkt-imob` | `perfil-jur-imob`
+
+**Permissões** (tabela `profile_permissions`):
+- PK: `(profile_code, feature_slug)` — FK em `modules(slug)`
 
 ---
 
-## 🔴 Known Critical Bugs (block release if unresolved)
+## Regras de Negócio Críticas
 
-### QA-01 — Timezone shift no calendário de visitas
+### Segurança (OWASP A01)
+- `aprovado` e `pagamento_validado` NUNCA vêm de `user_metadata` — fonte: tabela `profiles` + RLS
+- `user_metadata` é gravável pelo usuário via `supabase.auth.updateUser()` — não usar como gate de auth
 
-- **File**: `src/routes/app.visitas.tsx` (lines 41-45)
-- **Root cause**: `.toISOString()` converts to UTC, shifting 21:00 BRT to next day
-- **Fix**:
+### MFA
+- **REGRA FIXA**: `imob365br@gmail.com` tem `mfa_exempt = TRUE` — MFA NÃO ativo até produção
+- Perfis com MFA obrigatório: `perfil-adm-imob` (gestor) e `perfil-finac-imob` (financeiro)
+- Ativar MFA para o super admin APENAS ao fazer deploy em produção
 
-```typescript
-// WRONG — shifts timezone to UTC
-const k = new Date(v.data_hora).toISOString().slice(0, 10);
+### Módulos desabilitados
+- `mkt-aut` (automação de cadências): DESABILITADO em `plan_features` até aprovação de QA
 
-// CORRECT — uses local date getters
-const d = new Date(v.data_hora);
-const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+### Plano Business
+- Trial de 30 dias no signup; auto-converte para Free se não assinar
+- Edge function `convert-trial-to-free` trata a conversão automática
+
+### Gating pós-login (auth-gating.ts)
+Hierarquia de redirect:
+1. Email não verificado → `/conta/verificar-email`
+2. `aprovado=FALSE` + plano pago → `/pending-approval`
+3. `plan_status = canceled` → `/conta/plano-cancelado`
+4. `plan_status = past_due/suspended` → `/conta/pagamento-pendente`
+5. Trial expirado → converter para free → dashboard
+6. OK → `/app/dashboard`
+
+---
+
+## Estado Atual dos Sprints
+
+### Sprint 1 ✅ (branch: `feature/sprint1-auth-seguranca-planos`)
+- Fix OWASP A01: remove bypass `pagamento_validado` via user_metadata em `useAuth.tsx`
+- `src/lib/auth-social.ts`: OAuth centralizado (Google ativo; LinkedIn/Facebook com guard "em breve")
+- `src/lib/auth-gating.ts`: gating por plano e status
+- Migrations aplicadas no banco:
+  - `20260622000001`: complementa `plans` com `preco_anual`, `trial_dias`, `max_corretores`
+  - `20260622000002`: módulos, features, `plan_modules`, `plan_features`, trigger
+  - `20260622000003`: `user_profiles`, `profile_permissions`, `user_sessions`, colunas MFA em `profiles`, colunas `plan_code/plan_status` em `tenants`
+
+### Sprint 2 🔄 (branch: `feature/sprint2-mfa-callback`)
+Em andamento — migration `20260622000010_mfa_policies.sql` ainda não aplicada.
+
+**Bloqueio ativo**: migration `20260622000003` falhou em `audit_log` porque a tabela já existe
+com schema diferente do esperado.
+
+Schema real do `audit_log` (criado em `20260521133506_605c454f...sql`):
+→ Verificar com: `grep -iA 20 "audit_log" supabase/migrations/20260521133506_605c454f-c00c-4564-a148-270c98dd7965.sql`
+
+**Próximas ações Sprint 2:**
+1. Inspecionar schema real de `audit_log` e corrigir migration 003
+2. Re-aplicar migrations via `npx supabase db push`
+3. Verificar se `patch_auth_callback.py` integrou `resolveAuthGating` em `auth.callback.tsx`
+4. Verificar se `MfaGuard` foi injetado no layout autenticado
+5. Deploy edge function: `npx supabase functions deploy convert-trial-to-free`
+6. PR: `feature/sprint2-mfa-callback` → `develop`
+
+---
+
+## Diretório de Implementação
+
+```
+/mnt/c/Users/bruno/Claude/Projects/imoB365 SAAS/implementacao/
+├── sprint2/
+│   ├── implementar-sprint2.sh       ← master script Sprint 2
+│   ├── patches/
+│   │   ├── patch_auth_callback.py   ← integra resolveAuthGating
+│   │   └── patch_mfa_guard.py       ← cria MFA hook/component
+│   ├── migrations/
+│   │   └── 20260622000010_mfa_policies.sql
+│   └── edge-functions/
+│       └── convert-trial-to-free.ts
+├── patches/                         ← Sprint 1
+│   ├── patch_useauth.py
+│   ├── patch_login_social.py
+│   └── patch_email_gating.py
+└── migrations/                      ← Sprint 1
+    ├── 20260622000001_plans_seed.sql
+    ├── 20260622000002_modules_features_seed.sql
+    └── 20260622000003_profiles_audit_sessions.sql
 ```
 
-### QA-02 — UI sync issue em FotosManager
+---
 
-- **File**: `src/components/imoveis/FotosManager.tsx` (line 50)
-- **Root cause**: Sync condition `items.length !== fotos.length` misses thumbnail-only updates
-- **Fix**: Replace length comparison with deep key check or `useEffect` dependency on metadata
+## Git Flow
 
-### QA-03 — Authentication bypass em cron endpoints
-
-- **Files**: `src/routes/api.public.cron.buscas-alertas.ts`, `api.public.cron.visitas-notificacoes.ts`
-- **Root cause**: When `SUPABASE_PUBLISHABLE_KEY` is empty, `expected = ""` bypasses the auth check
-- **Fix**:
-
-```typescript
-// WRONG — empty string bypasses auth
-if (!expected || apikey !== expected) { ... }
-
-// CORRECT — explicit empty string check
-if (!expected || expected === "" || apikey !== expected) { ... }
-```
-
-### QA-04 — Race condition no super admin role loading
-
-- **File**: `src/hooks/useAuth.tsx` (lines 38-46)
-- **Root cause**: `setLoading(false)` called before `loadRoles()` and `loadProfile()` resolve
-- **Fix**: Use `Promise.all([loadRoles(id), loadProfile(id)])` before setting `loading = false`
+- Branch principal dev: `develop`
+- Features: `feature/sprint{N}-{descricao}`
+- Script mestre: `bash scripts/imob.sh` (existente no repo)
+- Sempre criar branch de `develop`, PR de volta para `develop`
 
 ---
 
-## Security Requirements (OWASP baseline)
+## Convenções de Schema
 
-- **RLS is mandatory** on every Supabase table — never skip it
-- `tenant_id` must be validated in every query in the `/app` area
-- `.env` must **never** be committed (Gitleaks in CI)
-- Validate all inputs with Zod on frontend AND server functions
-- Signed temporary URLs for documents (15min expiry) — never permanent public URLs
-- Rate limiting on auth endpoints (5 attempts → 15min block)
-
----
-
-## UI Component Guidelines
-
-`src/components/ui/` contains shadcn/ui components — prefer extending these over adding new UI libraries.
-
-Custom domain components live in:
-
-- `imoveis/` — property listing, detail, photos
-- `leads/` — CRM pipeline, kanban
-- `contratos/` — contracts, signatures
-- `financeiro/` — commissions, billing
-- `chat/` — real-time broker/lead chat
-- `site/` — white-label tenant site
-- `layout/` — shell, navigation, headers
+| Conceito | Coluna correta | Errado (não usar) |
+|---|---|---|
+| Plano (FK) | `plano_slug TEXT REFERENCES plans(slug)` | `plans(code)` |
+| Módulo (FK) | `module_slug TEXT REFERENCES modules(slug)` | `modules(code)` |
+| Nome de plano | `nome` | `name` |
+| Preço mensal | `preco_mensal` | `price_monthly` |
+| Limites | `limites JSONB` | `max_imoveis`, `max_users` |
+| Ativo | `ativo` | `is_active` (plans) |
 
 ---
 
-## Development Workflow
+## Providers OAuth
 
-- Branch per feature: `feature/nome-da-feature`
-- Commits in PT-BR: `feat: adiciona simulador de financiamento`
-- PR with review before merge to `main`
-- Reference QA_ROADMAP.md and CADERNO_DE_TESTES.md for validation
+- Google: **habilitado** no Supabase Dashboard
+- LinkedIn OIDC: desabilitado — ativar quando configurar no Supabase
+- Facebook: desabilitado — ativar quando configurar no Supabase
+- Para habilitar: descomentar em `src/lib/auth-social.ts` → array `PROVIDERS_ENABLED`
