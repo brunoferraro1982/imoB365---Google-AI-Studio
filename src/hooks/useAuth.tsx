@@ -14,6 +14,7 @@ export interface UserProfile {
   aprovado: boolean;
   pagamento_validado: boolean;
   pagamento_metodo: string | null;
+  onboarding_completed_at: string | null;
 }
 
 export function useAuth() {
@@ -71,7 +72,7 @@ export function useAuth() {
     const { data, error } = await supabase
       .from("profiles")
       .select(
-        "tenant_id, nome, avatar_url, tipo_usuario, plano_pretendido, imobiliaria_nome, aprovado, pagamento_validado, pagamento_metodo",
+        "tenant_id, nome, avatar_url, tipo_usuario, plano_pretendido, imobiliaria_nome, aprovado, pagamento_validado, pagamento_metodo, onboarding_completed_at",
       )
       .eq("id", userId)
       .maybeSingle();
@@ -95,6 +96,7 @@ export function useAuth() {
           aprovado: false,
           pagamento_validado: currentUser?.user_metadata?.pagamento_validado === true,
           pagamento_metodo: currentUser?.user_metadata?.pagamento_metodo ?? null,
+          onboarding_completed_at: null,
         };
       }
     }
@@ -118,6 +120,7 @@ export function useAuth() {
           false,
         pagamento_metodo:
           profileData.pagamento_metodo ?? currentUser?.user_metadata?.pagamento_metodo ?? null,
+        onboarding_completed_at: profileData.onboarding_completed_at ?? null,
       });
 
       // FIX [QA-04 / tenant_modules]: Carregar módulos habilitados aqui, dentro de

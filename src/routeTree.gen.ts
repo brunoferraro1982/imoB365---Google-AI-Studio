@@ -44,6 +44,9 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VisitaCheckinTokenRouteImport } from './routes/visita-checkin.$token'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as QueroAnunciarTenantSlugRouteImport } from './routes/quero-anunciar.$tenantSlug'
+import { Route as OnboardingPlanoRouteImport } from './routes/onboarding.plano'
+import { Route as OnboardingPerfilRouteImport } from './routes/onboarding.perfil'
+import { Route as OnboardingModulosRouteImport } from './routes/onboarding.modulos'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
 import { Route as DocsApiRouteImport } from './routes/docs.api'
@@ -318,6 +321,21 @@ const QueroAnunciarTenantSlugRoute = QueroAnunciarTenantSlugRouteImport.update({
   id: '/quero-anunciar/$tenantSlug',
   path: '/quero-anunciar/$tenantSlug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingPlanoRoute = OnboardingPlanoRouteImport.update({
+  id: '/plano',
+  path: '/plano',
+  getParentRoute: () => OnboardingRoute,
+} as any)
+const OnboardingPerfilRoute = OnboardingPerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => OnboardingRoute,
+} as any)
+const OnboardingModulosRoute = OnboardingModulosRouteImport.update({
+  id: '/modulos',
+  path: '/modulos',
+  getParentRoute: () => OnboardingRoute,
 } as any)
 const LSlugRoute = LSlugRouteImport.update({
   id: '/l/$slug',
@@ -850,7 +868,7 @@ export interface FileRoutesByFullPath {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -890,6 +908,9 @@ export interface FileRoutesByFullPath {
   '/docs/api': typeof DocsApiRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/onboarding/modulos': typeof OnboardingModulosRoute
+  '/onboarding/perfil': typeof OnboardingPerfilRoute
+  '/onboarding/plano': typeof OnboardingPlanoRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRouteWithChildren
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -982,7 +1003,7 @@ export interface FileRoutesByTo {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -1020,6 +1041,9 @@ export interface FileRoutesByTo {
   '/docs/api': typeof DocsApiRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/onboarding/modulos': typeof OnboardingModulosRoute
+  '/onboarding/perfil': typeof OnboardingPerfilRoute
+  '/onboarding/plano': typeof OnboardingPlanoRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRouteWithChildren
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -1116,7 +1140,7 @@ export interface FileRoutesById {
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
   '/minhas-buscas': typeof MinhasBuscasRoute
-  '/onboarding': typeof OnboardingRoute
+  '/onboarding': typeof OnboardingRouteWithChildren
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -1156,6 +1180,9 @@ export interface FileRoutesById {
   '/docs/api': typeof DocsApiRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/onboarding/modulos': typeof OnboardingModulosRoute
+  '/onboarding/perfil': typeof OnboardingPerfilRoute
+  '/onboarding/plano': typeof OnboardingPlanoRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRouteWithChildren
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -1293,6 +1320,9 @@ export interface FileRouteTypes {
     | '/docs/api'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/onboarding/modulos'
+    | '/onboarding/perfil'
+    | '/onboarding/plano'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -1423,6 +1453,9 @@ export interface FileRouteTypes {
     | '/docs/api'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/onboarding/modulos'
+    | '/onboarding/perfil'
+    | '/onboarding/plano'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -1558,6 +1591,9 @@ export interface FileRouteTypes {
     | '/docs/api'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/onboarding/modulos'
+    | '/onboarding/perfil'
+    | '/onboarding/plano'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -1654,7 +1690,7 @@ export interface RootRouteChildren {
   LgpdRoute: typeof LgpdRoute
   LoginRoute: typeof LoginRoute
   MinhasBuscasRoute: typeof MinhasBuscasRoute
-  OnboardingRoute: typeof OnboardingRoute
+  OnboardingRoute: typeof OnboardingRouteWithChildren
   PendingApprovalRoute: typeof PendingApprovalRoute
   PlanosRoute: typeof PlanosRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
@@ -1936,6 +1972,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/quero-anunciar/$tenantSlug'
       preLoaderRoute: typeof QueroAnunciarTenantSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/plano': {
+      id: '/onboarding/plano'
+      path: '/plano'
+      fullPath: '/onboarding/plano'
+      preLoaderRoute: typeof OnboardingPlanoRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/onboarding/perfil': {
+      id: '/onboarding/perfil'
+      path: '/perfil'
+      fullPath: '/onboarding/perfil'
+      preLoaderRoute: typeof OnboardingPerfilRouteImport
+      parentRoute: typeof OnboardingRoute
+    }
+    '/onboarding/modulos': {
+      id: '/onboarding/modulos'
+      path: '/modulos'
+      fullPath: '/onboarding/modulos'
+      preLoaderRoute: typeof OnboardingModulosRouteImport
+      parentRoute: typeof OnboardingRoute
     }
     '/l/$slug': {
       id: '/l/$slug'
@@ -2846,6 +2903,22 @@ const ContaRouteChildren: ContaRouteChildren = {
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 
+interface OnboardingRouteChildren {
+  OnboardingModulosRoute: typeof OnboardingModulosRoute
+  OnboardingPerfilRoute: typeof OnboardingPerfilRoute
+  OnboardingPlanoRoute: typeof OnboardingPlanoRoute
+}
+
+const OnboardingRouteChildren: OnboardingRouteChildren = {
+  OnboardingModulosRoute: OnboardingModulosRoute,
+  OnboardingPerfilRoute: OnboardingPerfilRoute,
+  OnboardingPlanoRoute: OnboardingPlanoRoute,
+}
+
+const OnboardingRouteWithChildren = OnboardingRoute._addFileChildren(
+  OnboardingRouteChildren,
+)
+
 interface SiteSlugRouteChildren {
   SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
 }
@@ -2877,7 +2950,7 @@ const rootRouteChildren: RootRouteChildren = {
   LgpdRoute: LgpdRoute,
   LoginRoute: LoginRoute,
   MinhasBuscasRoute: MinhasBuscasRoute,
-  OnboardingRoute: OnboardingRoute,
+  OnboardingRoute: OnboardingRouteWithChildren,
   PendingApprovalRoute: PendingApprovalRoute,
   PlanosRoute: PlanosRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,

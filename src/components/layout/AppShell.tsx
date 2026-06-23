@@ -172,6 +172,13 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     }
   }, [user, loading, variant, isSuperAdmin, navigate]);
 
+  // Onboarding guard: redireciona novos usuários sem onboarding concluído
+  useEffect(() => {
+    if (!loading && user && profile && !profile.onboarding_completed_at && !isSuperAdmin) {
+      navigate({ to: "/onboarding/perfil", replace: true });
+    }
+  }, [loading, user, profile, isSuperAdmin, navigate]);
+
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -249,9 +256,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 Assinatura
               </span>
               <span
-                className={`font-semibold text-right text-3xs ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}
+                className={`font-semibold text-right text-3xs ${["Free", "plan-free"].includes(profile.plano_pretendido ?? "") ? "text-green-600" : "text-amber-600"}`}
               >
-                {profile.plano_pretendido === "Free"
+                {["Free", "plan-free"].includes(profile.plano_pretendido ?? "")
                   ? "Grátis (Ativação Direta)"
                   : "Aguardando validação do pagamento"}
               </span>
