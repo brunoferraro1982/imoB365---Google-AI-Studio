@@ -71,13 +71,21 @@ The authenticated user's `tenant_id` is loaded by `useAuth()` from `profiles` an
 
 ### Auth & Roles
 
-`src/hooks/useAuth.tsx` is the single source of truth for session state.
+`src/hooks/useAuth.tsx` is the single source of truth for session state. Returns: `session`, `user`, `roles`, `enabledModules`, `tenantId`, `profile`, `tenantInfo`, `userPermissions`, `isSuperAdmin`, `isAdmin`, `loading`.
 
 Roles stored in `user_roles` and exposed as `AppRole`:
 
 - `super_admin` / `admin` / `broker` / `juridico` / `financeiro` / `atendente`
 
 Server functions use `requireSupabaseAuth` middleware (`src/integrations/supabase/auth-middleware.ts`).
+
+### Authorization Hierarchy
+
+**Plan → Module → Feature → Profile → User** (see spec §2.1)
+
+- Plan slugs: `plan-free` / `plan-basic` / `plan-stand` / `plan-pro` / `plan-busi`
+- Module codes: `mod-imob` / `mod-fin` / `mod-mkt` / `mod-juri` / `mod-elearn`
+- Profile codes: `perfil-corretor` / `perfil-corret-imob` / `perfil-adm-imob` / `perfil-finac-imob` / `perfil-mkt-imob` / `perfil-jur-imob`
 
 ### Server Functions vs. Client Queries
 
@@ -95,7 +103,9 @@ Server functions use `requireSupabaseAuth` middleware (`src/integrations/supabas
 | `portais.ts`                  | Portal definitions (VivaReal, ZAP, OLX) — XML feeds at `/api/public/feeds/*` |
 | `contractTemplatesLibrary.ts` | Built-in contract template library                                           |
 | `format.ts`                   | Brazilian currency/number formatting (`formatBRL`, etc.)                     |
-| `whatsapp.ts`                 | WhatsApp deep-link generation                                                |
+| `whatsapp.ts`                 | WhatsApp deep-link generation (wa.me links — Evolution API integration pending) |
+| `permissions.ts`              | RBAC matrix: `can()`, `canWithOverrides()`, `canAndEnabled()`               |
+| `team.functions.ts`           | Tenant team management (invite, list, remove members)                        |
 
 ### Environment Variables
 
@@ -112,51 +122,6 @@ APP_URL                         # Canonical URL (OAuth callbacks)
 
 ---
 
-## 🔴 Known Critical Bugs (block release if unresolved)
-
-### QA-01 — Timezone shift no calendário de visitas
-
-- **File**: `src/routes/app.visitas.tsx` (lines 41-45)
-- **Root cause**: `.toISOString()` converts to UTC, shifting 21:00 BRT to next day
-- **Fix**:
-
-```typescript
-// WRONG — shifts timezone to UTC
-const k = new Date(v.data_hora).toISOString().slice(0, 10);
-
-// CORRECT — uses local date getters
-const d = new Date(v.data_hora);
-const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-```
-
-### QA-02 — UI sync issue em FotosManager
-
-- **File**: `src/components/imoveis/FotosManager.tsx` (line 50)
-- **Root cause**: Sync condition `items.length !== fotos.length` misses thumbnail-only updates
-- **Fix**: Replace length comparison with deep key check or `useEffect` dependency on metadata
-
-### QA-03 — Authentication bypass em cron endpoints
-
-- **Files**: `src/routes/api.public.cron.buscas-alertas.ts`, `api.public.cron.visitas-notificacoes.ts`
-- **Root cause**: When `SUPABASE_PUBLISHABLE_KEY` is empty, `expected = ""` bypasses the auth check
-- **Fix**:
-
-```typescript
-// WRONG — empty string bypasses auth
-if (!expected || apikey !== expected) { ... }
-
-// CORRECT — explicit empty string check
-if (!expected || expected === "" || apikey !== expected) { ... }
-```
-
-### QA-04 — Race condition no super admin role loading
-
-- **File**: `src/hooks/useAuth.tsx` (lines 38-46)
-- **Root cause**: `setLoading(false)` called before `loadRoles()` and `loadProfile()` resolve
-- **Fix**: Use `Promise.all([loadRoles(id), loadProfile(id)])` before setting `loading = false`
-
----
-
 ## Security Requirements (OWASP baseline)
 
 - **RLS is mandatory** on every Supabase table — never skip it
@@ -165,6 +130,9 @@ if (!expected || expected === "" || apikey !== expected) { ... }
 - Validate all inputs with Zod on frontend AND server functions
 - Signed temporary URLs for documents (15min expiry) — never permanent public URLs
 - Rate limiting on auth endpoints (5 attempts → 15min block)
+- `aprovado` and `pagamento_validado` must **never** be read from `user_metadata` — always from `profiles` table
+- `mod-mkt-aut` (Marketing Automation) is **DISABLED** in `plan_features` until QA approval
+- `imob365br@gmail.com` has `mfa_exempt = TRUE` — MFA not enforced until production
 
 ---
 
@@ -180,13 +148,45 @@ Custom domain components live in:
 - `financeiro/` — commissions, billing
 - `chat/` — real-time broker/lead chat
 - `site/` — white-label tenant site
-- `layout/` — shell, navigation, headers
+- `layout/` — shell, navigation, headers (`AppShell`, `SuspendedModal`, `TrialBanner`, `TrialExpiredModal`)
 
 ---
 
 ## Development Workflow
 
-- Branch per feature: `feature/nome-da-feature`
+- Branch per feature: `feature/nome-da-feature` branched from `develop`
+- PRs target `develop` (not `main`)
 - Commits in PT-BR: `feat: adiciona simulador de financiamento`
-- PR with review before merge to `main`
-- Reference QA_ROADMAP.md and CADERNO_DE_TESTES.md for validation
+- Merge order for open PRs: Sprint 2 → 3 → 4 → 5 → 6 → 7 → 8 (each independent from develop)
+- Reference CADERNO_DE_TESTES.md for manual QA validation
+
+---
+
+## Roadmap de Sprints
+
+### ✅ Concluídos
+
+| Sprint   | Escopo                                      | Branch                            | PR  |
+| :------- | :------------------------------------------ | :-------------------------------- | :-- |
+| 1–2      | Fundação de segurança e dados               | `feature/sprint1-*`               | #1  |
+| 3–4      | Autenticação avançada (MFA, callback guard) | `feature/sprint2-mfa-callback`    | #2  |
+| 5–6      | Onboarding 3 etapas + Trial Business 30d   | `feature/sprint4-onboarding`      | #4  |
+| 5–6      | Trial notifications + cron auto-downgrade   | `feature/sprint5-trial-notif`     | #5  |
+| 9–10     | RBAC completo — user_permissions + UI       | `feature/sprint6-rbac-permissions`| #7  |
+| 11–12    | Ciclo de vida do plano (upgrade/downgrade/suspensão/cancelamento) | `feature/sprint7-plan-lifecycle` | #8 |
+| 13–14    | LGPD + auditoria de eventos sensíveis       | `feature/sprint8-lgpd-audit`      | #9  |
+
+### 📋 Backlog (próximas versões)
+
+- Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
+- API pública documentada (Swagger/OpenAPI) para integrações externas
+- SLA formal documentado nos Termos de Uso
+- Módulo de Atendimento ao Contratante (suporte in-app, tickets, chat)
+- `mod-mkt-aut` — Cadências de automação (em desenvolvimento; bloqueado até QA)
+- Integração CRECI via API nacional para validação de matrícula
+- NPS in-app após 30 dias de uso ativo
+- Health score de tenant para CS (Customer Success)
+- WhatsApp via Evolution API (integração real — substituir deep-link atual em `whatsapp.ts`)
+- Deploy em produção (Cloudflare Workers)
+- Gateway de pagamento (Stripe / Pagar.me)
+- CI/CD com SAST/DAST (GitHub Actions)
