@@ -62,6 +62,7 @@ import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
 import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
@@ -408,6 +409,11 @@ const AppPortaisRoute = AppPortaisRouteImport.update({
 const AppEncurtadorRoute = AppEncurtadorRouteImport.update({
   id: '/encurtador',
   path: '/encurtador',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContratacaoRoute = AppContratacaoRouteImport.update({
@@ -879,6 +885,7 @@ export interface FileRoutesByFullPath {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1011,6 +1018,7 @@ export interface FileRoutesByTo {
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1147,6 +1155,7 @@ export interface FileRoutesById {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1285,6 +1294,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1417,6 +1427,7 @@ export interface FileRouteTypes {
     | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1552,6 +1563,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -2073,6 +2085,13 @@ declare module '@tanstack/react-router' {
       path: '/encurtador'
       fullPath: '/app/encurtador'
       preLoaderRoute: typeof AppEncurtadorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/contratacao': {
@@ -2751,6 +2770,7 @@ interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppEncurtadorRoute: typeof AppEncurtadorRoute
   AppPortaisRoute: typeof AppPortaisRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
@@ -2793,6 +2813,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppEncurtadorRoute: AppEncurtadorRoute,
   AppPortaisRoute: AppPortaisRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,

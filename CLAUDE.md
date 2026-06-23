@@ -85,22 +85,19 @@ Hierarquia de redirect:
   - `20260622000002`: módulos, features, `plan_modules`, `plan_features`, trigger
   - `20260622000003`: `user_profiles`, `profile_permissions`, `user_sessions`, colunas MFA em `profiles`, colunas `plan_code/plan_status` em `tenants`
 
-### Sprint 2 🔄 (branch: `feature/sprint2-mfa-callback`)
-Em andamento — migration `20260622000010_mfa_policies.sql` ainda não aplicada.
+### Sprint 2 ✅ (branch: `feature/sprint2-mfa-callback` → PR #3 → `develop`)
+- MFA: `MfaGuard` + `useMfaGuard` (AAL/TOTP), página `/conta/mfa-setup`, migration `20260622000010_mfa_policies`
+- Auth gating: `resolveAuthGating` integrado em `auth.callback.tsx` (email/password + OAuth)
+- `useAuth.tsx`: recuperação automática de sessão "Legacy API keys" (auto sign-out)
+- `app.admin.aprovacoes`: reescrito para usar `profiles.aprovado` (pending_registrations não existe)
+- Migrations aplicadas: `20260622000003` (audit_log fix + sessions + MFA cols) e `20260622000010`
+- Edge function `convert-trial-to-free` deployada
 
-**Bloqueio ativo**: migration `20260622000003` falhou em `audit_log` porque a tabela já existe
-com schema diferente do esperado.
-
-Schema real do `audit_log` (criado em `20260521133506_605c454f...sql`):
-→ Verificar com: `grep -iA 20 "audit_log" supabase/migrations/20260521133506_605c454f-c00c-4564-a148-270c98dd7965.sql`
-
-**Próximas ações Sprint 2:**
-1. Inspecionar schema real de `audit_log` e corrigir migration 003
-2. Re-aplicar migrations via `npx supabase db push`
-3. Verificar se `patch_auth_callback.py` integrou `resolveAuthGating` em `auth.callback.tsx`
-4. Verificar se `MfaGuard` foi injetado no layout autenticado
-5. Deploy edge function: `npx supabase functions deploy convert-trial-to-free`
-6. PR: `feature/sprint2-mfa-callback` → `develop`
+### Sprint 3 ✅ (branch: `feature/sprint3-onboarding-wizard` → PR #4 → `develop`)
+- `OnboardingCard` + `useOnboarding`: checklist de 5 etapas auto-detectadas no dashboard
+- Migration `20260622000020`: coluna `onboarding_dismissed_at` em `tenants`
+- Rota `/app/dashboard` criada; `/app/` redireciona para `/app/dashboard`
+- `auth-gating.ts`: OK → `/app/dashboard`; trial expirado → `/app/dashboard?trial_expired=1`
 
 ---
 

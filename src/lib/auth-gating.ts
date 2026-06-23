@@ -7,7 +7,7 @@
  * 3. Inadimplente                  → /conta/pagamento-pendente
  * 4. Trial expirado                → converte para Free, segue ao dashboard
  * 5. Sem plano (fallback free)     → acesso com limites do Free
- * 6. OK                            → /app
+ * 6. OK                            → /app/dashboard
  *
  * Nota: email_verified não existe em profiles — verificação de email é
  * gerenciada pelo Supabase Auth nativamente (auth.users.email_confirmed_at).
@@ -82,7 +82,7 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
         await supabase.functions.invoke("convert-trial-to-free", {
           body: { tenant_id: tenant.id ?? null }
         }).catch(() => null); // Não bloquear login se a edge function falhar
-        return { redirect: "/app?trial_expired=1", reason: "trial_expired" };
+        return { redirect: "/app/dashboard?trial_expired=1", reason: "trial_expired" };
       }
     }
   }
