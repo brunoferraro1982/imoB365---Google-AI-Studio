@@ -33,7 +33,7 @@ function AuthCallback() {
       // OAuth users: check onboarding / approval status
       const { data: profile } = await supabase
         .from("profiles")
-        .select("tipo_usuario, status, aprovado")
+        .select("tipo_usuario, aprovado")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -44,7 +44,7 @@ function AuthCallback() {
       }
 
       // Pending approval
-      if ((profile as any).status === "pending_approval" || !profile.aprovado) {
+      if (!profile.aprovado) {
         void navigate({ to: "/pending-approval", replace: true });
         return;
       }

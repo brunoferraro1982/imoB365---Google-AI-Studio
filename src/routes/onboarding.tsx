@@ -53,12 +53,16 @@ function Onboarding() {
           nome: displayName,
           tipo_usuario: tipo,
           imobiliaria_nome: tipo === "imobiliaria" ? imobiliariaNome || null : null,
-          status: "pending_approval",
-          oauth_provider: provider,
+          aprovado: false,
         } as any)
         .eq("id", userId);
 
-      if (profileError) throw profileError;
+      if (profileError) throw new Error(profileError.message);
+
+      // Salva CRECI e provider em user_metadata (não há coluna própria em profiles)
+      const metaUpdate: Record<string, string> = { oauth_provider: provider };
+      if (tipo === "corretor" && creci.trim()) metaUpdate.creci = creci.trim();
+      await supabase.auth.updateUser({ data: metaUpdate });
 
       // Cadastro consolidado em profiles; revisão feita na fila de aprovação (/admin).
 
