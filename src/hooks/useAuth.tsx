@@ -28,7 +28,12 @@ export function useAuth() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
+    } = supabase.auth.onAuthStateChange((event, s) => {
+      // TOKEN_REFRESH_FAILED = sessão legada inválida — signOut limpa localStorage
+      if (event === "TOKEN_REFRESHED" && !s) {
+        void supabase.auth.signOut();
+        return;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
@@ -45,7 +50,13 @@ export function useAuth() {
       }
     });
 
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: s }, error }) => {
+      // Sessão inválida (ex: legacy key, token expirado sem refresh) — limpar e redirecionar
+      if (error?.message?.includes("Legacy API") || error?.message?.includes("invalid_grant")) {
+        await supabase.auth.signOut();
+        setLoading(false);
+        return;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {

@@ -59,19 +59,29 @@ FROM public.modules WHERE parent_slug IS NOT NULL
 ON CONFLICT DO NOTHING;
 
 -- ── Tabela de audit log (append-only) ────────────────────────────────────
+-- A tabela audit_log já existe desde migration 20260521133506 com schema original
+-- (entity, entity_id, metadata, ip). CREATE TABLE IF NOT EXISTS é no-op.
+-- Colunas novas são adicionadas via ALTER TABLE abaixo.
 CREATE TABLE IF NOT EXISTS audit_log (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   UUID,
-  user_id     UUID,
-  action      TEXT NOT NULL,       -- 'login', 'logout', 'create', 'update', 'delete', 'plan_change', etc.
-  resource    TEXT,                 -- 'imovel', 'lead', 'user', 'plan', etc.
-  resource_id TEXT,
-  old_value   JSONB,
-  new_value   JSONB,
-  ip_address  INET,
-  user_agent  TEXT,
+  tenant_id   UUID REFERENCES public.tenants(id) ON DELETE SET NULL,
+  user_id     UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  action      TEXT NOT NULL,
+  entity      TEXT,
+  entity_id   TEXT,
+  metadata    JSONB NOT NULL DEFAULT '{}',
+  ip          TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Colunas adicionais Sprint 1/2 (idempotente)
+ALTER TABLE audit_log
+  ADD COLUMN IF NOT EXISTS resource    TEXT,
+  ADD COLUMN IF NOT EXISTS resource_id TEXT,
+  ADD COLUMN IF NOT EXISTS old_value   JSONB,
+  ADD COLUMN IF NOT EXISTS new_value   JSONB,
+  ADD COLUMN IF NOT EXISTS ip_address  INET,
+  ADD COLUMN IF NOT EXISTS user_agent  TEXT;
 
 -- Índices para queries de auditoria
 CREATE INDEX IF NOT EXISTS idx_audit_log_tenant    ON audit_log(tenant_id, created_at DESC);

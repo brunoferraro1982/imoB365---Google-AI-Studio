@@ -50,6 +50,7 @@ import { Route as DocsApiRouteImport } from './routes/docs.api'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
+import { Route as ContaMfaSetupRouteImport } from './routes/conta.mfa-setup'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -347,6 +348,11 @@ const ContaVisitasRoute = ContaVisitasRouteImport.update({
 const ContaPerfilRoute = ContaPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaMfaSetupRoute = ContaMfaSetupRouteImport.update({
+  id: '/mfa-setup',
+  path: '/mfa-setup',
   getParentRoute: () => ContaRoute,
 } as any)
 const ContaFavoritosRoute = ContaFavoritosRouteImport.update({
@@ -884,6 +890,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1014,6 +1021,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1150,6 +1158,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1287,6 +1296,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1417,6 +1427,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1552,6 +1563,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1977,6 +1989,13 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/conta/perfil'
       preLoaderRoute: typeof ContaPerfilRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/mfa-setup': {
+      id: '/conta/mfa-setup'
+      path: '/mfa-setup'
+      fullPath: '/conta/mfa-setup'
+      preLoaderRoute: typeof ContaMfaSetupRouteImport
       parentRoute: typeof ContaRoute
     }
     '/conta/favoritos': {
@@ -2827,6 +2846,7 @@ const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
+  ContaMfaSetupRoute: typeof ContaMfaSetupRoute
   ContaPerfilRoute: typeof ContaPerfilRoute
   ContaVisitasRoute: typeof ContaVisitasRoute
   ContaIndexRoute: typeof ContaIndexRoute
@@ -2837,6 +2857,7 @@ interface ContaRouteChildren {
 const ContaRouteChildren: ContaRouteChildren = {
   ContaBuscasRoute: ContaBuscasRoute,
   ContaFavoritosRoute: ContaFavoritosRoute,
+  ContaMfaSetupRoute: ContaMfaSetupRoute,
   ContaPerfilRoute: ContaPerfilRoute,
   ContaVisitasRoute: ContaVisitasRoute,
   ContaIndexRoute: ContaIndexRoute,

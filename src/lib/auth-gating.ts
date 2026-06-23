@@ -2,12 +2,15 @@
  * imoB365 — Auth Gating: controle de acesso pós-login
  *
  * Hierarquia de resolução:
- * 1. Email não verificado          → /conta/verificar-email
- * 2. Status = pendente (pago)      → /pending-approval
- * 3. Plano vencido/cancelado       → /conta/plano-vencido
- * 4. Inadimplente                  → /conta/pagamento-pendente
+ * 1. Status = pendente (pago)      → /pending-approval
+ * 2. Plano vencido/cancelado       → /conta/plano-cancelado
+ * 3. Inadimplente                  → /conta/pagamento-pendente
+ * 4. Trial expirado                → converte para Free, segue ao dashboard
  * 5. Sem plano (fallback free)     → acesso com limites do Free
- * 6. OK                            → /app/dashboard
+ * 6. OK                            → /app
+ *
+ * Nota: email_verified não existe em profiles — verificação de email é
+ * gerenciada pelo Supabase Auth nativamente (auth.users.email_confirmed_at).
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -30,7 +33,6 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
     .select(`
       id,
       aprovado,
-      email_verified,
       plano_pretendido,
       tipo_usuario,
       mfa_required,
@@ -49,13 +51,9 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
     return { redirect: "/login?error=profile_not_found", reason: "profile_not_found" };
   }
 
-  // ── 1. E-mail não verificado ────────────────────────────────────────────
-  if (profile.email_verified === false) {
-    return { redirect: "/conta/verificar-email", reason: "email_not_verified" };
-  }
-
-  // ── 2. Aguardando aprovação (plano pago) ────────────────────────────────
-  // aprovado = FALSE e plano_pretendido != free → na fila
+  // ── 1. Aguardando aprovação (plano pago) ─────────────────────────────────
+  // Email verification is handled by Supabase Auth natively (auth.users.email_confirmed_at).
+  // aprovado = FALSE e plano_pretendido != free → na fila de aprovação manual
   if (!profile.aprovado && profile.plano_pretendido !== "free") {
     return { redirect: "/pending-approval", reason: "pending_approval" };
   }
@@ -66,12 +64,12 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
     const now = new Date();
     const planStatus: PlanStatus = tenant.plan_status ?? "free";
 
-    // ── 3. Plano vencido ──────────────────────────────────────────────────
+    // ── 2. Plano vencido ──────────────────────────────────────────────────
     if (planStatus === "canceled") {
       return { redirect: "/conta/plano-cancelado", reason: "plan_canceled" };
     }
 
-    // ── 4. Inadimplente ───────────────────────────────────────────────────
+    // ── 3. Inadimplente ───────────────────────────────────────────────────
     if (planStatus === "past_due" || planStatus === "suspended") {
       return { redirect: "/conta/pagamento-pendente", reason: "past_due" };
     }
@@ -84,12 +82,12 @@ export async function resolveAuthGating(userId: string): Promise<GatingResult> {
         await supabase.functions.invoke("convert-trial-to-free", {
           body: { tenant_id: tenant.id ?? null }
         }).catch(() => null); // Não bloquear login se a edge function falhar
-        return { redirect: "/app/dashboard?trial_expired=1", reason: "trial_expired" };
+        return { redirect: "/app?trial_expired=1", reason: "trial_expired" };
       }
     }
   }
 
-  // ── 5. Sem plano → Free automático ────────────────────────────────────
+  // ── 4. Sem plano → Free automático ────────────────────────────────────
   // (RN-08: usuário sem plano trata como plan-free)
 
   return { redirect: null, reason: "ok" };

@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { MfaGuard } from "@/components/auth/MfaGuard";
 import { ChatBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import {
@@ -434,7 +435,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
         </aside>
 
         <main className="min-w-0 flex-1 overflow-x-hidden">
-          <Outlet />
+          <MfaGuard userId={user.id}>
+            <Outlet />
+          </MfaGuard>
         </main>
       </div>
     </div>
