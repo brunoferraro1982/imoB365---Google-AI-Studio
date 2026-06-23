@@ -4,6 +4,7 @@ import { Building2, Users, FileText, Banknote, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatBRL } from "@/lib/format";
+import { OnboardingCard } from "@/components/onboarding/OnboardingCard";
 
 export const Route = createFileRoute("/app/")({
   component: AppDashboard,
@@ -201,7 +202,10 @@ function AppDashboard() {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6 lg:col-span-4 shadow-sm space-y-5">
+        <div className="lg:col-span-4 space-y-5">
+          {tenantId && <OnboardingCard tenantId={tenantId} />}
+
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5">
           <div>
             <h2 className="font-bold text-lg text-foreground">Ações rápidas</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -237,6 +241,7 @@ function AppDashboard() {
               <span>+ Novo lançamento</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
             </Link>
+          </div>
           </div>
         </div>
       </div>

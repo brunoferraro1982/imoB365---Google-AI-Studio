@@ -4468,6 +4468,7 @@ export type Database = {
           dominio_proprio: string | null
           id: string
           nome: string
+          onboarding_dismissed_at: string | null
           plan_code: string | null
           plan_ends_at: string | null
           plan_starts_at: string | null
@@ -4487,6 +4488,7 @@ export type Database = {
           dominio_proprio?: string | null
           id?: string
           nome: string
+          onboarding_dismissed_at?: string | null
           plan_code?: string | null
           plan_ends_at?: string | null
           plan_starts_at?: string | null
@@ -4506,6 +4508,7 @@ export type Database = {
           dominio_proprio?: string | null
           id?: string
           nome?: string
+          onboarding_dismissed_at?: string | null
           plan_code?: string | null
           plan_ends_at?: string | null
           plan_starts_at?: string | null
