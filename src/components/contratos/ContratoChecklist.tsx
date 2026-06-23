@@ -37,13 +37,13 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
   async function load() {
     const [{ data: checkData }, { data: tplData }] = await Promise.all([
       supabase
-        .from("contrato_checklist" as any)
+        .from("contrato_checklist")
         .select("id,etapa,titulo,obrigatorio,ordem,concluido,concluido_em")
         .eq("contrato_id", contratoId)
         .order("etapa")
         .order("ordem"),
       supabase
-        .from("checklist_templates" as any)
+        .from("checklist_templates")
         .select("id,nome")
         .eq("tenant_id", tenantId)
         .eq("ativo", true),
@@ -60,7 +60,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
     if (!tplId) return;
     setApplying(true);
     const { data: tplItens } = await supabase
-      .from("checklist_template_itens" as any)
+      .from("checklist_template_itens")
       .select("etapa,titulo,obrigatorio,ordem")
       .eq("template_id", tplId)
       .order("ordem");
@@ -78,7 +78,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
       obrigatorio: i.obrigatorio,
       ordem: i.ordem,
     }));
-    const { error } = await supabase.from("contrato_checklist" as any).insert(rows);
+    const { error } = await supabase.from("contrato_checklist").insert(rows);
     setApplying(false);
     if (error) return toast.error(error.message);
     toast.success("Checklist aplicado");
@@ -88,7 +88,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
 
   async function toggle(item: ChecklistItem) {
     await supabase
-      .from("contrato_checklist" as any)
+      .from("contrato_checklist")
       .update({
         concluido: !item.concluido,
         concluido_em: !item.concluido ? new Date().toISOString() : null,
@@ -105,7 +105,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
 
   async function remove(id: string) {
     const { error } = await supabase
-      .from("contrato_checklist" as any)
+      .from("contrato_checklist")
       .delete()
       .eq("id", id);
     if (error) return toast.error(error.message);
@@ -117,7 +117,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
     if (!novoTitulo.trim()) return;
     const ordem = itens.filter((i) => i.etapa === novaEtapa).length + 1;
     const { data, error } = await supabase
-      .from("contrato_checklist" as any)
+      .from("contrato_checklist")
       .insert({
         tenant_id: tenantId,
         contrato_id: contratoId,

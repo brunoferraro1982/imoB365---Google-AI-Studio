@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +12,9 @@ export const Route = createFileRoute("/app/admin/aprovacoes")({
 
 interface PendingRegistration {
   id: string;
-  user_id: string;
-  email: string;
+  email: string | null;
   nome: string | null;
-  tipo_usuario: "corretor" | "imobiliaria";
-  creci: string | null;
-  cnpj: string | null;
+  tipo_usuario: string | null;
   imobiliaria_nome: string | null;
   created_at: string;
 }
@@ -29,16 +26,29 @@ function AdminAprovacoes() {
 
   async function loadRegistrations() {
     setLoading(true);
+    // pending_registrations não existe — pendentes são profiles com aprovado=false
+    // e plano_pretendido != free (cadastros via plano pago aguardando revisão manual)
     const { data, error } = await supabase
-      .from("pending_registrations")
-      .select("*")
-      .is("reviewed_at", null)
+      .from("profiles")
+      .select("id, nome, tipo_usuario, imobiliaria_nome, created_at, tenant_id")
+      .eq("aprovado", false)
+      .not("plano_pretendido", "eq", "free")
+      .not("plano_pretendido", "is", null)
       .order("created_at", { ascending: false });
 
     if (error) {
       toast.error("Erro ao carregar registros pendentes.");
     } else {
-      setRegistrations((data as PendingRegistration[]) ?? []);
+      // Enrich with email from auth.users via tenant or profile id
+      const rows: PendingRegistration[] = (data ?? []).map((p) => ({
+        id: p.id,
+        email: null, // email não disponível via RLS sem service_role
+        nome: p.nome,
+        tipo_usuario: p.tipo_usuario,
+        imobiliaria_nome: p.imobiliaria_nome,
+        created_at: p.created_at,
+      }));
+      setRegistrations(rows);
     }
     setLoading(false);
   }
@@ -49,46 +59,35 @@ function AdminAprovacoes() {
 
   async function handleApprove(reg: PendingRegistration) {
     setProcessing(reg.id);
-    try {
-      await supabase
-        .from("profiles")
-        .update({ status: "active", aprovado: true } as any)
-        .eq("id", reg.user_id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ aprovado: true } as never)
+      .eq("id", reg.id);
 
-      await supabase
-        .from("pending_registrations")
-        .update({ reviewed_at: new Date().toISOString() })
-        .eq("id", reg.id);
-
-      toast.success(`${reg.nome ?? reg.email} aprovado com sucesso.`);
-      setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
-    } catch {
+    if (error) {
       toast.error("Erro ao aprovar usuário.");
-    } finally {
-      setProcessing(null);
+    } else {
+      toast.success(`${reg.nome ?? reg.id} aprovado com sucesso.`);
+      setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
     }
+    setProcessing(null);
   }
 
   async function handleReject(reg: PendingRegistration) {
     setProcessing(reg.id);
-    try {
-      await supabase
-        .from("profiles")
-        .update({ status: "rejected" } as any)
-        .eq("id", reg.user_id);
+    // Rejeição: marcar como aprovado=false e limpar plano_pretendido para free
+    const { error } = await supabase
+      .from("profiles")
+      .update({ aprovado: false, plano_pretendido: "free" } as never)
+      .eq("id", reg.id);
 
-      await supabase
-        .from("pending_registrations")
-        .update({ reviewed_at: new Date().toISOString() })
-        .eq("id", reg.id);
-
-      toast.success(`${reg.nome ?? reg.email} rejeitado.`);
-      setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
-    } catch {
+    if (error) {
       toast.error("Erro ao rejeitar usuário.");
-    } finally {
-      setProcessing(null);
+    } else {
+      toast.success(`${reg.nome ?? reg.id} rejeitado.`);
+      setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
     }
+    setProcessing(null);
   }
 
   const formattedDate = (iso: string) =>
@@ -98,7 +97,6 @@ function AdminAprovacoes() {
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <h1 className="text-xl font-black tracking-tight flex items-center gap-2">
@@ -106,7 +104,7 @@ function AdminAprovacoes() {
             Aprovações Pendentes
           </h1>
           <p className="text-sm text-muted-foreground">
-            Novos cadastros via rede social aguardando validação do admin.
+            Novos cadastros em planos pagos aguardando validação.
           </p>
         </div>
         <Button
@@ -121,7 +119,6 @@ function AdminAprovacoes() {
         </Button>
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -140,10 +137,9 @@ function AdminAprovacoes() {
               key={reg.id}
               className="flex items-center justify-between p-4 rounded-xl border border-border bg-card gap-4 hover:border-border/80 transition-colors"
             >
-              {/* Left: user info */}
               <div className="flex items-center gap-3 min-w-0">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  {reg.tipo_usuario === "imobiliaria" ? (
+                  {reg.tipo_usuario === "perfil-adm-imob" ? (
                     <Building2 className="h-5 w-5 text-primary" />
                   ) : (
                     <User className="h-5 w-5 text-primary" />
@@ -152,40 +148,23 @@ function AdminAprovacoes() {
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm truncate">
-                      {reg.nome ?? reg.email}
+                      {reg.nome ?? reg.id}
                     </span>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] uppercase font-bold shrink-0"
-                    >
-                      {reg.tipo_usuario === "imobiliaria" ? "Imobiliária" : "Corretor"}
-                    </Badge>
+                    {reg.tipo_usuario && (
+                      <Badge variant="outline" className="text-[9px] uppercase font-bold shrink-0">
+                        {reg.tipo_usuario}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground truncate">{reg.email}</p>
-                  <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                    {reg.creci && (
-                      <span className="text-[10px] text-muted-foreground">
-                        CRECI: {reg.creci}
-                      </span>
-                    )}
-                    {reg.imobiliaria_nome && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {reg.imobiliaria_nome}
-                      </span>
-                    )}
-                    {reg.cnpj && (
-                      <span className="text-[10px] text-muted-foreground">
-                        CNPJ: {reg.cnpj}
-                      </span>
-                    )}
-                    <span className="text-[10px] text-muted-foreground/60">
-                      {formattedDate(reg.created_at)}
-                    </span>
-                  </div>
+                  {reg.imobiliaria_nome && (
+                    <p className="text-xs text-muted-foreground truncate">{reg.imobiliaria_nome}</p>
+                  )}
+                  <span className="text-[10px] text-muted-foreground/60">
+                    {formattedDate(reg.created_at)}
+                  </span>
                 </div>
               </div>
 
-              {/* Right: actions */}
               <div className="flex gap-2 shrink-0">
                 <Button
                   size="sm"

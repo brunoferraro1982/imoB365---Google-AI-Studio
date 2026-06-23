@@ -12,8 +12,90 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      assinaturas: {
+        Row: {
+          created_at: string
+          data_cancelamento: string | null
+          data_inicio: string
+          data_renovacao: string
+          id: string
+          metodo_pagamento: string | null
+          plan_id: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          updated_at: string
+          valor_pago: number | null
+        }
+        Insert: {
+          created_at?: string
+          data_cancelamento?: string | null
+          data_inicio?: string
+          data_renovacao: string
+          id?: string
+          metodo_pagamento?: string | null
+          plan_id: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id: string
+          updated_at?: string
+          valor_pago?: number | null
+        }
+        Update: {
+          created_at?: string
+          data_cancelamento?: string | null
+          data_inicio?: string
+          data_renovacao?: string
+          id?: string
+          metodo_pagamento?: string | null
+          plan_id?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          tenant_id?: string
+          updated_at?: string
+          valor_pago?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assinaturas_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assinaturas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -22,8 +104,14 @@ export type Database = {
           entity_id: string | null
           id: string
           ip: string | null
+          ip_address: unknown
           metadata: Json
+          new_value: Json | null
+          old_value: Json | null
+          resource: string | null
+          resource_id: string | null
           tenant_id: string | null
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
@@ -33,8 +121,14 @@ export type Database = {
           entity_id?: string | null
           id?: string
           ip?: string | null
+          ip_address?: unknown
           metadata?: Json
+          new_value?: Json | null
+          old_value?: Json | null
+          resource?: string | null
+          resource_id?: string | null
           tenant_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
@@ -44,8 +138,14 @@ export type Database = {
           entity_id?: string | null
           id?: string
           ip?: string | null
+          ip_address?: unknown
           metadata?: Json
+          new_value?: Json | null
+          old_value?: Json | null
+          resource?: string | null
+          resource_id?: string | null
           tenant_id?: string | null
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -924,6 +1024,447 @@ export type Database = {
         }
         Relationships: []
       }
+      elearning_aulas: {
+        Row: {
+          arquivo_url: string | null
+          conteudo_html: string | null
+          conteudo_url: string | null
+          created_at: string | null
+          descricao: string | null
+          duracao: number | null
+          duracao_min: number | null
+          gratuita: boolean | null
+          id: string
+          link_externo: string | null
+          modulo_id: string
+          obrigatoria: boolean | null
+          ordem: number | null
+          tenant_id: string
+          tipo: string | null
+          titulo: string
+          updated_at: string | null
+          video_url: string | null
+        }
+        Insert: {
+          arquivo_url?: string | null
+          conteudo_html?: string | null
+          conteudo_url?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: number | null
+          duracao_min?: number | null
+          gratuita?: boolean | null
+          id?: string
+          link_externo?: string | null
+          modulo_id: string
+          obrigatoria?: boolean | null
+          ordem?: number | null
+          tenant_id: string
+          tipo?: string | null
+          titulo: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          arquivo_url?: string | null
+          conteudo_html?: string | null
+          conteudo_url?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          duracao?: number | null
+          duracao_min?: number | null
+          gratuita?: boolean | null
+          id?: string
+          link_externo?: string | null
+          modulo_id?: string
+          obrigatoria?: boolean | null
+          ordem?: number | null
+          tenant_id?: string
+          tipo?: string | null
+          titulo?: string
+          updated_at?: string | null
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_aulas_modulo_id_fkey"
+            columns: ["modulo_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_modulos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_aulas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_certificados: {
+        Row: {
+          codigo: string | null
+          curso_id: string
+          emitido_em: string | null
+          id: string
+          matricula_id: string
+          pdf_url: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          codigo?: string | null
+          curso_id: string
+          emitido_em?: string | null
+          id?: string
+          matricula_id: string
+          pdf_url?: string | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          codigo?: string | null
+          curso_id?: string
+          emitido_em?: string | null
+          id?: string
+          matricula_id?: string
+          pdf_url?: string | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_certificados_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_certificados_matricula_id_fkey"
+            columns: ["matricula_id"]
+            isOneToOne: true
+            referencedRelation: "elearning_matriculas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_certificados_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_cursos: {
+        Row: {
+          carga_horaria_min: number | null
+          certificado: boolean | null
+          created_at: string | null
+          created_by: string | null
+          descricao: string | null
+          id: string
+          imagem_capa_url: string | null
+          nivel: string | null
+          ordem: number | null
+          slug: string | null
+          status: string | null
+          tenant_id: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          carga_horaria_min?: number | null
+          certificado?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          imagem_capa_url?: string | null
+          nivel?: string | null
+          ordem?: number | null
+          slug?: string | null
+          status?: string | null
+          tenant_id: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          carga_horaria_min?: number | null
+          certificado?: boolean | null
+          created_at?: string | null
+          created_by?: string | null
+          descricao?: string | null
+          id?: string
+          imagem_capa_url?: string | null
+          nivel?: string | null
+          ordem?: number | null
+          slug?: string | null
+          status?: string | null
+          tenant_id?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_cursos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_matriculas: {
+        Row: {
+          created_at: string | null
+          curso_id: string
+          data_conclusao: string | null
+          data_inicio: string | null
+          id: string
+          progresso: number | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          curso_id: string
+          data_conclusao?: string | null
+          data_inicio?: string | null
+          id?: string
+          progresso?: number | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          curso_id?: string
+          data_conclusao?: string | null
+          data_inicio?: string | null
+          id?: string
+          progresso?: number | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_matriculas_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_matriculas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_modulos: {
+        Row: {
+          created_at: string | null
+          curso_id: string
+          descricao: string | null
+          id: string
+          ordem: number | null
+          tenant_id: string
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          curso_id: string
+          descricao?: string | null
+          id?: string
+          ordem?: number | null
+          tenant_id: string
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          curso_id?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number | null
+          tenant_id?: string
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_modulos_curso_id_fkey"
+            columns: ["curso_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_cursos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_modulos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_progresso: {
+        Row: {
+          aula_id: string
+          concluida: boolean | null
+          concluida_em: string | null
+          created_at: string | null
+          id: string
+          matricula_id: string
+          nota_quiz: number | null
+          tempo_assistido: number | null
+          tenant_id: string
+          tentativas_quiz: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          aula_id: string
+          concluida?: boolean | null
+          concluida_em?: string | null
+          created_at?: string | null
+          id?: string
+          matricula_id: string
+          nota_quiz?: number | null
+          tempo_assistido?: number | null
+          tenant_id: string
+          tentativas_quiz?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          aula_id?: string
+          concluida?: boolean | null
+          concluida_em?: string | null
+          created_at?: string | null
+          id?: string
+          matricula_id?: string
+          nota_quiz?: number | null
+          tempo_assistido?: number | null
+          tenant_id?: string
+          tentativas_quiz?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_progresso_aula_id_fkey"
+            columns: ["aula_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_aulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_progresso_matricula_id_fkey"
+            columns: ["matricula_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_matriculas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_progresso_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_quiz_questoes: {
+        Row: {
+          enunciado: string
+          id: string
+          opcoes: Json | null
+          ordem: number | null
+          quiz_id: string
+          tipo: string | null
+        }
+        Insert: {
+          enunciado: string
+          id?: string
+          opcoes?: Json | null
+          ordem?: number | null
+          quiz_id: string
+          tipo?: string | null
+        }
+        Update: {
+          enunciado?: string
+          id?: string
+          opcoes?: Json | null
+          ordem?: number | null
+          quiz_id?: string
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_quiz_questoes_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elearning_quizzes: {
+        Row: {
+          aula_id: string
+          created_at: string | null
+          id: string
+          nota_minima: number | null
+          tenant_id: string
+          tentativas: number | null
+          titulo: string
+        }
+        Insert: {
+          aula_id: string
+          created_at?: string | null
+          id?: string
+          nota_minima?: number | null
+          tenant_id: string
+          tentativas?: number | null
+          titulo: string
+        }
+        Update: {
+          aula_id?: string
+          created_at?: string | null
+          id?: string
+          nota_minima?: number | null
+          tenant_id?: string
+          tentativas?: number | null
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elearning_quizzes_aula_id_fkey"
+            columns: ["aula_id"]
+            isOneToOne: false
+            referencedRelation: "elearning_aulas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elearning_quizzes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -1565,6 +2106,77 @@ export type Database = {
           },
           {
             foreignKeyName: "imovel_portais_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impulsionamentos: {
+        Row: {
+          assinatura_id: string | null
+          corretor_id: string
+          created_at: string
+          data_expiracao: string
+          data_inicio: string
+          id: string
+          imovel_id: string
+          status: Database["public"]["Enums"]["impulsionamento_status"]
+          tenant_id: string
+          tipo: Database["public"]["Enums"]["impulsionamento_tipo"]
+          valor_pago: number | null
+        }
+        Insert: {
+          assinatura_id?: string | null
+          corretor_id: string
+          created_at?: string
+          data_expiracao: string
+          data_inicio?: string
+          id?: string
+          imovel_id: string
+          status?: Database["public"]["Enums"]["impulsionamento_status"]
+          tenant_id: string
+          tipo?: Database["public"]["Enums"]["impulsionamento_tipo"]
+          valor_pago?: number | null
+        }
+        Update: {
+          assinatura_id?: string | null
+          corretor_id?: string
+          created_at?: string
+          data_expiracao?: string
+          data_inicio?: string
+          id?: string
+          imovel_id?: string
+          status?: Database["public"]["Enums"]["impulsionamento_status"]
+          tenant_id?: string
+          tipo?: Database["public"]["Enums"]["impulsionamento_tipo"]
+          valor_pago?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impulsionamentos_assinatura_id_fkey"
+            columns: ["assinatura_id"]
+            isOneToOne: false
+            referencedRelation: "assinaturas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impulsionamentos_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impulsionamentos_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impulsionamentos_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2647,11 +3259,14 @@ export type Database = {
           created_at: string
           depends_on: string[]
           descricao: string | null
+          is_active: boolean
           nome: string
+          parent_slug: string | null
           permissions: string[]
           requires_plan: string | null
           settings_schema: Json
           slug: string
+          sort_order: number
           updated_at: string
           versao: string
         }
@@ -2660,11 +3275,14 @@ export type Database = {
           created_at?: string
           depends_on?: string[]
           descricao?: string | null
+          is_active?: boolean
           nome: string
+          parent_slug?: string | null
           permissions?: string[]
           requires_plan?: string | null
           settings_schema?: Json
           slug: string
+          sort_order?: number
           updated_at?: string
           versao?: string
         }
@@ -2673,15 +3291,25 @@ export type Database = {
           created_at?: string
           depends_on?: string[]
           descricao?: string | null
+          is_active?: boolean
           nome?: string
+          parent_slug?: string | null
           permissions?: string[]
           requires_plan?: string | null
           settings_schema?: Json
           slug?: string
+          sort_order?: number
           updated_at?: string
           versao?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "modules_parent_slug_fkey"
+            columns: ["parent_slug"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["slug"]
+          },
           {
             foreignKeyName: "modules_requires_plan_fkey"
             columns: ["requires_plan"]
@@ -2850,6 +3478,39 @@ export type Database = {
           },
         ]
       }
+      plan_features: {
+        Row: {
+          feature_slug: string
+          included: boolean
+          plano_slug: string
+        }
+        Insert: {
+          feature_slug: string
+          included?: boolean
+          plano_slug: string
+        }
+        Update: {
+          feature_slug?: string
+          included?: boolean
+          plano_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_features_feature_slug_fkey"
+            columns: ["feature_slug"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "plan_features_plano_slug_fkey"
+            columns: ["plano_slug"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       plan_limits: {
         Row: {
           limit_key: string
@@ -2873,6 +3534,39 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "plans"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_modules: {
+        Row: {
+          included: boolean
+          module_slug: string
+          plano_slug: string
+        }
+        Insert: {
+          included?: boolean
+          module_slug: string
+          plano_slug: string
+        }
+        Update: {
+          included?: boolean
+          module_slug?: string
+          plano_slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_modules_module_slug_fkey"
+            columns: ["module_slug"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "plan_modules_plano_slug_fkey"
+            columns: ["plano_slug"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["slug"]
           },
         ]
       }
@@ -2930,10 +3624,13 @@ export type Database = {
           created_at: string
           id: string
           limites: Json
+          max_corretores: number | null
           modulos_incluidos: string[]
           nome: string
+          preco_anual: number | null
           preco_mensal: number
           slug: string
+          trial_dias: number
           updated_at: string
         }
         Insert: {
@@ -2941,10 +3638,13 @@ export type Database = {
           created_at?: string
           id?: string
           limites?: Json
+          max_corretores?: number | null
           modulos_incluidos?: string[]
           nome: string
+          preco_anual?: number | null
           preco_mensal?: number
           slug: string
+          trial_dias?: number
           updated_at?: string
         }
         Update: {
@@ -2952,10 +3652,13 @@ export type Database = {
           created_at?: string
           id?: string
           limites?: Json
+          max_corretores?: number | null
           modulos_incluidos?: string[]
           nome?: string
+          preco_anual?: number | null
           preco_mensal?: number
           slug?: string
+          trial_dias?: number
           updated_at?: string
         }
         Relationships: []
@@ -3005,6 +3708,57 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_permissions: {
+        Row: {
+          can_admin: boolean
+          can_approve: boolean
+          can_create: boolean
+          can_delete: boolean
+          can_edit: boolean
+          can_export: boolean
+          can_view: boolean
+          feature_slug: string
+          profile_code: string
+        }
+        Insert: {
+          can_admin?: boolean
+          can_approve?: boolean
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_export?: boolean
+          can_view?: boolean
+          feature_slug: string
+          profile_code: string
+        }
+        Update: {
+          can_admin?: boolean
+          can_approve?: boolean
+          can_create?: boolean
+          can_delete?: boolean
+          can_edit?: boolean
+          can_export?: boolean
+          can_view?: boolean
+          feature_slug?: string
+          profile_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_permissions_feature_slug_fkey"
+            columns: ["feature_slug"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "profile_permissions_profile_code_fkey"
+            columns: ["profile_code"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           aprovado: boolean | null
@@ -3012,9 +3766,12 @@ export type Database = {
           created_at: string
           id: string
           imobiliaria_nome: string | null
+          mfa_exempt: boolean
+          mfa_required: boolean
           nome: string | null
           pagamento_metodo: string | null
           pagamento_validado: boolean | null
+          plan_id: string | null
           plano_pretendido: string | null
           telefone: string | null
           tema_preferido: string
@@ -3028,9 +3785,12 @@ export type Database = {
           created_at?: string
           id: string
           imobiliaria_nome?: string | null
+          mfa_exempt?: boolean
+          mfa_required?: boolean
           nome?: string | null
           pagamento_metodo?: string | null
           pagamento_validado?: boolean | null
+          plan_id?: string | null
           plano_pretendido?: string | null
           telefone?: string | null
           tema_preferido?: string
@@ -3044,9 +3804,12 @@ export type Database = {
           created_at?: string
           id?: string
           imobiliaria_nome?: string | null
+          mfa_exempt?: boolean
+          mfa_required?: boolean
           nome?: string | null
           pagamento_metodo?: string | null
           pagamento_validado?: boolean | null
+          plan_id?: string | null
           plano_pretendido?: string | null
           telefone?: string | null
           tema_preferido?: string
@@ -3055,6 +3818,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -3698,10 +4468,15 @@ export type Database = {
           dominio_proprio: string | null
           id: string
           nome: string
+          plan_code: string | null
+          plan_ends_at: string | null
+          plan_starts_at: string | null
+          plan_status: string
           plano_slug: string | null
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
           tema: Json
+          trial_ends_at: string | null
           updated_at: string
           watermark: Json
         }
@@ -3712,10 +4487,15 @@ export type Database = {
           dominio_proprio?: string | null
           id?: string
           nome: string
+          plan_code?: string | null
+          plan_ends_at?: string | null
+          plan_starts_at?: string | null
+          plan_status?: string
           plano_slug?: string | null
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
@@ -3726,14 +4506,26 @@ export type Database = {
           dominio_proprio?: string | null
           id?: string
           nome?: string
+          plan_code?: string | null
+          plan_ends_at?: string | null
+          plan_starts_at?: string | null
+          plan_status?: string
           plano_slug?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "tenants_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["slug"]
+          },
           {
             foreignKeyName: "tenants_plano_slug_fkey"
             columns: ["plano_slug"]
@@ -3790,6 +4582,27 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          code: string
+          created_at: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -3821,6 +4634,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string
+          device_name: string | null
+          device_type: string | null
+          id: string
+          ip_address: unknown
+          last_active_at: string
+          revoked_at: string | null
+          tenant_id: string | null
+          token_hash: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown
+          last_active_at?: string
+          revoked_at?: string | null
+          tenant_id?: string | null
+          token_hash: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_name?: string | null
+          device_type?: string | null
+          id?: string
+          ip_address?: unknown
+          last_active_at?: string
+          revoked_at?: string | null
+          tenant_id?: string | null
+          token_hash?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       visitas: {
         Row: {
@@ -4124,6 +4979,8 @@ export type Database = {
         | "comercial_galpao"
         | "comercial_predio"
         | "outro"
+      impulsionamento_status: "ativo" | "expirado" | "cancelado"
+      impulsionamento_tipo: "destaque" | "super_destaque" | "topo_busca"
       lead_interacao_tipo:
         | "nota"
         | "ligacao"
@@ -4155,6 +5012,7 @@ export type Database = {
         | "fiador"
         | "procurador"
         | "outro"
+      subscription_status: "ativa" | "inadimplente" | "cancelada" | "trial"
       tenant_status: "trial" | "active" | "suspended" | "cancelled"
       visita_status:
         | "agendada"
@@ -4287,6 +5145,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: [
@@ -4337,6 +5198,8 @@ export const Constants = {
         "comercial_predio",
         "outro",
       ],
+      impulsionamento_status: ["ativo", "expirado", "cancelado"],
+      impulsionamento_tipo: ["destaque", "super_destaque", "topo_busca"],
       lead_interacao_tipo: [
         "nota",
         "ligacao",
@@ -4372,6 +5235,7 @@ export const Constants = {
         "procurador",
         "outro",
       ],
+      subscription_status: ["ativa", "inadimplente", "cancelada", "trial"],
       tenant_status: ["trial", "active", "suspended", "cancelled"],
       visita_status: [
         "agendada",

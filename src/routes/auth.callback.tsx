@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveAuthGating } from "@/lib/auth-gating";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -24,8 +25,10 @@ function AuthCallback() {
       const user = session.user;
       const provider = user.app_metadata?.provider as string | undefined;
 
-      // Email/password users: go straight to app (no onboarding needed)
+      // Email/password users: apply gating then go to app
       if (!provider || provider === "email") {
+        const { redirect: gr } = await resolveAuthGating(user.id);
+        if (gr) { void navigate({ to: gr as never, replace: true }); return; }
         void navigate({ to: "/app", replace: true });
         return;
       }
@@ -33,7 +36,7 @@ function AuthCallback() {
       // OAuth users: check onboarding / approval status
       const { data: profile } = await supabase
         .from("profiles")
-        .select("tipo_usuario, status, aprovado")
+        .select("tipo_usuario, aprovado")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -44,12 +47,14 @@ function AuthCallback() {
       }
 
       // Pending approval
-      if ((profile as any).status === "pending_approval" || !profile.aprovado) {
+      if (!profile.aprovado) {
         void navigate({ to: "/pending-approval", replace: true });
         return;
       }
 
-      // Approved & complete
+      // Approved & complete — apply gating (plan status, trial, etc.)
+      const { redirect: gr } = await resolveAuthGating(user.id);
+      if (gr) { void navigate({ to: gr as never, replace: true }); return; }
       void navigate({ to: "/app", replace: true });
     })();
   }, [navigate]);
