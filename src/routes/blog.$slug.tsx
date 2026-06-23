@@ -6,11 +6,26 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface BlogPost {
+  id: string
+  slug: string
+  titulo: string
+  excerpt: string | null
+  conteudo_html: string | null
+  imagem_capa_url: string | null
+  autor_nome: string | null
+  categorias: string[] | null
+  published_at: string | null
+  seo_title: string | null
+}
+
 // ─── Server function ────────────────────────────────────────────────────────
 
 const fetchPostBySlug = createServerFn({ method: 'GET' })
   .validator((slug: string) => slug)
-  .handler(async ({ data: slug }) => {
+  .handler(async ({ data: slug }): Promise<BlogPost> => {
     const { data, error } = await supabase
       .from('blog_posts')
       .select(
@@ -24,13 +39,13 @@ const fetchPostBySlug = createServerFn({ method: 'GET' })
     if (error) throw new Error(error.message)
     if (!data) throw new Error('Post não encontrado')
 
-    return data
+    return data as BlogPost
   })
 
 // ─── Route ──────────────────────────────────────────────────────────────────
 
 export const Route = createFileRoute('/blog/$slug')({
-  head: ({ loaderData }) => ({
+  head: ({ loaderData }: { loaderData?: BlogPost }) => ({
     meta: [
       { title: loaderData?.seo_title ?? loaderData?.titulo ?? 'Blog | imoB365' },
       { name: 'description', content: loaderData?.excerpt ?? '' },
@@ -69,7 +84,7 @@ const CAT_LABELS: Record<string, string> = {
 // ─── Component ──────────────────────────────────────────────────────────────
 
 function BlogPostPage() {
-  const post = Route.useLoaderData()
+  const post = Route.useLoaderData() as BlogPost
 
   const formattedDate = post.published_at
     ? new Intl.DateTimeFormat('pt-BR', {

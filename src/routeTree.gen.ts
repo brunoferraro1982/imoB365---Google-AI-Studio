@@ -50,6 +50,7 @@ import { Route as DocsApiRouteImport } from './routes/docs.api'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
+import { Route as ContaMfaSetupRouteImport } from './routes/conta.mfa-setup'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
@@ -61,6 +62,7 @@ import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
 import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
@@ -349,6 +351,11 @@ const ContaPerfilRoute = ContaPerfilRouteImport.update({
   path: '/perfil',
   getParentRoute: () => ContaRoute,
 } as any)
+const ContaMfaSetupRoute = ContaMfaSetupRouteImport.update({
+  id: '/mfa-setup',
+  path: '/mfa-setup',
+  getParentRoute: () => ContaRoute,
+} as any)
 const ContaFavoritosRoute = ContaFavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
@@ -402,6 +409,11 @@ const AppPortaisRoute = AppPortaisRouteImport.update({
 const AppEncurtadorRoute = AppEncurtadorRouteImport.update({
   id: '/encurtador',
   path: '/encurtador',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContratacaoRoute = AppContratacaoRouteImport.update({
@@ -873,6 +885,7 @@ export interface FileRoutesByFullPath {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -884,6 +897,7 @@ export interface FileRoutesByFullPath {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1004,6 +1018,7 @@ export interface FileRoutesByTo {
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1014,6 +1029,7 @@ export interface FileRoutesByTo {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1139,6 +1155,7 @@ export interface FileRoutesById {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/dashboard': typeof AppDashboardRoute
   '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1150,6 +1167,7 @@ export interface FileRoutesById {
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
+  '/conta/mfa-setup': typeof ContaMfaSetupRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
@@ -1276,6 +1294,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1287,6 +1306,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1407,6 +1427,7 @@ export interface FileRouteTypes {
     | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1417,6 +1438,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1541,6 +1563,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/dashboard'
     | '/app/encurtador'
     | '/app/portais'
     | '/app/relatorios'
@@ -1552,6 +1575,7 @@ export interface FileRouteTypes {
     | '/blog/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
+    | '/conta/mfa-setup'
     | '/conta/perfil'
     | '/conta/visitas'
     | '/corretor/$slug'
@@ -1979,6 +2003,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContaPerfilRouteImport
       parentRoute: typeof ContaRoute
     }
+    '/conta/mfa-setup': {
+      id: '/conta/mfa-setup'
+      path: '/mfa-setup'
+      fullPath: '/conta/mfa-setup'
+      preLoaderRoute: typeof ContaMfaSetupRouteImport
+      parentRoute: typeof ContaRoute
+    }
     '/conta/favoritos': {
       id: '/conta/favoritos'
       path: '/favoritos'
@@ -2054,6 +2085,13 @@ declare module '@tanstack/react-router' {
       path: '/encurtador'
       fullPath: '/app/encurtador'
       preLoaderRoute: typeof AppEncurtadorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/contratacao': {
@@ -2732,6 +2770,7 @@ interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
+  AppDashboardRoute: typeof AppDashboardRoute
   AppEncurtadorRoute: typeof AppEncurtadorRoute
   AppPortaisRoute: typeof AppPortaisRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
@@ -2774,6 +2813,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
+  AppDashboardRoute: AppDashboardRoute,
   AppEncurtadorRoute: AppEncurtadorRoute,
   AppPortaisRoute: AppPortaisRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
@@ -2827,6 +2867,7 @@ const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
+  ContaMfaSetupRoute: typeof ContaMfaSetupRoute
   ContaPerfilRoute: typeof ContaPerfilRoute
   ContaVisitasRoute: typeof ContaVisitasRoute
   ContaIndexRoute: typeof ContaIndexRoute
@@ -2837,6 +2878,7 @@ interface ContaRouteChildren {
 const ContaRouteChildren: ContaRouteChildren = {
   ContaBuscasRoute: ContaBuscasRoute,
   ContaFavoritosRoute: ContaFavoritosRoute,
+  ContaMfaSetupRoute: ContaMfaSetupRoute,
   ContaPerfilRoute: ContaPerfilRoute,
   ContaVisitasRoute: ContaVisitasRoute,
   ContaIndexRoute: ContaIndexRoute,

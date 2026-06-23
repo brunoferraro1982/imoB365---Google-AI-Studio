@@ -165,7 +165,7 @@ function AdminTenants() {
             slug,
             status: "active",
             plano_slug: (() => {
-                const norm = (x) =>
+                const norm = (x: string | null | undefined) =>
                   (x ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
                 const want = norm(user.plano_pretendido);
                 const found = plans.find((pl) => norm(pl.nome) === want || pl.slug === want);

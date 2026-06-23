@@ -1,1 +1,4 @@
 project_id = "rqwljbqvyiyajvrdpzao"
+
+[functions.expire-impulsionamentos]
+verify_jwt = true
