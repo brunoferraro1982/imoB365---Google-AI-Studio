@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ChatBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import {
@@ -44,6 +44,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { TrialBanner } from "@/components/layout/TrialBanner";
+import { TrialExpiredModal } from "@/components/layout/TrialExpiredModal";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
 type Module = { id: string; label: string; icon: typeof Building2; items: Item[]; requiredModule?: AppModule };
@@ -153,7 +155,8 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [] } = useAuth();
+  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [], tenantInfo } = useAuth();
+  const [trialDismissed, setTrialDismissed] = useState(false);
   // Detectar redirect de acesso negado
   const searchParams = useSearch({ strict: false }) as { forbidden?: string };
   const showForbidden = searchParams.forbidden === "1";
@@ -314,7 +317,18 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       ),
     ) ?? tenantModules[0];
 
+  const isTrialExpired =
+    !isSuperAdmin &&
+    !trialDismissed &&
+    tenantInfo?.status === "trial" &&
+    !!tenantInfo?.trial_ends_at &&
+    new Date(tenantInfo.trial_ends_at).getTime() < Date.now();
+
   return (
+    <>
+      {isTrialExpired && tenantInfo && (
+        <TrialExpiredModal tenantInfo={tenantInfo} onDismiss={() => setTrialDismissed(true)} />
+      )}
     <div className="flex min-h-screen flex-col bg-muted/20">
       {/* TOP MODULE BAR */}
       <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm">
@@ -434,10 +448,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
         </aside>
 
         <main className="min-w-0 flex-1 overflow-x-hidden">
+          {tenantInfo && !isTrialExpired && (
+            <TrialBanner tenantInfo={tenantInfo} />
+          )}
           <Outlet />
         </main>
       </div>
     </div>
+    </>
   );
 }
 
