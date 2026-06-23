@@ -44,6 +44,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { SuspendedModal } from "@/components/layout/SuspendedModal";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
 type Module = { id: string; label: string; icon: typeof Building2; items: Item[]; requiredModule?: AppModule };
@@ -153,7 +154,7 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [] } = useAuth();
+  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [], tenantInfo } = useAuth();
   // Detectar redirect de acesso negado
   const searchParams = useSearch({ strict: false }) as { forbidden?: string };
   const showForbidden = searchParams.forbidden === "1";
@@ -280,6 +281,11 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
         </div>
       </div>
     );
+  }
+
+  // Conta suspensa ou cancelada — bloqueia acesso (exceto super_admin)
+  if (!isSuperAdmin && tenantInfo && (tenantInfo.status === "suspended" || tenantInfo.status === "cancelled")) {
+    return <SuspendedModal status={tenantInfo.status} />;
   }
 
   if (variant === "admin") {

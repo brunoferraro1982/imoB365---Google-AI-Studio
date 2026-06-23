@@ -97,7 +97,7 @@ const FALLBACK_PLANS: Plan[] = [
 ];
 
 function PlanosPage() {
-  const { user } = useAuth();
+  const { user, tenantInfo } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -143,6 +143,7 @@ function PlanosPage() {
   }, []);
 
   const destaqueIdx = plans.findIndex((p) => p.nome === "Standard");
+  const currentPlanSlug = tenantInfo?.plano_slug ?? null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -180,12 +181,24 @@ function PlanosPage() {
               const cotaText =
                 cotaModulos === -1 ? "Ilimitados" : `${cotaModulos} módulos opcionais`;
               const destaque = i === destaqueIdx;
+              const isCurrent = currentPlanSlug === p.id;
               return (
                 <div
                   key={p.id}
-                  className={`relative flex flex-col rounded-xl border bg-card p-5 shadow-sm transition ${destaque ? "border-primary shadow-lg ring-1 ring-primary/40 xl:scale-[1.02]" : "border-border"}`}
+                  className={`relative flex flex-col rounded-xl border bg-card p-5 shadow-sm transition ${
+                    isCurrent
+                      ? "border-green-500 shadow-lg ring-1 ring-green-400/40"
+                      : destaque
+                      ? "border-primary shadow-lg ring-1 ring-primary/40 xl:scale-[1.02]"
+                      : "border-border"
+                  }`}
                 >
-                  {destaque && (
+                  {isCurrent && (
+                    <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-green-600 px-3 py-1 text-xs font-medium text-white">
+                      <Check className="h-3 w-3" /> Plano atual
+                    </span>
+                  )}
+                  {!isCurrent && destaque && (
                     <span className="absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
                       <Sparkles className="h-3 w-3" /> Mais popular
                     </span>
@@ -218,18 +231,24 @@ function PlanosPage() {
                     ))}
                   </ul>
                   <div className="mt-6 flex-1" />
-                  <Link
-                    to={user ? "/app/contratacao" : "/signup"}
-                    search={user ? { plano_id: p.id } : undefined}
-                    className="mt-4"
-                  >
-                    <Button
-                      className={`w-full ${destaque ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
-                      variant={destaque ? "default" : "outline"}
+                  {isCurrent ? (
+                    <Link to="/app/configuracoes/assinatura" className="mt-4">
+                      <Button className="w-full" variant="outline">Gerenciar assinatura</Button>
+                    </Link>
+                  ) : (
+                    <Link
+                      to={user ? "/app/configuracoes/assinatura" : "/signup"}
+                      search={!user ? { plano_id: p.id } : undefined}
+                      className="mt-4"
                     >
-                      Começar com {p.nome}
-                    </Button>
-                  </Link>
+                      <Button
+                        className={`w-full ${destaque ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+                        variant={destaque ? "default" : "outline"}
+                      >
+                        {user ? (p.preco_mensal > (currentPlanSlug ? 0 : 0) ? "Fazer upgrade" : "Fazer downgrade") : `Começar com ${p.nome}`}
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               );
             })}
