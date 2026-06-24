@@ -79,6 +79,14 @@ Roles stored in `user_roles` and exposed as `AppRole`:
 
 Server functions use `requireSupabaseAuth` middleware (`src/integrations/supabase/auth-middleware.ts`).
 
+#### Fluxo OAuth → Onboarding
+
+Usuários que entram via Google OAuth são redirecionados para `/auth/callback` → `/onboarding` (quando `tipo_usuario` ainda não está definido em `profiles`). Após o onboarding, vão para `/pending-approval`.
+
+**Colunas que existem em `profiles`**: `id`, `tenant_id`, `nome`, `avatar_url`, `telefone`, `tipo_usuario`, `plano_pretendido`, `imobiliaria_nome`, `aprovado`, `pagamento_validado`, `pagamento_metodo`, `tema_preferido`.
+
+**Não existem em `profiles`**: `status`, `oauth_provider`, `creci` — nunca referenciar essas colunas em queries. CRECI é salvo em `user_metadata` via `supabase.auth.updateUser()`. A coluna `status` pertence à tabela `tenants`.
+
 ### Authorization Hierarchy
 
 **Plan → Module → Feature → Profile → User** (see spec §2.1)
@@ -174,6 +182,15 @@ Custom domain components live in:
 | 9–10   | RBAC completo — user_permissions + UI                           | `feature/sprint6-rbac-permissions`  |
 | 11–12  | Ciclo de vida do plano (upgrade/downgrade/suspensão/cancelamento)| `feature/sprint7-plan-lifecycle`   |
 | 13–14  | LGPD + auditoria de eventos sensíveis                           | `feature/sprint8-lgpd-audit`        |
+
+### 🔧 Correções recentes (2026-06-22 / 2026-06-24)
+
+| Arquivo                          | Correção                                                                                      |
+| :------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `src/routes/planos.tsx`          | Toggle mensal/anual; limites spec §13.1 (5/20/60/140/∞); tabela comparativa de módulos       |
+| `supabase/migrations/20260622000090_plans_spec_align.sql` | Adiciona `price_annual` e corrige `preco_mensal`/`limites` nos 5 planos |
+| `src/routes/onboarding.tsx`      | Remove `status`/`oauth_provider` (colunas inexistentes); CRECI → `user_metadata`; erro real exibido |
+| `src/routes/auth.callback.tsx`   | Remove `status` do SELECT; aprovação via `!profile.aprovado`                                  |
 
 ### 📋 Backlog (próximas versões)
 
