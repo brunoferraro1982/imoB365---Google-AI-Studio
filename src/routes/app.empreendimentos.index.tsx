@@ -41,7 +41,8 @@ function EmpreendimentosPage() {
   }, [tenantId]);
 
   async function criar() {
-    if (!nome.trim() || !tenantId) return;
+    if (!nome.trim()) return toast.error("Digite o nome do empreendimento");
+    if (!tenantId) return toast.error("Sua conta ainda não está vinculada a uma imobiliária.");
     const { error } = await (supabase as any).from("empreendimentos").insert({
       tenant_id: tenantId,
       nome: nome.trim(),
@@ -49,6 +50,7 @@ function EmpreendimentosPage() {
     });
     if (error) return toast.error(error.message);
     setNome("");
+    toast.success("Empreendimento criado!");
     load();
   }
 

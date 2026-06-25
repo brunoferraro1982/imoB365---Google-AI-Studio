@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronLeft, Plus, Trash2, Calculator, Radio } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Calculator, Radio, ImagePlus, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/empreendimentos/$id")({
@@ -22,6 +22,7 @@ function EmpDetail() {
   const [simUnit, setSimUnit] = useState<any>(null);
   const [sim, setSim] = useState({ entrada: 20, prazoMeses: 360, juroAnual: 11 });
   const [liveSync, setLiveSync] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   async function load() {
     const { data: e } = await (supabase as any)
@@ -84,6 +85,39 @@ function EmpDetail() {
 
   async function patchEmp(p: any) {
     await (supabase as any).from("empreendimentos").update(p).eq("id", id);
+    load();
+  }
+
+  async function handleFotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length || !emp?.tenant_id) return;
+    setUploading(true);
+    const urls: string[] = [...(emp.fotos_urls ?? [])];
+    for (const file of files) {
+      const ext = file.name.split(".").pop() || "jpg";
+      const fname = `${crypto.randomUUID()}.${ext}`;
+      const path = `${emp.tenant_id}/emp-${id}/${fname}`;
+      const { error: upErr } = await supabase.storage.from("imovel-fotos").upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type,
+      });
+      if (upErr) {
+        toast.error("Upload falhou: " + upErr.message);
+        continue;
+      }
+      const publicUrl = supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
+      urls.push(publicUrl);
+    }
+    await (supabase as any).from("empreendimentos").update({ fotos_urls: urls }).eq("id", id);
+    setUploading(false);
+    load();
+  }
+
+  async function removeFoto(idx: number) {
+    const urls = [...(emp.fotos_urls ?? [])];
+    urls.splice(idx, 1);
+    await (supabase as any).from("empreendimentos").update({ fotos_urls: urls }).eq("id", id);
     load();
   }
 
@@ -183,6 +217,54 @@ function EmpDetail() {
             Publicar no site
           </label>
         </div>
+      </section>
+
+      {/* FOTOS DO EMPREENDIMENTO */}
+      <section className="rounded-xl border bg-card p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold flex items-center gap-2">
+            <Camera className="h-4 w-4 text-primary" />
+            Fotos do empreendimento
+          </h2>
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90">
+            <ImagePlus className="h-4 w-4" />
+            {uploading ? "Enviando…" : "Adicionar fotos"}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFotoUpload}
+              disabled={uploading}
+            />
+          </label>
+        </div>
+        {(emp.fotos_urls ?? []).length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {(emp.fotos_urls as string[]).map((url: string, i: number) => (
+              <div key={i} className="group relative overflow-hidden rounded-lg border border-border">
+                <img
+                  src={url}
+                  alt={`Foto ${i + 1}`}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeFoto(i)}
+                  className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white opacity-0 transition group-hover:opacity-100 hover:bg-red-700"
+                  title="Remover foto"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-10 text-center">
+            <Camera className="mb-2 h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">Nenhuma foto adicionada</p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border bg-card p-6">

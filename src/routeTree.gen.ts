@@ -24,6 +24,7 @@ import { Route as MinhasBuscasRouteImport } from './routes/minhas-buscas'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LgpdRouteImport } from './routes/lgpd'
 import { Route as FavoritosRouteImport } from './routes/favoritos'
+import { Route as EmpreendimentosRouteImport } from './routes/empreendimentos'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ContaRouteImport } from './routes/conta'
 import { Route as ConsultoriaRouteImport } from './routes/consultoria'
@@ -46,6 +47,7 @@ import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as QueroAnunciarTenantSlugRouteImport } from './routes/quero-anunciar.$tenantSlug'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
+import { Route as EmpreendimentoSlugRouteImport } from './routes/empreendimento.$slug'
 import { Route as DocsApiRouteImport } from './routes/docs.api'
 import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
@@ -218,6 +220,11 @@ const FavoritosRoute = FavoritosRouteImport.update({
   path: '/favoritos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmpreendimentosRoute = EmpreendimentosRouteImport.update({
+  id: '/empreendimentos',
+  path: '/empreendimentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContatoRoute = ContatoRouteImport.update({
   id: '/contato',
   path: '/contato',
@@ -327,6 +334,11 @@ const LSlugRoute = LSlugRouteImport.update({
 const ImovelSlugRoute = ImovelSlugRouteImport.update({
   id: '/imovel/$slug',
   path: '/imovel/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpreendimentoSlugRoute = EmpreendimentoSlugRouteImport.update({
+  id: '/empreendimento/$slug',
+  path: '/empreendimento/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsApiRoute = DocsApiRouteImport.update({
@@ -846,6 +858,7 @@ export interface FileRoutesByFullPath {
   '/consultoria': typeof ConsultoriaRoute
   '/conta': typeof ContaRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/empreendimentos': typeof EmpreendimentosRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -888,6 +901,7 @@ export interface FileRoutesByFullPath {
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/docs/api': typeof DocsApiRoute
+  '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
@@ -978,6 +992,7 @@ export interface FileRoutesByTo {
   '/comparar': typeof CompararRoute
   '/consultoria': typeof ConsultoriaRoute
   '/contato': typeof ContatoRoute
+  '/empreendimentos': typeof EmpreendimentosRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -1018,6 +1033,7 @@ export interface FileRoutesByTo {
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/docs/api': typeof DocsApiRoute
+  '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
@@ -1112,6 +1128,7 @@ export interface FileRoutesById {
   '/consultoria': typeof ConsultoriaRoute
   '/conta': typeof ContaRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/empreendimentos': typeof EmpreendimentosRoute
   '/favoritos': typeof FavoritosRoute
   '/lgpd': typeof LgpdRoute
   '/login': typeof LoginRoute
@@ -1154,6 +1171,7 @@ export interface FileRoutesById {
   '/conta/visitas': typeof ContaVisitasRoute
   '/corretor/$slug': typeof CorretorSlugRoute
   '/docs/api': typeof DocsApiRoute
+  '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
@@ -1249,6 +1267,7 @@ export interface FileRouteTypes {
     | '/consultoria'
     | '/conta'
     | '/contato'
+    | '/empreendimentos'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1291,6 +1310,7 @@ export interface FileRouteTypes {
     | '/conta/visitas'
     | '/corretor/$slug'
     | '/docs/api'
+    | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
     | '/quero-anunciar/$tenantSlug'
@@ -1381,6 +1401,7 @@ export interface FileRouteTypes {
     | '/comparar'
     | '/consultoria'
     | '/contato'
+    | '/empreendimentos'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1421,6 +1442,7 @@ export interface FileRouteTypes {
     | '/conta/visitas'
     | '/corretor/$slug'
     | '/docs/api'
+    | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
     | '/quero-anunciar/$tenantSlug'
@@ -1514,6 +1536,7 @@ export interface FileRouteTypes {
     | '/consultoria'
     | '/conta'
     | '/contato'
+    | '/empreendimentos'
     | '/favoritos'
     | '/lgpd'
     | '/login'
@@ -1556,6 +1579,7 @@ export interface FileRouteTypes {
     | '/conta/visitas'
     | '/corretor/$slug'
     | '/docs/api'
+    | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
     | '/quero-anunciar/$tenantSlug'
@@ -1650,6 +1674,7 @@ export interface RootRouteChildren {
   ConsultoriaRoute: typeof ConsultoriaRoute
   ContaRoute: typeof ContaRouteWithChildren
   ContatoRoute: typeof ContatoRoute
+  EmpreendimentosRoute: typeof EmpreendimentosRoute
   FavoritosRoute: typeof FavoritosRoute
   LgpdRoute: typeof LgpdRoute
   LoginRoute: typeof LoginRoute
@@ -1670,6 +1695,7 @@ export interface RootRouteChildren {
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   DocsApiRoute: typeof DocsApiRoute
+  EmpreendimentoSlugRoute: typeof EmpreendimentoSlugRoute
   ImovelSlugRoute: typeof ImovelSlugRoute
   LSlugRoute: typeof LSlugRoute
   QueroAnunciarTenantSlugRoute: typeof QueroAnunciarTenantSlugRoute
@@ -1795,6 +1821,13 @@ declare module '@tanstack/react-router' {
       path: '/favoritos'
       fullPath: '/favoritos'
       preLoaderRoute: typeof FavoritosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empreendimentos': {
+      id: '/empreendimentos'
+      path: '/empreendimentos'
+      fullPath: '/empreendimentos'
+      preLoaderRoute: typeof EmpreendimentosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contato': {
@@ -1949,6 +1982,13 @@ declare module '@tanstack/react-router' {
       path: '/imovel/$slug'
       fullPath: '/imovel/$slug'
       preLoaderRoute: typeof ImovelSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empreendimento/$slug': {
+      id: '/empreendimento/$slug'
+      path: '/empreendimento/$slug'
+      fullPath: '/empreendimento/$slug'
+      preLoaderRoute: typeof EmpreendimentoSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/api': {
@@ -2873,6 +2913,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsultoriaRoute: ConsultoriaRoute,
   ContaRoute: ContaRouteWithChildren,
   ContatoRoute: ContatoRoute,
+  EmpreendimentosRoute: EmpreendimentosRoute,
   FavoritosRoute: FavoritosRoute,
   LgpdRoute: LgpdRoute,
   LoginRoute: LoginRoute,
@@ -2893,6 +2934,7 @@ const rootRouteChildren: RootRouteChildren = {
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   DocsApiRoute: DocsApiRoute,
+  EmpreendimentoSlugRoute: EmpreendimentoSlugRoute,
   ImovelSlugRoute: ImovelSlugRoute,
   LSlugRoute: LSlugRoute,
   QueroAnunciarTenantSlugRoute: QueroAnunciarTenantSlugRoute,

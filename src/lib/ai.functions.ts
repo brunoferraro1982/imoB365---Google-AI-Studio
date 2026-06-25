@@ -3,23 +3,30 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+const DEFAULT_MODEL = "gemini-2.5-flash";
 
-// FIX [AI-MODEL]: "gemini-3.5-flash" não existe na API do Google — causava HTTP 404.
-// Usando gemini-2.0-flash: melhor custo-benefício latência/qualidade para geração de textos imobiliários.
-const DEFAULT_MODEL = "gemini-2.0-flash";
+let _ai: InstanceType<typeof GoogleGenAI> | null = null;
+
+function getAI(): InstanceType<typeof GoogleGenAI> {
+  if (_ai) return _ai;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "SUA_GEMINI_KEY") {
+    throw new Error(
+      "GEMINI_API_KEY não configurada. Substitua o valor placeholder no .env por uma chave válida do Google AI Studio.",
+    );
+  }
+  _ai = new GoogleGenAI({
+    apiKey,
+    httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+  });
+  return _ai;
+}
 
 async function callAI(
   messages: Array<{ role: string; content: string }>,
   opts?: { jsonMode?: boolean; model?: string },
 ) {
+  const ai = getAI();
   const systemMessage = messages.find((m) => m.role === "system")?.content;
   const userMessage = messages.find((m) => m.role === "user")?.content || "";
 
@@ -42,7 +49,10 @@ async function callAI(
     if (!content) throw new Error("Resposta da IA vazia");
     return content;
   } catch (error: any) {
-    throw new Error(`Erro IA: ${error.message || error}`);
+    if (error?.message?.includes("API key")) {
+      throw new Error("GEMINI_API_KEY inválida. Verifique a variável de ambiente.");
+    }
+    throw new Error(`Erro IA: ${error?.message || error}`);
   }
 }
 

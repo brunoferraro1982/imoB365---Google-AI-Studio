@@ -27,6 +27,8 @@ import {
   Key,
   CreditCard,
   Calculator,
+  Calendar,
+  Landmark,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -62,6 +64,21 @@ type TenantCard = {
   slug: string;
   nome: string;
   total: number;
+};
+
+type EmpreendCard = {
+  id: string;
+  slug: string;
+  nome: string;
+  construtora: string | null;
+  fase: string;
+  endereco_cidade: string | null;
+  endereco_uf: string | null;
+  endereco_bairro: string | null;
+  entrega_prevista: string | null;
+  unidades_total: number | null;
+  fotos_urls: string[];
+  descricao: string | null;
 };
 
 const PHRASES = [
@@ -108,6 +125,7 @@ function Landing() {
   }, [displayText, isDeleting, currentPhraseIndex, typingSpeed]);
 
   const [imoveis, setImoveis] = useState<ImovelCard[]>([]);
+  const [empreendimentos, setEmpreendimentos] = useState<EmpreendCard[]>([]);
   const [tenants, setTenants] = useState<TenantCard[]>([]);
   const [busca, setBusca] = useState("");
   const [finalidade, setFinalidade] = useState<"venda" | "aluguel">("venda");
@@ -167,6 +185,16 @@ function Landing() {
           total: counts[t.id] ?? 0,
         })),
       );
+
+      const { data: empData } = await (supabase as any)
+        .from("empreendimentos")
+        .select(
+          "id,slug,nome,construtora,fase,endereco_cidade,endereco_uf,endereco_bairro,entrega_prevista,unidades_total,fotos_urls,descricao",
+        )
+        .eq("publicado", true)
+        .order("created_at", { ascending: false })
+        .limit(6);
+      setEmpreendimentos((empData as EmpreendCard[]) ?? []);
     })();
   }, []);
 
@@ -536,6 +564,111 @@ function Landing() {
           </Link>
         </div>
       </section>
+
+      {/* EMPREENDIMENTOS / LANÇAMENTOS */}
+      {empreendimentos.length > 0 && (
+        <section className="border-t border-border bg-muted/30">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                  Empreendimentos e Lançamentos
+                </h2>
+                <p className="mt-2 text-muted-foreground">
+                  Conheça os novos empreendimentos das imobiliárias parceiras.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {empreendimentos.map((e) => {
+                const foto = e.fotos_urls?.[0] ?? null;
+                const FASE_LABEL: Record<string, string> = {
+                  lancamento: "Lançamento",
+                  em_obras: "Em obras",
+                  pronto: "Pronto",
+                  pre_lancamento: "Pré-lançamento",
+                };
+                const faseLabel = FASE_LABEL[e.fase] ?? e.fase;
+                const faseColor =
+                  e.fase === "lancamento"
+                    ? "bg-emerald-500"
+                    : e.fase === "pre_lancamento"
+                      ? "bg-amber-500"
+                      : e.fase === "em_obras"
+                        ? "bg-blue-500"
+                        : "bg-primary";
+                return (
+                  <Link
+                    key={e.id}
+                    to="/empreendimento/$slug"
+                    params={{ slug: e.slug }}
+                    className="group overflow-hidden rounded-xl border border-border bg-card transition hover:border-primary/40 hover:shadow-md"
+                  >
+                    <div className="relative aspect-[16/9] overflow-hidden bg-muted">
+                      {foto ? (
+                        <img
+                          src={foto}
+                          alt={e.nome}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-muted-foreground">
+                          <Landmark className="h-10 w-10" />
+                        </div>
+                      )}
+                      <span
+                        className={`absolute left-3 top-3 rounded-md px-2 py-1 text-xs font-semibold text-white shadow ${faseColor}`}
+                      >
+                        {faseLabel}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="line-clamp-1 text-sm font-semibold leading-snug">
+                        {e.nome}
+                      </h3>
+                      {e.construtora && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          por {e.construtora}
+                        </p>
+                      )}
+                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" />
+                        {[e.endereco_bairro, e.endereco_cidade, e.endereco_uf]
+                          .filter(Boolean)
+                          .join(", ") || "Localização a definir"}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        {e.unidades_total != null && (
+                          <span className="flex items-center gap-1">
+                            <Building className="h-3 w-3" />
+                            {e.unidades_total} unidades
+                          </span>
+                        )}
+                        {e.entrega_prevista && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(e.entrega_prevista).toLocaleDateString("pt-BR", {
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </span>
+                        )}
+                      </div>
+                      {e.descricao && (
+                        <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                          {e.descricao}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* IMOBILIÁRIAS PARCEIRAS */}
       <section id="parceiros" className="scroll-mt-20 border-y border-border bg-muted/30">
