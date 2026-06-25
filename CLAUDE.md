@@ -63,6 +63,12 @@ No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
 | `/site.$slug/*`   | White-label public site per tenant                             |
 | `/api/public/*`   | Server-only API routes (REST + XML feeds + cron)               |
 | `/lovable/*`      | Email queue and webhook infrastructure                         |
+| `/planos`         | Public pricing page (toggle mensal/anual, comparativo)         |
+| `/blog/*`         | Public blog listing + article detail                           |
+| `/calculadoras/*` | Public calculators (financiamento, ITBI, mudança)              |
+| `/empreendimentos`| Public listing of published empreendimentos/lançamentos        |
+| `/empreendimento/$slug` | Public detail page for a specific empreendimento         |
+| `/docs/api`       | Public API documentation page                                  |
 
 ### Multi-Tenancy
 
@@ -108,11 +114,15 @@ Usuários que entram via Google OAuth são redirecionados para `/auth/callback` 
 | `chat.functions.ts`           | Real-time chat between leads and brokers                                     |
 | `favoritos.functions.ts`      | Property favorites                                                           |
 | `buscas-salvas.functions.ts`  | Saved searches with email alert cron                                         |
+| `geocode.functions.ts`        | Geocoding via Nominatim (address → lat/lon for map pins)                     |
+| `relatorios.functions.ts`     | Dashboard KPIs and report data (funil, ranking, financeiro)                  |
 | `portais.ts`                  | Portal definitions (VivaReal, ZAP, OLX) — XML feeds at `/api/public/feeds/*` |
 | `contractTemplatesLibrary.ts` | Built-in contract template library                                           |
 | `format.ts`                   | Brazilian currency/number formatting (`formatBRL`, etc.)                     |
 | `whatsapp.ts`                 | WhatsApp deep-link generation (wa.me links — Evolution API integration pending) |
 | `permissions.ts`              | RBAC matrix: `can()`, `canWithOverrides()`, `canAndEnabled()`               |
+| `routeGuard.ts`               | TanStack Router `beforeLoad` guards (module/role-based access control)       |
+| `serverAuth.ts`               | Server-side auth helpers (`requireServerAuth()`, JWT-based tenant_id)        |
 | `team.functions.ts`           | Tenant team management (invite, list, remove members)                        |
 
 ### Environment Variables
@@ -150,13 +160,19 @@ APP_URL                         # Canonical URL (OAuth callbacks)
 
 Custom domain components live in:
 
-- `imoveis/` — property listing, detail, photos
+- `imoveis/` — property listing, detail, photos, FotosManager
+- `imovel/` — public property detail widgets (AgendarVisita, SimuladorFinanciamento, HistoricoPreco, ImoveisSimilares)
 - `leads/` — CRM pipeline, kanban
 - `contratos/` — contracts, signatures
 - `financeiro/` — commissions, billing
 - `chat/` — real-time broker/lead chat
 - `site/` — white-label tenant site
-- `layout/` — shell, navigation, headers (`AppShell`, `SuspendedModal`, `TrialBanner`, `TrialExpiredModal`)
+- `portal/` — public portal sections (newsletter, testimonials, partners)
+- `admin/` — admin-specific components (ApprovalsNavBadge)
+- `corretores/` — broker form components
+- `brand/` — Logo component
+- `theme/` — ThemeProvider, ThemeToggle
+- `layout/` — AppShell, GlobalBreadcrumb, HeaderUserMenu, NotificationBell, WhatsAppFAB
 
 ---
 
@@ -182,8 +198,10 @@ Custom domain components live in:
 | 9–10   | RBAC completo — user_permissions + UI                           | `feature/sprint6-rbac-permissions`  |
 | 11–12  | Ciclo de vida do plano (upgrade/downgrade/suspensão/cancelamento)| `feature/sprint7-plan-lifecycle`   |
 | 13–14  | LGPD + auditoria de eventos sensíveis                           | `feature/sprint8-lgpd-audit`        |
+| 15–16  | E-Learning completo, enforcement de cotas, portal institucional | `main` (commits diretos)            |
+| 17–18  | Página /planos spec §13.1, fix onboarding/callback              | `feature/fix-planos-spec`           |
 
-### 🔧 Correções recentes (2026-06-22 / 2026-06-24)
+### 🔧 Correções recentes (2026-06-15 → 2026-06-25)
 
 | Arquivo                          | Correção                                                                                      |
 | :------------------------------- | :-------------------------------------------------------------------------------------------- |
@@ -191,6 +209,19 @@ Custom domain components live in:
 | `supabase/migrations/20260622000090_plans_spec_align.sql` | Adiciona `price_annual` e corrige `preco_mensal`/`limites` nos 5 planos |
 | `src/routes/onboarding.tsx`      | Remove `status`/`oauth_provider` (colunas inexistentes); CRECI → `user_metadata`; erro real exibido |
 | `src/routes/auth.callback.tsx`   | Remove `status` do SELECT; aprovação via `!profile.aprovado`                                  |
+| `src/hooks/useAuth.tsx`          | QA-04 fix: race condition no loading de roles (Promise.all antes de setLoading)               |
+| `src/routes/app.elearning.*`     | Módulo E-Learning completo (hub, visualizador, admin CMS)                                     |
+| `supabase/migrations/*enforce*`  | Enforcement de cotas por plano (auto-approve Free, provision modules)                         |
+| `src/components/portal/*`        | Portal institucional: página "A imoB365", menu dropdown, newsletter                          |
+| `src/lib/ai.functions.ts`        | Lazy-init do GoogleGenAI + try/catch + detecção de placeholder + modelo atualizado para gemini-2.5-flash |
+| `supabase/migrations/20260625*`  | RLS fix: imovel_fotos e storage — broker/super_admin podem fazer upload                       |
+| `src/routes/app.imoveis.novo.tsx`| Fotos como PRIMEIRA seção da jornada de cadastro (placeholder → salvar → upload)              |
+| `src/routes/imovel.$slug.tsx`    | Promise.allSettled + try/catch defensivo no carregamento de dados públicos do imóvel           |
+| `src/routes/empreendimentos.tsx` | Página pública de listagem de empreendimentos publicados                                      |
+| `src/routes/empreendimento.$slug.tsx` | Página pública de detalhe: galeria, espelho de unidades, sidebar resumo               |
+| `src/components/site-layout.tsx` | Mega menu "Encontrar" + footer: adicionado link para /empreendimentos                         |
+| `supabase/migrations/20260625000002*` | Policy super_admin para empreendimentos                                                |
+| `supabase/migrations/20260625000003*` | Policy super_admin para empreendimento_unidades                                        |
 
 ### 📋 Backlog (próximas versões)
 

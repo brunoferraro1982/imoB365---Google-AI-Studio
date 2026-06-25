@@ -40,6 +40,7 @@ import {
   BookOpen,
   PlusCircle,
   Truck,
+  Landmark,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Logo } from "@/components/brand/Logo";
@@ -891,6 +892,18 @@ function SiteHeaderImpl() {
                           Locação ágil, sem burocracia ou fiador tradicional.
                         </span>
                       </Link>
+
+                      <Link
+                        to="/empreendimentos"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
+                          <Landmark className="h-3.5 w-3.5" /> Empreendimentos
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Lançamentos e novos empreendimentos das parceiras.
+                        </span>
+                      </Link>
                     </div>
                   </div>
 
@@ -1478,7 +1491,7 @@ export function SiteFooter() {
               { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
               { label: "Alugar imóvel", to: "/buscar", icon: Key },
               { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-              { label: "Lançamentos e novidades", to: "/buscar", icon: Sparkles },
+              { label: "Empreendimentos", to: "/empreendimentos", icon: Landmark },
             ]}
           />
           <FooterCol

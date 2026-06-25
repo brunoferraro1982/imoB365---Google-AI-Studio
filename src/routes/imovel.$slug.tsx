@@ -64,20 +64,20 @@ function ImovelDetail() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("imoveis")
-        .select("*")
-        .eq("slug", slug)
-        .eq("publicado", true)
-        .eq("status", "ativo")
-        .maybeSingle();
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-      setImovel(data as unknown as Imovel);
-      const [{ data: fotosData }, { data: tenant }, { data: cor }, { data: site }] =
-        await Promise.all([
+      try {
+        const { data } = await supabase
+          .from("imoveis")
+          .select("*")
+          .eq("slug", slug)
+          .eq("publicado", true)
+          .eq("status", "ativo")
+          .maybeSingle();
+        if (!data) {
+          setLoading(false);
+          return;
+        }
+        setImovel(data as unknown as Imovel);
+        const results = await Promise.allSettled([
           supabase
             .from("imovel_fotos")
             .select("storage_path,capa")
@@ -98,11 +98,17 @@ function ImovelDetail() {
             .eq("tenant_id", data.tenant_id)
             .maybeSingle(),
         ]);
-      setFotos(fotosData ?? []);
-      setTenantNome(tenant?.nome ?? "");
-      setCorretor(cor ?? null);
-      setPixels(site ?? null);
-      setLoading(false);
+        const val = (r: PromiseSettledResult<any>) =>
+          r.status === "fulfilled" ? r.value : { data: null };
+        setFotos(val(results[0])?.data ?? []);
+        setTenantNome(val(results[1])?.data?.nome ?? "");
+        setCorretor(val(results[2])?.data ?? null);
+        setPixels(val(results[3])?.data ?? null);
+      } catch {
+        // silently handle — page will show "Imóvel não encontrado"
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [slug]);
 
@@ -111,14 +117,30 @@ function ImovelDetail() {
   }
 
   if (loading)
-    return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
+          Carregando…
+        </div>
+        <SiteFooter />
+      </div>
+    );
   if (!imovel)
     return (
-      <div className="p-16 text-center">
-        <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
-        <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
-          Voltar para a busca
-        </Link>
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
+          <Home className="mb-4 h-12 w-12 text-muted-foreground/40" />
+          <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Este imóvel pode não estar publicado ou o endereço está incorreto.
+          </p>
+          <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
+            Voltar para a busca
+          </Link>
+        </div>
+        <SiteFooter />
       </div>
     );
 
