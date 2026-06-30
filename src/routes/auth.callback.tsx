@@ -22,34 +22,23 @@ function AuthCallback() {
       }
 
       const user = session.user;
-      const provider = user.app_metadata?.provider as string | undefined;
 
-      // Email/password users: go straight to app (no onboarding needed)
-      if (!provider || provider === "email") {
-        void navigate({ to: "/app", replace: true });
-        return;
-      }
-
-      // OAuth users: check onboarding / approval status
       const { data: profile } = await supabase
         .from("profiles")
         .select("tipo_usuario, aprovado")
         .eq("id", user.id)
         .maybeSingle();
 
-      // No tipo_usuario → new OAuth user → onboarding wizard
       if (!profile?.tipo_usuario) {
         void navigate({ to: "/onboarding", replace: true });
         return;
       }
 
-      // Pending approval
       if (!profile.aprovado) {
         void navigate({ to: "/pending-approval", replace: true });
         return;
       }
 
-      // Approved & complete
       void navigate({ to: "/app", replace: true });
     })();
   }, [navigate]);

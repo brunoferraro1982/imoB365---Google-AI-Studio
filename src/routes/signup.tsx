@@ -158,7 +158,7 @@ function SignupPage() {
     }
 
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/app`;
+    const redirectUrl = `${window.location.origin}/auth/callback`;
 
     // Choose appropriate context
     const computedImobiliariaNome =

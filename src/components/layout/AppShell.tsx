@@ -141,7 +141,6 @@ const tenantModules: Module[] = [
 
 const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
-  { to: "/admin/tenants", label: "Aprovações", icon: ShieldCheck },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
   { to: "/admin/planos", label: "Planos", icon: Banknote },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
@@ -171,6 +170,12 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       navigate({ to: "/app" });
     }
   }, [user, loading, variant, isSuperAdmin, navigate]);
+
+  useEffect(() => {
+    if (!loading && user && profile && !isSuperAdmin && !profile.tipo_usuario) {
+      navigate({ to: "/onboarding", replace: true });
+    }
+  }, [loading, user, profile, isSuperAdmin, navigate]);
 
   if (loading || !user) {
     return (

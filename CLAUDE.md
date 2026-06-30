@@ -87,11 +87,23 @@ Server functions use `requireSupabaseAuth` middleware (`src/integrations/supabas
 
 #### Fluxo OAuth → Onboarding
 
-Usuários que entram via Google OAuth são redirecionados para `/auth/callback` → `/onboarding` (quando `tipo_usuario` ainda não está definido em `profiles`). Após o onboarding, vão para `/pending-approval`.
+Usuários que entram via Google OAuth ou e-mail são redirecionados para `/auth/callback` → `/onboarding` (quando `tipo_usuario` ainda não está definido em `profiles`). Após o onboarding, **acesso é imediato** — Trial Business 30 dias é provisionado automaticamente.
+
+**Onboarding 3 etapas**: 1) Perfil (corretor/imobiliária) → 2) Dados (nome, telefone, CRECI ou imobiliária+CNPJ) → 3) Módulos de interesse (multi-select: mod-imob, mod-fin, mod-mkt, mod-juri, mod-elearn). Módulos selecionados são salvos em `plano_pretendido` como CSV e em `user_metadata.modulos_interesse` como array.
+
+#### Trial Business 30 dias (spec §3.1)
+
+- Todo usuário ao concluir onboarding recebe `plan-busi` por 30 dias via `provision_trial_business()` RPC
+- Tenant é criado automaticamente com `status = 'trial'`, `trial_ends_at = now() + 30 days`, `plano_slug = 'business'`
+- Todos os módulos são provisionados (trigger `tg_provision_tenant_modules`)
+- Profile é aprovado automaticamente (`aprovado = true`), sem necessidade de aprovação manual
+- Server function: `completeOnboarding` em `src/lib/onboarding.functions.ts`
+- Cron `cron_expire_trials()` faz downgrade para `plan-free` ao expirar
+- Colunas adicionadas em `tenants`: `trial_ends_at`, `plan_expires_at`, `cancelled_at`, `downgrade_to`
 
 **Colunas que existem em `profiles`**: `id`, `tenant_id`, `nome`, `avatar_url`, `telefone`, `tipo_usuario`, `plano_pretendido`, `imobiliaria_nome`, `aprovado`, `pagamento_validado`, `pagamento_metodo`, `tema_preferido`.
 
-**Não existem em `profiles`**: `status`, `oauth_provider`, `creci` — nunca referenciar essas colunas em queries. CRECI é salvo em `user_metadata` via `supabase.auth.updateUser()`. A coluna `status` pertence à tabela `tenants`.
+**Não existem em `profiles`**: `status`, `oauth_provider`, `creci`, `cnpj` — nunca referenciar essas colunas em queries. CRECI e CNPJ são salvos em `user_metadata` via `supabase.auth.updateUser()`. A coluna `status` pertence à tabela `tenants`.
 
 ### Authorization Hierarchy
 
@@ -124,6 +136,8 @@ Usuários que entram via Google OAuth são redirecionados para `/auth/callback` 
 | `routeGuard.ts`               | TanStack Router `beforeLoad` guards (module/role-based access control)       |
 | `serverAuth.ts`               | Server-side auth helpers (`requireServerAuth()`, JWT-based tenant_id)        |
 | `team.functions.ts`           | Tenant team management (invite, list, remove members)                        |
+| `admin.functions.ts`          | Admin server functions (listAdminUsers: profiles + auth emails/metadata)     |
+| `onboarding.functions.ts`     | Onboarding completion: validates input, calls `provision_trial_business()` RPC |
 
 ### Environment Variables
 
@@ -200,6 +214,7 @@ Custom domain components live in:
 | 13–14  | LGPD + auditoria de eventos sensíveis                           | `feature/sprint8-lgpd-audit`        |
 | 15–16  | E-Learning completo, enforcement de cotas, portal institucional | `main` (commits diretos)            |
 | 17–18  | Página /planos spec §13.1, fix onboarding/callback              | `feature/fix-planos-spec`           |
+| 19–20  | Trial Business 30d auto-provisioning, módulos no onboarding     | `feature/fix-planos-spec`           |
 
 ### 🔧 Correções recentes (2026-06-15 → 2026-06-25)
 
@@ -222,6 +237,18 @@ Custom domain components live in:
 | `src/components/site-layout.tsx` | Mega menu "Encontrar" + footer: adicionado link para /empreendimentos                         |
 | `supabase/migrations/20260625000002*` | Policy super_admin para empreendimentos                                                |
 | `supabase/migrations/20260625000003*` | Policy super_admin para empreendimento_unidades                                        |
+| `src/routes/onboarding.tsx`      | Onboarding 3 etapas: Perfil → Dados (telefone) → Plano; salva cnpj em user_metadata          |
+| `src/routes/admin.tenants.tsx`   | View unificada árvore hierárquica: tenants → usuários; tags para individuais; ações CRUD      |
+| `src/lib/admin.functions.ts`     | Server function listAdminUsers: profiles + auth emails/metadata via admin API                 |
+| `src/routes/auth.callback.tsx`   | Todos os users (email+OAuth) passam pelo check de onboarding/aprovação                        |
+| `src/routes/login.tsx`           | Login redireciona para /auth/callback (não mais direto /app)                                  |
+| `src/routes/signup.tsx`          | emailRedirectTo corrigido: /auth/callback em vez de /app                                      |
+| `src/components/layout/AppShell.tsx` | Guard: redireciona para /onboarding se tipo_usuario é NULL; menu admin unificado          |
+| `supabase/migrations/20260625000010*` | Trigger auto-approve exige tipo_usuario NOT NULL (onboarding concluído)                 |
+| `supabase/migrations/20260625000011*` | Trial Business 30d: colunas lifecycle em tenants, RPC provision_trial_business, cron_expire_trials |
+| `src/lib/onboarding.functions.ts`| Server function completeOnboarding: valida Zod, salva profile, provisiona Trial Business via RPC |
+| `src/routes/onboarding.tsx`      | Etapa 3 → seleção de módulos (não planos); submit via server function; redireciona /app        |
+| `src/routes/admin.tenants.tsx`   | Módulos de interesse como tags; edit modal com checkboxes de módulos                           |
 
 ### 📋 Backlog (próximas versões)
 

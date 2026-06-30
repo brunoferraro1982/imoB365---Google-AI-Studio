@@ -30,7 +30,7 @@ function LoginPage() {
       return;
     }
     toast.success("Bem-vindo de volta!");
-    navigate({ to: "/app" });
+    navigate({ to: "/auth/callback" });
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
