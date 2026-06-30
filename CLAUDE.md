@@ -249,6 +249,7 @@ Custom domain components live in:
 | `src/lib/onboarding.functions.ts`| Server function completeOnboarding: valida Zod, salva profile, provisiona Trial Business via RPC |
 | `src/routes/onboarding.tsx`      | Etapa 3 → seleção de módulos (não planos); submit via server function; redireciona /app        |
 | `src/routes/admin.tenants.tsx`   | Módulos de interesse como tags; edit modal com checkboxes de módulos                           |
+| `supabase/migrations/20260626000001*` | Fix chave `modulos` ausente em `plans.limites` — desbloqueava provisionamento de módulos no Trial |
 
 ### 📋 Backlog (próximas versões)
 
