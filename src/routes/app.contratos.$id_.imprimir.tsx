@@ -136,19 +136,35 @@ function ImprimirContrato() {
     if (!corpoRef.current) return;
     setGerandoPdf(true);
     try {
-      const { default: html2pdf } = await import("html2pdf.js");
+      // html2canvas-pro (não o html2canvas clássico) porque o Tailwind v4
+      // deste projeto usa oklch() nas variáveis de cor, que o html2canvas
+      // original não sabe interpretar (quebra a captura inteira).
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas-pro"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(corpoRef.current, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+
+      const pdf = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
       const nomeArquivo = `contrato-${contrato.numero ?? contrato.id.slice(0, 8)}.pdf`;
-      await html2pdf()
-        .set({
-          filename: nomeArquivo,
-          margin: 10,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-          pagebreak: { mode: ["css", "legacy"] },
-        })
-        .from(corpoRef.current)
-        .save();
+      pdf.save(nomeArquivo);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao gerar PDF");
     } finally {
