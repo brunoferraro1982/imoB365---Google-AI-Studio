@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -133,6 +134,25 @@ export function ContratoForm({ contratoId }: Props) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
+  // Comissão (R$) é sugerida automaticamente a partir do valor do contrato
+  // e da comissão (%) — o campo permanece editável para ajustes manuais.
+  function setValor(novoValor: number) {
+    setForm((f) => {
+      const pct = Number(f.comissao_percentual) || 0;
+      const comissaoValor = pct > 0 && novoValor > 0 ? (novoValor * pct) / 100 : f.comissao_valor;
+      return { ...f, valor: novoValor, comissao_valor: comissaoValor };
+    });
+  }
+
+  function setComissaoPercentual(v: string) {
+    setForm((f) => {
+      const valor = Number(f.valor) || 0;
+      const pct = Number(v) || 0;
+      const comissaoValor = pct > 0 && valor > 0 ? (valor * pct) / 100 : f.comissao_valor;
+      return { ...f, comissao_percentual: v, comissao_valor: comissaoValor };
+    });
+  }
+
   async function applyChecklistTemplate(contratoId: string) {
     if (!form.template_id || !tenantId) return;
     const { data: tplItens } = await supabase
@@ -245,13 +265,7 @@ export function ContratoForm({ contratoId }: Props) {
           </Field>
 
           <Field label="Valor (R$)">
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={form.valor}
-              onChange={(e) => set("valor", e.target.value)}
-            />
+            <CurrencyInput value={form.valor} onValueChange={setValor} />
           </Field>
 
           <Field label="Comissão (%)">
@@ -261,18 +275,15 @@ export function ContratoForm({ contratoId }: Props) {
               min="0"
               max="100"
               value={form.comissao_percentual}
-              onChange={(e) => set("comissao_percentual", e.target.value)}
+              onChange={(e) => setComissaoPercentual(e.target.value)}
               placeholder="Ex.: 6"
             />
           </Field>
 
           <Field label="Comissão (R$)">
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
+            <CurrencyInput
               value={form.comissao_valor}
-              onChange={(e) => set("comissao_valor", e.target.value)}
+              onValueChange={(v) => set("comissao_valor", v)}
             />
           </Field>
 
