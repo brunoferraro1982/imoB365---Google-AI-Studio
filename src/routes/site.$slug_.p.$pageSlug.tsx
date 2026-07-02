@@ -25,7 +25,7 @@ function TenantPage() {
       setLoading(true);
       const { data: tenant } = await supabase
         .from("tenants")
-        .select("id,slug,nome")
+        .select("id,slug,nome,tema")
         .eq("slug", slug)
         .maybeSingle();
       if (!tenant) {
@@ -66,6 +66,7 @@ function TenantPage() {
       setCtx({
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
+        logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
         settings: cfg,
         pages: (pages ?? []) as any,
         hasBlog: (blogCount ?? 0) > 0,

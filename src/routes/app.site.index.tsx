@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { ExternalLink, Plus, Trash2, Globe2, ChevronDown, Settings2 } from "lucide-react";
+import {
+  ExternalLink,
+  Plus,
+  Trash2,
+  Globe2,
+  ChevronDown,
+  Settings2,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -215,8 +224,33 @@ function SitePage() {
           <Badge variant={s.publicado ? "default" : "secondary"}>
             {s.publicado ? "Publicado" : "Rascunho"}
           </Badge>
+          <Link to="/app/site/assistente">
+            <Button>
+              <Sparkles className="mr-2 h-4 w-4" /> Vamos criar seu site aqui
+            </Button>
+          </Link>
         </div>
       </header>
+
+      {!s.hero_titulo && !s.sobre_html && (
+        <div className="mb-8 flex max-w-4xl flex-col items-start gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <p className="font-semibold">Seu site ainda não foi configurado</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Em poucos minutos, respondendo perguntas simples, você deixa sua página pública
+                pronta — sem precisar saber nada de design ou tecnologia.
+              </p>
+            </div>
+          </div>
+          <Link to="/app/site/assistente" className="shrink-0">
+            <Button size="lg">
+              Vamos criar seu site aqui <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <form onSubmit={save} className="mb-10 max-w-4xl space-y-6">
         <section className="rounded-xl border border-border bg-card p-6">

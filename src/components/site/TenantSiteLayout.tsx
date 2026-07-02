@@ -4,6 +4,7 @@ import { Instagram, Facebook, Youtube, Linkedin, Phone, Mail, MapPin } from "luc
 export type SiteCtx = {
   tenantSlug: string;
   tenantNome: string;
+  logoUrl?: string | null;
   settings: {
     contato_telefone?: string | null;
     contato_whatsapp?: string | null;
@@ -24,16 +25,24 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
   return (
     <div
       className="min-h-screen bg-background text-foreground"
-      style={cor ? { ["--site-accent" as any]: cor } : undefined}
+      style={cor ? ({ "--site-accent": cor, "--primary": cor } as React.CSSProperties) : undefined}
     >
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link
             to="/site/$slug"
             params={{ slug: ctx.tenantSlug }}
-            className="text-lg font-semibold tracking-tight"
+            className="flex items-center gap-2 text-lg font-semibold tracking-tight"
           >
-            {ctx.tenantNome}
+            {ctx.logoUrl ? (
+              <img
+                src={ctx.logoUrl}
+                alt={ctx.tenantNome}
+                className="h-8 max-w-[160px] object-contain"
+              />
+            ) : (
+              ctx.tenantNome
+            )}
           </Link>
           <nav className="hidden items-center gap-6 text-sm md:flex">
             <Link

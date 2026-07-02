@@ -93,6 +93,7 @@ import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsRouteImport } from './routes/app.site.widgets'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
+import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -572,6 +573,11 @@ const AppSiteBlogRoute = AppSiteBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => AppSiteRoute,
 } as any)
+const AppSiteAssistenteRoute = AppSiteAssistenteRouteImport.update({
+  id: '/assistente',
+  path: '/assistente',
+  getParentRoute: () => AppSiteRoute,
+} as any)
 const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   id: '/leads/configuracao',
   path: '/leads/configuracao',
@@ -989,6 +995,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
@@ -1127,6 +1134,7 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
@@ -1271,6 +1279,7 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
@@ -1416,6 +1425,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
@@ -1554,6 +1564,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
@@ -1697,6 +1708,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
+    | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
@@ -2385,6 +2397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteBlogRouteImport
       parentRoute: typeof AppSiteRoute
     }
+    '/app/site/assistente': {
+      id: '/app/site/assistente'
+      path: '/assistente'
+      fullPath: '/app/site/assistente'
+      preLoaderRoute: typeof AppSiteAssistenteRouteImport
+      parentRoute: typeof AppSiteRoute
+    }
     '/app/leads/configuracao': {
       id: '/app/leads/configuracao'
       path: '/leads/configuracao'
@@ -2865,12 +2884,14 @@ const AppConfiguracoesRouteWithChildren =
   AppConfiguracoesRoute._addFileChildren(AppConfiguracoesRouteChildren)
 
 interface AppSiteRouteChildren {
+  AppSiteAssistenteRoute: typeof AppSiteAssistenteRoute
   AppSiteBlogRoute: typeof AppSiteBlogRoute
   AppSiteWidgetsRoute: typeof AppSiteWidgetsRoute
   AppSiteIndexRoute: typeof AppSiteIndexRoute
 }
 
 const AppSiteRouteChildren: AppSiteRouteChildren = {
+  AppSiteAssistenteRoute: AppSiteAssistenteRoute,
   AppSiteBlogRoute: AppSiteBlogRoute,
   AppSiteWidgetsRoute: AppSiteWidgetsRoute,
   AppSiteIndexRoute: AppSiteIndexRoute,
