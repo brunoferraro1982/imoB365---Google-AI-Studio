@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BUILTIN_TEMPLATES, type BuiltinTemplate } from "@/lib/contractTemplatesLibrary";
 
-export const Route = createFileRoute("/app/contratos/modelos/biblioteca")({
+export const Route = createFileRoute("/app/contratos/modelos_/biblioteca")({
   beforeLoad: moduleGuard("juridico"),
   component: BibliotecaModelosPage,
 });

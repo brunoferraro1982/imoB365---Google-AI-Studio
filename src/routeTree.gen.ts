@@ -134,7 +134,7 @@ import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug.p.$pa
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos.biblioteca'
+import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id.imprimir'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
@@ -789,9 +789,9 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
 } as any)
 const AppContratosModelosBibliotecaRoute =
   AppContratosModelosBibliotecaRouteImport.update({
-    id: '/biblioteca',
-    path: '/biblioteca',
-    getParentRoute: () => AppContratosModelosRoute,
+    id: '/contratos/modelos_/biblioteca',
+    path: '/contratos/modelos/biblioteca',
+    getParentRoute: () => AppRoute,
   } as any)
 const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
   id: '/imprimir',
@@ -940,7 +940,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
-  '/app/contratos/modelos': typeof AppContratosModelosRouteWithChildren
+  '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
@@ -1073,7 +1073,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
-  '/app/contratos/modelos': typeof AppContratosModelosRouteWithChildren
+  '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
@@ -1212,7 +1212,7 @@ export interface FileRoutesById {
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
-  '/app/contratos/modelos': typeof AppContratosModelosRouteWithChildren
+  '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
@@ -1251,7 +1251,7 @@ export interface FileRoutesById {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
-  '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1662,7 +1662,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/app/contratos/$id/imprimir'
-    | '/app/contratos/modelos/biblioteca'
+    | '/app/contratos/modelos_/biblioteca'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
@@ -2606,12 +2606,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/contratos/modelos/biblioteca': {
-      id: '/app/contratos/modelos/biblioteca'
-      path: '/biblioteca'
+    '/app/contratos/modelos_/biblioteca': {
+      id: '/app/contratos/modelos_/biblioteca'
+      path: '/contratos/modelos/biblioteca'
       fullPath: '/app/contratos/modelos/biblioteca'
       preLoaderRoute: typeof AppContratosModelosBibliotecaRouteImport
-      parentRoute: typeof AppContratosModelosRoute
+      parentRoute: typeof AppRoute
     }
     '/app/contratos/$id/imprimir': {
       id: '/app/contratos/$id/imprimir'
@@ -2788,17 +2788,6 @@ const AppContratosIdRouteWithChildren = AppContratosIdRoute._addFileChildren(
   AppContratosIdRouteChildren,
 )
 
-interface AppContratosModelosRouteChildren {
-  AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
-}
-
-const AppContratosModelosRouteChildren: AppContratosModelosRouteChildren = {
-  AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
-}
-
-const AppContratosModelosRouteWithChildren =
-  AppContratosModelosRoute._addFileChildren(AppContratosModelosRouteChildren)
-
 interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
@@ -2813,7 +2802,7 @@ interface AppRouteChildren {
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppContratosIdRoute: typeof AppContratosIdRouteWithChildren
-  AppContratosModelosRoute: typeof AppContratosModelosRouteWithChildren
+  AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
   AppCorretoresIdRoute: typeof AppCorretoresIdRoute
   AppCorretoresNovoRoute: typeof AppCorretoresNovoRoute
@@ -2839,6 +2828,7 @@ interface AppRouteChildren {
   AppImoveisIndexRoute: typeof AppImoveisIndexRoute
   AppLeadsIndexRoute: typeof AppLeadsIndexRoute
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
+  AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -2855,7 +2845,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppContratosIdRoute: AppContratosIdRouteWithChildren,
-  AppContratosModelosRoute: AppContratosModelosRouteWithChildren,
+  AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
   AppCorretoresIdRoute: AppCorretoresIdRoute,
   AppCorretoresNovoRoute: AppCorretoresNovoRoute,
@@ -2881,6 +2871,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisIndexRoute: AppImoveisIndexRoute,
   AppLeadsIndexRoute: AppLeadsIndexRoute,
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
+  AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
