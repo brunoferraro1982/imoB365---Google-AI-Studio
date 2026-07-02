@@ -31,7 +31,8 @@ type ContratoResumo = {
   tipo: string;
   status: string;
   data_fim: string | null;
-  corretor: { nome: string } | null;
+  corretor_id: string | null;
+  corretor: { nome: string | null } | null;
 };
 
 function diasRestantes(dataFim: string) {
@@ -78,12 +79,25 @@ function PainelContratosPage() {
   async function load() {
     if (!tenantId) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("contratos")
-      .select("id,numero,tipo,status,data_fim,corretor:corretores(nome)")
-      .order("data_fim", { ascending: true, nullsFirst: false });
+    // Sem FK real entre contratos.corretor_id e corretores.id no banco, o
+    // PostgREST não resolve join aninhado (corretor:corretores(...)) —
+    // busca-se separadamente e faz-se o merge no cliente.
+    const [{ data: contratosData, error }, { data: corretoresData }] = await Promise.all([
+      supabase
+        .from("contratos")
+        .select("id,numero,tipo,status,data_fim,corretor_id")
+        .order("data_fim", { ascending: true, nullsFirst: false }),
+      supabase.from("corretores").select("id,nome"),
+    ]);
     if (error) toast.error(error.message);
-    setContratos((data ?? []) as unknown as ContratoResumo[]);
+    const nomesPorCorretor = new Map(
+      (corretoresData ?? []).map((c: { id: string; nome: string }) => [c.id, c.nome]),
+    );
+    const merged = (contratosData ?? []).map((c: any) => ({
+      ...c,
+      corretor: c.corretor_id ? { nome: nomesPorCorretor.get(c.corretor_id) ?? null } : null,
+    }));
+    setContratos(merged as ContratoResumo[]);
     setLoading(false);
   }
 
