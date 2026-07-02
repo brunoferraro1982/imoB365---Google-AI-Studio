@@ -4,6 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -35,38 +43,66 @@ export function LancamentoForm({ lancamentoId }: Props) {
     contrato_id: "",
     imovel_id: "",
     corretor_id: "",
+    plano_conta_id: "",
+    centro_custo_id: "",
     observacoes: "",
+    custom_data: {} as Record<string, any>,
   });
   const [contratos, setContratos] = useState<any[]>([]);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [corretores, setCorretores] = useState<any[]>([]);
+  const [planoContas, setPlanoContas] = useState<any[]>([]);
+  const [centrosCusto, setCentrosCusto] = useState<any[]>([]);
+  const [customFields, setCustomFields] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!lancamentoId);
 
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [{ data: c }, { data: i }, { data: co }] = await Promise.all([
-        supabase
-          .from("contratos")
-          .select("id,numero,tipo")
-          .eq("tenant_id", tenantId)
-          .order("updated_at", { ascending: false }),
-        supabase
-          .from("imoveis")
-          .select("id,titulo,codigo_interno")
-          .eq("tenant_id", tenantId)
-          .order("titulo"),
-        supabase
-          .from("corretores")
-          .select("id,nome")
-          .eq("tenant_id", tenantId)
-          .eq("ativo", true)
-          .order("nome"),
-      ]);
+      const [{ data: c }, { data: i }, { data: co }, { data: pc }, { data: cc }, { data: cf }] =
+        await Promise.all([
+          supabase
+            .from("contratos")
+            .select("id,numero,tipo")
+            .eq("tenant_id", tenantId)
+            .order("updated_at", { ascending: false }),
+          supabase
+            .from("imoveis")
+            .select("id,titulo,codigo_interno")
+            .eq("tenant_id", tenantId)
+            .order("titulo"),
+          supabase
+            .from("corretores")
+            .select("id,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("nome"),
+          supabase
+            .from("plano_contas")
+            .select("id,codigo,nome,tipo")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("codigo"),
+          supabase
+            .from("centros_custo")
+            .select("id,codigo,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("codigo"),
+          supabase
+            .from("tenant_custom_fields")
+            .select("*")
+            .eq("entidade", "lancamento")
+            .order("ordem")
+            .order("created_at"),
+        ]);
       setContratos(c ?? []);
       setImoveis(i ?? []);
       setCorretores(co ?? []);
+      setPlanoContas(pc ?? []);
+      setCentrosCusto(cc ?? []);
+      setCustomFields(cf ?? []);
     })();
   }, [tenantId]);
 
@@ -86,7 +122,10 @@ export function LancamentoForm({ lancamentoId }: Props) {
           contrato_id: data.contrato_id ?? "",
           imovel_id: data.imovel_id ?? "",
           corretor_id: data.corretor_id ?? "",
+          plano_conta_id: data.plano_conta_id ?? "",
+          centro_custo_id: data.centro_custo_id ?? "",
           observacoes: data.observacoes ?? "",
+          custom_data: data.custom_data ?? {},
         });
       setLoading(false);
     })();
@@ -112,7 +151,10 @@ export function LancamentoForm({ lancamentoId }: Props) {
       contrato_id: form.contrato_id || null,
       imovel_id: form.imovel_id || null,
       corretor_id: form.corretor_id || null,
+      plano_conta_id: form.plano_conta_id || null,
+      centro_custo_id: form.centro_custo_id || null,
       observacoes: form.observacoes || null,
+      custom_data: form.custom_data ?? {},
     };
     if (lancamentoId) {
       const { error } = await supabase
@@ -201,14 +243,14 @@ export function LancamentoForm({ lancamentoId }: Props) {
             <Input
               required
               type="date"
-              value={new Date(form.data_vencimento + 'T12:00:00').toLocaleDateString('pt-BR')}
+              value={form.data_vencimento}
               onChange={(e) => set("data_vencimento", e.target.value)}
             />
           </Field>
           <Field label="Data de pagamento">
             <Input
               type="date"
-              value={new Date(form.data_pagamento + 'T12:00:00').toLocaleDateString('pt-BR')}
+              value={form.data_pagamento}
               onChange={(e) => set("data_pagamento", e.target.value)}
             />
           </Field>
@@ -262,6 +304,83 @@ export function LancamentoForm({ lancamentoId }: Props) {
           </Field>
         </div>
       </section>
+
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-base font-semibold">Classificação contábil</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Plano de contas">
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={form.plano_conta_id}
+              onChange={(e) => set("plano_conta_id", e.target.value)}
+            >
+              <option value="">—</option>
+              {planoContas.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.codigo} — {p.nome}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Centro de custo">
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={form.centro_custo_id}
+              onChange={(e) => set("centro_custo_id", e.target.value)}
+            >
+              <option value="">—</option>
+              {centrosCusto.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.codigo} — {c.nome}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </section>
+
+      {customFields.length > 0 && (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-4 text-base font-semibold">Campos personalizados</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {customFields.map((f) => {
+              const val = form.custom_data?.[f.chave];
+              const setVal = (v: any) =>
+                set("custom_data", { ...(form.custom_data ?? {}), [f.chave]: v });
+              return (
+                <Field key={f.id} label={f.rotulo + (f.obrigatorio ? " *" : "")}>
+                  {f.tipo === "boolean" ? (
+                    <div className="flex items-center justify-between rounded-lg border border-input bg-background px-3 py-2">
+                      <span className="text-sm">Sim</span>
+                      <Switch checked={!!val} onCheckedChange={setVal} />
+                    </div>
+                  ) : f.tipo === "select" ? (
+                    <Select value={val ?? ""} onValueChange={setVal}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(f.opcoes ?? []).map((o: string) => (
+                          <SelectItem key={o} value={o}>
+                            {o}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      required={f.obrigatorio}
+                      type={f.tipo === "numero" ? "number" : f.tipo === "data" ? "date" : "text"}
+                      value={val ?? ""}
+                      onChange={(e) => setVal(e.target.value)}
+                    />
+                  )}
+                </Field>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-base font-semibold">Observações</h2>

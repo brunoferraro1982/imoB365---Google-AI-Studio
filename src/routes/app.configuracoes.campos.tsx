@@ -29,9 +29,20 @@ const TIPOS = [
   { v: "data", l: "Data" },
 ];
 
+// Formulários que sabem renderizar campos personalizados (via
+// tenant_custom_fields + coluna custom_data jsonb na tabela de destino).
+// Para adicionar um novo formulário aqui, ele precisa carregar/renderizar
+// os campos com entidade correspondente — ver ImovelForm.tsx e
+// LancamentoForm.tsx como referência.
+const ENTIDADES = [
+  { v: "imovel", l: "Imóveis" },
+  { v: "lancamento", l: "Lançamentos financeiros" },
+];
+
 function CamposPage() {
   const { tenantId, isAdmin } = useAuth();
   const { confirmDialog, ConfirmDialog } = useConfirm();
+  const [entidade, setEntidade] = useState("imovel");
   const [items, setItems] = useState<any[]>([]);
   const [rotulo, setRotulo] = useState("");
   const [tipo, setTipo] = useState("texto");
@@ -42,14 +53,14 @@ function CamposPage() {
     const { data } = await supabase
       .from("tenant_custom_fields")
       .select("*")
-      .eq("entidade", "imovel")
+      .eq("entidade", entidade)
       .order("ordem")
       .order("created_at");
     setItems(data ?? []);
   }
   useEffect(() => {
     load();
-  }, [tenantId]);
+  }, [tenantId, entidade]);
 
   function slugify(s: string) {
     return s
@@ -74,7 +85,7 @@ function CamposPage() {
         : [];
     const { error } = await supabase.from("tenant_custom_fields").insert({
       tenant_id: tenantId,
-      entidade: "imovel",
+      entidade,
       chave,
       rotulo,
       tipo,
@@ -89,19 +100,42 @@ function CamposPage() {
   }
 
   async function remove(id: string) {
-    if (!(await confirmDialog("Excluir campo? Dados existentes em imóveis permanecem."))) return;
+    if (
+      !(await confirmDialog(
+        "Excluir campo? Dados já preenchidos permanecem salvos, apenas ocultos.",
+      ))
+    )
+      return;
     await supabase.from("tenant_custom_fields").delete().eq("id", id);
     load();
   }
 
   if (!isAdmin) return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
 
+  const entidadeLabel = ENTIDADES.find((e) => e.v === entidade)?.l ?? entidade;
+
   return (
     <div className="space-y-8">
+      <div className="max-w-xs">
+        <Label>Formulário</Label>
+        <Select value={entidade} onValueChange={setEntidade}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENTIDADES.map((e) => (
+              <SelectItem key={e.v} value={e.v}>
+                {e.l}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <section className="rounded-xl border border-border bg-card p-6">
-        <h2 className="mb-1 text-lg font-semibold">Novo campo personalizado (Imóvel)</h2>
+        <h2 className="mb-1 text-lg font-semibold">Novo campo personalizado ({entidadeLabel})</h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          Adicione campos extras que aparecerão no cadastro de imóveis.
+          Adicione campos extras que aparecerão no formulário de {entidadeLabel.toLowerCase()}.
         </p>
         <div className="grid gap-4 md:grid-cols-3">
           <div>
@@ -144,7 +178,7 @@ function CamposPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Campos do imóvel</h2>
+        <h2 className="mb-3 text-lg font-semibold">Campos de {entidadeLabel.toLowerCase()}</h2>
         {items.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-10 text-center">
             <Tag className="mx-auto h-8 w-8 text-muted-foreground/60" />
