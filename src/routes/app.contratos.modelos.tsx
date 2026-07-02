@@ -5,8 +5,7 @@ import {
   Plus,
   Trash2,
   FileText,
-  BookOpen,
-  Sparkles,
+  Library,
   Bold,
   Italic,
   Underline as UnderlineIcon,
@@ -27,7 +26,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { BUILTIN_TEMPLATES, type BuiltinTemplate } from "@/lib/contractTemplatesLibrary";
 import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/contratos/modelos")({
@@ -347,8 +345,6 @@ function ModelosPage() {
   // editorKey forces WysiwygEditor remount on each template switch
   const [editorKey, setEditorKey] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
-  const [cloning, setCloning] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -419,23 +415,6 @@ function ModelosPage() {
     load();
   }
 
-  async function applyBuiltinTemplate(tpl: BuiltinTemplate) {
-    if (!tenantId) return;
-    setCloning(tpl.slug);
-    const { error } = await supabase.from("contrato_templates").insert({
-      tenant_id: tenantId,
-      nome: tpl.nome,
-      tipo: tpl.tipo as any,
-      conteudo: tpl.conteudo,
-      ativo: true,
-      created_by: user?.id,
-    });
-    setCloning(null);
-    if (error) return toast.error(error.message);
-    toast.success(`"${tpl.nome}" adicionado aos seus modelos`);
-    load();
-  }
-
   return (
     <div className="p-8">
       <Link
@@ -454,58 +433,18 @@ function ModelosPage() {
         </div>
         {!editing && (
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowLibrary((v) => !v)}>
-              <BookOpen className="mr-2 h-4 w-4" />
-              {showLibrary ? "Fechar biblioteca" : "Biblioteca de modelos"}
-            </Button>
+            <Link to="/app/contratos/modelos/biblioteca">
+              <Button variant="outline">
+                <Library className="mr-2 h-4 w-4" />
+                Biblioteca de modelos
+              </Button>
+            </Link>
             <Button onClick={novo}>
               <Plus className="mr-2 h-4 w-4" /> Novo modelo
             </Button>
           </div>
         )}
       </header>
-
-      {/* ── Built-in library ─────────────────────────────────────── */}
-      {!editing && showLibrary && (
-        <section className="mb-8 rounded-xl border border-border bg-muted/30 p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <h2 className="text-lg font-semibold">Biblioteca de modelos prontos</h2>
-          </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Modelos jurídicos pré-elaborados para imobiliárias. Clique em "Usar este modelo" para
-            clonar para a sua conta — você poderá editar livremente depois.
-          </p>
-          <div className="grid gap-3 md:grid-cols-2">
-            {BUILTIN_TEMPLATES.map((tpl) => (
-              <div
-                key={tpl.slug}
-                className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="font-medium">{tpl.nome}</div>
-                    <Badge variant="secondary" className="mt-1 capitalize">
-                      {tpl.tipo.replace("_", " ")}
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">{tpl.descricao}</p>
-                <div className="mt-1 flex justify-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={cloning === tpl.slug}
-                    onClick={() => applyBuiltinTemplate(tpl)}
-                  >
-                    {cloning === tpl.slug ? "Adicionando…" : "Usar este modelo"}
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ── Editor form ──────────────────────────────────────────── */}
       {editing ? (

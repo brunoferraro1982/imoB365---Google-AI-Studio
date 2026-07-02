@@ -33,6 +33,7 @@ import {
   GraduationCap,
   BookOpen,
   PlayCircle,
+  Library,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -83,6 +84,7 @@ const tenantModules: Module[] = [
     items: [
       { to: "/app/contratos", label: "Contratos", icon: FileText },
       { to: "/app/contratos/modelos", label: "Modelos de contrato", icon: FileSignature },
+      { to: "/app/contratos/modelos/biblioteca", label: "Biblioteca de modelos", icon: Library },
       { to: "/app/cartorios", label: "Cartórios", icon: Landmark },
     ],
   },
