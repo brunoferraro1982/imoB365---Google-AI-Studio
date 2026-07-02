@@ -31,16 +31,21 @@ export const completeOnboarding = createServerFn({ method: "POST" })
 
     const modulesCSV = data.modulosInteresse.join(",");
 
-    const { error: profileError } = await supabaseAdmin
-      .from("profiles")
-      .update({
+    // upsert (não update): se a linha em profiles nunca existiu — por
+    // exemplo, o trigger de criação automática no signup não disparou —
+    // um update() aqui afetaria silenciosamente 0 linhas, sem erro, e o
+    // onboarding pareceria concluído com sucesso sem nada persistido.
+    const { error: profileError } = await supabaseAdmin.from("profiles").upsert(
+      {
+        id: userId,
         nome: data.nome,
         telefone: data.telefone || null,
         tipo_usuario: data.tipo,
         plano_pretendido: modulesCSV,
         imobiliaria_nome: data.tipo === "imobiliaria" ? data.imobiliariaNome || null : null,
-      })
-      .eq("id", userId);
+      },
+      { onConflict: "id" },
+    );
 
     if (profileError) throw new Error("Erro ao atualizar perfil: " + profileError.message);
 

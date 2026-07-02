@@ -110,8 +110,7 @@ export function useAuth() {
           profileData.plano_pretendido ?? currentUser?.user_metadata?.plano_pretendido ?? null,
         imobiliaria_nome:
           profileData.imobiliaria_nome ?? currentUser?.user_metadata?.imobiliaria_nome ?? null,
-        aprovado:
-          profileData.aprovado === true,
+        aprovado: profileData.aprovado === true,
         pagamento_validado:
           profileData.pagamento_validado === true ||
           currentUser?.user_metadata?.pagamento_validado === true ||
@@ -136,11 +135,42 @@ export function useAuth() {
         // super_admin sem tenant ou perfil incompleto — habilita tudo
         setEnabledModules(["imobiliario", "ajustes"]);
       }
+    } else {
+      // Nenhuma linha em profiles para este usuário (ex.: trigger de
+      // criação automática falhou/não existia no momento do signup).
+      // Sem isto, `profile` permanecia null e o guard de onboarding do
+      // AppShell (que exige `profile` truthy) nunca disparava — o usuário
+      // navegava pelo app inteiro sem tenant, e toda ação protegida por
+      // RLS falhava silenciosamente com "row-level security policy".
+      // Tratar como perfil incompleto força o mesmo redirecionamento para
+      // /onboarding que um profile com tipo_usuario nulo já recebe.
+      setTenantId(null);
+      setProfile({
+        nome: currentUser?.user_metadata?.nome ?? currentUser?.email ?? null,
+        avatar_url: null,
+        tipo_usuario: currentUser?.user_metadata?.tipo_usuario ?? null,
+        plano_pretendido: currentUser?.user_metadata?.plano_pretendido ?? null,
+        imobiliaria_nome: currentUser?.user_metadata?.imobiliaria_nome ?? null,
+        aprovado: false,
+        pagamento_validado: currentUser?.user_metadata?.pagamento_validado === true,
+        pagamento_metodo: currentUser?.user_metadata?.pagamento_metodo ?? null,
+      });
+      setEnabledModules(["imobiliario", "ajustes"]);
     }
   }
 
   const isSuperAdmin = roles.includes("super_admin");
   const isAdmin = roles.includes("admin") || isSuperAdmin;
 
-  return { session, user, roles, enabledModules, tenantId, profile, isSuperAdmin, isAdmin, loading };
+  return {
+    session,
+    user,
+    roles,
+    enabledModules,
+    tenantId,
+    profile,
+    isSuperAdmin,
+    isAdmin,
+    loading,
+  };
 }
