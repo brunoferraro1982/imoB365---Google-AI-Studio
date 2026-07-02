@@ -136,7 +136,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
-import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id.imprimir'
+import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
@@ -801,9 +801,9 @@ const AppContratosModelosBibliotecaRoute =
     getParentRoute: () => AppRoute,
   } as any)
 const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
-  id: '/imprimir',
-  path: '/imprimir',
-  getParentRoute: () => AppContratosIdRoute,
+  id: '/contratos/$id_/imprimir',
+  path: '/contratos/$id/imprimir',
+  getParentRoute: () => AppRoute,
 } as any)
 const ApiPublicWebhooksDeliverRoute =
   ApiPublicWebhooksDeliverRouteImport.update({
@@ -952,7 +952,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
-  '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
+  '/app/contratos/$id': typeof AppContratosIdRoute
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/contratos/painel': typeof AppContratosPainelRoute
@@ -1087,7 +1087,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
-  '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
+  '/app/contratos/$id': typeof AppContratosIdRoute
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/contratos/painel': typeof AppContratosPainelRoute
@@ -1228,7 +1228,7 @@ export interface FileRoutesById {
   '/app/configuracoes/scoring': typeof AppConfiguracoesScoringRoute
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
-  '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
+  '/app/contratos/$id': typeof AppContratosIdRoute
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/contratos/painel': typeof AppContratosPainelRoute
@@ -1269,7 +1269,7 @@ export interface FileRoutesById {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
-  '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
+  '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1686,7 +1686,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
-    | '/app/contratos/$id/imprimir'
+    | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -2646,12 +2646,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContratosModelosBibliotecaRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/contratos/$id/imprimir': {
-      id: '/app/contratos/$id/imprimir'
-      path: '/imprimir'
+    '/app/contratos/$id_/imprimir': {
+      id: '/app/contratos/$id_/imprimir'
+      path: '/contratos/$id/imprimir'
       fullPath: '/app/contratos/$id/imprimir'
       preLoaderRoute: typeof AppContratosIdImprimirRouteImport
-      parentRoute: typeof AppContratosIdRoute
+      parentRoute: typeof AppRoute
     }
     '/api/public/webhooks/deliver': {
       id: '/api/public/webhooks/deliver'
@@ -2816,18 +2816,6 @@ const AppSiteRouteChildren: AppSiteRouteChildren = {
 const AppSiteRouteWithChildren =
   AppSiteRoute._addFileChildren(AppSiteRouteChildren)
 
-interface AppContratosIdRouteChildren {
-  AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
-}
-
-const AppContratosIdRouteChildren: AppContratosIdRouteChildren = {
-  AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
-}
-
-const AppContratosIdRouteWithChildren = AppContratosIdRoute._addFileChildren(
-  AppContratosIdRouteChildren,
-)
-
 interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
@@ -2841,7 +2829,7 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
   AppChatIdRoute: typeof AppChatIdRoute
-  AppContratosIdRoute: typeof AppContratosIdRouteWithChildren
+  AppContratosIdRoute: typeof AppContratosIdRoute
   AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
   AppContratosPainelRoute: typeof AppContratosPainelRoute
@@ -2869,6 +2857,7 @@ interface AppRouteChildren {
   AppImoveisIndexRoute: typeof AppImoveisIndexRoute
   AppLeadsIndexRoute: typeof AppLeadsIndexRoute
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
+  AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
   AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
 }
 
@@ -2885,7 +2874,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
   AppChatIdRoute: AppChatIdRoute,
-  AppContratosIdRoute: AppContratosIdRouteWithChildren,
+  AppContratosIdRoute: AppContratosIdRoute,
   AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
   AppContratosPainelRoute: AppContratosPainelRoute,
@@ -2913,6 +2902,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisIndexRoute: AppImoveisIndexRoute,
   AppLeadsIndexRoute: AppLeadsIndexRoute,
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
+  AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
   AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
 }
 

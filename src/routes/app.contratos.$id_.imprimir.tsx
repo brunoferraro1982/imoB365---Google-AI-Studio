@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/app/contratos/$id/imprimir")({
+export const Route = createFileRoute("/app/contratos/$id_/imprimir")({
   component: ImprimirContrato,
 });
 
