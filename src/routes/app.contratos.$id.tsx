@@ -124,12 +124,12 @@ function EditarContrato() {
     }
     const { error: insErr } = await supabase.from("lancamentos_financeiros").insert({
       tenant_id: tenantId,
-      tipo: "saida" as any,
+      tipo: "despesa",
       categoria: "comissao",
       descricao: `Comissão — contrato ${c.numero ?? `#${c.id.slice(0, 8)}`}`,
       valor,
       data_vencimento: new Date().toISOString().slice(0, 10),
-      status: "pendente" as any,
+      status: "pendente",
       contrato_id: c.id,
       imovel_id: c.imovel_id,
       corretor_id: c.corretor_id,
