@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Printer } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Download, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,8 @@ function ImprimirContrato() {
   const [partes, setPartes] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [templateId, setTemplateId] = useState<string>("");
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+  const corpoRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -129,6 +131,31 @@ function ImprimirContrato() {
     window.print();
   }
 
+  async function baixarPdf() {
+    if (!template) return toast.error("Selecione um modelo");
+    if (!corpoRef.current) return;
+    setGerandoPdf(true);
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      const nomeArquivo = `contrato-${contrato.numero ?? contrato.id.slice(0, 8)}.pdf`;
+      await html2pdf()
+        .set({
+          filename: nomeArquivo,
+          margin: 10,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["css", "legacy"] },
+        })
+        .from(corpoRef.current)
+        .save();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao gerar PDF");
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
+
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
   if (!contrato)
     return <div className="p-8 text-sm text-muted-foreground">Contrato não encontrado.</div>;
@@ -166,8 +193,12 @@ function ImprimirContrato() {
                 ))}
               </select>
             </div>
-            <Button onClick={imprimir}>
+            <Button variant="outline" onClick={imprimir}>
               <Printer className="mr-2 h-4 w-4" /> Imprimir
+            </Button>
+            <Button onClick={baixarPdf} disabled={gerandoPdf}>
+              <Download className="mr-2 h-4 w-4" />
+              {gerandoPdf ? "Gerando PDF…" : "Baixar PDF"}
             </Button>
           </div>
         </header>
@@ -184,6 +215,7 @@ function ImprimirContrato() {
 
       {template && (
         <article
+          ref={corpoRef}
           className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-12 leading-relaxed text-foreground shadow-sm print:max-w-none print:border-0 print:p-0 print:shadow-none [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6"
           // Templates só podem ser editados por admins do tenant (RLS).
           dangerouslySetInnerHTML={{ __html: corpo }}
