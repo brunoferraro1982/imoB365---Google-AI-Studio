@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -588,27 +589,19 @@ export function BlogManager({
                       />
                     </div>
 
-                    {/* Conteúdo HTML */}
+                    {/* Conteúdo do artigo */}
                     <div>
-                      <Label
-                        htmlFor="post-conteudo"
-                        className="text-xs font-bold text-foreground flex items-center justify-between"
-                      >
-                        <span>Texto Completo do Artigo (HTML)</span>
-                        <span className="text-[10px] text-muted-foreground">
-                          Suporta tags HTML: &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, etc.
-                        </span>
+                      <Label className="text-xs font-bold text-foreground">
+                        Texto completo do artigo
                       </Label>
-                      <Textarea
-                        id="post-conteudo"
-                        rows={12}
-                        placeholder="<h2>Introdução</h2>&#10;<p>Escreva seu artigo aqui...</p>"
-                        value={currentPost.conteudo || ""}
-                        onChange={(e) =>
-                          setCurrentPost((p) => ({ ...p, conteudo: e.target.value }))
-                        }
-                        className="mt-1.5 font-mono text-xs leading-relaxed"
-                      />
+                      <div className="mt-1.5">
+                        <RichTextEditor
+                          value={currentPost.conteudo || ""}
+                          onChange={(html) => setCurrentPost((p) => ({ ...p, conteudo: html }))}
+                          placeholder="Escreva o artigo aqui…"
+                          minHeight={320}
+                        />
+                      </div>
                     </div>
                   </div>
                 ) : (

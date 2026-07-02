@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { ExternalLink, Plus, Trash2, Globe2 } from "lucide-react";
+import { ExternalLink, Plus, Trash2, Globe2, ChevronDown, Settings2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { ColorPickerField } from "@/components/ui/color-picker-field";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -230,19 +233,21 @@ function SitePage() {
             </label>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Cor de destaque (hex)">
-              <Input
-                placeholder="#3B82F6"
+            <Field label="Cor de destaque do seu site">
+              <ColorPickerField
                 value={s.cor_destaque ?? ""}
-                onChange={(e) => set("cor_destaque", e.target.value)}
-                maxLength={20}
+                onChange={(v) => set("cor_destaque", v)}
               />
             </Field>
-            <Field label="Meta description (SEO)">
+            <Field
+              label="Frase de apresentação (aparece no Google)"
+              hint="O resumo que aparece embaixo do título quando alguém te encontra numa busca."
+            >
               <Input
                 value={s.meta_description ?? ""}
                 onChange={(e) => set("meta_description", e.target.value)}
                 maxLength={160}
+                placeholder="Ex: Imóveis de alto padrão no litoral sul de SP, com atendimento personalizado."
               />
             </Field>
           </div>
@@ -277,14 +282,14 @@ function SitePage() {
         </section>
 
         <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-4 text-base font-semibold">Sobre nós</h2>
-          <Textarea
-            rows={6}
+          <h2 className="mb-1 text-base font-semibold">Sobre nós</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Conte a história da sua imobiliária/carreira. Aparece na home do seu site.
+          </p>
+          <RichTextEditor
             value={s.sobre_html ?? ""}
-            onChange={(e) => set("sobre_html", e.target.value)}
-            maxLength={5000}
-            placeholder="HTML simples — <p>, <h2>, <ul>…"
-            className="font-mono text-xs"
+            onChange={(html) => set("sobre_html", html)}
+            placeholder="Ex: Há mais de 10 anos ajudando famílias a encontrar o imóvel ideal no litoral sul de SP…"
           />
         </section>
 
@@ -298,12 +303,16 @@ function SitePage() {
                 maxLength={40}
               />
             </Field>
-            <Field label="WhatsApp">
+            <Field
+              label="WhatsApp"
+              hint="DDI + DDD + número, só dígitos. Ex: Brasil (55) + São Paulo (11) + número."
+            >
               <Input
                 value={s.contato_whatsapp ?? ""}
-                onChange={(e) => set("contato_whatsapp", e.target.value)}
-                maxLength={40}
-                placeholder="ex: 5511999998888"
+                onChange={(e) => set("contato_whatsapp", e.target.value.replace(/[^\d]/g, ""))}
+                maxLength={20}
+                placeholder="5511999998888"
+                inputMode="numeric"
               />
             </Field>
             <Field label="Email">
@@ -359,55 +368,76 @@ function SitePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-base font-semibold">Tracking e analytics</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Códigos injetados no &lt;head&gt; das páginas públicas do seu site e dos imóveis.
-          </p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Google Analytics 4 (G-XXXX)">
-              <Input
-                value={s.ga4_id ?? ""}
-                onChange={(e) => set("ga4_id", e.target.value)}
-                maxLength={40}
-                placeholder="G-XXXXXXXXXX"
-              />
-            </Field>
-            <Field label="Google Tag Manager (GTM-XXXX)">
-              <Input
-                value={s.gtm_id ?? ""}
-                onChange={(e) => set("gtm_id", e.target.value)}
-                maxLength={40}
-                placeholder="GTM-XXXXXXX"
-              />
-            </Field>
-            <Field label="Google Ads (AW-XXXX)">
-              <Input
-                value={s.google_ads_id ?? ""}
-                onChange={(e) => set("google_ads_id", e.target.value)}
-                maxLength={40}
-                placeholder="AW-XXXXXXXXX"
-              />
-            </Field>
-            <Field label="Meta Pixel (Facebook)">
-              <Input
-                value={s.fb_pixel_id ?? ""}
-                onChange={(e) => set("fb_pixel_id", e.target.value)}
-                maxLength={40}
-                placeholder="1234567890"
-              />
-            </Field>
-            <Field label="Hotjar ID">
-              <Input
-                value={s.hotjar_id ?? ""}
-                onChange={(e) => set("hotjar_id", e.target.value)}
-                maxLength={40}
-                placeholder="1234567"
-              />
-            </Field>
-          </div>
-          <div className="mt-4">
-            <Field label="HTML adicional no <head> (avançado)">
+        <Collapsible className="rounded-xl border border-border bg-card">
+          <CollapsibleTrigger className="group flex w-full items-center justify-between gap-3 p-6 text-left">
+            <div className="flex items-center gap-2.5">
+              <Settings2 className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <h2 className="text-base font-semibold">Configurações avançadas (opcional)</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Só preencha se você (ou alguém da sua equipe de marketing) já usa ferramentas como
+                  Google Analytics ou Facebook Ads. Não é necessário para o site funcionar.
+                </p>
+              </div>
+            </div>
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="space-y-4 border-t border-border p-6 pt-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field
+                label="Google Analytics 4"
+                hint="Mostra quantas pessoas visitam seu site. Pegue o código em analytics.google.com."
+              >
+                <Input
+                  value={s.ga4_id ?? ""}
+                  onChange={(e) => set("ga4_id", e.target.value)}
+                  maxLength={40}
+                  placeholder="G-XXXXXXXXXX"
+                />
+              </Field>
+              <Field
+                label="Google Tag Manager"
+                hint="Gerenciador de tags do Google, usado por agências de marketing."
+              >
+                <Input
+                  value={s.gtm_id ?? ""}
+                  onChange={(e) => set("gtm_id", e.target.value)}
+                  maxLength={40}
+                  placeholder="GTM-XXXXXXX"
+                />
+              </Field>
+              <Field label="Google Ads" hint="Necessário se você roda anúncios pagos no Google.">
+                <Input
+                  value={s.google_ads_id ?? ""}
+                  onChange={(e) => set("google_ads_id", e.target.value)}
+                  maxLength={40}
+                  placeholder="AW-XXXXXXXXX"
+                />
+              </Field>
+              <Field
+                label="Meta Pixel (Facebook/Instagram)"
+                hint="Necessário se você roda anúncios no Facebook ou Instagram."
+              >
+                <Input
+                  value={s.fb_pixel_id ?? ""}
+                  onChange={(e) => set("fb_pixel_id", e.target.value)}
+                  maxLength={40}
+                  placeholder="1234567890"
+                />
+              </Field>
+              <Field label="Hotjar" hint="Ferramenta de mapa de calor/gravação de sessões.">
+                <Input
+                  value={s.hotjar_id ?? ""}
+                  onChange={(e) => set("hotjar_id", e.target.value)}
+                  maxLength={40}
+                  placeholder="1234567"
+                />
+              </Field>
+            </div>
+            <Field
+              label="Código HTML adicional (só para quem sabe programar)"
+              hint="Use apenas se um desenvolvedor te passou um trecho de código específico para colar aqui."
+            >
               <Textarea
                 rows={4}
                 className="font-mono text-xs"
@@ -417,8 +447,8 @@ function SitePage() {
                 placeholder="<!-- scripts ou meta tags adicionais -->"
               />
             </Field>
-          </div>
-        </section>
+          </CollapsibleContent>
+        </Collapsible>
 
         <div className="flex justify-end gap-2">
           <Button type="submit" disabled={saving}>
@@ -464,12 +494,12 @@ function SitePage() {
                 />
               </Field>
             </div>
-            <Field label="Conteúdo (HTML)">
-              <Textarea
-                rows={14}
+            <Field label="Conteúdo da página">
+              <RichTextEditor
                 value={editing.conteudo_html}
-                onChange={(e) => setEditing({ ...editing, conteudo_html: e.target.value })}
-                className="font-mono text-xs"
+                onChange={(html) => setEditing({ ...editing, conteudo_html: html })}
+                placeholder="Escreva o conteúdo desta página…"
+                minHeight={320}
               />
             </Field>
             <div className="flex items-center justify-between">
@@ -530,13 +560,22 @@ function SitePage() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
       </Label>
       {children}
+      {hint && <p className="mt-1 text-[11px] leading-snug text-muted-foreground">{hint}</p>}
     </div>
   );
 }
