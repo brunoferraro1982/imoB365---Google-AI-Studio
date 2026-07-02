@@ -47,7 +47,13 @@ import { NotificationBell } from "@/components/layout/NotificationBell";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
-type Module = { id: string; label: string; icon: typeof Building2; items: Item[]; requiredModule?: AppModule };
+type Module = {
+  id: string;
+  label: string;
+  icon: typeof Building2;
+  items: Item[];
+  requiredModule?: AppModule;
+};
 
 const tenantModules: Module[] = [
   {
@@ -160,6 +166,7 @@ const adminNav: Item[] = [
   { to: "/admin/planos", label: "Planos", icon: Banknote },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
   { to: "/admin/modulos", label: "Módulos", icon: Globe2 },
+  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
   { to: "/admin/flags", label: "Feature flags", icon: Flag },
   { to: "/admin/integracoes", label: "Integrações", icon: Settings },
   { to: "/admin/emails", label: "E-mails", icon: Mail },
@@ -502,7 +509,8 @@ function AdminLayout({
                 <item.icon
                   className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
                 />
-                {item.label}{item.label === "Aprovações" && <ApprovalsNavBadge />}
+                {item.label}
+                {item.label === "Aprovações" && <ApprovalsNavBadge />}
               </Link>
             );
           })}

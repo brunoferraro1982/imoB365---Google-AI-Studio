@@ -16,6 +16,7 @@ export type SiteCtx = {
     cor_destaque?: string | null;
   };
   pages: { slug: string; titulo: string }[];
+  hasBlog?: boolean;
 };
 
 export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: React.ReactNode }) {
@@ -52,6 +53,15 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
                 {p.titulo}
               </Link>
             ))}
+            {ctx.hasBlog && (
+              <Link
+                to="/site/$slug/blog"
+                params={{ slug: ctx.tenantSlug }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                Blog
+              </Link>
+            )}
           </nav>
         </div>
       </header>

@@ -54,7 +54,7 @@ import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppVisitasRouteImport } from './routes/app.visitas'
@@ -74,6 +74,7 @@ import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
 import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes'
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
@@ -88,6 +89,7 @@ import { Route as AppContratosIndexRouteImport } from './routes/app.contratos.in
 import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
 import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.index'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
+import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsRouteImport } from './routes/app.site.widgets'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
@@ -131,7 +133,8 @@ import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configurac
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
-import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug.p.$pageSlug'
+import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
+import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -375,9 +378,9 @@ const ContaBuscasRoute = ContaBuscasRouteImport.update({
   getParentRoute: () => ContaRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => BlogRoute,
+  id: '/blog_/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AvaliacaoTenantSlugRoute = AvaliacaoTenantSlugRouteImport.update({
   id: '/avaliacao/$tenantSlug',
@@ -474,6 +477,11 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
   path: '/emails',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBlogRoute = AdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
@@ -543,6 +551,11 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
   getParentRoute: () => AppRoute,
+} as any)
+const SiteSlugBlogRoute = SiteSlugBlogRouteImport.update({
+  id: '/site/$slug_/blog',
+  path: '/site/$slug/blog',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ContaChatIdRoute = ContaChatIdRouteImport.update({
   id: '/chat/$id',
@@ -774,9 +787,14 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const SiteSlugPPageSlugRoute = SiteSlugPPageSlugRouteImport.update({
-  id: '/p/$pageSlug',
-  path: '/p/$pageSlug',
-  getParentRoute: () => SiteSlugRoute,
+  id: '/site/$slug_/p/$pageSlug',
+  path: '/site/$slug/p/$pageSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SiteSlugBlogPostSlugRoute = SiteSlugBlogPostSlugRouteImport.update({
+  id: '/site/$slug_/blog_/$postSlug',
+  path: '/site/$slug/blog/$postSlug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
@@ -868,7 +886,7 @@ export interface FileRoutesByFullPath {
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -895,6 +913,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
@@ -925,7 +944,7 @@ export interface FileRoutesByFullPath {
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
-  '/site/$slug': typeof SiteSlugRouteWithChildren
+  '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -973,6 +992,7 @@ export interface FileRoutesByFullPath {
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/site/$slug/blog': typeof SiteSlugBlogRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -998,6 +1018,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1006,7 +1027,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
-  '/blog': typeof BlogRouteWithChildren
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -1032,6 +1053,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
@@ -1060,7 +1082,7 @@ export interface FileRoutesByTo {
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
-  '/site/$slug': typeof SiteSlugRouteWithChildren
+  '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
@@ -1108,6 +1130,7 @@ export interface FileRoutesByTo {
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/site/$slug/blog': typeof SiteSlugBlogRoute
   '/app/chat': typeof AppChatIndexRoute
   '/app/comissoes': typeof AppComissoesIndexRoute
   '/app/configuracoes': typeof AppConfiguracoesIndexRoute
@@ -1133,6 +1156,7 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1144,7 +1168,7 @@ export interface FileRoutesById {
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
-  '/blog': typeof BlogRouteWithChildren
+  '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
@@ -1171,6 +1195,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
+  '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
@@ -1190,7 +1215,7 @@ export interface FileRoutesById {
   '/app/visitas': typeof AppVisitasRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
-  '/blog/$slug': typeof BlogSlugRoute
+  '/blog_/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
@@ -1201,7 +1226,7 @@ export interface FileRoutesById {
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
-  '/site/$slug': typeof SiteSlugRouteWithChildren
+  '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
@@ -1249,6 +1274,7 @@ export interface FileRoutesById {
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
+  '/site/$slug_/blog': typeof SiteSlugBlogRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -1274,7 +1300,8 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
-  '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/site/$slug_/blog_/$postSlug': typeof SiteSlugBlogPostSlugRoute
+  '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1313,6 +1340,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/termos'
     | '/admin/auditoria'
+    | '/admin/blog'
     | '/admin/emails'
     | '/admin/flags'
     | '/admin/integracoes'
@@ -1391,6 +1419,7 @@ export interface FileRouteTypes {
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/site/$slug/blog'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -1416,6 +1445,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -1450,6 +1480,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/termos'
     | '/admin/auditoria'
+    | '/admin/blog'
     | '/admin/emails'
     | '/admin/flags'
     | '/admin/integracoes'
@@ -1526,6 +1557,7 @@ export interface FileRouteTypes {
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/site/$slug/blog'
     | '/app/chat'
     | '/app/comissoes'
     | '/app/configuracoes'
@@ -1551,6 +1583,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -1588,6 +1621,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/termos'
     | '/admin/auditoria'
+    | '/admin/blog'
     | '/admin/emails'
     | '/admin/flags'
     | '/admin/integracoes'
@@ -1607,7 +1641,7 @@ export interface FileRouteTypes {
     | '/app/visitas'
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
-    | '/blog/$slug'
+    | '/blog_/$slug'
     | '/conta/buscas'
     | '/conta/favoritos'
     | '/conta/perfil'
@@ -1666,6 +1700,7 @@ export interface FileRouteTypes {
     | '/app/site/blog'
     | '/app/site/widgets'
     | '/conta/chat/$id'
+    | '/site/$slug_/blog'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -1691,7 +1726,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
-    | '/site/$slug/p/$pageSlug'
+    | '/site/$slug_/blog_/$postSlug'
+    | '/site/$slug_/p/$pageSlug'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -1702,7 +1738,7 @@ export interface RootRouteChildren {
   AImob365Route: typeof AImob365Route
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
-  BlogRoute: typeof BlogRouteWithChildren
+  BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
   CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
   CalculadoraItbiRoute: typeof CalculadoraItbiRoute
@@ -1731,15 +1767,17 @@ export interface RootRouteChildren {
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   DocsApiRoute: typeof DocsApiRoute
   EmpreendimentoSlugRoute: typeof EmpreendimentoSlugRoute
   ImovelSlugRoute: typeof ImovelSlugRoute
   LSlugRoute: typeof LSlugRoute
   QueroAnunciarTenantSlugRoute: typeof QueroAnunciarTenantSlugRoute
-  SiteSlugRoute: typeof SiteSlugRouteWithChildren
+  SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
@@ -1750,6 +1788,8 @@ export interface RootRouteChildren {
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  SiteSlugBlogPostSlugRoute: typeof SiteSlugBlogPostSlugRoute
+  SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -2072,12 +2112,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContaBuscasRouteImport
       parentRoute: typeof ContaRoute
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/$slug'
+    '/blog_/$slug': {
+      id: '/blog_/$slug'
+      path: '/blog/$slug'
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
-      parentRoute: typeof BlogRoute
+      parentRoute: typeof rootRouteImport
     }
     '/avaliacao/$tenantSlug': {
       id: '/avaliacao/$tenantSlug'
@@ -2212,6 +2252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/blog': {
+      id: '/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AdminBlogRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/auditoria': {
       id: '/admin/auditoria'
       path: '/auditoria'
@@ -2309,6 +2356,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/chat/'
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/site/$slug_/blog': {
+      id: '/site/$slug_/blog'
+      path: '/site/$slug/blog'
+      fullPath: '/site/$slug/blog'
+      preLoaderRoute: typeof SiteSlugBlogRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/conta/chat/$id': {
       id: '/conta/chat/$id'
@@ -2611,12 +2665,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/site/$slug/p/$pageSlug': {
-      id: '/site/$slug/p/$pageSlug'
-      path: '/p/$pageSlug'
+    '/site/$slug_/p/$pageSlug': {
+      id: '/site/$slug_/p/$pageSlug'
+      path: '/site/$slug/p/$pageSlug'
       fullPath: '/site/$slug/p/$pageSlug'
       preLoaderRoute: typeof SiteSlugPPageSlugRouteImport
-      parentRoute: typeof SiteSlugRoute
+      parentRoute: typeof rootRouteImport
+    }
+    '/site/$slug_/blog_/$postSlug': {
+      id: '/site/$slug_/blog_/$postSlug'
+      path: '/site/$slug/blog/$postSlug'
+      fullPath: '/site/$slug/blog/$postSlug'
+      preLoaderRoute: typeof SiteSlugBlogPostSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -2728,6 +2789,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
+  AdminBlogRoute: typeof AdminBlogRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
   AdminIntegracoesRoute: typeof AdminIntegracoesRoute
@@ -2740,6 +2802,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditoriaRoute: AdminAuditoriaRoute,
+  AdminBlogRoute: AdminBlogRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminFlagsRoute: AdminFlagsRoute,
   AdminIntegracoesRoute: AdminIntegracoesRoute,
@@ -2908,16 +2971,6 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
-interface BlogRouteChildren {
-  BlogSlugRoute: typeof BlogSlugRoute
-}
-
-const BlogRouteChildren: BlogRouteChildren = {
-  BlogSlugRoute: BlogSlugRoute,
-}
-
-const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
-
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -2940,24 +2993,12 @@ const ContaRouteChildren: ContaRouteChildren = {
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 
-interface SiteSlugRouteChildren {
-  SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
-}
-
-const SiteSlugRouteChildren: SiteSlugRouteChildren = {
-  SiteSlugPPageSlugRoute: SiteSlugPPageSlugRoute,
-}
-
-const SiteSlugRouteWithChildren = SiteSlugRoute._addFileChildren(
-  SiteSlugRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AImob365Route: AImob365Route,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
-  BlogRoute: BlogRouteWithChildren,
+  BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
   CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
   CalculadoraItbiRoute: CalculadoraItbiRoute,
@@ -2986,15 +3027,17 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   DocsApiRoute: DocsApiRoute,
   EmpreendimentoSlugRoute: EmpreendimentoSlugRoute,
   ImovelSlugRoute: ImovelSlugRoute,
   LSlugRoute: LSlugRoute,
   QueroAnunciarTenantSlugRoute: QueroAnunciarTenantSlugRoute,
-  SiteSlugRoute: SiteSlugRouteWithChildren,
+  SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
@@ -3005,6 +3048,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  SiteSlugBlogPostSlugRoute: SiteSlugBlogPostSlugRoute,
+  SiteSlugPPageSlugRoute: SiteSlugPPageSlugRoute,
   ApiPublicFeedsTenantSlugOlxDotxmlRoute:
     ApiPublicFeedsTenantSlugOlxDotxmlRoute,
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute:

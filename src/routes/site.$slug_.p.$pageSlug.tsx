@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
 
-export const Route = createFileRoute("/site/$slug/p/$pageSlug")({
+export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
   component: TenantPage,
   head: ({ params }) => ({
     meta: [
@@ -32,27 +32,33 @@ function TenantPage() {
         setLoading(false);
         return;
       }
-      const [{ data: cfg }, { data: pages }, { data: pg }] = await Promise.all([
-        supabase
-          .from("tenant_site_settings")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .maybeSingle(),
-        supabase
-          .from("tenant_pages")
-          .select("slug,titulo")
-          .eq("tenant_id", tenant.id)
-          .eq("publicada", true)
-          .order("ordem"),
-        supabase
-          .from("tenant_pages")
-          .select("titulo,conteudo_html")
-          .eq("tenant_id", tenant.id)
-          .eq("slug", pageSlug)
-          .eq("publicada", true)
-          .maybeSingle(),
-      ]);
+      const [{ data: cfg }, { data: pages }, { data: pg }, { count: blogCount }] =
+        await Promise.all([
+          supabase
+            .from("tenant_site_settings")
+            .select("*")
+            .eq("tenant_id", tenant.id)
+            .eq("publicado", true)
+            .maybeSingle(),
+          supabase
+            .from("tenant_pages")
+            .select("slug,titulo")
+            .eq("tenant_id", tenant.id)
+            .eq("publicada", true)
+            .order("ordem"),
+          supabase
+            .from("tenant_pages")
+            .select("titulo,conteudo_html")
+            .eq("tenant_id", tenant.id)
+            .eq("slug", pageSlug)
+            .eq("publicada", true)
+            .maybeSingle(),
+          supabase
+            .from("blog_posts")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenant.id)
+            .eq("status", "publicado"),
+        ]);
       if (!cfg) {
         setLoading(false);
         return;
@@ -62,6 +68,7 @@ function TenantPage() {
         tenantNome: tenant.nome,
         settings: cfg,
         pages: (pages ?? []) as any,
+        hasBlog: (blogCount ?? 0) > 0,
       });
       setPage(pg ?? null);
       setLoading(false);

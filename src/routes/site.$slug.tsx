@@ -51,30 +51,36 @@ function TenantHome() {
         setLoading(false);
         return;
       }
-      const [{ data: cfg }, { data: pages }, { data: imv }] = await Promise.all([
-        supabase
-          .from("tenant_site_settings")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .maybeSingle(),
-        supabase
-          .from("tenant_pages")
-          .select("slug,titulo")
-          .eq("tenant_id", tenant.id)
-          .eq("publicada", true)
-          .order("ordem"),
-        supabase
-          .from("imoveis")
-          .select(
-            "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,area_util,endereco_bairro,endereco_cidade,endereco_uf",
-          )
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .eq("status", "ativo")
-          .order("publicado_em", { ascending: false })
-          .limit(12),
-      ]);
+      const [{ data: cfg }, { data: pages }, { data: imv }, { count: blogCount }] =
+        await Promise.all([
+          supabase
+            .from("tenant_site_settings")
+            .select("*")
+            .eq("tenant_id", tenant.id)
+            .eq("publicado", true)
+            .maybeSingle(),
+          supabase
+            .from("tenant_pages")
+            .select("slug,titulo")
+            .eq("tenant_id", tenant.id)
+            .eq("publicada", true)
+            .order("ordem"),
+          supabase
+            .from("imoveis")
+            .select(
+              "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,area_util,endereco_bairro,endereco_cidade,endereco_uf",
+            )
+            .eq("tenant_id", tenant.id)
+            .eq("publicado", true)
+            .eq("status", "ativo")
+            .order("publicado_em", { ascending: false })
+            .limit(12),
+          supabase
+            .from("blog_posts")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenant.id)
+            .eq("status", "publicado"),
+        ]);
       if (!cfg) {
         setNotFoundState(true);
         setLoading(false);
@@ -85,6 +91,7 @@ function TenantHome() {
         tenantNome: tenant.nome,
         settings: cfg,
         pages: (pages ?? []) as any,
+        hasBlog: (blogCount ?? 0) > 0,
       });
       setHero(cfg);
       setSobre(cfg.sobre_html ?? "");

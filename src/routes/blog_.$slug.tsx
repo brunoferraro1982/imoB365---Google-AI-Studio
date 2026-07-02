@@ -1,41 +1,45 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { supabase } from '@/integrations/supabase/client'
-import { ArrowLeft, Calendar, Tag } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
+import { getCorporateTenantId } from "@/lib/corporateTenant";
+import { ArrowLeft, Calendar, Tag } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 // ─── Server function ────────────────────────────────────────────────────────
 
-const fetchPostBySlug = createServerFn({ method: 'GET' })
+const fetchPostBySlug = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
+    const tenantId = await getCorporateTenantId();
+    if (!tenantId) throw new Error("Post não encontrado");
+
     const { data, error } = await supabase
-      .from('blog_posts')
+      .from("blog_posts")
       .select(
-        'id, slug, titulo, excerpt, conteudo_html, imagem_capa_url, autor_nome, categorias, published_at, seo_title',
+        "id, slug, titulo, resumo, conteudo, imagem_url, categoria, publicado_em, seo_titulo, autor:profiles(nome)",
       )
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .is('tenant_id', null)
-      .maybeSingle()
+      .eq("slug", slug)
+      .eq("status", "publicado")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
 
-    if (error) throw new Error(error.message)
-    if (!data) throw new Error('Post não encontrado')
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Post não encontrado");
 
-    return data
-  })
+    return data;
+  });
 
 // ─── Route ──────────────────────────────────────────────────────────────────
 
-export const Route = createFileRoute('/blog/$slug')({
+export const Route = createFileRoute("/blog_/$slug")({
   head: ({ loaderData }) => ({
     meta: [
-      { title: loaderData?.seo_title ?? loaderData?.titulo ?? 'Blog | imoB365' },
-      { name: 'description', content: loaderData?.excerpt ?? '' },
-      { property: 'og:title', content: loaderData?.titulo ?? '' },
-      { property: 'og:image', content: loaderData?.imagem_capa_url ?? '' },
+      { title: loaderData?.seo_titulo ?? loaderData?.titulo ?? "Blog | imoB365" },
+      { name: "description", content: loaderData?.resumo ?? "" },
+      { property: "og:title", content: loaderData?.titulo ?? "" },
+      { property: "og:image", content: loaderData?.imagem_url ?? "" },
     ],
   }),
 
@@ -44,9 +48,9 @@ export const Route = createFileRoute('/blog/$slug')({
   errorComponent: ({ error }) => (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
       <p className="text-muted-foreground">
-        {error.message === 'Post não encontrado'
-          ? 'Este artigo não foi encontrado ou foi removido.'
-          : 'Ocorreu um erro ao carregar o artigo.'}
+        {error.message === "Post não encontrado"
+          ? "Este artigo não foi encontrado ou foi removido."
+          : "Ocorreu um erro ao carregar o artigo."}
       </p>
       <Button asChild variant="outline">
         <Link to="/blog">← Voltar ao Blog</Link>
@@ -55,31 +59,22 @@ export const Route = createFileRoute('/blog/$slug')({
   ),
 
   component: BlogPostPage,
-})
-
-// ─── Category label map ──────────────────────────────────────────────────────
-
-const CAT_LABELS: Record<string, string> = {
-  investidor: 'Investidor',
-  'litoral-sul': 'Litoral Sul',
-  planta: 'Planta',
-  renda: 'Renda',
-}
+});
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
 function BlogPostPage() {
-  const post = Route.useLoaderData()
+  const post = Route.useLoaderData();
 
-  const formattedDate = post.published_at
-    ? new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }).format(new Date(post.published_at))
-    : null
+  const formattedDate = post.publicado_em
+    ? new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }).format(new Date(post.publicado_em))
+    : null;
 
-  const categories: string[] = Array.isArray(post.categorias) ? post.categorias : []
+  const autorNome = (post as unknown as { autor?: { nome: string | null } | null }).autor?.nome;
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,15 +91,13 @@ function BlogPostPage() {
       </div>
 
       <article className="max-w-4xl mx-auto px-4 py-10">
-        {/* ── Categorias ── */}
-        {categories.length > 0 && (
+        {/* ── Categoria ── */}
+        {post.categoria && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {categories.map((cat) => (
-              <Badge key={cat} variant="secondary" className="gap-1 text-xs">
-                <Tag className="w-3 h-3" />
-                {CAT_LABELS[cat] ?? cat}
-              </Badge>
-            ))}
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Tag className="w-3 h-3" />
+              {post.categoria}
+            </Badge>
           </div>
         )}
 
@@ -114,10 +107,10 @@ function BlogPostPage() {
         </h1>
 
         {/* ── Meta ── */}
-        {(post.autor_nome || formattedDate) && (
+        {(autorNome || formattedDate) && (
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
-            {post.autor_nome && <span>{post.autor_nome}</span>}
-            {post.autor_nome && formattedDate && (
+            {autorNome && <span>{autorNome}</span>}
+            {autorNome && formattedDate && (
               <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
             )}
             {formattedDate && (
@@ -130,10 +123,10 @@ function BlogPostPage() {
         )}
 
         {/* ── Imagem de capa ── */}
-        {post.imagem_capa_url && (
+        {post.imagem_url && (
           <div className="mb-8 rounded-xl overflow-hidden aspect-video">
             <img
-              src={post.imagem_capa_url}
+              src={post.imagem_url}
               alt={post.titulo}
               className="w-full h-full object-cover"
               loading="eager"
@@ -143,14 +136,14 @@ function BlogPostPage() {
 
         <Separator className="mb-8" />
 
-        {/* ── Conteúdo WordPress ── */}
+        {/* ── Conteúdo ── */}
         <div
           className="prose prose-neutral dark:prose-invert max-w-none
             prose-headings:font-semibold prose-headings:tracking-tight
             prose-a:text-primary prose-a:no-underline hover:prose-a:underline
             prose-img:rounded-lg prose-img:shadow-md
             prose-blockquote:border-l-primary"
-          dangerouslySetInnerHTML={{ __html: post.conteudo_html ?? '' }}
+          dangerouslySetInnerHTML={{ __html: post.conteudo ?? "" }}
         />
 
         <Separator className="my-10" />
@@ -166,5 +159,5 @@ function BlogPostPage() {
         </div>
       </article>
     </div>
-  )
+  );
 }
