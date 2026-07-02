@@ -105,6 +105,7 @@ import { Route as AppElearningAdminRouteImport } from './routes/app.elearning.ad
 import { Route as AppElearningCursoIdRouteImport } from './routes/app.elearning.$cursoId'
 import { Route as AppCorretoresNovoRouteImport } from './routes/app.corretores.novo'
 import { Route as AppCorretoresIdRouteImport } from './routes/app.corretores.$id'
+import { Route as AppContratosPainelRouteImport } from './routes/app.contratos.painel'
 import { Route as AppContratosNovoRouteImport } from './routes/app.contratos.novo'
 import { Route as AppContratosModelosRouteImport } from './routes/app.contratos.modelos'
 import { Route as AppContratosIdRouteImport } from './routes/app.contratos.$id'
@@ -141,6 +142,7 @@ import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.lea
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
+import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
@@ -629,6 +631,11 @@ const AppCorretoresIdRoute = AppCorretoresIdRouteImport.update({
   path: '/corretores/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContratosPainelRoute = AppContratosPainelRouteImport.update({
+  id: '/contratos/painel',
+  path: '/contratos/painel',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContratosNovoRoute = AppContratosNovoRouteImport.update({
   id: '/contratos/novo',
   path: '/contratos/novo',
@@ -825,6 +832,12 @@ const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
   path: '/api/public/cron/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronContratosSlaRoute =
+  ApiPublicCronContratosSlaRouteImport.update({
+    id: '/api/public/cron/contratos-sla',
+    path: '/api/public/cron/contratos-sla',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronBuscasAlertasRoute =
   ApiPublicCronBuscasAlertasRouteImport.update({
     id: '/api/public/cron/buscas-alertas',
@@ -942,6 +955,7 @@ export interface FileRoutesByFullPath {
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
+  '/app/contratos/painel': typeof AppContratosPainelRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
   '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
@@ -973,6 +987,7 @@ export interface FileRoutesByFullPath {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1075,6 +1090,7 @@ export interface FileRoutesByTo {
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
+  '/app/contratos/painel': typeof AppContratosPainelRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
   '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
@@ -1106,6 +1122,7 @@ export interface FileRoutesByTo {
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1214,6 +1231,7 @@ export interface FileRoutesById {
   '/app/contratos/$id': typeof AppContratosIdRouteWithChildren
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
+  '/app/contratos/painel': typeof AppContratosPainelRoute
   '/app/corretores/$id': typeof AppCorretoresIdRoute
   '/app/corretores/novo': typeof AppCorretoresNovoRoute
   '/app/elearning/$cursoId': typeof AppElearningCursoIdRoute
@@ -1245,6 +1263,7 @@ export interface FileRoutesById {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
@@ -1354,6 +1373,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id'
     | '/app/contratos/modelos'
     | '/app/contratos/novo'
+    | '/app/contratos/painel'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
     | '/app/elearning/$cursoId'
@@ -1385,6 +1405,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/contratos-sla'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1487,6 +1508,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id'
     | '/app/contratos/modelos'
     | '/app/contratos/novo'
+    | '/app/contratos/painel'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
     | '/app/elearning/$cursoId'
@@ -1518,6 +1540,7 @@ export interface FileRouteTypes {
     | '/app/site'
     | '/conta/chat'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/contratos-sla'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1625,6 +1648,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id'
     | '/app/contratos/modelos'
     | '/app/contratos/novo'
+    | '/app/contratos/painel'
     | '/app/corretores/$id'
     | '/app/corretores/novo'
     | '/app/elearning/$cursoId'
@@ -1656,6 +1680,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/contratos-sla'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
@@ -1716,6 +1741,7 @@ export interface RootRouteChildren {
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
+  ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRoute
@@ -2403,6 +2429,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCorretoresIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contratos/painel': {
+      id: '/app/contratos/painel'
+      path: '/contratos/painel'
+      fullPath: '/app/contratos/painel'
+      preLoaderRoute: typeof AppContratosPainelRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/contratos/novo': {
       id: '/app/contratos/novo'
       path: '/contratos/novo'
@@ -2655,6 +2688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSnapshotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/contratos-sla': {
+      id: '/api/public/cron/contratos-sla'
+      path: '/api/public/cron/contratos-sla'
+      fullPath: '/api/public/cron/contratos-sla'
+      preLoaderRoute: typeof ApiPublicCronContratosSlaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/buscas-alertas': {
       id: '/api/public/cron/buscas-alertas'
       path: '/api/public/cron/buscas-alertas'
@@ -2804,6 +2844,7 @@ interface AppRouteChildren {
   AppContratosIdRoute: typeof AppContratosIdRouteWithChildren
   AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
+  AppContratosPainelRoute: typeof AppContratosPainelRoute
   AppCorretoresIdRoute: typeof AppCorretoresIdRoute
   AppCorretoresNovoRoute: typeof AppCorretoresNovoRoute
   AppElearningCursoIdRoute: typeof AppElearningCursoIdRoute
@@ -2847,6 +2888,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppContratosIdRoute: AppContratosIdRouteWithChildren,
   AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
+  AppContratosPainelRoute: AppContratosPainelRoute,
   AppCorretoresIdRoute: AppCorretoresIdRoute,
   AppCorretoresNovoRoute: AppCorretoresNovoRoute,
   AppElearningCursoIdRoute: AppElearningCursoIdRoute,
@@ -2964,6 +3006,7 @@ const rootRouteChildren: RootRouteChildren = {
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
+  ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRoute,

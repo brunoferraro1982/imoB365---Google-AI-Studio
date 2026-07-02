@@ -13,7 +13,9 @@ export const Route = createFileRoute("/app/tarefas")({
 
 type Tarefa = {
   id: string;
-  lead_id: string;
+  lead_id: string | null;
+  contrato_id: string | null;
+  cartorio_registro_id: string | null;
   titulo: string;
   tipo: string;
   prioridade: string;
@@ -21,6 +23,8 @@ type Tarefa = {
   prazo: string | null;
   created_at: string;
   lead?: { nome: string; id: string } | null;
+  contrato?: { id: string; numero: string | null } | null;
+  cartorio_registro?: { id: string; tipo: string; cartorio_nome: string | null } | null;
 };
 
 function TarefasPage() {
@@ -34,7 +38,9 @@ function TarefasPage() {
     setLoading(true);
     let q = (supabase as any)
       .from("lead_tarefas")
-      .select("*, lead:leads(id,nome)")
+      .select(
+        "*, lead:leads(id,nome), contrato:contratos(id,numero), cartorio_registro:cartorio_registros(id,tipo,cartorio_nome)",
+      )
       .eq("tenant_id", tenantId)
       .order("prazo", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false })
@@ -78,7 +84,9 @@ function TarefasPage() {
     <div className="mx-auto max-w-5xl p-8">
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Tarefas</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Lembretes e follow-ups dos leads.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Lembretes e follow-ups de leads, contratos e cartórios.
+        </p>
       </header>
 
       <div className="mb-4 grid gap-3 sm:grid-cols-3">
@@ -151,13 +159,35 @@ function TarefasPage() {
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                     {t.prazo && <span>{new Date(t.prazo).toLocaleString("pt-BR")}</span>}
-                    {t.lead && (
+                    {t.lead && t.lead_id && (
                       <Link
                         to="/app/leads/$id"
                         params={{ id: t.lead_id }}
                         className="flex items-center gap-1 hover:text-primary"
                       >
                         Lead: {t.lead.nome} <ChevronRight className="h-3 w-3" />
+                      </Link>
+                    )}
+                    {t.contrato && t.contrato_id && (
+                      <Link
+                        to="/app/contratos/$id"
+                        params={{ id: t.contrato_id }}
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
+                        Contrato {t.contrato.numero ? `#${t.contrato.numero}` : ""}{" "}
+                        <ChevronRight className="h-3 w-3" />
+                      </Link>
+                    )}
+                    {t.cartorio_registro && !t.contrato && (
+                      <Link
+                        to="/app/cartorios"
+                        className="flex items-center gap-1 hover:text-primary"
+                      >
+                        Cartório
+                        {t.cartorio_registro.cartorio_nome
+                          ? `: ${t.cartorio_registro.cartorio_nome}`
+                          : ""}{" "}
+                        <ChevronRight className="h-3 w-3" />
                       </Link>
                     )}
                   </div>

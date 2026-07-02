@@ -82,6 +82,7 @@ const tenantModules: Module[] = [
     label: "Jurídico",
     icon: Scale,
     items: [
+      { to: "/app/contratos/painel", label: "Painel", icon: LayoutDashboard },
       { to: "/app/contratos", label: "Contratos", icon: FileText },
       { to: "/app/contratos/modelos", label: "Modelos de contrato", icon: FileSignature },
       { to: "/app/contratos/modelos/biblioteca", label: "Biblioteca de modelos", icon: Library },
