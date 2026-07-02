@@ -51,11 +51,19 @@ type Module = { id: string; label: string; icon: typeof Building2; items: Item[]
 
 const tenantModules: Module[] = [
   {
+    id: "dashboard",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    items: [
+      { to: "/app", label: "Painel inicial", icon: LayoutDashboard },
+      { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
+    ],
+  },
+  {
     id: "imobiliario",
     label: "Imobiliário",
     icon: Building,
     items: [
-      { to: "/app", label: "Painel inicial", icon: LayoutDashboard },
       { to: "/app/imoveis", label: "Imóveis", icon: Building2 },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/locacao", label: "Locação", icon: Home },
@@ -102,19 +110,23 @@ const tenantModules: Module[] = [
     ],
   },
   {
-    id: "marketing",
+    id: "site",
     requiredModule: "marketing" as AppModule,
-    label: "Marketing & Site",
-    icon: Megaphone,
+    label: "Site",
+    icon: Globe,
     items: [
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
-      { to: "/app/blog", label: "Blog Institucional (CMS)", icon: FileSignature },
       { to: "/app/site/widgets", label: "Widgets de Conversão", icon: Sparkles },
-      { to: "/app/portais", label: "Anúncios em portais", icon: Globe2 },
       { to: "/app/encurtador", label: "Encurtador & QR Code", icon: Link2 },
-      { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
     ],
+  },
+  {
+    id: "marketing",
+    requiredModule: "marketing" as AppModule,
+    label: "Marketing",
+    icon: Megaphone,
+    items: [{ to: "/app/portais", label: "Anúncios em portais", icon: Globe2 }],
   },
   {
     id: "ajustes",
