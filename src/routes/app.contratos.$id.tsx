@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Printer,
   Banknote,
+  BadgeCheck,
   FileText,
   CheckCircle,
   ShieldCheck,
@@ -28,6 +29,20 @@ function EditarContrato() {
   const { id } = Route.useParams();
   const { tenantId, user } = useAuth();
   const [gerando, setGerando] = useState(false);
+  const [comissaoGerada, setComissaoGerada] = useState(false);
+
+  // Carrega se já existe lançamento de comissão para este contrato — no
+  // máximo um por contrato (trava também aplicada no banco).
+  useEffect(() => {
+    if (!id) return;
+    supabase
+      .from("lancamentos_financeiros")
+      .select("id")
+      .eq("contrato_id", id)
+      .eq("categoria", "comissao")
+      .maybeSingle()
+      .then(({ data }) => setComissaoGerada(!!data));
+  }, [id]);
 
   // PDF generation state
   const [pdfStatus, setPdfStatus] = useState<"idle" | "generating" | "completed">("idle");
@@ -57,10 +72,7 @@ function EditarContrato() {
   async function persistAssinaturaStatus(newStatus: AssinaturaStatus) {
     if (!id) return;
     setAssinaturaStatus(newStatus);
-    await (supabase as any)
-      .from("contratos")
-      .update({ assinatura_status: newStatus })
-      .eq("id", id);
+    await (supabase as any).from("contratos").update({ assinatura_status: newStatus }).eq("id", id);
   }
 
   function handleGerarPdf() {
@@ -88,7 +100,9 @@ function EditarContrato() {
   }
 
   async function handleSimularAssinatura(papel: "locatario" | "locador") {
-    toast.info(`Simulando assinatura do papel: ${papel === "locatario" ? "Locatário" : "Locador"}…`);
+    toast.info(
+      `Simulando assinatura do papel: ${papel === "locatario" ? "Locatário" : "Locador"}…`,
+    );
     await new Promise((resolve) => setTimeout(resolve, 900));
 
     let next: AssinaturaStatus = assinaturaStatus;
@@ -97,15 +111,29 @@ function EditarContrato() {
 
     if (next !== assinaturaStatus) {
       await persistAssinaturaStatus(next);
-      toast.success(
-        `Assinatura de ${papel === "locatario" ? "Locatário" : "Locador"} registrada!`,
-      );
+      toast.success(`Assinatura de ${papel === "locatario" ? "Locatário" : "Locador"} registrada!`);
     }
   }
 
   async function gerarComissao() {
     if (!tenantId) return;
+    if (comissaoGerada) return toast.error("Comissão já gerada para este contrato");
     setGerando(true);
+
+    // Revalida no servidor (não só no estado local) — evita duplicar em
+    // caso de duas abas abertas ou clique duplo antes do estado atualizar.
+    const { data: existente } = await supabase
+      .from("lancamentos_financeiros")
+      .select("id")
+      .eq("contrato_id", id)
+      .eq("categoria", "comissao")
+      .maybeSingle();
+    if (existente) {
+      setComissaoGerada(true);
+      setGerando(false);
+      return toast.error("Comissão já gerada para este contrato");
+    }
+
     const { data: c, error } = await supabase
       .from("contratos")
       .select("id,valor,comissao_valor,comissao_percentual,corretor_id,imovel_id,numero")
@@ -136,7 +164,16 @@ function EditarContrato() {
       created_by: user?.id,
     });
     setGerando(false);
-    if (insErr) return toast.error(insErr.message);
+    if (insErr) {
+      // 23505 = violação do índice único (trava no banco) — outra aba/clique
+      // já gerou a comissão entre a checagem acima e este insert.
+      if (insErr.code === "23505") {
+        setComissaoGerada(true);
+        return toast.error("Comissão já gerada para este contrato");
+      }
+      return toast.error(insErr.message);
+    }
+    setComissaoGerada(true);
     toast.success("Lançamento de comissão criado");
   }
 
@@ -152,9 +189,21 @@ function EditarContrato() {
       <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-bold tracking-tight">Editar contrato</h1>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={gerarComissao} disabled={gerando}>
-            <Banknote className="mr-2 h-4 w-4" />
-            {gerando ? "Gerando…" : "Gerar comissão"}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={gerarComissao}
+            disabled={gerando || comissaoGerada}
+            title={
+              comissaoGerada ? "Já existe um lançamento de comissão para este contrato" : undefined
+            }
+          >
+            {comissaoGerada ? (
+              <BadgeCheck className="mr-2 h-4 w-4" />
+            ) : (
+              <Banknote className="mr-2 h-4 w-4" />
+            )}
+            {gerando ? "Gerando…" : comissaoGerada ? "Comissão já gerada" : "Gerar comissão"}
           </Button>
           <Link to="/app/contratos/$id/imprimir" params={{ id }}>
             <Button variant="outline" size="sm">
@@ -259,9 +308,7 @@ function EditarContrato() {
                       onClick={handleEnviarClicksign}
                       className="w-full text-xs h-8"
                     >
-                      {enviandoClicksign && (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                      )}
+                      {enviandoClicksign && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
                       {assinaturaStatus !== "rascunho"
                         ? "Enviado à ClickSign"
                         : "Enviar para ClickSign"}
@@ -326,8 +373,8 @@ function EditarContrato() {
                       <div className="pt-2 border-t border-emerald-200 text-[10px] text-emerald-800 bg-emerald-50/50 p-2 rounded flex items-center gap-1.5 leading-snug">
                         <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                         <span>
-                          Hash SHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao
-                          PDF em conformidade com MP 2.200-2/2001 e Lei 14.063/2020.
+                          Hash SHA-256 e Termo de Assinatura Eletrônica ClickSign vinculados ao PDF
+                          em conformidade com MP 2.200-2/2001 e Lei 14.063/2020.
                         </span>
                       </div>
                     )}
