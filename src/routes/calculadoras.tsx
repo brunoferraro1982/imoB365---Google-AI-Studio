@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Calculator, Home, Wallet } from "lucide-react";
+import { Calculator, Home, Wallet, TrendingUp, AlertTriangle, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
@@ -9,11 +9,11 @@ export const Route = createFileRoute("/calculadoras")({
   component: CalculadorasPage,
   head: () => ({
     meta: [
-      { title: "Calculadoras imobiliárias — ITBI, financiamento e mudança" },
+      { title: "Calculadoras imobiliárias — valor do imóvel, ITBI, financiamento e mudança" },
       {
         name: "description",
         content:
-          "Simule ITBI, parcelas de financiamento (SAC/Price) e custo de mudança gratuitamente.",
+          "Estime o valor do seu imóvel, simule ITBI, parcelas de financiamento (SAC/Price) e custo de mudança gratuitamente.",
       },
     ],
   }),
@@ -34,6 +34,7 @@ function CalculadorasPage() {
           </p>
         </header>
         <div className="grid gap-6 md:grid-cols-2">
+          <AvaliacaoCard />
           <ItbiCalc />
           <FinanciamentoCalc />
           <MudancaCalc />
@@ -55,6 +56,33 @@ function Card({ icon: Icon, title, children }: any) {
       </div>
       {children}
     </section>
+  );
+}
+
+function AvaliacaoCard() {
+  return (
+    <Card icon={Home} title="Quanto vale meu imóvel?">
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground">
+          Informe CEP, metragem, tipo e padrão do imóvel e receba uma estimativa de valor de venda
+          ou aluguel, baseada em médias de mercado por região.
+        </p>
+        <div className="flex items-start gap-2 rounded-md bg-amber-50 p-3 text-[11px] text-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <span>
+            Valor de referência — pode variar conforme conservação, vista e negociação. Não
+            substitui avaliação de um corretor.
+          </span>
+        </div>
+        <Link
+          to="/calculadora-avaliacao"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+        >
+          <TrendingUp className="h-4 w-4" /> Abrir simulador completo{" "}
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    </Card>
   );
 }
 

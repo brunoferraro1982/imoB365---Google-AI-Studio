@@ -33,6 +33,7 @@ import { Route as CalculadorasRouteImport } from './routes/calculadoras'
 import { Route as CalculadoraMudancaRouteImport } from './routes/calculadora-mudanca'
 import { Route as CalculadoraItbiRouteImport } from './routes/calculadora-itbi'
 import { Route as CalculadoraFinanciamentoRouteImport } from './routes/calculadora-financiamento'
+import { Route as CalculadoraAvaliacaoRouteImport } from './routes/calculadora-avaliacao'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
@@ -274,6 +275,11 @@ const CalculadoraFinanciamentoRoute =
     path: '/calculadora-financiamento',
     getParentRoute: () => rootRouteImport,
   } as any)
+const CalculadoraAvaliacaoRoute = CalculadoraAvaliacaoRouteImport.update({
+  id: '/calculadora-avaliacao',
+  path: '/calculadora-avaliacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BuscarRoute = BuscarRouteImport.update({
   id: '/buscar',
   path: '/buscar',
@@ -900,6 +906,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
+  '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
@@ -1043,6 +1050,7 @@ export interface FileRoutesByTo {
   '/a-imob365': typeof AImob365Route
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
+  '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
@@ -1186,6 +1194,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
+  '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
   '/calculadora-financiamento': typeof CalculadoraFinanciamentoRoute
   '/calculadora-itbi': typeof CalculadoraItbiRoute
   '/calculadora-mudanca': typeof CalculadoraMudancaRoute
@@ -1333,6 +1342,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/blog'
     | '/buscar'
+    | '/calculadora-avaliacao'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
     | '/calculadora-mudanca'
@@ -1476,6 +1486,7 @@ export interface FileRouteTypes {
     | '/a-imob365'
     | '/blog'
     | '/buscar'
+    | '/calculadora-avaliacao'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
     | '/calculadora-mudanca'
@@ -1618,6 +1629,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/blog'
     | '/buscar'
+    | '/calculadora-avaliacao'
     | '/calculadora-financiamento'
     | '/calculadora-itbi'
     | '/calculadora-mudanca'
@@ -1764,6 +1776,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
+  CalculadoraAvaliacaoRoute: typeof CalculadoraAvaliacaoRoute
   CalculadoraFinanciamentoRoute: typeof CalculadoraFinanciamentoRoute
   CalculadoraItbiRoute: typeof CalculadoraItbiRoute
   CalculadoraMudancaRoute: typeof CalculadoraMudancaRoute
@@ -1987,6 +2000,13 @@ declare module '@tanstack/react-router' {
       path: '/calculadora-financiamento'
       fullPath: '/calculadora-financiamento'
       preLoaderRoute: typeof CalculadoraFinanciamentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calculadora-avaliacao': {
+      id: '/calculadora-avaliacao'
+      path: '/calculadora-avaliacao'
+      fullPath: '/calculadora-avaliacao'
+      preLoaderRoute: typeof CalculadoraAvaliacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/buscar': {
@@ -3042,6 +3062,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
+  CalculadoraAvaliacaoRoute: CalculadoraAvaliacaoRoute,
   CalculadoraFinanciamentoRoute: CalculadoraFinanciamentoRoute,
   CalculadoraItbiRoute: CalculadoraItbiRoute,
   CalculadoraMudancaRoute: CalculadoraMudancaRoute,
