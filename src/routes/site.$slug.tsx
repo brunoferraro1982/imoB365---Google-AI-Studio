@@ -1,6 +1,18 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
-import { Bed, Bath, Maximize2, MapPin } from "lucide-react";
+import { useEffect, useState, useMemo, type FormEvent } from "react";
+import {
+  Bed,
+  Bath,
+  Maximize2,
+  MapPin,
+  Building2,
+  ShieldCheck,
+  Sparkles,
+  Send,
+  Phone,
+  Mail,
+  MessageCircle,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
@@ -117,6 +129,20 @@ function TenantHome() {
     })();
   }, [slug]);
 
+  const stats = useMemo(() => {
+    const cidades = new Set(imoveis.map((i) => i.endereco_cidade).filter(Boolean));
+    const tipos = new Set(imoveis.map((i) => i.tipo).filter(Boolean));
+    return [
+      imoveis.length > 0 && {
+        icon: Building2,
+        label: imoveis.length === 1 ? "imóvel disponível" : "imóveis disponíveis",
+        value: String(imoveis.length),
+      },
+      cidades.size > 1 && { icon: MapPin, label: "cidades atendidas", value: String(cidades.size) },
+      tipos.size > 1 && { icon: Sparkles, label: "tipos de imóvel", value: String(tipos.size) },
+    ].filter(Boolean) as { icon: typeof Building2; label: string; value: string }[];
+  }, [imoveis]);
+
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -128,29 +154,69 @@ function TenantHome() {
   return (
     <TenantSiteLayout ctx={ctx}>
       <TrackingPixels pixels={ctx.settings as any} />
+
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,_var(--primary)_18%,_transparent),_transparent_60%)]" />
-        <div className="mx-auto max-w-6xl px-6 py-20 text-center md:py-28">
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
-            {hero.hero_titulo || `${ctx.tenantNome}`}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,_var(--primary)_22%,_transparent),_transparent_65%)]" />
+        <div className="absolute -right-24 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
+          <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Site oficial de {ctx.tenantNome}
+          </div>
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+            {hero.hero_titulo || ctx.tenantNome}
           </h1>
           {hero.hero_subtitulo && (
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
               {hero.hero_subtitulo}
             </p>
           )}
-          <div className="mt-8">
+          <div className="mt-9">
             <a href="#imoveis">
-              <Button size="lg">{hero.hero_cta_label || "Ver imóveis"}</Button>
+              <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
+                {hero.hero_cta_label || "Ver imóveis"}
+              </Button>
             </a>
           </div>
+
+          {stats.length > 0 && (
+            <div className="mx-auto mt-16 flex max-w-2xl flex-wrap items-center justify-center gap-x-10 gap-y-6 border-t border-border/60 pt-10">
+              {stats.map((s) => (
+                <div key={s.label} className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <s.icon className="h-5 w-5" />
+                  </div>
+                  <div className="text-left">
+                    <div className="text-xl font-bold leading-tight">{s.value}</div>
+                    <div className="text-xs text-muted-foreground">{s.label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
-      <section id="imoveis" className="mx-auto max-w-6xl px-6 py-16">
-        <h2 className="mb-6 text-2xl font-semibold">Imóveis em destaque</h2>
+      {/* ── Imóveis ──────────────────────────────────────────── */}
+      <section id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Imóveis em destaque</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {imoveis.length > 0
+                ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
+                : "Em breve, novidades por aqui"}
+            </p>
+          </div>
+        </div>
         {imoveis.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum imóvel publicado no momento.</p>
+          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+            <Building2 className="mx-auto h-8 w-8 text-muted-foreground/50" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              Nenhum imóvel publicado no momento.
+            </p>
+          </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {imoveis.map((i) => (
@@ -158,35 +224,33 @@ function TenantHome() {
                 key={i.id}
                 to="/imovel/$slug"
                 params={{ slug: i.slug }}
-                className="group overflow-hidden rounded-xl border border-border bg-card transition hover:shadow-lg"
+                className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
               >
-                <div className="aspect-[4/3] overflow-hidden bg-muted">
+                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                   {fotosMap[i.id] ? (
                     <img
                       src={fotosMap[i.id]}
                       alt={i.titulo}
                       loading="lazy"
-                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
                       sem foto
                     </div>
                   )}
+                  <Badge className="absolute left-3 top-3 shadow-sm">
+                    {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
+                  </Badge>
                 </div>
                 <div className="p-4">
-                  <div className="mb-1 flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
-                    </Badge>
-                  </div>
                   <h3 className="line-clamp-1 font-semibold">{i.titulo}</h3>
                   <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />{" "}
                     {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}
                   </p>
                   <div className="mt-3 flex items-center justify-between">
-                    <span className="text-lg font-bold">{formatBRL(i.preco)}</span>
+                    <span className="text-lg font-bold text-primary">{formatBRL(i.preco)}</span>
                     <div className="flex gap-3 text-xs text-muted-foreground">
                       {i.quartos != null && (
                         <span className="flex items-center gap-1">
@@ -212,33 +276,48 @@ function TenantHome() {
         )}
       </section>
 
+      {/* ── Sobre nós ────────────────────────────────────────── */}
       {sobre && (
         <section id="sobre" className="border-t border-border bg-muted/30">
-          <div className="mx-auto max-w-3xl px-6 py-16">
-            <h2 className="mb-6 text-2xl font-semibold">Sobre nós</h2>
-            <article
-              className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
-              dangerouslySetInnerHTML={{ __html: sobre }}
-            />
+          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[1.3fr_1fr] md:items-center">
+            <div>
+              <h2 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Sobre nós</h2>
+              <article
+                className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6"
+                dangerouslySetInnerHTML={{ __html: sobre }}
+              />
+            </div>
+            <div className="relative overflow-hidden rounded-2xl bg-primary p-10 text-primary-foreground">
+              <ShieldCheck className="absolute -bottom-6 -right-6 h-32 w-32 opacity-15" />
+              <p className="relative text-sm font-medium uppercase tracking-wider opacity-80">
+                Compromisso
+              </p>
+              <p className="relative mt-3 text-xl font-bold leading-snug">
+                Atendimento próximo, transparente e feito sob medida para você.
+              </p>
+            </div>
           </div>
         </section>
       )}
 
-      <ContactSection tenantSlug={ctx.tenantSlug} />
+      <ContactSection ctx={ctx} />
     </TenantSiteLayout>
   );
 }
 
-function ContactSection({ tenantSlug }: { tenantSlug: string }) {
+function ContactSection({ ctx }: { ctx: SiteCtx }) {
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", mensagem: "" });
   const [sending, setSending] = useState(false);
+  const waHref = ctx.settings.contato_whatsapp
+    ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
+    : null;
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     if (form.nome.trim().length < 2) return toast.error("Informe seu nome");
     setSending(true);
     const { error } = await supabase.rpc("public_create_tenant_lead" as any, {
-      _tenant_slug: tenantSlug,
+      _tenant_slug: ctx.tenantSlug,
       _nome: form.nome.trim(),
       _email: form.email || "",
       _telefone: form.telefone || "",
@@ -255,9 +334,45 @@ function ContactSection({ tenantSlug }: { tenantSlug: string }) {
 
   return (
     <section id="contato" className="border-t border-border">
-      <div className="mx-auto max-w-2xl px-6 py-16">
-        <h2 className="mb-6 text-2xl font-semibold">Fale com a gente</h2>
-        <form onSubmit={submit} className="space-y-4">
+      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1fr_1.2fr]">
+        <div>
+          <h2 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">Fale com a gente</h2>
+          <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
+            Tem alguma dúvida ou quer agendar uma visita? Preencha o formulário ou fale direto pelos
+            canais abaixo.
+          </p>
+          <div className="space-y-4">
+            {ctx.settings.contato_telefone && (
+              <div className="flex items-center gap-3 text-sm">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Phone className="h-4 w-4" />
+                </span>
+                {ctx.settings.contato_telefone}
+              </div>
+            )}
+            {ctx.settings.contato_email && (
+              <div className="flex items-center gap-3 text-sm">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Mail className="h-4 w-4" />
+                </span>
+                {ctx.settings.contato_email}
+              </div>
+            )}
+            {waHref && (
+              <a href={waHref} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="mt-2 gap-2 rounded-full">
+                  <MessageCircle className="h-4 w-4" />
+                  Chamar no WhatsApp
+                </Button>
+              </a>
+            )}
+          </div>
+        </div>
+
+        <form
+          onSubmit={submit}
+          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8"
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Nome</Label>
@@ -297,7 +412,8 @@ function ContactSection({ tenantSlug }: { tenantSlug: string }) {
               maxLength={2000}
             />
           </div>
-          <Button type="submit" disabled={sending}>
+          <Button type="submit" disabled={sending} className="w-full gap-2 rounded-full">
+            <Send className="h-4 w-4" />
             {sending ? "Enviando…" : "Enviar mensagem"}
           </Button>
         </form>
