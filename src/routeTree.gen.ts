@@ -62,8 +62,8 @@ import { Route as AppVisitasRouteImport } from './routes/app.visitas'
 import { Route as AppTarefasRouteImport } from './routes/app.tarefas'
 import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
+import { Route as AppQrCodeRouteImport } from './routes/app.qr-code'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
-import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
@@ -420,14 +420,14 @@ const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => AppRoute,
 } as any)
+const AppQrCodeRoute = AppQrCodeRouteImport.update({
+  id: '/qr-code',
+  path: '/qr-code',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPortaisRoute = AppPortaisRouteImport.update({
   id: '/portais',
   path: '/portais',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppEncurtadorRoute = AppEncurtadorRouteImport.update({
-  id: '/encurtador',
-  path: '/encurtador',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContratacaoRoute = AppContratacaoRouteImport.update({
@@ -944,8 +944,8 @@ export interface FileRoutesByFullPath {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
-  '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
+  '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
@@ -1086,8 +1086,8 @@ export interface FileRoutesByTo {
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
-  '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
+  '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
@@ -1232,8 +1232,8 @@ export interface FileRoutesById {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
-  '/app/encurtador': typeof AppEncurtadorRoute
   '/app/portais': typeof AppPortaisRoute
+  '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
@@ -1380,8 +1380,8 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
-    | '/app/encurtador'
     | '/app/portais'
+    | '/app/qr-code'
     | '/app/relatorios'
     | '/app/site'
     | '/app/tarefas'
@@ -1522,8 +1522,8 @@ export interface FileRouteTypes {
     | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/contratacao'
-    | '/app/encurtador'
     | '/app/portais'
+    | '/app/qr-code'
     | '/app/relatorios'
     | '/app/tarefas'
     | '/app/visitas'
@@ -1667,8 +1667,8 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
-    | '/app/encurtador'
     | '/app/portais'
+    | '/app/qr-code'
     | '/app/relatorios'
     | '/app/site'
     | '/app/tarefas'
@@ -2205,18 +2205,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRelatoriosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/qr-code': {
+      id: '/app/qr-code'
+      path: '/qr-code'
+      fullPath: '/app/qr-code'
+      preLoaderRoute: typeof AppQrCodeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/portais': {
       id: '/app/portais'
       path: '/portais'
       fullPath: '/app/portais'
       preLoaderRoute: typeof AppPortaisRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/encurtador': {
-      id: '/app/encurtador'
-      path: '/encurtador'
-      fullPath: '/app/encurtador'
-      preLoaderRoute: typeof AppEncurtadorRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/contratacao': {
@@ -2945,8 +2945,8 @@ interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
-  AppEncurtadorRoute: typeof AppEncurtadorRoute
   AppPortaisRoute: typeof AppPortaisRoute
+  AppQrCodeRoute: typeof AppQrCodeRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppSiteRoute: typeof AppSiteRouteWithChildren
   AppTarefasRoute: typeof AppTarefasRoute
@@ -2990,8 +2990,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
-  AppEncurtadorRoute: AppEncurtadorRoute,
   AppPortaisRoute: AppPortaisRoute,
+  AppQrCodeRoute: AppQrCodeRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppSiteRoute: AppSiteRouteWithChildren,
   AppTarefasRoute: AppTarefasRoute,
