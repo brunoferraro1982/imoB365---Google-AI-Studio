@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Calendar, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 
 export const Route = createFileRoute("/site/$slug_/blog")({
   component: TenantBlogPage,
@@ -65,6 +66,7 @@ function TenantBlogPage() {
         return;
       }
       setCtx({
+        tenantId: tenant.id,
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
         logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
@@ -98,54 +100,52 @@ function TenantBlogPage() {
     iso ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "long" }).format(new Date(iso)) : "";
 
   return (
-    <TenantSiteLayout ctx={ctx}>
-      <section className="mx-auto max-w-4xl px-6 py-16">
-        <h1 className="mb-8 text-3xl font-bold tracking-tight">Blog</h1>
-        {posts.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum artigo publicado ainda.</p>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2">
-            {posts.map((p) => (
-              <Link
-                key={p.id}
-                to="/site/$slug/blog/$postSlug"
-                params={{ slug, postSlug: p.slug }}
-                className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
-              >
-                {p.imagem_url && (
-                  <img
-                    src={p.imagem_url}
-                    alt={p.titulo}
-                    className="h-40 w-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
-                  />
+    <TenantSiteLayoutWithWidgets ctx={ctx}>
+      <h1 className="mb-8 text-3xl font-bold tracking-tight">Blog</h1>
+      {posts.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nenhum artigo publicado ainda.</p>
+      ) : (
+        <div className="grid gap-5 sm:grid-cols-2">
+          {posts.map((p) => (
+            <Link
+              key={p.id}
+              to="/site/$slug/blog/$postSlug"
+              params={{ slug, postSlug: p.slug }}
+              className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
+            >
+              {p.imagem_url && (
+                <img
+                  src={p.imagem_url}
+                  alt={p.titulo}
+                  className="h-40 w-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                />
+              )}
+              <div className="p-4 space-y-2">
+                {p.categoria && (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    <Tag className="h-2.5 w-2.5" />
+                    {p.categoria}
+                  </span>
                 )}
-                <div className="p-4 space-y-2">
-                  {p.categoria && (
-                    <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      <Tag className="h-2.5 w-2.5" />
-                      {p.categoria}
-                    </span>
-                  )}
-                  <h2 className="font-bold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                    {p.titulo}
-                  </h2>
-                  {p.resumo && (
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                      {p.resumo}
-                    </p>
-                  )}
-                  {p.publicado_em && (
-                    <p className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                      <Calendar className="h-3 w-3" />
-                      {fmt(p.publicado_em)}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </section>
-    </TenantSiteLayout>
+                <h2 className="font-bold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                  {p.titulo}
+                </h2>
+                {p.resumo && (
+                  <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                    {p.resumo}
+                  </p>
+                )}
+                {p.publicado_em && (
+                  <p className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                    <Calendar className="h-3 w-3" />
+                    {fmt(p.publicado_em)}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </TenantSiteLayoutWithWidgets>
   );
 }

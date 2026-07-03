@@ -34,6 +34,7 @@ import {
   BookOpen,
   PlayCircle,
   Library,
+  LayoutGrid,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -124,6 +125,7 @@ const tenantModules: Module[] = [
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/site/widgets", label: "Widgets de Conversão", icon: Sparkles },
+      { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
       { to: "/app/encurtador", label: "Encurtador & QR Code", icon: Link2 },
     ],
   },

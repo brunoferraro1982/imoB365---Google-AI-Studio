@@ -91,6 +91,7 @@ import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.in
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
+import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
 import { Route as AppSiteWidgetsRouteImport } from './routes/app.site.widgets'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
@@ -563,6 +564,11 @@ const ContaChatIdRoute = ContaChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => ContaRoute,
 } as any)
+const AppSiteWidgetsConteudoRoute = AppSiteWidgetsConteudoRouteImport.update({
+  id: '/widgets-conteudo',
+  path: '/widgets-conteudo',
+  getParentRoute: () => AppSiteRoute,
+} as any)
 const AppSiteWidgetsRoute = AppSiteWidgetsRouteImport.update({
   id: '/widgets',
   path: '/widgets',
@@ -998,6 +1004,7 @@ export interface FileRoutesByFullPath {
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
+  '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
   '/app/chat/': typeof AppChatIndexRoute
@@ -1137,6 +1144,7 @@ export interface FileRoutesByTo {
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
+  '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
   '/app/chat': typeof AppChatIndexRoute
@@ -1282,6 +1290,7 @@ export interface FileRoutesById {
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/widgets': typeof AppSiteWidgetsRoute
+  '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
   '/app/chat/': typeof AppChatIndexRoute
@@ -1428,6 +1437,7 @@ export interface FileRouteTypes {
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
+    | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
     | '/app/chat/'
@@ -1567,6 +1577,7 @@ export interface FileRouteTypes {
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
+    | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
     | '/app/chat'
@@ -1711,6 +1722,7 @@ export interface FileRouteTypes {
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/widgets'
+    | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
     | '/app/chat/'
@@ -2383,6 +2395,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContaChatIdRouteImport
       parentRoute: typeof ContaRoute
     }
+    '/app/site/widgets-conteudo': {
+      id: '/app/site/widgets-conteudo'
+      path: '/widgets-conteudo'
+      fullPath: '/app/site/widgets-conteudo'
+      preLoaderRoute: typeof AppSiteWidgetsConteudoRouteImport
+      parentRoute: typeof AppSiteRoute
+    }
     '/app/site/widgets': {
       id: '/app/site/widgets'
       path: '/widgets'
@@ -2887,6 +2906,7 @@ interface AppSiteRouteChildren {
   AppSiteAssistenteRoute: typeof AppSiteAssistenteRoute
   AppSiteBlogRoute: typeof AppSiteBlogRoute
   AppSiteWidgetsRoute: typeof AppSiteWidgetsRoute
+  AppSiteWidgetsConteudoRoute: typeof AppSiteWidgetsConteudoRoute
   AppSiteIndexRoute: typeof AppSiteIndexRoute
 }
 
@@ -2894,6 +2914,7 @@ const AppSiteRouteChildren: AppSiteRouteChildren = {
   AppSiteAssistenteRoute: AppSiteAssistenteRoute,
   AppSiteBlogRoute: AppSiteBlogRoute,
   AppSiteWidgetsRoute: AppSiteWidgetsRoute,
+  AppSiteWidgetsConteudoRoute: AppSiteWidgetsConteudoRoute,
   AppSiteIndexRoute: AppSiteIndexRoute,
 }
 

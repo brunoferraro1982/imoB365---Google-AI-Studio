@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 
 export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
   component: TenantPage,
@@ -64,6 +65,7 @@ function TenantPage() {
         return;
       }
       setCtx({
+        tenantId: tenant.id,
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
         logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
@@ -94,14 +96,14 @@ function TenantPage() {
   }
 
   return (
-    <TenantSiteLayout ctx={ctx}>
-      <article className="mx-auto max-w-3xl px-6 py-16">
+    <TenantSiteLayoutWithWidgets ctx={ctx}>
+      <article className="mx-auto max-w-3xl">
         <h1 className="mb-6 text-3xl font-bold tracking-tight">{page.titulo}</h1>
         <div
           className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
           dangerouslySetInnerHTML={{ __html: page.conteudo_html }}
         />
       </article>
-    </TenantSiteLayout>
+    </TenantSiteLayoutWithWidgets>
   );
 }

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { SiteWidgetsLayout, useSiteWidgets } from "@/components/site/SiteWidgets";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +100,7 @@ function TenantHome() {
         return;
       }
       setCtx({
+        tenantId: tenant.id,
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
         logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
@@ -142,6 +144,8 @@ function TenantHome() {
       tipos.size > 1 && { icon: Sparkles, label: "tipos de imóvel", value: String(tipos.size) },
     ].filter(Boolean) as { icon: typeof Building2; label: string; value: string }[];
   }, [imoveis]);
+
+  const { esquerda, direita } = useSiteWidgets(ctx?.tenantId);
 
   if (loading)
     return (
@@ -200,80 +204,84 @@ function TenantHome() {
 
       {/* ── Imóveis ──────────────────────────────────────────── */}
       <section id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Imóveis em destaque</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {imoveis.length > 0
-                ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
-                : "Em breve, novidades por aqui"}
-            </p>
+        <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Imóveis em destaque</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {imoveis.length > 0
+                  ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
+                  : "Em breve, novidades por aqui"}
+              </p>
+            </div>
           </div>
-        </div>
-        {imoveis.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-            <Building2 className="mx-auto h-8 w-8 text-muted-foreground/50" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              Nenhum imóvel publicado no momento.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {imoveis.map((i) => (
-              <Link
-                key={i.id}
-                to="/imovel/$slug"
-                params={{ slug: i.slug }}
-                className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                  {fotosMap[i.id] ? (
-                    <img
-                      src={fotosMap[i.id]}
-                      alt={i.titulo}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                      sem foto
-                    </div>
-                  )}
-                  <Badge className="absolute left-3 top-3 shadow-sm">
-                    {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
-                  </Badge>
-                </div>
-                <div className="p-4">
-                  <h3 className="line-clamp-1 font-semibold">{i.titulo}</h3>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />{" "}
-                    {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">{formatBRL(i.preco)}</span>
-                    <div className="flex gap-3 text-xs text-muted-foreground">
-                      {i.quartos != null && (
-                        <span className="flex items-center gap-1">
-                          <Bed className="h-3 w-3" /> {i.quartos}
-                        </span>
-                      )}
-                      {i.banheiros != null && (
-                        <span className="flex items-center gap-1">
-                          <Bath className="h-3 w-3" /> {i.banheiros}
-                        </span>
-                      )}
-                      {i.area_util != null && (
-                        <span className="flex items-center gap-1">
-                          <Maximize2 className="h-3 w-3" /> {i.area_util}m²
-                        </span>
-                      )}
+          {imoveis.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+              <Building2 className="mx-auto h-8 w-8 text-muted-foreground/50" />
+              <p className="mt-3 text-sm text-muted-foreground">
+                Nenhum imóvel publicado no momento.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {imoveis.map((i) => (
+                <Link
+                  key={i.id}
+                  to="/imovel/$slug"
+                  params={{ slug: i.slug }}
+                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    {fotosMap[i.id] ? (
+                      <img
+                        src={fotosMap[i.id]}
+                        alt={i.titulo}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+                        sem foto
+                      </div>
+                    )}
+                    <Badge className="absolute left-3 top-3 shadow-sm">
+                      {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
+                    </Badge>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="line-clamp-1 font-semibold">{i.titulo}</h3>
+                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />{" "}
+                      {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}
+                    </p>
+                    <div className="mt-3 space-y-1.5">
+                      <span className="block text-lg font-bold text-primary">
+                        {formatBRL(i.preco)}
+                      </span>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        {i.quartos != null && (
+                          <span className="flex items-center gap-1">
+                            <Bed className="h-3 w-3" /> {i.quartos}
+                          </span>
+                        )}
+                        {i.banheiros != null && (
+                          <span className="flex items-center gap-1">
+                            <Bath className="h-3 w-3" /> {i.banheiros}
+                          </span>
+                        )}
+                        {i.area_util != null && (
+                          <span className="flex items-center gap-1">
+                            <Maximize2 className="h-3 w-3" /> {i.area_util}m²
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </SiteWidgetsLayout>
       </section>
 
       {/* ── Sobre nós ────────────────────────────────────────── */}

@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -68,6 +69,7 @@ function TenantBlogPostPage() {
         return;
       }
       setCtx({
+        tenantId: tenant.id,
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
         logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
@@ -108,8 +110,8 @@ function TenantBlogPostPage() {
     : null;
 
   return (
-    <TenantSiteLayout ctx={ctx}>
-      <article className="mx-auto max-w-3xl px-6 py-16">
+    <TenantSiteLayoutWithWidgets ctx={ctx}>
+      <article className="mx-auto max-w-3xl">
         <Button asChild variant="ghost" size="sm" className="mb-6 gap-1.5">
           <Link to="/site/$slug/blog" params={{ slug }}>
             <ArrowLeft className="w-4 h-4" />
@@ -163,6 +165,6 @@ function TenantBlogPostPage() {
           dangerouslySetInnerHTML={{ __html: post.conteudo ?? "" }}
         />
       </article>
-    </TenantSiteLayout>
+    </TenantSiteLayoutWithWidgets>
   );
 }
