@@ -3,8 +3,6 @@ import { useEffect, useState, useMemo } from "react";
 import {
   Check,
   Sparkles,
-  CreditCard,
-  QrCode,
   ShoppingBag,
   ChevronRight,
   Package,
@@ -73,62 +71,35 @@ function ContratacaoPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
-  // Billing and Checkout Form States
+  // Dados de faturamento (usados manualmente pelo time comercial para emitir a nota —
+  // não há gateway de pagamento integrado ainda, ver backlog no CLAUDE.md)
   const [cnpjCpf, setCnpjCpf] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("card");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardHolder, setCardHolder] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
 
   // Load plans & modules from Supabase
   useEffect(() => {
     async function load() {
       try {
         setLoading(true);
-        const [{ data: plansData }, { data: modulesData }] = await Promise.all([
-          supabase.from("plans").select("*").order("preco_mensal", { ascending: true }),
-          supabase.from("modules").select("*").order("nome"),
-        ]);
+        const [{ data: plansData }, { data: modulesData }, { data: tenantData }] =
+          await Promise.all([
+            supabase.from("plans").select("*").order("preco_mensal", { ascending: true }),
+            supabase.from("modules").select("*").order("nome"),
+            tenantId
+              ? supabase.from("tenants").select("plano_slug").eq("id", tenantId).maybeSingle()
+              : Promise.resolve({ data: null }),
+          ]);
 
         const typedPlans = (plansData as Plan[]) ?? [];
         const typedModules = (modulesData as Module[]) ?? [];
 
-        // Certifica de incluir o módulo de blog e widgets se eles não vierem do banco de dados ainda
-        const hasWidgets = typedModules.some((m) => m.slug === "widgets");
-        const hasBlog = typedModules.some((m) => m.slug === "blog");
-
-        if (!hasWidgets) {
-          typedModules.push({
-            slug: "widgets",
-            nome: "Widgets de Conversão",
-            descricao:
-              "Capturadores flutuantes, calculadoras financeiras e CTAs inteligentes para seu site",
-            versao: "1.0.0",
-            core: false,
-            requires_plan: "pro",
-            depends_on: [],
-          });
-        }
-
-        if (!hasBlog) {
-          typedModules.push({
-            slug: "blog",
-            nome: "Blog Imobiliário",
-            descricao: "Criação de artigos, notícias e conteúdos SEO para atração de leads",
-            versao: "1.0.0",
-            core: false,
-            requires_plan: "pro",
-            depends_on: [],
-          });
-        }
-
         setPlans(typedPlans);
         setModules(typedModules);
 
-        // Pre-select plan from query parameter
-        let defaultPlan = typedPlans[1] || typedPlans[0]; // default to Standard or first available
+        // Pré-seleciona o plano ATUAL do tenant — nunca um índice arbitrário do array,
+        // ou um usuário pode confirmar sem perceber e trocar de plano sem querer.
+        let defaultPlan =
+          typedPlans.find((p) => p.slug === tenantData?.plano_slug) ?? typedPlans[0] ?? undefined;
         if (searchParams.plano_id) {
           const match = typedPlans.find((p) => p.id === searchParams.plano_id);
           if (match) defaultPlan = match;
@@ -279,9 +250,8 @@ function ContratacaoPage() {
 
       if (modulesErr) throw modulesErr;
 
-      // Show Payment Success screen/popup
       setShowPaymentSuccess(true);
-      toast.success("Plano e serviços configurados com sucesso!");
+      toast.success("Plano e módulos atualizados com sucesso!");
     } catch (err: any) {
       toast.error("Falha ao concluir contratação: " + err.message);
     } finally {
@@ -307,47 +277,36 @@ function ContratacaoPage() {
           <CheckCircle className="h-10 w-10 stroke-[2.5]" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-neutral-900 dark:text-white">
-          Assinatura Ativada!
+          Plano atualizado!
         </h1>
         <p className="mt-3 text-muted-foreground font-medium text-base sm:text-lg">
-          Obrigado! Sua conta de faturamento foi integrada. Os recursos contratados do plano{" "}
-          <strong className="text-foreground">{activePlan?.nome}</strong> e os módulos selecionados
-          já estão ativos em tempo real no seu painel.
+          Os recursos do plano <strong className="text-foreground">{activePlan?.nome}</strong> e os
+          módulos selecionados já estão ativos no seu painel. O faturamento correspondente é
+          combinado diretamente com o time comercial da imob365.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-white dark:bg-card p-6 text-left shadow-lg max-w-lg mx-auto space-y-4">
           <div className="flex justify-between items-center pb-3 border-b border-border/60">
-            <span className="text-sm text-muted-foreground font-medium">Plano Contratado</span>
+            <span className="text-sm text-muted-foreground font-medium">Plano contratado</span>
             <span className="text-sm font-bold text-foreground bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-wider">
               {activePlan?.nome}
             </span>
           </div>
-          <div className="flex justify-between items-center pb-3 border-b border-border/60">
-            <span className="text-sm text-muted-foreground font-medium">Faturamento Estimado</span>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-muted-foreground font-medium">Valor de referência</span>
             <span className="text-base font-extrabold text-foreground">
               {formatBRL(totalCost)}/mês
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground font-medium">Forma de Faturamento</span>
-            <span className="text-xs font-bold text-foreground uppercase tracking-wide flex items-center gap-1.5">
-              {paymentMethod === "card" ? (
-                <CreditCard className="h-4 w-4 text-primary" />
-              ) : (
-                <QrCode className="h-4 w-4 text-primary" />
-              )}
-              {paymentMethod === "card" ? "Cartão de Crédito" : "PIX Automatizado"}
             </span>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-3.5">
           <Button
-            onClick={() => navigate({ to: "/app/configuracoes/modulos" })}
+            onClick={() => navigate({ to: "/app/configuracoes" })}
             size="lg"
             className="font-bold tracking-wide rounded-full text-white bg-primary hover:bg-[#d65e1b]"
           >
-            Gerenciar Módulos
+            Ver módulos ativos
           </Button>
           <Button
             onClick={() => navigate({ to: "/app" })}
@@ -375,10 +334,6 @@ function ContratacaoPage() {
             Personalize seu catálogo de ferramentas. Altere seu plano base e ative apenas os
             recursos de que você precisa para acelerar suas vendas.
           </p>
-        </div>
-        <div className="inline-flex items-center gap-2 bg-neutral-950 text-white rounded-full px-4 py-1.5 text-xs font-bold shadow-sm self-start sm:self-auto">
-          <ShieldCheck className="h-3.5 w-3.5 text-primary shrink-0" />
-          <span>Ambiente Altamente Seguro (SSL 256 bits)</span>
         </div>
       </header>
 
@@ -576,14 +531,19 @@ function ContratacaoPage() {
             </div>
           </div>
 
-          {/* STEP 3: BILLING / BILLING FORM DETAILS */}
+          {/* STEP 3: DADOS PARA NOTA FISCAL */}
           <div className="rounded-2xl border border-border bg-white dark:bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-bold flex items-center gap-2 mb-5">
+            <h2 className="text-lg font-bold flex items-center gap-2 mb-2">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
                 3
               </span>
-              Dados de Faturamento & Pagamento
+              Dados para nota fiscal
             </h2>
+            <p className="mb-5 text-xs text-muted-foreground">
+              Não processamos pagamento automático aqui ainda — ao confirmar, seu plano e módulos já
+              entram em vigor, e nosso time comercial entra em contato para combinar o faturamento
+              com base nesses dados.
+            </p>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="space-y-2">
@@ -613,145 +573,6 @@ function ContratacaoPage() {
                   className="rounded-xl border-border/80 h-10.5 text-sm font-medium"
                 />
               </div>
-            </div>
-
-            {/* Payment Method Selector */}
-            <div className="mt-6 border-t border-border/50 pt-6">
-              <Label className="font-bold block mb-3.5">Escolha a de Forma de Pagamento</Label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`border-2 rounded-xl p-4 flex items-center gap-3.5 text-left transition-all ${
-                    paymentMethod === "card"
-                      ? "border-primary bg-primary/[0.01]"
-                      : "border-border hover:border-border/80"
-                  }`}
-                >
-                  <div
-                    className={`h-10 w-10 rounded-full flex items-center justify-center ${paymentMethod === "card" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
-                  >
-                    <CreditCard className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold block text-foreground">
-                      Cartão de Crédito
-                    </span>
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      {" "}
-                      Cobrança automática mensal recorrente
-                    </span>
-                  </div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("pix")}
-                  className={`border-2 rounded-xl p-4 flex items-center gap-3.5 text-left transition-all ${
-                    paymentMethod === "pix"
-                      ? "border-primary bg-primary/[0.01]"
-                      : "border-border hover:border-border/80"
-                  }`}
-                >
-                  <div
-                    className={`h-10 w-10 rounded-full flex items-center justify-center ${paymentMethod === "pix" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
-                  >
-                    <QrCode className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold block text-foreground">
-                      PIX Semanal/Mensal
-                    </span>
-                    <span className="text-[11px] text-muted-foreground font-medium">
-                      Bônus de 5% de desconto no faturamento anual
-                    </span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Conditional payment templates */}
-              {paymentMethod === "card" && (
-                <div className="mt-5 grid gap-4 sm:grid-cols-4 bg-neutral-50 dark:bg-neutral-900 border border-border/80 p-5 rounded-xl animate-fade-in">
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-bold text-muted-foreground">
-                      Número do Cartão
-                    </Label>
-                    <Input
-                      placeholder="4000 1234 5678 9010"
-                      value={cardNumber}
-                      required={paymentMethod === "card"}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      className="h-10 text-xs font-semibold rounded-lg bg-background"
-                    />
-                  </div>
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-bold text-muted-foreground">
-                      Nome Impresso no Cartão
-                    </Label>
-                    <Input
-                      placeholder="JOÃO SILVA SANTOS"
-                      value={cardHolder}
-                      required={paymentMethod === "card"}
-                      onChange={(e) => setCardHolder(e.target.value.toUpperCase())}
-                      className="h-10 text-xs font-semibold rounded-lg bg-background"
-                    />
-                  </div>
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-bold text-muted-foreground">
-                      Expiração (Mês/Ano)
-                    </Label>
-                    <Input
-                      placeholder="MM/AA"
-                      value={cardExpiry}
-                      required={paymentMethod === "card"}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      className="h-10 text-xs font-semibold rounded-lg bg-background"
-                    />
-                  </div>
-                  <div className="sm:col-span-2 space-y-1.5">
-                    <Label className="text-xs font-bold text-muted-foreground">Código CVV</Label>
-                    <Input
-                      placeholder="123"
-                      maxLength={4}
-                      value={cardCvv}
-                      required={paymentMethod === "card"}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      className="h-10 text-xs font-semibold rounded-lg bg-background"
-                    />
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === "pix" && (
-                <div className="mt-5 bg-neutral-50 dark:bg-neutral-900 border border-border/80 p-5 rounded-xl flex flex-col md:flex-row items-center gap-5 justify-between animate-fade-in">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-white border border-border rounded-xl p-2.5 shadow-2xs">
-                      <QrCode className="h-20 w-20 text-neutral-900" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-foreground">
-                        Aprovação Imediata via PIX
-                      </h4>
-                      <p className="mt-1 text-xs text-muted-foreground leading-normal max-w-sm">
-                        Escaneie o QR Code ao lado ou clique abaixo para copiar o código "Copia e
-                        Cola" e concluir o faturamento.
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      toast.success(
-                        "Código PIX Copia e Cola enviado para a sua área de transferência!",
-                      )
-                    }
-                    className="rounded-lg h-9.5 font-bold text-xs"
-                  >
-                    Copiar Código PIX
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </div>
