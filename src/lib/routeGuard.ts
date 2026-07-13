@@ -28,18 +28,21 @@ export function invalidateRolesCache() {
  * getSession() lê do storage local — não faz request de rede, eliminando o travamento na navegação.
  */
 async function getServerRoles(): Promise<AppRole[]> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.user) return [];
 
   const now = Date.now();
-  if (_rolesCache && _rolesCache.userId === session.user.id && now - _rolesCache.at < CACHE_TTL_MS) {
+  if (
+    _rolesCache &&
+    _rolesCache.userId === session.user.id &&
+    now - _rolesCache.at < CACHE_TTL_MS
+  ) {
     return _rolesCache.roles;
   }
 
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", session.user.id);
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
   const roles = (data ?? []).map((r) => r.role as AppRole);
   _rolesCache = { userId: session.user.id, roles, at: now };
   return roles;
@@ -51,6 +54,10 @@ async function getServerRoles(): Promise<AppRole[]> {
  */
 export function moduleGuard(module: AppModule) {
   return async () => {
+    // No servidor (SSR de uma navegação direta/F5) a sessão vive só no localStorage do
+    // navegador, inacessível aqui — checar roles nesse momento sempre daria "sem sessão"
+    // e derrubaria usuários autenticados no /login. A validação real acontece no cliente.
+    if (typeof window === "undefined") return;
     const roles = await getServerRoles();
     if (roles.length === 0) throw redirect({ to: "/login" });
     if (!canAccessModule(roles, module)) {
@@ -64,6 +71,7 @@ export function moduleGuard(module: AppModule) {
  */
 export function actionGuard(module: AppModule, action: AppAction) {
   return async () => {
+    if (typeof window === "undefined") return;
     const roles = await getServerRoles();
     if (roles.length === 0) throw redirect({ to: "/login" });
     if (!can(roles, module, action)) {
@@ -77,6 +85,7 @@ export function actionGuard(module: AppModule, action: AppAction) {
  */
 export function roleGuard(...requiredRoles: AppRole[]) {
   return async () => {
+    if (typeof window === "undefined") return;
     const roles = await getServerRoles();
     if (roles.length === 0) throw redirect({ to: "/login" });
     const hasAccess = requiredRoles.some((r) => roles.includes(r));

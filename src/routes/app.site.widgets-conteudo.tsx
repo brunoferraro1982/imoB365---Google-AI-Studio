@@ -180,10 +180,10 @@ function WidgetsConteudoPage() {
   return (
     <div className="p-8">
       <Link
-        to="/app/site/widgets"
+        to="/app/site"
         className="mb-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> Widgets de conversão
+        <ArrowLeft className="h-3.5 w-3.5" /> Site da imobiliária
       </Link>
 
       <header className="mb-6">

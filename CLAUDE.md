@@ -265,3 +265,5 @@ Custom domain components live in:
 - Deploy em produção (Cloudflare Workers)
 - Gateway de pagamento (NuBank / Pagar.me — NuBank adquiriu Pagar.me em 2021)
 - CI/CD com SAST/DAST (GitHub Actions)
+- WhatsApp flutuante customizável por tenant no site público (número/mensagem/posição próprios — hoje o `WhatsAppFAB` é fixo com o número do imoB365)
+- Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
