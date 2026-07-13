@@ -5,10 +5,7 @@ import {
   Copy,
   Check,
   AlertCircle,
-  KeyRound,
-  Eye,
-  EyeOff,
-  Save,
+  Info,
   Users,
   HeartHandshake,
   Layers,
@@ -16,8 +13,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PORTAIS } from "@/lib/portais";
@@ -44,10 +39,6 @@ function PortaisPage() {
   const [imoveisAtivos, setImoveisAtivos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
-  const [credsDraft, setCredsDraft] = useState<Record<string, Record<string, string>>>({});
-  const [savingCreds, setSavingCreds] = useState<string | null>(null);
-  const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   // Co-brokerage sharing state (Sprint 9)
   const [coBrokerageEnabled, setCoBrokerageEnabled] = useState(true);
@@ -71,11 +62,6 @@ function PortaisPage() {
     setTenantSlug(t?.slug ?? null);
     const map = Object.fromEntries(((f as Feed[]) ?? []).map((x) => [x.portal_slug, x]));
     setFeeds(map);
-    setCredsDraft(
-      Object.fromEntries(
-        Object.entries(map).map(([slug, feed]) => [slug, { ...(feed.credentials ?? {}) }]),
-      ),
-    );
     setImoveisAtivos(count ?? 0);
     setLoading(false);
   }
@@ -109,32 +95,6 @@ function PortaisPage() {
       toast.error(error.message);
       load();
     }
-  }
-
-  async function saveCredentials(slug: string) {
-    if (!tenantId) return;
-    setSavingCreds(slug);
-    const credentials = credsDraft[slug] ?? {};
-    const { error } = await (supabase as any).from("portal_feeds").upsert(
-      {
-        tenant_id: tenantId,
-        portal_slug: slug,
-        credentials,
-        enabled: feeds[slug]?.enabled ?? true,
-      },
-      { onConflict: "tenant_id,portal_slug" },
-    );
-    setSavingCreds(null);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    toast.success("Chaves salvas");
-    setFeeds((s) => ({ ...s, [slug]: { ...(s[slug] as Feed), credentials } }));
-  }
-
-  function updateCred(slug: string, key: string, value: string) {
-    setCredsDraft((s) => ({ ...s, [slug]: { ...(s[slug] ?? {}), [key]: value } }));
   }
 
   function feedUrl(suffix: string) {
@@ -250,97 +210,15 @@ function PortaisPage() {
                       </div>
                     </div>
 
-                    {p.credentialFields && p.credentialFields.length > 0 && (
-                      <div className="rounded-lg border border-border bg-muted/20 p-4">
-                        <button
-                          type="button"
-                          onClick={() => setExpanded((s) => ({ ...s, [p.slug]: !s[p.slug] }))}
-                          className="flex w-full items-center justify-between text-left"
-                        >
-                          <span className="inline-flex items-center gap-2 text-sm font-medium">
-                            <KeyRound className="h-4 w-4 text-primary" />
-                            Chaves de acesso do portal
-                            {Object.values(feeds[p.slug]?.credentials ?? {}).some((v) => v) && (
-                              <Badge variant="secondary" className="text-[10px]">
-                                configurado
-                              </Badge>
-                            )}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {expanded[p.slug] ? "Recolher" : "Editar"}
-                          </span>
-                        </button>
-
-                        {expanded[p.slug] && (
-                          <div className="mt-4 space-y-3">
-                            <p className="text-xs text-muted-foreground">
-                              Cole abaixo as credenciais fornecidas pelo portal. Elas são usadas
-                              apenas para autenticar a leitura do seu feed e ficam visíveis apenas
-                              para administradores da imobiliária.
-                            </p>
-                            <div className="grid gap-3 md:grid-cols-2">
-                              {p.credentialFields.map((f) => {
-                                const fieldId = `${p.slug}-${f.key}`;
-                                const isSecret = f.type === "password";
-                                const value = credsDraft[p.slug]?.[f.key] ?? "";
-                                return (
-                                  <div key={f.key} className="space-y-1">
-                                    <Label htmlFor={fieldId} className="text-xs">
-                                      {f.label}
-                                    </Label>
-                                    <div className="relative">
-                                      <Input
-                                        id={fieldId}
-                                        type={
-                                          isSecret && !showSecret[fieldId] ? "password" : "text"
-                                        }
-                                        placeholder={f.placeholder}
-                                        value={value}
-                                        disabled={!isAdmin}
-                                        onChange={(e) => updateCred(p.slug, f.key, e.target.value)}
-                                        className={isSecret ? "pr-9" : undefined}
-                                        autoComplete="off"
-                                      />
-                                      {isSecret && (
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setShowSecret((s) => ({ ...s, [fieldId]: !s[fieldId] }))
-                                          }
-                                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                                          tabIndex={-1}
-                                        >
-                                          {showSecret[fieldId] ? (
-                                            <EyeOff className="h-4 w-4" />
-                                          ) : (
-                                            <Eye className="h-4 w-4" />
-                                          )}
-                                        </button>
-                                      )}
-                                    </div>
-                                    {f.helper && (
-                                      <p className="text-[10px] text-muted-foreground">
-                                        {f.helper}
-                                      </p>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            <div className="flex justify-end">
-                              <Button
-                                size="sm"
-                                onClick={() => saveCredentials(p.slug)}
-                                disabled={!isAdmin || savingCreds === p.slug}
-                              >
-                                <Save className="mr-2 h-4 w-4" />
-                                {savingCreds === p.slug ? "Salvando…" : "Salvar chaves"}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+                      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                      <span>
+                        Não é preciso nenhuma senha ou chave de API aqui. Copie a URL acima e cole
+                        no painel de anúncios do próprio portal, no campo de{" "}
+                        <strong>importação automática / feed XML</strong>. O portal passa a buscar
+                        seus imóveis sozinho a partir dessa URL.
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

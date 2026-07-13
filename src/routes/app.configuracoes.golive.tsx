@@ -29,6 +29,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
+import { PORTAIS } from "@/lib/portais";
 
 export const Route = createFileRoute("/app/configuracoes/golive")({
   component: GoLivePage,
@@ -164,39 +165,29 @@ function GoLivePage() {
       };
 
       // Check Real Estate Portals
-      const vrFeed = feedsList.find((f) => f.portal_slug === "vivareal");
-      const vrConfigured = !!(vrFeed?.enabled && vrFeed?.credentials?.client_id);
-
-      const zapFeed = feedsList.find((f) => f.portal_slug === "zap");
-      const zapConfigured = !!(zapFeed?.enabled && zapFeed?.credentials?.client_id);
-
-      const wimoveisFeed = feedsList.find((f) => f.portal_slug === "wimoveis");
-      const wimoveisConfigured = !!(wimoveisFeed?.enabled && wimoveisFeed?.credentials?.api_key);
-
-      const olxFeed = feedsList.find((f) => f.portal_slug === "olx");
-      const olxConfigured = !!(olxFeed?.enabled && olxFeed?.credentials?.client_id);
-
-      const totalPortalsConfigured = [
-        vrConfigured,
-        zapConfigured,
-        wimoveisConfigured,
-        olxConfigured,
-      ].filter(Boolean).length;
+      const totalPortalsConfigured = PORTAIS.filter((p) =>
+        feedsList.some((f) => f.portal_slug === p.slug && f.enabled),
+      ).length;
+      const totalPortalsDisponiveis = PORTAIS.filter((p) => p.disponivel).length;
+      const portalStatusDetail = PORTAIS.map((p) => {
+        const ativo = feedsList.some((f) => f.portal_slug === p.slug && f.enabled);
+        return `${p.nome}: ${ativo ? "Ativo" : "Pendente"}`;
+      }).join("; ");
 
       const portalDiag: IntegrationDiagnosis = {
         id: "portals",
         name: "Portais Imobiliários (Feeds por Tenant)",
         category: "Marketing",
         status:
-          totalPortalsConfigured === 4
+          totalPortalsConfigured >= totalPortalsDisponiveis
             ? "active"
             : totalPortalsConfigured > 0
               ? "sandbox"
               : "pending",
-        statusText: `${totalPortalsConfigured} de 4 configurados`,
+        statusText: `${totalPortalsConfigured} de ${totalPortalsDisponiveis} ativos`,
         description:
           "Disparo automático de anúncios via arquivos públicos de feed VRSync XML e OLX Realty.",
-        details: `Integrado via API no 'src/lib/portais.ts'. VivaReal: ${vrConfigured ? "Ok" : "Pendente"}; ZAP: ${zapConfigured ? "Ok" : "Pendente"}; Wimóveis: ${wimoveisConfigured ? "Ok" : "Pendente"}; OLX: ${olxConfigured ? "Ok" : "Pendente"}. Cadastre as chaves de API da imobiliária nos portais correspondentes para ativação total.`,
+        details: `Integrado via API no 'src/lib/portais.ts'. ${portalStatusDetail}. Ative o portal desejado em /app/portais e cole a URL do feed gerada no painel do parceiro.`,
         icon: Globe2,
         actionText: "Ajustar Portais",
         actionLink: "/app/portais",
