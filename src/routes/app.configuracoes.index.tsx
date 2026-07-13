@@ -1,7 +1,162 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Package, Check, Sparkles, ShieldCheck } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { formatQuota } from "@/lib/format";
 
 export const Route = createFileRoute("/app/configuracoes/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/app/configuracoes/equipe" });
-  },
+  component: ConfiguracoesIndex,
 });
+
+type ModuleRow = {
+  slug: string;
+  nome: string;
+  descricao: string | null;
+  core: boolean;
+};
+
+const ROLE_LABEL: Record<string, string> = {
+  super_admin: "Super-admin",
+  admin: "Administrador",
+  broker: "Corretor",
+  atendente: "Atendente",
+  juridico: "Jurídico",
+  financeiro: "Financeiro",
+};
+
+function ConfiguracoesIndex() {
+  const { tenantId, roles } = useAuth();
+  const [modules, setModules] = useState<ModuleRow[]>([]);
+  const [enabled, setEnabled] = useState<Record<string, boolean>>({});
+  const [planoNome, setPlanoNome] = useState<string | null>(null);
+  const [quota, setQuota] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    (async () => {
+      setLoading(true);
+      const [{ data: mods }, { data: tm }, { data: tenant }] = await Promise.all([
+        supabase.from("modules").select("slug,nome,descricao,core").order("nome"),
+        supabase.from("tenant_modules").select("module_slug,enabled").eq("tenant_id", tenantId),
+        supabase.from("tenants").select("plano_slug").eq("id", tenantId).maybeSingle(),
+      ]);
+      setModules((mods as ModuleRow[]) ?? []);
+      setEnabled(Object.fromEntries((tm ?? []).map((t: any) => [t.module_slug, t.enabled])));
+      if (tenant?.plano_slug) {
+        const { data: plano } = await supabase
+          .from("plans")
+          .select("nome,limites")
+          .eq("slug", tenant.plano_slug)
+          .maybeSingle();
+        setPlanoNome((plano?.nome as string) ?? tenant.plano_slug);
+        const limites = (plano?.limites as any) ?? {};
+        setQuota(typeof limites.modulos === "number" ? limites.modulos : 0);
+      }
+      setLoading(false);
+    })();
+  }, [tenantId]);
+
+  const usedCount = useMemo(
+    () => modules.filter((m) => !m.core && (enabled[m.slug] ?? false)).length,
+    [modules, enabled],
+  );
+  const unlimited = quota === -1;
+  const percent = unlimited ? 100 : quota > 0 ? Math.min(100, (usedCount / quota) * 100) : 0;
+
+  if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
+
+  return (
+    <div className="max-w-4xl space-y-4">
+      <header>
+        <h1 className="text-xl font-bold">Visão geral</h1>
+        <p className="text-sm text-muted-foreground">
+          Plano, módulos e permissões ativas para a sua conta.
+        </p>
+      </header>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">Plano atual</p>
+            <p className="text-lg font-semibold">{planoNome ?? "—"}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              Módulos opcionais em uso
+            </p>
+            <p className="text-lg font-semibold">
+              {usedCount} <span className="text-muted-foreground">/ {formatQuota(quota)}</span>
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full bg-primary transition-all" style={{ width: `${percent}%` }} />
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Para ativar, desativar ou trocar de plano, fale com o suporte imob365 ou acesse{" "}
+          <a href="/app/contratacao" className="text-primary underline">
+            Plano & Contratação
+          </a>
+          .
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5">
+        <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          <ShieldCheck className="h-3.5 w-3.5" /> Seus papéis nesta conta
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {roles.length === 0 && <span className="text-sm text-muted-foreground">—</span>}
+          {roles.map((r) => (
+            <Badge key={r} variant="outline">
+              {ROLE_LABEL[r] ?? r}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-3">
+        {modules.length === 0 && (
+          <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-10 text-center">
+            <Package className="h-8 w-8 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">Nenhum módulo cadastrado.</p>
+          </div>
+        )}
+        {modules.map((m) => {
+          const isOn = enabled[m.slug] ?? m.core;
+          return (
+            <div
+              key={m.slug}
+              className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-5"
+            >
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-semibold">{m.nome}</h3>
+                  {m.core && (
+                    <Badge className="text-[10px]">
+                      <Check className="mr-1 h-3 w-3" />
+                      Core
+                    </Badge>
+                  )}
+                </div>
+                {m.descricao && <p className="mt-1 text-sm text-muted-foreground">{m.descricao}</p>}
+              </div>
+              <Badge variant={isOn ? "default" : "outline"} className="mt-1">
+                {isOn ? (
+                  <>
+                    <Sparkles className="mr-1 h-3 w-3" /> Ativo
+                  </>
+                ) : (
+                  "Inativo"
+                )}
+              </Badge>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
