@@ -128,6 +128,8 @@ const tenantModules: Module[] = [
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
+      { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
+      { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
     ],
   },
   {
@@ -145,8 +147,6 @@ const tenantModules: Module[] = [
     label: "Configurações",
     icon: Settings,
     items: [
-      { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
-      { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
       { to: "/app/configuracoes/funis", label: "Funis", icon: BarChart3 },
       { to: "/app/configuracoes/scoring", label: "Lead scoring", icon: Gauge },
