@@ -21,19 +21,21 @@ function applyTheme(t: Theme): "light" | "dark" {
   return r;
 }
 
+function readStoredTheme(): Theme {
+  if (typeof window === "undefined") return "system";
+  return (localStorage.getItem("imob365_theme") as Theme | null) ?? "system";
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolved, setResolved] = useState<"light" | "dark">("light");
+  // Lidos e aplicados de forma síncrona (lazy initializer, não useEffect) para que o
+  // primeiro paint já saia com o tema certo — antes disso, qualquer remount completo do
+  // provider (ex.: um hard reload) renderizava um frame com "system"/claro hardcoded
+  // antes do efeito corrigir, causando um flash visível para dark quando o SO estava em
+  // modo escuro, mesmo com o usuário tendo o tema claro salvo.
+  const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
+  const [resolved, setResolved] = useState<"light" | "dark">(() => applyTheme(readStoredTheme()));
 
   useEffect(() => {
-    const local = (typeof window !== "undefined" &&
-      localStorage.getItem("imob365_theme")) as Theme | null;
-    if (local) {
-      setThemeState(local);
-      setResolved(applyTheme(local));
-    } else {
-      setResolved(applyTheme("system"));
-    }
     // fetch user pref
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;

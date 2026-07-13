@@ -12,6 +12,7 @@ import {
 import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { useAuth } from "@/hooks/useAuth";
 
 function NotFoundComponent() {
   return (
@@ -38,15 +39,17 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { isAdmin, isSuperAdmin } = useAuth();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Não foi possível carregar esta página
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Algo deu errado ao carregar este recurso. Se o problema persistir, verifique se o seu
+          plano inclui essa funcionalidade ou fale com o suporte imob365.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -56,15 +59,31 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Tentar novamente
           </button>
-          <a
-            href="/"
+          <Link
+            to="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Ir para o início
+          </Link>
+          <a
+            href="mailto:contato@imob365.com.br"
+            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            Falar com o suporte
           </a>
         </div>
+        {(isAdmin || isSuperAdmin) && (
+          <details className="mt-6 rounded-md border border-border bg-muted/30 p-3 text-left text-xs text-muted-foreground">
+            <summary className="cursor-pointer select-none font-medium text-foreground">
+              Detalhes técnicos (visível só para admins)
+            </summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words">
+              {error?.message ?? String(error)}
+            </pre>
+          </details>
+        )}
       </div>
     </div>
   );
@@ -142,7 +161,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <Outlet />
-      <WhatsAppFAB />
+        <WhatsAppFAB />
         <Toaster richColors position="top-right" />
       </ThemeProvider>
     </QueryClientProvider>
