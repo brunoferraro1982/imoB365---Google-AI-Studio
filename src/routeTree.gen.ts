@@ -64,6 +64,7 @@ import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppQrCodeRouteImport } from './routes/app.qr-code'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
+import { Route as AppParceriasRouteImport } from './routes/app.parcerias'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
@@ -427,6 +428,11 @@ const AppQrCodeRoute = AppQrCodeRouteImport.update({
 const AppPortaisRoute = AppPortaisRouteImport.update({
   id: '/portais',
   path: '/portais',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppParceriasRoute = AppParceriasRouteImport.update({
+  id: '/parcerias',
+  path: '/parcerias',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContratacaoRoute = AppContratacaoRouteImport.update({
@@ -938,6 +944,7 @@ export interface FileRoutesByFullPath {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1079,6 +1086,7 @@ export interface FileRoutesByTo {
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1224,6 +1232,7 @@ export interface FileRoutesById {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1371,6 +1380,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -1512,6 +1522,7 @@ export interface FileRouteTypes {
     | '/api/sitemap.xml'
     | '/app/cartorios'
     | '/app/contratacao'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -1656,6 +1667,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -2205,6 +2217,13 @@ declare module '@tanstack/react-router' {
       path: '/portais'
       fullPath: '/app/portais'
       preLoaderRoute: typeof AppPortaisRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/parcerias': {
+      id: '/app/parcerias'
+      path: '/parcerias'
+      fullPath: '/app/parcerias'
+      preLoaderRoute: typeof AppParceriasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/contratacao': {
@@ -2924,6 +2943,7 @@ interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
+  AppParceriasRoute: typeof AppParceriasRoute
   AppPortaisRoute: typeof AppPortaisRoute
   AppQrCodeRoute: typeof AppQrCodeRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
@@ -2969,6 +2989,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
+  AppParceriasRoute: AppParceriasRoute,
   AppPortaisRoute: AppPortaisRoute,
   AppQrCodeRoute: AppQrCodeRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { VRSYNC_PORTAL_SLUGS } from "@/lib/portais";
 
 export const Route = createFileRoute("/api/public/feeds/$tenantSlug/vrsync.xml")({
   server: {
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/api/public/feeds/$tenantSlug/vrsync.xml")
           .from("portal_feeds")
           .select("enabled")
           .eq("tenant_id", tenant.id)
-          .in("portal_slug", ["vivareal", "zap", "wimoveis"])
+          .in("portal_slug", VRSYNC_PORTAL_SLUGS)
           .eq("enabled", true)
           .limit(1)
           .maybeSingle();
@@ -69,7 +70,7 @@ export const Route = createFileRoute("/api/public/feeds/$tenantSlug/vrsync.xml")
               validation_status: "ok",
             })
             .eq("tenant_id", tenant.id)
-            .in("portal_slug", ["vivareal", "zap", "wimoveis"]);
+            .in("portal_slug", VRSYNC_PORTAL_SLUGS);
         } catch {}
 
         return new Response(xml, {
