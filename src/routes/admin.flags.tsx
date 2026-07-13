@@ -17,7 +17,7 @@ const FLAGS = [
   { key: "vistoria_digital", label: "Vistoria digital" },
   { key: "empreendimentos_espelho", label: "Empreendimentos — espelho de vendas tempo real" },
   { key: "calculadoras_publicas", label: "Calculadoras públicas no site" },
-  { key: "encurtador_links", label: "Encurtador de links / QR" },
+  { key: "encurtador_links", label: "Gerador de QR Code" },
 ];
 
 type Tenant = { id: string; nome: string; slug: string };

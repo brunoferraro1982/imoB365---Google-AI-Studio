@@ -26,6 +26,7 @@ import {
   Megaphone,
   FileSignature,
   Link2,
+  QrCode,
   Flag,
   Gauge,
   ChevronRight,
@@ -124,9 +125,8 @@ const tenantModules: Module[] = [
     items: [
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
-      { to: "/app/site/widgets", label: "Widgets de Conversão", icon: Sparkles },
       { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
-      { to: "/app/encurtador", label: "Encurtador & QR Code", icon: Link2 },
+      { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
     ],
   },
   {

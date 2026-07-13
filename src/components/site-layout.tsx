@@ -1010,6 +1010,18 @@ function SiteHeaderImpl() {
                           Planeje custos de frete e logística para o novo lar.
                         </span>
                       </Link>
+
+                      <Link
+                        to="/calculadora-avaliacao"
+                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                          <Home className="h-3.5 w-3.5 text-emerald-600" /> Quanto Vale meu Imóvel
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Estimativa de valor por CEP, metragem e tipo do imóvel.
+                        </span>
+                      </Link>
                     </div>
                   </div>
 
@@ -1364,6 +1376,21 @@ function SiteHeaderImpl() {
                         <span>Custo de Mudança</span>
                         <span className="text-[10px] text-muted-foreground font-medium">
                           Previsão logística e fretes
+                        </span>
+                      </div>
+                    </Link>
+
+                    <Link
+                      to="/calculadora-avaliacao"
+                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
+                    >
+                      <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                        <Home className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span>Quanto Vale meu Imóvel</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          Estimativa por CEP e metragem
                         </span>
                       </div>
                     </Link>
