@@ -149,6 +149,7 @@ const tenantModules: Module[] = [
     label: "Configurações",
     icon: Settings,
     items: [
+      { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
       { to: "/app/configuracoes/funis", label: "Funis", icon: BarChart3 },
       { to: "/app/configuracoes/scoring", label: "Lead scoring", icon: Gauge },

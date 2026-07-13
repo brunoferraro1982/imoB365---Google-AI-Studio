@@ -157,24 +157,117 @@ function ApiKeysPage() {
         )}
       </section>
 
-      <section className="rounded-xl border border-border bg-muted/30 p-6">
-        <h3 className="text-sm font-semibold">Endpoints disponíveis</h3>
-        <ul className="mt-3 space-y-2 font-mono text-xs">
-          <li>
-            <code className="rounded bg-background px-2 py-1">GET /api/public/v1/imoveis</code> —
-            listar imóveis publicados
-          </li>
-          <li>
-            <code className="rounded bg-background px-2 py-1">
-              GET /api/public/v1/imoveis/:slug
-            </code>{" "}
-            — detalhes
-          </li>
-          <li>
-            <code className="rounded bg-background px-2 py-1">POST /api/public/v1/leads</code> —
-            criar lead
-          </li>
-        </ul>
+      <section className="space-y-4">
+        <h3 className="text-lg font-semibold">Endpoints disponíveis</h3>
+        <p className="text-sm text-muted-foreground">
+          Todas as chamadas exigem o header <code className="rounded bg-muted px-1">X-Api-Key</code>{" "}
+          com uma das chaves acima. Apenas dados do imóvel/lead do seu próprio tenant são
+          retornados/afetados.
+        </p>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          <code className="rounded bg-muted px-2 py-1 text-xs font-semibold">
+            GET /api/public/v1/imoveis
+          </code>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Lista imóveis publicados e ativos do tenant, paginado.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground">
+                Parâmetros de busca (query string)
+              </div>
+              <table className="mt-1 w-full text-xs">
+                <tbody>
+                  {[
+                    ["limit", "número, máx. 100 (padrão 20)"],
+                    ["offset", "número (padrão 0)"],
+                    ["finalidade", '"venda" ou "aluguel"'],
+                    ["cidade", "texto (busca parcial)"],
+                  ].map(([f, d]) => (
+                    <tr key={f} className="border-t border-border/60">
+                      <td className="py-1 pr-2 font-mono">{f}</td>
+                      <td className="py-1 text-muted-foreground">{d}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground">
+                Campos retornados (por imóvel)
+              </div>
+              <p className="mt-1 font-mono text-[11px] leading-relaxed text-muted-foreground">
+                id, slug, titulo, descricao, tipo, finalidade, preco, quartos, banheiros, vagas,
+                area_util, endereco_cidade, endereco_uf, endereco_bairro, publicado_em
+              </p>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Envelope da resposta: <code>{"{ data: [...], total, limit, offset }"}</code>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          <code className="rounded bg-muted px-2 py-1 text-xs font-semibold">
+            GET /api/public/v1/imoveis/:slug
+          </code>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Detalhes completos de um imóvel publicado pelo slug.
+          </p>
+          <div className="mt-3">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">
+              Campos retornados
+            </div>
+            <p className="mt-1 font-mono text-[11px] leading-relaxed text-muted-foreground">
+              id, slug, titulo, descricao, tipo, finalidade, preco, condominio, iptu, area_util,
+              area_total, quartos, suites, banheiros, vagas, endereco_logradouro, endereco_numero,
+              endereco_bairro, endereco_cidade, endereco_uf, endereco_cep, latitude, longitude,
+              caracteristicas, publicado_em, fotos (array de URLs)
+            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Envelope da resposta: <code>{"{ data: {...} }"}</code>
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          <code className="rounded bg-muted px-2 py-1 text-xs font-semibold">
+            POST /api/public/v1/leads
+          </code>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Cria um novo lead vinculado ao tenant da chave usada.
+          </p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground">
+                Campos aceitos (corpo JSON)
+              </div>
+              <table className="mt-1 w-full text-xs">
+                <tbody>
+                  {[
+                    ["nome", "texto, obrigatório (máx. 200)"],
+                    ["email", "texto (máx. 200)"],
+                    ["telefone", "texto (máx. 50)"],
+                    ["mensagem", "texto (máx. 2000)"],
+                    ["imovel_id", "uuid do imóvel relacionado"],
+                  ].map(([f, d]) => (
+                    <tr key={f} className="border-t border-border/60">
+                      <td className="py-1 pr-2 font-mono">{f}</td>
+                      <td className="py-1 text-muted-foreground">{d}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div>
+              <div className="text-xs font-semibold uppercase text-muted-foreground">Resposta</div>
+              <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                201 · {"{ id }"} — id do lead criado (origem é sempre gravada como "api")
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
       <ConfirmDialog />
     </div>
