@@ -35,6 +35,7 @@ import {
   PlayCircle,
   Library,
   LayoutGrid,
+  HeartHandshake,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -134,7 +135,10 @@ const tenantModules: Module[] = [
     requiredModule: "marketing" as AppModule,
     label: "Marketing",
     icon: Megaphone,
-    items: [{ to: "/app/portais", label: "Anúncios em portais", icon: Globe2 }],
+    items: [
+      { to: "/app/portais", label: "Anúncios em portais", icon: Globe2 },
+      { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
+    ],
   },
   {
     id: "ajustes",

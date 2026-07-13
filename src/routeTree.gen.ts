@@ -62,6 +62,7 @@ import { Route as AppTarefasRouteImport } from './routes/app.tarefas'
 import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppPortaisRouteImport } from './routes/app.portais'
+import { Route as AppParceriasRouteImport } from './routes/app.parcerias'
 import { Route as AppEncurtadorRouteImport } from './routes/app.encurtador'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
@@ -417,6 +418,11 @@ const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
 const AppPortaisRoute = AppPortaisRouteImport.update({
   id: '/portais',
   path: '/portais',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppParceriasRoute = AppParceriasRouteImport.update({
+  id: '/parcerias',
+  path: '/parcerias',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEncurtadorRoute = AppEncurtadorRouteImport.update({
@@ -938,6 +944,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
@@ -1079,6 +1086,7 @@ export interface FileRoutesByTo {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/tarefas': typeof AppTarefasRoute
@@ -1224,6 +1232,7 @@ export interface FileRoutesById {
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/encurtador': typeof AppEncurtadorRoute
+  '/app/parcerias': typeof AppParceriasRoute
   '/app/portais': typeof AppPortaisRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
@@ -1371,6 +1380,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/encurtador'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/relatorios'
     | '/app/site'
@@ -1512,6 +1522,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/contratacao'
     | '/app/encurtador'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/relatorios'
     | '/app/tarefas'
@@ -1656,6 +1667,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/encurtador'
+    | '/app/parcerias'
     | '/app/portais'
     | '/app/relatorios'
     | '/app/site'
@@ -2190,6 +2202,13 @@ declare module '@tanstack/react-router' {
       path: '/portais'
       fullPath: '/app/portais'
       preLoaderRoute: typeof AppPortaisRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/parcerias': {
+      id: '/app/parcerias'
+      path: '/parcerias'
+      fullPath: '/app/parcerias'
+      preLoaderRoute: typeof AppParceriasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/encurtador': {
@@ -2926,6 +2945,7 @@ interface AppRouteChildren {
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
   AppEncurtadorRoute: typeof AppEncurtadorRoute
+  AppParceriasRoute: typeof AppParceriasRoute
   AppPortaisRoute: typeof AppPortaisRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppSiteRoute: typeof AppSiteRouteWithChildren
@@ -2971,6 +2991,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
   AppEncurtadorRoute: AppEncurtadorRoute,
+  AppParceriasRoute: AppParceriasRoute,
   AppPortaisRoute: AppPortaisRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppSiteRoute: AppSiteRouteWithChildren,
