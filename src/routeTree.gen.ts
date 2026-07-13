@@ -150,6 +150,7 @@ import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/a
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
+import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
@@ -880,6 +881,11 @@ const ApiPublicCronBuscasAlertasRoute =
     path: '/api/public/cron/buscas-alertas',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1ImoveisSlugRoute = ApiPublicV1ImoveisSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiPublicV1ImoveisRoute,
+} as any)
 const ApiPublicSitemapTenantSlugSitemapDotxmlRoute =
   ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport.update({
     id: '/api/public/sitemap/$tenantSlug/sitemap.xml',
@@ -1031,7 +1037,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
@@ -1044,6 +1050,7 @@ export interface FileRoutesByFullPath {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1172,7 +1179,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
@@ -1185,6 +1192,7 @@ export interface FileRoutesByTo {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1319,7 +1327,7 @@ export interface FileRoutesById {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
@@ -1332,6 +1340,7 @@ export interface FileRoutesById {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1480,6 +1489,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1621,6 +1631,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   id:
     | '__root__'
     | '/'
@@ -1767,6 +1778,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1819,7 +1831,7 @@ export interface RootRouteChildren {
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
-  ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRoute
+  ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -2821,6 +2833,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBuscasAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/imoveis/$slug': {
+      id: '/api/public/v1/imoveis/$slug'
+      path: '/$slug'
+      fullPath: '/api/public/v1/imoveis/$slug'
+      preLoaderRoute: typeof ApiPublicV1ImoveisSlugRouteImport
+      parentRoute: typeof ApiPublicV1ImoveisRoute
+    }
     '/api/public/sitemap/$tenantSlug/sitemap.xml': {
       id: '/api/public/sitemap/$tenantSlug/sitemap.xml'
       path: '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -3055,6 +3074,17 @@ const ContaRouteChildren: ContaRouteChildren = {
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
 
+interface ApiPublicV1ImoveisRouteChildren {
+  ApiPublicV1ImoveisSlugRoute: typeof ApiPublicV1ImoveisSlugRoute
+}
+
+const ApiPublicV1ImoveisRouteChildren: ApiPublicV1ImoveisRouteChildren = {
+  ApiPublicV1ImoveisSlugRoute: ApiPublicV1ImoveisSlugRoute,
+}
+
+const ApiPublicV1ImoveisRouteWithChildren =
+  ApiPublicV1ImoveisRoute._addFileChildren(ApiPublicV1ImoveisRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AImob365Route: AImob365Route,
@@ -3105,7 +3135,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
-  ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRoute,
+  ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

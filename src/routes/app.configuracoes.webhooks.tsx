@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Webhook } from "lucide-react";
+import { Plus, Trash2, Webhook, Eye, EyeOff, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -24,21 +24,50 @@ const EVENTS = [
   "contrato.ativo",
 ];
 
+const EVENT_LABEL: Record<string, string> = {
+  "lead.created": "Novo lead criado",
+  "lead.atribuido": "Lead atribuído a um corretor",
+  "lead.convertido": "Lead convertido em negócio",
+  "imovel.publicado": "Imóvel publicado",
+  "contrato.assinado": "Contrato assinado",
+  "contrato.ativo": "Contrato ativado",
+};
+
+const DELIVERY_STATUS_LABEL: Record<
+  string,
+  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+> = {
+  entregue: { label: "Entregue", variant: "default" },
+  pendente: { label: "Pendente", variant: "secondary" },
+  tentando: { label: "Tentando novamente", variant: "secondary" },
+  falhou: { label: "Falhou", variant: "destructive" },
+  cancelada: { label: "Cancelada", variant: "outline" },
+};
+
 function WebhooksPage() {
-  const { tenantId, isAdmin } = useAuth();
+  const { tenantId, isAdmin, isSuperAdmin, roles } = useAuth();
+  const podeGerenciar = isAdmin || isSuperAdmin || roles.includes("broker");
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [nome, setNome] = useState("");
   const [url, setUrl] = useState("");
   const [eventos, setEventos] = useState<string[]>(["lead.created"]);
+  const [showSecret, setShowSecret] = useState<Record<string, boolean>>({});
+  const [deliveries, setDeliveries] = useState<any[]>([]);
 
   async function load() {
     if (!tenantId) return;
-    const { data } = await supabase
-      .from("tenant_webhooks")
-      .select("*")
-      .order("created_at", { ascending: false });
+    const [{ data }, { data: dl }] = await Promise.all([
+      supabase.from("tenant_webhooks").select("*").order("created_at", { ascending: false }),
+      supabase
+        .from("webhook_deliveries")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+    ]);
     setItems(data ?? []);
+    setDeliveries(dl ?? []);
   }
   useEffect(() => {
     load();
@@ -66,7 +95,8 @@ function WebhooksPage() {
     load();
   }
 
-  if (!isAdmin) return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
+  if (!podeGerenciar)
+    return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
 
   return (
     <div className="space-y-8">
@@ -102,7 +132,7 @@ function WebhooksPage() {
                   onClick={() => setEventos((s) => (on ? s.filter((x) => x !== e) : [...s, e]))}
                   className={`rounded-full border px-3 py-1 text-xs ${on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
                 >
-                  {e}
+                  {EVENT_LABEL[e] ?? e}
                 </button>
               );
             })}
@@ -138,12 +168,26 @@ function WebhooksPage() {
                   <div className="mt-2 flex flex-wrap gap-1">
                     {(w.eventos ?? []).map((e: string) => (
                       <Badge key={e} variant="secondary" className="text-[10px]">
-                        {e}
+                        {EVENT_LABEL[e] ?? e}
                       </Badge>
                     ))}
                   </div>
-                  <div className="mt-2 text-[11px] text-muted-foreground">
-                    Secret: <code className="rounded bg-muted px-1">{w.secret}</code>
+                  <div className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+                    Secret:{" "}
+                    <code className="rounded bg-muted px-1">
+                      {showSecret[w.id] ? w.secret : "••••••••••••••••"}
+                    </code>
+                    <button
+                      type="button"
+                      onClick={() => setShowSecret((s) => ({ ...s, [w.id]: !s[w.id] }))}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {showSecret[w.id] ? (
+                        <EyeOff className="h-3.5 w-3.5" />
+                      ) : (
+                        <Eye className="h-3.5 w-3.5" />
+                      )}
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -154,6 +198,50 @@ function WebhooksPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold">
+          <History className="h-4 w-4" /> Últimas entregas
+        </h2>
+        {deliveries.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border p-10 text-center">
+            <p className="text-sm text-muted-foreground">Nenhuma entrega registrada ainda.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {deliveries.map((d) => {
+              const status = DELIVERY_STATUS_LABEL[d.status] ?? {
+                label: d.status,
+                variant: "outline" as const,
+              };
+              return (
+                <div
+                  key={d.id}
+                  className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-2 text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <span className="font-medium">{EVENT_LABEL[d.evento] ?? d.evento}</span>
+                    <span className="ml-2 text-muted-foreground">
+                      {new Date(d.created_at).toLocaleString("pt-BR")}
+                    </span>
+                    {d.last_error && (
+                      <div className="mt-1 truncate text-destructive">{d.last_error}</div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {d.response_status && (
+                      <span className="text-muted-foreground">HTTP {d.response_status}</span>
+                    )}
+                    <Badge variant={status.variant} className="text-[10px]">
+                      {status.label}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

@@ -130,6 +130,7 @@ const tenantModules: Module[] = [
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
       { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
       { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
+      { to: "/app/configuracoes/dominios", label: "Domínios", icon: Globe },
     ],
   },
   {
@@ -158,7 +159,6 @@ const tenantModules: Module[] = [
       { to: "/app/configuracoes/api", label: "API", icon: FileSignature },
       { to: "/app/configuracoes/notificacoes", label: "Notificações", icon: Mail },
       { to: "/app/configuracoes/importar", label: "Importar", icon: FileText },
-      { to: "/app/configuracoes/dominios", label: "Domínios", icon: Globe },
       { to: "/app/configuracoes/golive", label: "Go-live", icon: Sparkles },
       { to: "/app/configuracoes/seguranca", label: "Segurança", icon: ShieldCheck },
       { to: "/app/configuracoes/privacidade", label: "Privacidade (LGPD)", icon: ShieldCheck },
