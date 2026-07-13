@@ -81,7 +81,6 @@ const tenantModules: Module[] = [
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
-      { to: "/app/corretores", label: "Corretores", icon: UserCircle2 },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
     ],
   },
@@ -150,6 +149,7 @@ const tenantModules: Module[] = [
     label: "Configurações",
     icon: Settings,
     items: [
+      { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
       { to: "/app/configuracoes/funis", label: "Funis", icon: BarChart3 },
       { to: "/app/configuracoes/scoring", label: "Lead scoring", icon: Gauge },

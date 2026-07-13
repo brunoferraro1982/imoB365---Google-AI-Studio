@@ -56,6 +56,8 @@ function Equipe() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<(typeof ROLES)[number]["v"]>("broker");
+  const [creci, setCreci] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   async function load() {
@@ -101,9 +103,23 @@ function Equipe() {
     }
     setSubmitting(true);
     try {
-      await invite({ data: { tenantId, email: email.trim(), role } });
-      toast.success("Membro adicionado");
+      await invite({
+        data: {
+          tenantId,
+          email: email.trim(),
+          role,
+          creci: creci.trim() || undefined,
+          telefone: telefone.trim() || undefined,
+        },
+      });
+      toast.success(
+        role === "broker"
+          ? "Corretor adicionado — acesso ao sistema e perfil público criados"
+          : "Membro adicionado",
+      );
       setEmail("");
+      setCreci("");
+      setTelefone("");
       load();
     } catch (err: any) {
       toast.error(err?.message ?? "Erro");
@@ -137,8 +153,9 @@ function Equipe() {
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-1 text-base font-semibold">Adicionar membro</h2>
         <p className="mb-4 text-xs text-muted-foreground">
-          A pessoa precisa ter conta criada em <code>/signup</code>. Informe o e-mail dela e o
-          papel.
+          A pessoa precisa ter conta criada em <code>/signup</code>. Informe o e-mail dela e o papel
+          — se o papel for Corretor, o perfil público (vitrine no site) já é criado junto, sem
+          precisar de uma tela separada.
         </p>
         <div className="mb-4 rounded-lg border border-border/60 bg-muted/30 p-3 text-xs">
           <div className="flex items-center justify-between">
@@ -192,6 +209,30 @@ function Equipe() {
               <UserPlus className="mr-2 h-4 w-4" /> {submitting ? "Adicionando…" : "Adicionar"}
             </Button>
           </div>
+          {role === "broker" && (
+            <>
+              <div>
+                <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">
+                  CRECI (opcional)
+                </Label>
+                <Input
+                  value={creci}
+                  onChange={(e) => setCreci(e.target.value)}
+                  placeholder="12345-F"
+                />
+              </div>
+              <div>
+                <Label className="mb-1 block text-xs uppercase tracking-wide text-muted-foreground">
+                  Telefone (opcional)
+                </Label>
+                <Input
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  placeholder="(13) 99999-9999"
+                />
+              </div>
+            </>
+          )}
         </form>
       </section>
 

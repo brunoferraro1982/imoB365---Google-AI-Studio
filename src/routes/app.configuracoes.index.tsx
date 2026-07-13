@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Package, Check, Sparkles, ShieldCheck } from "lucide-react";
+import { Package, Check, Sparkles, ShieldCheck, Gauge } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,59 +68,82 @@ function ConfiguracoesIndex() {
 
   if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
 
-  return (
-    <div className="max-w-4xl space-y-4">
-      <header>
-        <h1 className="text-xl font-bold">Visão geral</h1>
-        <p className="text-sm text-muted-foreground">
-          Plano, módulos e permissões ativas para a sua conta.
-        </p>
-      </header>
+  const stats = [
+    { label: "Plano atual", value: planoNome ?? "—", icon: Package },
+    {
+      label: "Módulos opcionais em uso",
+      value: `${usedCount} / ${formatQuota(quota)}`,
+      icon: Sparkles,
+    },
+    { label: "Papéis nesta conta", value: String(roles.length), icon: ShieldCheck },
+    { label: "Uso da cota", value: `${Math.round(percent)}%`, icon: Gauge },
+  ];
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">Plano atual</p>
-            <p className="text-lg font-semibold">{planoNome ?? "—"}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
-              Módulos opcionais em uso
-            </p>
-            <p className="text-lg font-semibold">
-              {usedCount} <span className="text-muted-foreground">/ {formatQuota(quota)}</span>
-            </p>
-          </div>
+  return (
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+          <span>Conta & plano</span>
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full bg-primary transition-all" style={{ width: `${percent}%` }} />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          Para ativar, desativar ou trocar de plano, fale com o suporte imob365 ou acesse{" "}
-          <a href="/app/contratacao" className="text-primary underline">
-            Plano & Contratação
-          </a>
-          .
+        <h1 className="mt-1 text-3.5xl font-black tracking-tight text-foreground">Visão geral</h1>
+        <p className="mt-2 text-sm text-muted-foreground/90">
+          Plano, módulos e permissões ativas para a sua conta.
         </p>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5">
-        <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5" /> Seus papéis nesta conta
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {roles.length === 0 && <span className="text-sm text-muted-foreground">—</span>}
-          {roles.map((r) => (
-            <Badge key={r} variant="outline">
-              {ROLE_LABEL[r] ?? r}
-            </Badge>
-          ))}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((s) => (
+          <div
+            key={s.label}
+            className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300"
+          >
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {s.label}
+                </span>
+                <div className="pt-1 text-3xl font-black tracking-tight text-foreground">
+                  {s.value}
+                </div>
+              </div>
+              <div className="rounded-xl bg-primary/8 p-3 text-primary">
+                <s.icon className="h-5 w-5 stroke-[2.25px]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-4">
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Consumo de módulos do plano</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Para ativar, desativar ou trocar de plano, fale com o suporte imob365 ou acesse{" "}
+              <Link to="/app/contratacao" className="text-primary underline">
+                Plano & Contratação
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {roles.length === 0 && <span className="text-sm text-muted-foreground">—</span>}
+            {roles.map((r) => (
+              <Badge key={r} variant="outline">
+                {ROLE_LABEL[r] ?? r}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
+          <div className="h-full bg-primary transition-all" style={{ width: `${percent}%` }} />
         </div>
       </div>
 
       <div className="grid gap-3">
         {modules.length === 0 && (
-          <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border p-10 text-center">
+          <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border p-10 text-center">
             <Package className="h-8 w-8 text-muted-foreground/40" />
             <p className="text-sm text-muted-foreground">Nenhum módulo cadastrado.</p>
           </div>
@@ -130,7 +153,7 @@ function ConfiguracoesIndex() {
           return (
             <div
               key={m.slug}
-              className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-5"
+              className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
             >
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-2">
