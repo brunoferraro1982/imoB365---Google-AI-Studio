@@ -1,25 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import {
-  Check,
-  Sparkles,
-  ShoppingBag,
-  ChevronRight,
-  Package,
-  CheckCircle,
-  ShieldCheck,
-  CheckSquare,
-  Square,
-  HelpCircle,
-  Coins,
-  ArrowRight,
-} from "lucide-react";
+import { Check, ShoppingBag, CheckCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
+import { ModuleSelectionGrid } from "@/components/admin/ModuleSelectionGrid";
 import { toast } from "sonner";
 
 type SearchParams = {
@@ -34,11 +22,6 @@ export const Route = createFileRoute("/app/contratacao")({
   }),
   component: ContratacaoPage,
 });
-
-function formatQuota(quota: number) {
-  if (quota === -1) return "Ilimitado";
-  return quota;
-}
 
 type Plan = {
   id: string;
@@ -418,117 +401,16 @@ function ContratacaoPage() {
                   {unlimited ? "módulos ilimitados" : `até ${quota} módulos opcionais`}.
                 </p>
               </div>
-
-              {/* Status Indicator Bar */}
-              <div className="bg-neutral-50 dark:bg-neutral-900 border border-border rounded-xl px-4 py-2 flex items-center justify-between gap-4 shrink-0 text-xs">
-                <div>
-                  <span className="text-muted-foreground">Módulos Usados:</span>{" "}
-                  <strong className="text-foreground">{selectedOptionalCount}</strong>
-                  <span className="text-muted-foreground"> / {formatQuota(quota)}</span>
-                </div>
-                {!unlimited && <div className="h-4.5 w-px bg-border/80" />}
-                {!unlimited && (
-                  <div>
-                    {remainingQuota > 0 ? (
-                      <span className="text-emerald-500 font-bold">
-                        +{remainingQuota} extras inclusos
-                      </span>
-                    ) : extraModulesCount > 0 ? (
-                      <span className="text-primary font-bold">
-                        +{extraModulesCount} excedente (+R$ {extraModulesCost}/mês)
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground font-medium">Cota exata atingida</span>
-                    )}
-                  </div>
-                )}
-              </div>
             </div>
 
-            {/* Core Modules List (Static active) */}
-            <div className="mb-6">
-              <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground flex items-center gap-1.5 mb-2.5">
-                <ShieldCheck className="h-3 w-3 text-emerald-500" /> Módulos Básicos Inclusos
-                (Sempre Ativos)
-              </span>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {coreModules.map((m) => (
-                  <div
-                    key={m.slug}
-                    className="relative bg-emerald-500/[0.02] dark:bg-emerald-500/[0.01] border border-emerald-500/20 rounded-xl p-3.5 flex items-start gap-3"
-                  >
-                    <div className="mt-0.5 rounded-full bg-emerald-500/10 text-emerald-500 p-1 shrink-0">
-                      <Check className="h-3.5 w-3.5 stroke-[3]" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground flex items-center gap-1">
-                        {m.nome}
-                      </h4>
-                      <p className="mt-1 text-[11px] text-muted-foreground leading-snug line-clamp-2">
-                        {m.descricao}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Optional Modules Grid Toggles */}
-            <div>
-              <span className="text-[10px] uppercase tracking-wider font-extrabold text-muted-foreground flex items-center gap-1.5 mb-3">
-                <Package className="h-3 w-3 text-primary" /> Módulos Avançados Plugáveis (Opcionais)
-              </span>
-
-              <div className="grid gap-4.5 sm:grid-cols-2">
-                {optionalModules.map((m) => {
-                  const isChecked = !!selectedModuleSlugs[m.slug];
-                  const overLimit = !unlimited && !isChecked && selectedOptionalCount >= quota;
-
-                  return (
-                    <button
-                      key={m.slug}
-                      type="button"
-                      onClick={() => toggleModule(m.slug)}
-                      className={`relative w-full border-2 text-left rounded-xl p-4 flex gap-4 transition-all duration-200 cursor-pointer select-none ${
-                        isChecked
-                          ? "border-primary bg-primary/[0.01] shadow-2xs"
-                          : "border-border hover:border-border/80 hover:bg-neutral-50/20"
-                      }`}
-                    >
-                      {/* Left icon checker */}
-                      <div className="mt-0.5 shrink-0">
-                        {isChecked ? (
-                          <CheckSquare className="h-5 w-5 text-primary stroke-[2.25px]" />
-                        ) : (
-                          <Square className="h-5 w-5 text-muted-foreground/60" />
-                        )}
-                      </div>
-
-                      {/* Content details */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-foreground">{m.nome}</h4>
-                          {overLimit && (
-                            <span className="text-[9px] uppercase font-bold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded flex items-center gap-1">
-                              <Coins className="h-2.5 w-2.5 animate-bounce" /> + R$ 29/mês
-                            </span>
-                          )}
-                        </div>
-                        <p className="mt-1.5 text-xs text-muted-foreground leading-normal">
-                          {m.descricao}
-                        </p>
-                        <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium">
-                          <span>Desenvolvimento: v{m.versao}</span>
-                          {isChecked && (
-                            <span className="text-primary font-bold">Ativado para contratação</span>
-                          )}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <ModuleSelectionGrid
+              coreModules={coreModules}
+              optionalModules={optionalModules}
+              selected={selectedModuleSlugs}
+              onToggle={toggleModule}
+              quota={quota}
+              costPerExtra={29}
+            />
           </div>
 
           {/* STEP 3: DADOS PARA NOTA FISCAL */}

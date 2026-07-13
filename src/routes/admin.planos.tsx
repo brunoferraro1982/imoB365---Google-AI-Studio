@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Pencil, Save, X, Infinity as InfinityIcon } from "lucide-react";
+import { Plus, Pencil, Save, X, Infinity as InfinityIcon, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,42 +18,41 @@ type Plan = {
   slug: string;
   nome: string;
   preco_mensal: number;
+  preco_anual: number | null;
   modulos_incluidos: string[];
   limites: Record<string, number>;
   ativo: boolean;
 };
 
+type ModuleRow = { slug: string; nome: string; core: boolean };
+
 function AdminPlanos() {
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [modules, setModules] = useState<ModuleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState<{
-    nome: string;
-    preco: string;
-    quota: string;
-    imoveis: string;
-    usuarios: string;
-  }>({
+  const [form, setForm] = useState<{ nome: string; preco: string; precoAnual: string }>({
     nome: "",
     preco: "",
-    quota: "",
-    imoveis: "",
-    usuarios: "",
+    precoAnual: "",
   });
   const [creating, setCreating] = useState(false);
   const [newPlan, setNewPlan] = useState({
     slug: "",
     nome: "",
     preco: "0",
-    quota: "3",
-    imoveis: "50",
-    usuarios: "3",
+    precoAnual: "0",
+    modulos: [] as string[],
   });
 
   async function load() {
     setLoading(true);
-    const { data } = await supabase.from("plans").select("*").order("preco_mensal");
+    const [{ data }, { data: mods }] = await Promise.all([
+      supabase.from("plans").select("*").order("preco_mensal"),
+      supabase.from("modules").select("slug,nome,core").order("nome"),
+    ]);
     setPlans((data as unknown as Plan[]) ?? []);
+    setModules((mods as ModuleRow[]) ?? []);
     setLoading(false);
   }
   useEffect(() => {
@@ -65,9 +64,7 @@ function AdminPlanos() {
     setForm({
       nome: p.nome,
       preco: String(p.preco_mensal ?? 0),
-      quota: String(p.limites?.modulos ?? 0),
-      imoveis: String(p.limites?.imoveis ?? 0),
-      usuarios: String(p.limites?.usuarios ?? 0),
+      precoAnual: String(p.preco_anual ?? 0),
     });
   }
 
@@ -75,20 +72,22 @@ function AdminPlanos() {
     const payload = {
       nome: form.nome,
       preco_mensal: Number(form.preco) || 0,
-      limites: {
-        modulos: Number(form.quota) || 0,
-        imoveis: Number(form.imoveis) || 0,
-        usuarios: Number(form.usuarios) || 0,
-      },
+      preco_anual: Number(form.precoAnual) || 0,
     };
-    const { error } = await supabase
-      .from("plans")
-      .update(payload as any)
-      .eq("id", id);
+    const { error } = await supabase.from("plans").update(payload).eq("id", id);
     if (error) return toast.error(error.message);
     toast.success("Plano atualizado");
     setEditing(null);
     load();
+  }
+
+  function toggleNewModulo(slug: string) {
+    setNewPlan((p) => ({
+      ...p,
+      modulos: p.modulos.includes(slug)
+        ? p.modulos.filter((m) => m !== slug)
+        : [...p.modulos, slug],
+    }));
   }
 
   async function createNew(e: FormEvent) {
@@ -102,18 +101,15 @@ function AdminPlanos() {
       slug,
       nome: newPlan.nome.trim(),
       preco_mensal: Number(newPlan.preco) || 0,
-      modulos_incluidos: ["core", "catalogo", "crm", "corretores", "admin"],
-      limites: {
-        modulos: Number(newPlan.quota) || 0,
-        imoveis: Number(newPlan.imoveis) || 0,
-        usuarios: Number(newPlan.usuarios) || 0,
-      },
+      preco_anual: Number(newPlan.precoAnual) || 0,
+      modulos_incluidos: newPlan.modulos,
+      limites: { modulos: 0, imoveis: 0, usuarios: 0 },
       ativo: true,
-    } as any);
+    });
     if (error) return toast.error(error.message);
-    toast.success("Plano criado");
+    toast.success("Plano criado — edite os limites em Limites por plano");
     setCreating(false);
-    setNewPlan({ slug: "", nome: "", preco: "0", quota: "3", imoveis: "50", usuarios: "3" });
+    setNewPlan({ slug: "", nome: "", preco: "0", precoAnual: "0", modulos: [] });
     load();
   }
 
@@ -129,8 +125,12 @@ function AdminPlanos() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Planos</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Cada plano define a <strong>cota de módulos opcionais</strong> que o tenant pode ativar.
-            Os módulos core ficam inclusos em todos os planos.
+            Preço e módulos incluídos por plano. As cotas (imóveis, usuários, módulos opcionais) são
+            editadas em{" "}
+            <Link to="/admin/limites" className="text-primary underline">
+              Limites por plano
+            </Link>
+            .
           </p>
         </div>
         <Button onClick={() => setCreating((v) => !v)}>
@@ -141,9 +141,9 @@ function AdminPlanos() {
       {creating && (
         <form
           onSubmit={createNew}
-          className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-5 md:grid-cols-6"
+          className="mb-6 grid gap-3 rounded-xl border border-border bg-card p-5 md:grid-cols-4"
         >
-          <div className="md:col-span-1">
+          <div>
             <Label className="text-xs">Slug</Label>
             <Input
               value={newPlan.slug}
@@ -151,7 +151,7 @@ function AdminPlanos() {
               placeholder="enterprise"
             />
           </div>
-          <div className="md:col-span-2">
+          <div>
             <Label className="text-xs">Nome</Label>
             <Input
               value={newPlan.nome}
@@ -169,32 +169,34 @@ function AdminPlanos() {
             />
           </div>
           <div>
-            <Label className="text-xs">Cota módulos (-1 = ∞)</Label>
+            <Label className="text-xs">Preço/ano</Label>
             <Input
               type="number"
-              value={newPlan.quota}
-              onChange={(e) => setNewPlan({ ...newPlan, quota: e.target.value })}
+              step="0.01"
+              value={newPlan.precoAnual}
+              onChange={(e) => setNewPlan({ ...newPlan, precoAnual: e.target.value })}
             />
           </div>
-          <div className="grid grid-cols-2 gap-2 md:col-span-1">
-            <div>
-              <Label className="text-xs">Imóveis</Label>
-              <Input
-                type="number"
-                value={newPlan.imoveis}
-                onChange={(e) => setNewPlan({ ...newPlan, imoveis: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Usuários</Label>
-              <Input
-                type="number"
-                value={newPlan.usuarios}
-                onChange={(e) => setNewPlan({ ...newPlan, usuarios: e.target.value })}
-              />
+          <div className="md:col-span-4">
+            <Label className="mb-2 block text-xs">Módulos incluídos</Label>
+            <div className="flex flex-wrap gap-2">
+              {modules.map((m) => (
+                <button
+                  key={m.slug}
+                  type="button"
+                  onClick={() => toggleNewModulo(m.slug)}
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                    newPlan.modulos.includes(m.slug)
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {m.nome}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex items-end gap-2 md:col-span-6">
+          <div className="flex items-end gap-2 md:col-span-4">
             <Button type="submit" size="sm">
               <Save className="mr-1 h-4 w-4" />
               Criar
@@ -244,29 +246,14 @@ function AdminPlanos() {
                       onChange={(e) => setForm({ ...form, preco: e.target.value })}
                     />
                   </Field>
-                  <Field label="Cota de módulos (-1 = ilimitado)">
+                  <Field label="Preço/ano (R$)">
                     <Input
                       type="number"
-                      value={form.quota}
-                      onChange={(e) => setForm({ ...form, quota: e.target.value })}
+                      step="0.01"
+                      value={form.precoAnual}
+                      onChange={(e) => setForm({ ...form, precoAnual: e.target.value })}
                     />
                   </Field>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Field label="Imóveis">
-                      <Input
-                        type="number"
-                        value={form.imoveis}
-                        onChange={(e) => setForm({ ...form, imoveis: e.target.value })}
-                      />
-                    </Field>
-                    <Field label="Usuários">
-                      <Input
-                        type="number"
-                        value={form.usuarios}
-                        onChange={(e) => setForm({ ...form, usuarios: e.target.value })}
-                      />
-                    </Field>
-                  </div>
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" onClick={() => saveEdit(p.id)}>
                       <Save className="mr-1 h-4 w-4" />
@@ -284,6 +271,9 @@ function AdminPlanos() {
                     {formatBRL(p.preco_mensal)}
                     <span className="text-sm font-normal text-muted-foreground">/mês</span>
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    {p.preco_anual ? `${formatBRL(p.preco_anual)}/ano` : "sem preço anual"}
+                  </p>
                   <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-center">
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">
                       Cota de módulos opcionais
@@ -300,15 +290,22 @@ function AdminPlanos() {
                     <Row label="Imóveis" value={formatQuota(p.limites?.imoveis ?? 0)} />
                     <Row label="Usuários" value={formatQuota(p.limites?.usuarios ?? 0)} />
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-4 w-full"
-                    onClick={() => startEdit(p)}
-                  >
-                    <Pencil className="mr-1 h-4 w-4" />
-                    Editar
-                  </Button>
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => startEdit(p)}
+                    >
+                      <Pencil className="mr-1 h-4 w-4" />
+                      Editar preço
+                    </Button>
+                    <Button size="sm" variant="ghost" asChild>
+                      <Link to="/admin/limites">
+                        Limites <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
                 </>
               )}
             </div>

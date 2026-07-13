@@ -2930,10 +2930,13 @@ export type Database = {
           created_at: string
           id: string
           limites: Json
+          max_corretores: number
           modulos_incluidos: string[]
           nome: string
+          preco_anual: number | null
           preco_mensal: number
           slug: string
+          trial_dias: number
           updated_at: string
         }
         Insert: {
@@ -2941,10 +2944,13 @@ export type Database = {
           created_at?: string
           id?: string
           limites?: Json
+          max_corretores?: number
           modulos_incluidos?: string[]
           nome: string
+          preco_anual?: number | null
           preco_mensal?: number
           slug: string
+          trial_dias?: number
           updated_at?: string
         }
         Update: {
@@ -2952,10 +2958,13 @@ export type Database = {
           created_at?: string
           id?: string
           limites?: Json
+          max_corretores?: number
           modulos_incluidos?: string[]
           nome?: string
+          preco_anual?: number | null
           preco_mensal?: number
           slug?: string
+          trial_dias?: number
           updated_at?: string
         }
         Relationships: []

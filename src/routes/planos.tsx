@@ -28,16 +28,20 @@ export const Route = createFileRoute("/planos")({
 
 type BillingCycle = "monthly" | "annual";
 
-const PLANS = [
-  {
-    slug: "free",
-    nome: "Free",
-    price_monthly: 0,
-    price_annual_total: 0,
-    max_imoveis: 5,
-    max_usuarios: 1,
-    highlight: false,
-    enterprise: false,
+type PlanRow = {
+  slug: string;
+  nome: string;
+  preco_mensal: number;
+  preco_anual: number | null;
+  limites: { imoveis?: number; usuarios?: number } | null;
+};
+
+// Conteúdo de marketing por plano — não vem do banco (plans só guarda preço/limites/módulos).
+const MARKETING: Record<
+  string,
+  { highlight?: boolean; enterprise?: boolean; isContact?: boolean; features: string[] }
+> = {
+  free: {
     features: [
       "Catálogo básico de imóveis",
       "CRM simplificado de leads",
@@ -46,68 +50,36 @@ const PLANS = [
       "E-Learning (acesso TTI)",
     ],
   },
-  {
-    slug: "basic",
-    nome: "Basic",
-    price_monthly: 99.9,
-    price_annual_total: 1054.8,
-    max_imoveis: 20,
-    max_usuarios: 2,
-    highlight: false,
-    enterprise: false,
+  basic: {
     features: [
       "Catálogo completo com SEO",
       "CRM de leads e funil Kanban",
-      "2 usuários",
       "Branding / site imobiliária",
       "E-Learning (acesso TTI)",
       "Suporte por e-mail",
     ],
   },
-  {
-    slug: "standard",
-    nome: "Standard",
-    price_monthly: 199.9,
-    price_annual_total: 2110.8,
-    max_imoveis: 60,
-    max_usuarios: 5,
+  standard: {
     highlight: true,
-    enterprise: false,
     features: [
       "Tudo do Basic",
       "Marketing: VivaReal, ZAP, OLX",
       "Jurídico: modelos de contrato",
       "E-Learning completo",
-      "5 usuários",
       "Suporte prioritário",
     ],
   },
-  {
-    slug: "pro",
-    nome: "Pro",
-    price_monthly: 399.9,
-    price_annual_total: 4222.8,
-    max_imoveis: 140,
-    max_usuarios: 15,
-    highlight: false,
-    enterprise: false,
+  pro: {
     features: [
       "Tudo do Standard",
       "Financeiro completo (comissões, DRE)",
       "Jurídico: assinatura digital",
       "API pública e webhooks",
-      "15 usuários",
     ],
   },
-  {
-    slug: "business",
-    nome: "Business",
-    price_monthly: null,
-    price_annual_total: null,
-    max_imoveis: -1,
-    max_usuarios: -1,
-    highlight: false,
+  business: {
     enterprise: true,
+    isContact: true,
     features: [
       "Imóveis e usuários ilimitados",
       "Todos os módulos habilitados",
@@ -116,7 +88,9 @@ const PLANS = [
       "Suporte dedicado + SLA",
     ],
   },
-] as const;
+};
+
+const PLAN_ORDER = ["free", "basic", "standard", "pro", "business"];
 
 const MODULE_MATRIX: { label: string; values: [string, string, string, string, string] }[] = [
   { label: "Imóveis (básico)", values: ["✓", "✓", "✓", "✓", "✓"] },
@@ -140,6 +114,23 @@ function PlanosPage() {
   const { user, tenantId } = useAuth();
   const [billing, setBilling] = useState<BillingCycle>("monthly");
   const [currentPlanSlug, setCurrentPlanSlug] = useState<string | null>(null);
+  const [plans, setPlans] = useState<PlanRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("plans")
+      .select("slug,nome,preco_mensal,preco_anual,limites")
+      .eq("ativo", true)
+      .then(({ data }) => {
+        const rows = (data as unknown as PlanRow[]) ?? [];
+        // Business tem preco_mensal=0 (placeholder de "sob consulta"), então ordenar
+        // por preço empataria com Free — a ordem de exibição segue PLAN_ORDER, não preço.
+        rows.sort((a, b) => PLAN_ORDER.indexOf(a.slug) - PLAN_ORDER.indexOf(b.slug));
+        setPlans(rows);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -163,8 +154,7 @@ function PlanosPage() {
             Planos modulares · cancele quando quiser
           </span>
           <h1 className="mt-6 text-5xl font-extrabold leading-[1.05] tracking-tight md:text-6xl">
-            Escolha o plano ideal para{" "}
-            <span className="text-primary">sua imobiliária</span>.
+            Escolha o plano ideal para <span className="text-primary">sua imobiliária</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
             Do cadastro básico ao financeiro, jurídico e marketing integrado — ative apenas o que
@@ -213,137 +203,147 @@ function PlanosPage() {
 
       {/* Plan cards */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 pb-16">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {PLANS.map((p) => {
-            const isCurrent = currentPlanSlug === p.slug;
-            const isContact = p.price_monthly === null;
-            const displayMonthly =
-              billing === "annual" && p.price_annual_total !== null && p.price_annual_total > 0
-                ? p.price_annual_total / 12
-                : p.price_monthly;
+        {loading ? (
+          <p className="text-center text-sm text-muted-foreground">Carregando planos…</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            {plans.map((p) => {
+              const marketing = MARKETING[p.slug] ?? { features: [] };
+              const isCurrent = currentPlanSlug === p.slug;
+              const isContact = !!marketing.isContact;
+              const maxImoveis = p.limites?.imoveis ?? 0;
+              const maxUsuarios = p.limites?.usuarios ?? 0;
+              const displayMonthly =
+                billing === "annual" && p.preco_anual && p.preco_anual > 0
+                  ? p.preco_anual / 12
+                  : p.preco_mensal;
 
-            return (
-              <div
-                key={p.slug}
-                className={`relative flex flex-col rounded-xl border bg-card p-5 shadow-sm transition ${
-                  p.highlight
-                    ? "border-primary shadow-lg ring-1 ring-primary/40 xl:scale-[1.02]"
-                    : isCurrent
-                      ? "border-emerald-500 ring-1 ring-emerald-500/30"
-                      : "border-border"
-                }`}
-              >
-                {/* Top badge */}
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex gap-1 whitespace-nowrap">
-                  {p.highlight && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
-                      <Sparkles className="h-3 w-3" /> Mais popular
-                    </span>
-                  )}
-                  {isCurrent && (
-                    <span className="inline-flex items-center rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
-                      Plano atual
-                    </span>
-                  )}
-                  {p.enterprise && !isCurrent && (
-                    <span className="inline-flex items-center rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
-                      Enterprise
-                    </span>
-                  )}
-                </div>
-
-                <h3 className="text-lg font-semibold">{p.nome}</h3>
-
-                {/* Price block */}
-                <div className="mt-3 min-h-[4rem]">
-                  {isContact ? (
-                    <p className="text-2xl font-bold">Sob consulta</p>
-                  ) : displayMonthly === 0 ? (
-                    <p className="text-3xl font-extrabold tracking-tight">Grátis</p>
-                  ) : (
-                    <>
-                      <p className="text-3xl font-extrabold tracking-tight">
-                        {fmtBRL(displayMonthly!)}
-                        <span className="text-sm font-normal text-muted-foreground">/mês</span>
-                      </p>
-                      {billing === "annual" && p.price_annual_total && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          {fmtBRL(p.price_annual_total)} cobrado anualmente
-                        </p>
-                      )}
-                      {billing === "monthly" && (
-                        <p className="mt-0.5 text-xs text-emerald-600 dark:text-emerald-400">
-                          ou {fmtBRL(p.price_annual_total! / 12)}/mês no plano anual
-                        </p>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                {/* Limits */}
-                <div className="mt-4 space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    {p.max_imoveis === -1 ? "Imóveis ilimitados" : `Até ${p.max_imoveis} imóveis`}
+              return (
+                <div
+                  key={p.slug}
+                  className={`relative flex flex-col rounded-xl border bg-card p-5 shadow-sm transition ${
+                    marketing.highlight
+                      ? "border-primary shadow-lg ring-1 ring-primary/40 xl:scale-[1.02]"
+                      : isCurrent
+                        ? "border-emerald-500 ring-1 ring-emerald-500/30"
+                        : "border-border"
+                  }`}
+                >
+                  {/* Top badge */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex gap-1 whitespace-nowrap">
+                    {marketing.highlight && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                        <Sparkles className="h-3 w-3" /> Mais popular
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <span className="inline-flex items-center rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
+                        Plano atual
+                      </span>
+                    )}
+                    {marketing.enterprise && !isCurrent && (
+                      <span className="inline-flex items-center rounded-full bg-violet-600 px-3 py-1 text-xs font-semibold text-white">
+                        Enterprise
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
-                    {p.max_usuarios === -1
-                      ? "Usuários ilimitados"
-                      : `${p.max_usuarios} usuário${p.max_usuarios > 1 ? "s" : ""}`}
+
+                  <h3 className="text-lg font-semibold">{p.nome}</h3>
+
+                  {/* Price block */}
+                  <div className="mt-3 min-h-[4rem]">
+                    {isContact ? (
+                      <p className="text-2xl font-bold">Sob consulta</p>
+                    ) : displayMonthly === 0 ? (
+                      <p className="text-3xl font-extrabold tracking-tight">Grátis</p>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-extrabold tracking-tight">
+                          {fmtBRL(displayMonthly)}
+                          <span className="text-sm font-normal text-muted-foreground">/mês</span>
+                        </p>
+                        {billing === "annual" && p.preco_anual && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {fmtBRL(p.preco_anual)} cobrado anualmente
+                          </p>
+                        )}
+                        {billing === "monthly" && p.preco_anual ? (
+                          <p className="mt-0.5 text-xs text-emerald-600 dark:text-emerald-400">
+                            ou {fmtBRL(p.preco_anual / 12)}/mês no plano anual
+                          </p>
+                        ) : null}
+                      </>
+                    )}
                   </div>
-                </div>
 
-                {/* Feature list */}
-                <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
+                  {/* Limits */}
+                  <div className="mt-4 space-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      {maxImoveis === -1 ? "Imóveis ilimitados" : `Até ${maxImoveis} imóveis`}
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      {maxUsuarios === -1
+                        ? "Usuários ilimitados"
+                        : `${maxUsuarios} usuário${maxUsuarios > 1 ? "s" : ""}`}
+                    </div>
+                  </div>
 
-                <div className="flex-1" />
+                  {/* Feature list */}
+                  <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+                    {marketing.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
 
-                {/* CTA */}
-                <div className="mt-6">
-                  {isCurrent ? (
-                    <Link to="/app/configuracoes/assinatura">
-                      <Button
-                        variant="outline"
-                        className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                  <div className="flex-1" />
+
+                  {/* CTA */}
+                  <div className="mt-6">
+                    {isCurrent ? (
+                      <Link to="/app/contratacao">
+                        <Button
+                          variant="outline"
+                          className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                        >
+                          Gerenciar assinatura
+                        </Button>
+                      </Link>
+                    ) : isContact ? (
+                      <a href="mailto:contato@imob365.com.br">
+                        <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white">
+                          <MessageSquare className="mr-2 h-3.5 w-3.5" /> Falar com vendas
+                        </Button>
+                      </a>
+                    ) : p.slug === "free" ? (
+                      <Link to={user ? "/app" : "/signup"}>
+                        <Button variant="outline" className="w-full">
+                          {user ? "Acessar painel" : "Começar grátis"}
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link
+                        to={user ? "/app/contratacao" : "/signup"}
+                        search={!user ? { plano: p.slug } : undefined}
                       >
-                        Gerenciar assinatura
-                      </Button>
-                    </Link>
-                  ) : isContact ? (
-                    <a href="mailto:contato@imob365.com.br">
-                      <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white">
-                        <MessageSquare className="mr-2 h-3.5 w-3.5" /> Falar com vendas
-                      </Button>
-                    </a>
-                  ) : p.slug === "free" ? (
-                    <Link to={user ? "/app" : "/signup"}>
-                      <Button variant="outline" className="w-full">
-                        {user ? "Acessar painel" : "Começar grátis"}
-                      </Button>
-                    </Link>
-                  ) : (
-                    <Link
-                      to={user ? "/app/configuracoes/assinatura" : "/signup"}
-                      search={!user ? { plano: p.slug } : undefined}
-                    >
-                      <Button className="w-full" variant={p.highlight ? "default" : "outline"}>
-                        {user ? "Fazer upgrade" : `Assinar ${p.nome}`}
-                      </Button>
-                    </Link>
-                  )}
+                        <Button
+                          className="w-full"
+                          variant={marketing.highlight ? "default" : "outline"}
+                        >
+                          {user ? "Fazer upgrade" : `Assinar ${p.nome}`}
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Module comparison table */}
@@ -361,11 +361,11 @@ function PlanosPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-muted-foreground w-52">
                   Módulo / Recurso
                 </th>
-                {PLANS.map((p) => (
+                {plans.map((p) => (
                   <th
                     key={p.slug}
                     className={`px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide ${
-                      p.highlight ? "text-primary" : "text-muted-foreground"
+                      MARKETING[p.slug]?.highlight ? "text-primary" : "text-muted-foreground"
                     }`}
                   >
                     {p.nome}
