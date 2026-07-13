@@ -73,7 +73,10 @@ function FlagsPage() {
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Feature flags</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ative ou desative funcionalidades por imobiliária (rollout gradual).
+          Ative ou desative funcionalidades experimentais por imobiliária (rollout gradual) — sem
+          relação com o plano contratado. Para módulos do catálogo e cotas do plano, veja{" "}
+          <span className="font-medium text-foreground">Módulos</span> e{" "}
+          <span className="font-medium text-foreground">Limites por plano</span>.
         </p>
       </header>
 

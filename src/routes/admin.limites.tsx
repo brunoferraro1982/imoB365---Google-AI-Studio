@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Gauge } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -12,14 +13,15 @@ export const Route = createFileRoute("/admin/limites")({
 });
 
 const LIMITS = [
-  { key: "imoveis", label: "Imóveis ativos" },
-  { key: "usuarios", label: "Usuários" },
-  { key: "leads_mes", label: "Leads novos por mês" },
-  { key: "mensagens_mes", label: "Mensagens enviadas por mês" },
-  { key: "armazenamento_mb", label: "Armazenamento (MB)" },
+  { key: "imoveis", label: "Imóveis ativos", enforced: true },
+  { key: "usuarios", label: "Usuários", enforced: true },
+  { key: "modulos", label: "Módulos opcionais", enforced: true },
+  { key: "leads_mes", label: "Leads novos por mês", enforced: false },
+  { key: "mensagens_mes", label: "Mensagens enviadas por mês", enforced: false },
+  { key: "armazenamento_mb", label: "Armazenamento (MB)", enforced: false },
 ];
 
-type Plan = { id: string; nome: string };
+type Plan = { id: string; nome: string; limites: Record<string, number> };
 
 function LimitesPage() {
   const { isSuperAdmin } = useAuth();
@@ -30,40 +32,30 @@ function LimitesPage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("plans").select("id, nome").order("nome");
-      setPlans((data as Plan[]) ?? []);
-      if (data?.[0]) setPlanId(data[0].id);
+      const { data } = await supabase.from("plans").select("id,nome,limites").order("nome");
+      const rows = (data as unknown as Plan[]) ?? [];
+      setPlans(rows);
+      if (rows[0]) {
+        setPlanId(rows[0].id);
+        setValues(rows[0].limites ?? {});
+      }
     })();
   }, []);
 
-  useEffect(() => {
-    if (!planId) return;
-    (async () => {
-      const { data } = await (supabase as any)
-        .from("plan_limits")
-        .select("limit_key, limit_value")
-        .eq("plan_id", planId);
-      const map: Record<string, number> = {};
-      (data ?? []).forEach((r: any) => {
-        map[r.limit_key] = r.limit_value;
-      });
-      setValues(map);
-    })();
-  }, [planId]);
+  function selectPlan(id: string) {
+    setPlanId(id);
+    const p = plans.find((pl) => pl.id === id);
+    setValues(p?.limites ?? {});
+  }
 
   async function salvar() {
     setSaving(true);
-    const rows = LIMITS.map((l) => ({
-      plan_id: planId,
-      limit_key: l.key,
-      limit_value: Number(values[l.key] ?? 0),
-    }));
-    const { error } = await (supabase as any)
-      .from("plan_limits")
-      .upsert(rows, { onConflict: "plan_id,limit_key" });
+    const limites = Object.fromEntries(LIMITS.map((l) => [l.key, Number(values[l.key] ?? 0)]));
+    const { error } = await supabase.from("plans").update({ limites }).eq("id", planId);
     setSaving(false);
-    if (error) toast.error(error.message);
-    else toast.success("Limites salvos");
+    if (error) return toast.error(error.message);
+    toast.success("Limites salvos");
+    setPlans((ps) => ps.map((p) => (p.id === planId ? { ...p, limites } : p)));
   }
 
   if (!isSuperAdmin)
@@ -74,7 +66,9 @@ function LimitesPage() {
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Limites por plano</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Defina quotas máximas por plano. Use 0 para ilimitado.
+          Define as cotas máximas por plano, gravadas direto em <code>plans.limites</code> — a mesma
+          fonte já usada em Equipe, Contratação e na Visão Geral do tenant. Use <strong>-1</strong>{" "}
+          para ilimitado.
         </p>
       </header>
 
@@ -85,7 +79,7 @@ function LimitesPage() {
         <select
           className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           value={planId}
-          onChange={(e) => setPlanId(e.target.value)}
+          onChange={(e) => selectPlan(e.target.value)}
         >
           {plans.map((p) => (
             <option key={p.id} value={p.id}>
@@ -104,7 +98,14 @@ function LimitesPage() {
             <div className="flex items-center gap-3">
               <Gauge className="h-4 w-4 text-primary" />
               <div>
-                <div className="text-sm font-medium">{l.label}</div>
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  {l.label}
+                  {!l.enforced && (
+                    <Badge variant="outline" className="text-[10px] font-normal">
+                      ainda não aplicado automaticamente
+                    </Badge>
+                  )}
+                </div>
                 <div className="text-xs text-muted-foreground">{l.key}</div>
               </div>
             </div>
