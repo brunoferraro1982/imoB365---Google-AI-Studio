@@ -9,7 +9,21 @@ const inviteSchema = z.object({
   tenantId: z.string().uuid(),
   email: z.string().email().max(255),
   role: z.enum(ROLES),
+  creci: z.string().max(30).optional(),
+  telefone: z.string().max(30).optional(),
 });
+
+function slugifyNome(nome: string) {
+  return (
+    nome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || `corretor-${Date.now()}`
+  );
+}
 
 /**
  * Adiciona um usuário existente à imobiliária com o papel informado.
@@ -65,6 +79,38 @@ export const inviteTenantMember = createServerFn({ method: "POST" })
     });
     if (error && !/duplicate|unique/i.test(error.message)) {
       throw new Error(error.message);
+    }
+
+    // Corretor: cria (ou atualiza) o perfil público de vitrine no mesmo passo,
+    // em vez de exigir uma segunda tela separada em /app/corretores.
+    if (data.role === "broker") {
+      const nome = (target.user_metadata as any)?.nome ?? target.email ?? "Corretor";
+      const { data: existing } = await supabaseAdmin
+        .from("corretores")
+        .select("id")
+        .eq("tenant_id", data.tenantId)
+        .eq("user_id", target.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabaseAdmin
+          .from("corretores")
+          .update({
+            ...(data.creci ? { creci: data.creci } : {}),
+            ...(data.telefone ? { telefone: data.telefone } : {}),
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabaseAdmin.from("corretores").insert({
+          tenant_id: data.tenantId,
+          user_id: target.id,
+          nome,
+          email: target.email,
+          telefone: data.telefone || null,
+          creci: data.creci || null,
+          slug: slugifyNome(nome),
+        });
+      }
     }
 
     return { userId: target.id, email: target.email };
