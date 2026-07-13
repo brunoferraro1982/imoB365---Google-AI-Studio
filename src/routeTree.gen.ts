@@ -99,6 +99,7 @@ import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assiste
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
+import { Route as AppImoveisImportarRouteImport } from './routes/app.imoveis.importar'
 import { Route as AppImoveisCompararRouteImport } from './routes/app.imoveis.comparar'
 import { Route as AppImoveisIdRouteImport } from './routes/app.imoveis.$id'
 import { Route as AppFinanceiroPlanoContasRouteImport } from './routes/app.financeiro.plano-contas'
@@ -120,8 +121,6 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
-import { Route as AppConfiguracoesModulosRouteImport } from './routes/app.configuracoes.modulos'
-import { Route as AppConfiguracoesImportarRouteImport } from './routes/app.configuracoes.importar'
 import { Route as AppConfiguracoesImobiliariaRouteImport } from './routes/app.configuracoes.imobiliaria'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
@@ -150,6 +149,7 @@ import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/a
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
+import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
@@ -605,6 +605,11 @@ const AppImoveisNovoRoute = AppImoveisNovoRouteImport.update({
   path: '/imoveis/novo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppImoveisImportarRoute = AppImoveisImportarRouteImport.update({
+  id: '/imoveis/importar',
+  path: '/imoveis/importar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppImoveisCompararRoute = AppImoveisCompararRouteImport.update({
   id: '/imoveis/comparar',
   path: '/imoveis/comparar',
@@ -715,17 +720,6 @@ const AppConfiguracoesNotificacoesRoute =
   AppConfiguracoesNotificacoesRouteImport.update({
     id: '/notificacoes',
     path: '/notificacoes',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
-const AppConfiguracoesModulosRoute = AppConfiguracoesModulosRouteImport.update({
-  id: '/modulos',
-  path: '/modulos',
-  getParentRoute: () => AppConfiguracoesRoute,
-} as any)
-const AppConfiguracoesImportarRoute =
-  AppConfiguracoesImportarRouteImport.update({
-    id: '/importar',
-    path: '/importar',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
 const AppConfiguracoesImobiliariaRoute =
@@ -880,6 +874,11 @@ const ApiPublicCronBuscasAlertasRoute =
     path: '/api/public/cron/buscas-alertas',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1ImoveisSlugRoute = ApiPublicV1ImoveisSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiPublicV1ImoveisRoute,
+} as any)
 const ApiPublicSitemapTenantSlugSitemapDotxmlRoute =
   ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport.update({
     id: '/api/public/sitemap/$tenantSlug/sitemap.xml',
@@ -983,8 +982,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
-  '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1006,6 +1003,7 @@ export interface FileRoutesByFullPath {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1031,7 +1029,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
@@ -1044,6 +1042,7 @@ export interface FileRoutesByFullPath {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1124,8 +1123,6 @@ export interface FileRoutesByTo {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
-  '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1147,6 +1144,7 @@ export interface FileRoutesByTo {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1172,7 +1170,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
@@ -1185,6 +1183,7 @@ export interface FileRoutesByTo {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1271,8 +1270,6 @@ export interface FileRoutesById {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
-  '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1294,6 +1291,7 @@ export interface FileRoutesById {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1319,7 +1317,7 @@ export interface FileRoutesById {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
-  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRoute
+  '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
@@ -1332,6 +1330,7 @@ export interface FileRoutesById {
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1419,8 +1418,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
-    | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1442,6 +1439,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -1480,6 +1478,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1560,8 +1559,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
-    | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1583,6 +1580,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -1621,6 +1619,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   id:
     | '__root__'
     | '/'
@@ -1706,8 +1705,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
-    | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1729,6 +1726,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -1767,6 +1765,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
+    | '/api/public/v1/imoveis/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1819,7 +1818,7 @@ export interface RootRouteChildren {
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
-  ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRoute
+  ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -2464,6 +2463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImoveisNovoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/imoveis/importar': {
+      id: '/app/imoveis/importar'
+      path: '/imoveis/importar'
+      fullPath: '/app/imoveis/importar'
+      preLoaderRoute: typeof AppImoveisImportarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/imoveis/comparar': {
       id: '/app/imoveis/comparar'
       path: '/imoveis/comparar'
@@ -2609,20 +2615,6 @@ declare module '@tanstack/react-router' {
       path: '/notificacoes'
       fullPath: '/app/configuracoes/notificacoes'
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
-    '/app/configuracoes/modulos': {
-      id: '/app/configuracoes/modulos'
-      path: '/modulos'
-      fullPath: '/app/configuracoes/modulos'
-      preLoaderRoute: typeof AppConfiguracoesModulosRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
-    '/app/configuracoes/importar': {
-      id: '/app/configuracoes/importar'
-      path: '/importar'
-      fullPath: '/app/configuracoes/importar'
-      preLoaderRoute: typeof AppConfiguracoesImportarRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/configuracoes/imobiliaria': {
@@ -2821,6 +2813,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBuscasAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/imoveis/$slug': {
+      id: '/api/public/v1/imoveis/$slug'
+      path: '/$slug'
+      fullPath: '/api/public/v1/imoveis/$slug'
+      preLoaderRoute: typeof ApiPublicV1ImoveisSlugRouteImport
+      parentRoute: typeof ApiPublicV1ImoveisRoute
+    }
     '/api/public/sitemap/$tenantSlug/sitemap.xml': {
       id: '/api/public/sitemap/$tenantSlug/sitemap.xml'
       path: '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -2885,8 +2884,6 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
   AppConfiguracoesImobiliariaRoute: typeof AppConfiguracoesImobiliariaRoute
-  AppConfiguracoesImportarRoute: typeof AppConfiguracoesImportarRoute
-  AppConfiguracoesModulosRoute: typeof AppConfiguracoesModulosRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -2908,8 +2905,6 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
   AppConfiguracoesImobiliariaRoute: AppConfiguracoesImobiliariaRoute,
-  AppConfiguracoesImportarRoute: AppConfiguracoesImportarRoute,
-  AppConfiguracoesModulosRoute: AppConfiguracoesModulosRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
@@ -2968,6 +2963,7 @@ interface AppRouteChildren {
   AppFinanceiroPlanoContasRoute: typeof AppFinanceiroPlanoContasRoute
   AppImoveisIdRoute: typeof AppImoveisIdRoute
   AppImoveisCompararRoute: typeof AppImoveisCompararRoute
+  AppImoveisImportarRoute: typeof AppImoveisImportarRoute
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
@@ -3014,6 +3010,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroPlanoContasRoute: AppFinanceiroPlanoContasRoute,
   AppImoveisIdRoute: AppImoveisIdRoute,
   AppImoveisCompararRoute: AppImoveisCompararRoute,
+  AppImoveisImportarRoute: AppImoveisImportarRoute,
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
@@ -3054,6 +3051,17 @@ const ContaRouteChildren: ContaRouteChildren = {
 }
 
 const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
+
+interface ApiPublicV1ImoveisRouteChildren {
+  ApiPublicV1ImoveisSlugRoute: typeof ApiPublicV1ImoveisSlugRoute
+}
+
+const ApiPublicV1ImoveisRouteChildren: ApiPublicV1ImoveisRouteChildren = {
+  ApiPublicV1ImoveisSlugRoute: ApiPublicV1ImoveisSlugRoute,
+}
+
+const ApiPublicV1ImoveisRouteWithChildren =
+  ApiPublicV1ImoveisRoute._addFileChildren(ApiPublicV1ImoveisRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -3105,7 +3113,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
-  ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRoute,
+  ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,

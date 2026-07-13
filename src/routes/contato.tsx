@@ -86,14 +86,13 @@ function ContatoPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("leads").insert({
-      nome,
-      email,
-      telefone: telefone || null,
-      mensagem,
-      origem: "contato",
-      status: "novo",
-    } as any);
+    const { error } = await supabase.rpc("public_create_tenant_lead", {
+      _tenant_slug: "imob365",
+      _nome: nome,
+      _email: email,
+      _telefone: telefone,
+      _mensagem: mensagem,
+    });
     setLoading(false);
     if (error) {
       toast.error("Erro ao enviar. Tente novamente.");

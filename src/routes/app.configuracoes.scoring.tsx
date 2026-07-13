@@ -21,6 +21,16 @@ const EVENTOS = [
   "lead.whatsapp_respondido",
 ];
 
+const EVENTO_LABEL: Record<string, string> = {
+  "lead.criado": "Lead criado",
+  "lead.contatado": "Lead contatado",
+  "lead.visita_marcada": "Visita marcada",
+  "lead.visita_realizada": "Visita realizada",
+  "lead.proposta": "Proposta enviada",
+  "lead.email_aberto": "E-mail aberto pelo lead",
+  "lead.whatsapp_respondido": "Lead respondeu no WhatsApp",
+};
+
 function ScoringPage() {
   const { tenantId } = useAuth();
   const [regras, setRegras] = useState<any[]>([]);
@@ -73,7 +83,7 @@ function ScoringPage() {
           >
             {EVENTOS.map((ev) => (
               <option key={ev} value={ev}>
-                {ev}
+                {EVENTO_LABEL[ev] ?? ev}
               </option>
             ))}
           </select>
@@ -90,7 +100,7 @@ function ScoringPage() {
             >
               <span>
                 <b className="mr-2">+{r.pontos}</b>
-                {r.evento}
+                {EVENTO_LABEL[r.evento] ?? r.evento}
               </span>
               <Button size="sm" variant="ghost" onClick={() => del(r.id)}>
                 <Trash2 className="h-4 w-4 text-destructive" />

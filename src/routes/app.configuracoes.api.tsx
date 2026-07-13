@@ -30,7 +30,8 @@ async function sha256Hex(s: string) {
 }
 
 function ApiKeysPage() {
-  const { tenantId, isAdmin, user } = useAuth();
+  const { tenantId, isAdmin, isSuperAdmin, roles, user } = useAuth();
+  const podeGerenciar = isAdmin || isSuperAdmin || roles.includes("broker");
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [items, setItems] = useState<any[]>([]);
   const [nome, setNome] = useState("");
@@ -72,7 +73,8 @@ function ApiKeysPage() {
     load();
   }
 
-  if (!isAdmin) return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
+  if (!podeGerenciar)
+    return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
 
   return (
     <div className="space-y-8">

@@ -36,6 +36,7 @@ type Corretor = {
   ativo: boolean;
   publico: boolean;
   cargo: string | null;
+  user_id: string | null;
 };
 
 function CorretoresList() {
@@ -92,7 +93,7 @@ function CorretoresList() {
     }
     const { data, error } = await supabase
       .from("corretores")
-      .select("id,nome,email,telefone,creci,creci_uf,foto_url,slug,ativo,publico,cargo")
+      .select("id,nome,email,telefone,creci,creci_uf,foto_url,slug,ativo,publico,cargo,user_id")
       .eq("tenant_id", tenantId)
       .order("nome");
     if (error) toast.error("Erro ao carregar: " + error.message);
@@ -100,7 +101,9 @@ function CorretoresList() {
     setLoading(false);
   }
 
-  useEffect(() => { if (tenantId) load(); }, [tenantId]);
+  useEffect(() => {
+    if (tenantId) load();
+  }, [tenantId]);
 
   async function remove(id: string) {
     if (!(await confirmDialog("Excluir este corretor?"))) return;
@@ -170,6 +173,7 @@ function CorretoresList() {
                 <th className="px-4 py-3">CRECI</th>
                 <th className="px-4 py-3">Contato</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Acesso ao sistema</th>
                 <th className="px-4 py-3 text-right">Ações</th>
               </tr>
             </thead>
@@ -219,6 +223,20 @@ function CorretoresList() {
                       <Badge>Público</Badge>
                     ) : (
                       <Badge variant="outline">Ativo · interno</Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.user_id ? (
+                      <Badge variant="outline" className="text-[10px]">
+                        Tem acesso ao sistema
+                      </Badge>
+                    ) : (
+                      <Link
+                        to="/app/configuracoes/equipe"
+                        className="text-xs text-muted-foreground hover:text-primary hover:underline"
+                      >
+                        Convidar para a Equipe
+                      </Link>
                     )}
                   </td>
                   <td className="px-4 py-3">
