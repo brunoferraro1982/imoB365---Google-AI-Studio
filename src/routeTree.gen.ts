@@ -99,6 +99,7 @@ import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assiste
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
+import { Route as AppImoveisImportarRouteImport } from './routes/app.imoveis.importar'
 import { Route as AppImoveisCompararRouteImport } from './routes/app.imoveis.comparar'
 import { Route as AppImoveisIdRouteImport } from './routes/app.imoveis.$id'
 import { Route as AppFinanceiroPlanoContasRouteImport } from './routes/app.financeiro.plano-contas'
@@ -121,7 +122,6 @@ import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.co
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
 import { Route as AppConfiguracoesModulosRouteImport } from './routes/app.configuracoes.modulos'
-import { Route as AppConfiguracoesImportarRouteImport } from './routes/app.configuracoes.importar'
 import { Route as AppConfiguracoesImobiliariaRouteImport } from './routes/app.configuracoes.imobiliaria'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
@@ -606,6 +606,11 @@ const AppImoveisNovoRoute = AppImoveisNovoRouteImport.update({
   path: '/imoveis/novo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppImoveisImportarRoute = AppImoveisImportarRouteImport.update({
+  id: '/imoveis/importar',
+  path: '/imoveis/importar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppImoveisCompararRoute = AppImoveisCompararRouteImport.update({
   id: '/imoveis/comparar',
   path: '/imoveis/comparar',
@@ -723,12 +728,6 @@ const AppConfiguracoesModulosRoute = AppConfiguracoesModulosRouteImport.update({
   path: '/modulos',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
-const AppConfiguracoesImportarRoute =
-  AppConfiguracoesImportarRouteImport.update({
-    id: '/importar',
-    path: '/importar',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
 const AppConfiguracoesImobiliariaRoute =
   AppConfiguracoesImobiliariaRouteImport.update({
     id: '/imobiliaria',
@@ -989,7 +988,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
@@ -1012,6 +1010,7 @@ export interface FileRoutesByFullPath {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1131,7 +1130,6 @@ export interface FileRoutesByTo {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
@@ -1154,6 +1152,7 @@ export interface FileRoutesByTo {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1279,7 +1278,6 @@ export interface FileRoutesById {
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
   '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
-  '/app/configuracoes/importar': typeof AppConfiguracoesImportarRoute
   '/app/configuracoes/modulos': typeof AppConfiguracoesModulosRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
@@ -1302,6 +1300,7 @@ export interface FileRoutesById {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
+  '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
@@ -1428,7 +1427,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
@@ -1451,6 +1449,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -1570,7 +1569,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
@@ -1593,6 +1591,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -1717,7 +1716,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
     | '/app/configuracoes/imobiliaria'
-    | '/app/configuracoes/importar'
     | '/app/configuracoes/modulos'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
@@ -1740,6 +1738,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/comparar'
+    | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/configuracao'
@@ -2476,6 +2475,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImoveisNovoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/imoveis/importar': {
+      id: '/app/imoveis/importar'
+      path: '/imoveis/importar'
+      fullPath: '/app/imoveis/importar'
+      preLoaderRoute: typeof AppImoveisImportarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/imoveis/comparar': {
       id: '/app/imoveis/comparar'
       path: '/imoveis/comparar'
@@ -2628,13 +2634,6 @@ declare module '@tanstack/react-router' {
       path: '/modulos'
       fullPath: '/app/configuracoes/modulos'
       preLoaderRoute: typeof AppConfiguracoesModulosRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
-    '/app/configuracoes/importar': {
-      id: '/app/configuracoes/importar'
-      path: '/importar'
-      fullPath: '/app/configuracoes/importar'
-      preLoaderRoute: typeof AppConfiguracoesImportarRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/configuracoes/imobiliaria': {
@@ -2904,7 +2903,6 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
   AppConfiguracoesImobiliariaRoute: typeof AppConfiguracoesImobiliariaRoute
-  AppConfiguracoesImportarRoute: typeof AppConfiguracoesImportarRoute
   AppConfiguracoesModulosRoute: typeof AppConfiguracoesModulosRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
@@ -2927,7 +2925,6 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
   AppConfiguracoesImobiliariaRoute: AppConfiguracoesImobiliariaRoute,
-  AppConfiguracoesImportarRoute: AppConfiguracoesImportarRoute,
   AppConfiguracoesModulosRoute: AppConfiguracoesModulosRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
@@ -2987,6 +2984,7 @@ interface AppRouteChildren {
   AppFinanceiroPlanoContasRoute: typeof AppFinanceiroPlanoContasRoute
   AppImoveisIdRoute: typeof AppImoveisIdRoute
   AppImoveisCompararRoute: typeof AppImoveisCompararRoute
+  AppImoveisImportarRoute: typeof AppImoveisImportarRoute
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
@@ -3033,6 +3031,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroPlanoContasRoute: AppFinanceiroPlanoContasRoute,
   AppImoveisIdRoute: AppImoveisIdRoute,
   AppImoveisCompararRoute: AppImoveisCompararRoute,
+  AppImoveisImportarRoute: AppImoveisImportarRoute,
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,

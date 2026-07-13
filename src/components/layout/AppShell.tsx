@@ -37,6 +37,7 @@ import {
   Library,
   LayoutGrid,
   HeartHandshake,
+  Upload,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -74,6 +75,7 @@ const tenantModules: Module[] = [
     icon: Building,
     items: [
       { to: "/app/imoveis", label: "Imóveis", icon: Building2 },
+      { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/locacao", label: "Locação", icon: Home },
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
@@ -158,7 +160,6 @@ const tenantModules: Module[] = [
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },
       { to: "/app/configuracoes/api", label: "API", icon: FileSignature },
       { to: "/app/configuracoes/notificacoes", label: "Notificações", icon: Mail },
-      { to: "/app/configuracoes/importar", label: "Importar", icon: FileText },
       { to: "/app/configuracoes/golive", label: "Go-live", icon: Sparkles },
       { to: "/app/configuracoes/seguranca", label: "Segurança", icon: ShieldCheck },
       { to: "/app/configuracoes/privacidade", label: "Privacidade (LGPD)", icon: ShieldCheck },

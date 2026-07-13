@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Upload, FileText, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Upload, Download, CheckCircle2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/app/configuracoes/importar")({
+export const Route = createFileRoute("/app/imoveis/importar")({
   component: ImportarPage,
 });
 
@@ -58,8 +58,19 @@ function slugify(s: string) {
   );
 }
 
+function baixarTemplate(entity: EntityKey) {
+  const blob = new Blob([TEMPLATES[entity]], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `modelo-${entity}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function ImportarPage() {
-  const { tenantId, isAdmin, user } = useAuth();
+  const { tenantId, isAdmin, isSuperAdmin, roles, user } = useAuth();
+  const podeImportar = isAdmin || isSuperAdmin || roles.includes("broker");
   const [entity, setEntity] = useState<EntityKey>("imoveis");
   const [csv, setCsv] = useState("");
   const [busy, setBusy] = useState(false);
@@ -118,22 +129,24 @@ function ImportarPage() {
     if (ok > 0) toast.success(`${ok} registro(s) importado(s)`);
   }
 
-  if (!isAdmin) return <div className="text-sm text-muted-foreground">Apenas administradores.</div>;
+  if (!podeImportar)
+    return <div className="p-8 text-sm text-muted-foreground">Apenas administradores.</div>;
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-3xl space-y-6 p-8">
       <div className="rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-3">
           <Upload className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold">Importar via CSV</h2>
+          <h2 className="text-lg font-semibold">Importar imóveis em massa</h2>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Cole o conteúdo de um arquivo CSV (separado por vírgulas, sem aspas internas).
+          Baixe o modelo, preencha no Excel/Google Sheets, exporte como CSV e cole o conteúdo
+          abaixo. Também é possível importar leads.
         </p>
 
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <div>
-            <Label>Entidade</Label>
+            <Label>O que importar</Label>
             <Select
               value={entity}
               onValueChange={(v: EntityKey) => {
@@ -151,20 +164,21 @@ function ImportarPage() {
               </SelectContent>
             </Select>
           </div>
-          <div className="flex items-end">
-            <Button variant="outline" type="button" onClick={() => setCsv(TEMPLATES[entity])}>
-              <FileText className="mr-2 h-4 w-4" /> Carregar modelo
+          <div className="flex items-end gap-2">
+            <Button variant="outline" type="button" onClick={() => baixarTemplate(entity)}>
+              <Download className="mr-2 h-4 w-4" /> Baixar modelo (CSV)
             </Button>
           </div>
         </div>
 
         <div className="mt-4">
-          <Label>CSV</Label>
+          <Label>Cole o conteúdo do CSV aqui</Label>
           <Textarea
             rows={10}
             value={csv}
             onChange={(e) => setCsv(e.target.value)}
             className="font-mono text-xs"
+            placeholder="Cole aqui o conteúdo do arquivo CSV (separado por vírgulas, sem aspas internas)"
           />
         </div>
 
