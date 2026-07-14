@@ -24,16 +24,28 @@ ALTER TABLE public.tenants
   ADD COLUMN IF NOT EXISTS plan_cycle                 text,
   ADD COLUMN IF NOT EXISTS trial_grace_ends_at         timestamptz;
 
-ALTER TABLE public.tenants
-  ADD CONSTRAINT tenants_payment_status_check
-    CHECK (payment_status IN ('none', 'pending', 'authorized', 'paused', 'cancelled'));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'tenants_payment_status_check'
+  ) THEN
+    ALTER TABLE public.tenants
+      ADD CONSTRAINT tenants_payment_status_check
+        CHECK (payment_status IN ('none', 'pending', 'authorized', 'paused', 'cancelled'));
+  END IF;
 
-ALTER TABLE public.tenants
-  ADD CONSTRAINT tenants_plan_cycle_check
-    CHECK (plan_cycle IS NULL OR plan_cycle IN ('monthly', 'annual'));
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'tenants_plan_cycle_check'
+  ) THEN
+    ALTER TABLE public.tenants
+      ADD CONSTRAINT tenants_plan_cycle_check
+        CHECK (plan_cycle IS NULL OR plan_cycle IN ('monthly', 'annual'));
+  END IF;
+END;
+$$;
 
 -- 3. payment_events: log idempotente de notificações recebidas do Mercado Pago
-CREATE TABLE public.payment_events (
+CREATE TABLE IF NOT EXISTS public.payment_events (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   mp_notification_id text NOT NULL UNIQUE,
   tenant_id          uuid REFERENCES public.tenants(id),
@@ -45,6 +57,7 @@ CREATE TABLE public.payment_events (
 
 ALTER TABLE public.payment_events ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "payment_events_super_admin_read" ON public.payment_events;
 CREATE POLICY "payment_events_super_admin_read" ON public.payment_events
   FOR SELECT TO authenticated
   USING (public.has_role(auth.uid(), 'super_admin'));
@@ -53,6 +66,10 @@ CREATE POLICY "payment_events_super_admin_read" ON public.payment_events
 -- notificação antes de rebaixar pra Free de verdade (antes rebaixava na hora).
 -- Devolve uma linha por tenant afetado + a ação tomada, para o chamador (rota de
 -- cron) decidir quem precisa receber o e-mail de "assine para continuar".
+-- DROP é necessário porque a assinatura de retorno mudou (antes não devolvia
+-- linhas) — CREATE OR REPLACE não permite trocar o tipo de retorno.
+DROP FUNCTION IF EXISTS public.cron_expire_trials();
+
 CREATE OR REPLACE FUNCTION public.cron_expire_trials()
 RETURNS TABLE(tenant_id uuid, action text)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
