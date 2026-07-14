@@ -30,6 +30,10 @@ import {
   Calendar,
   Landmark,
   AlertTriangle,
+  DollarSign,
+  Scale,
+  GraduationCap,
+  Plug,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -792,7 +796,7 @@ function Landing() {
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Ative apenas os recursos que você precisa hoje e adicione novos conforme cresce.
           </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {modulos.map((m) => (
               <div key={m.title} className="rounded-xl border border-border bg-card p-5">
                 <div className="flex items-center gap-3">
@@ -894,7 +898,7 @@ export function SiteFooter() {
             title="Para imobiliárias"
             links={[
               { label: "Planos e preços", to: "/planos", icon: CreditCard },
-              { label: "Recursos da plataforma", to: "/#recursos", icon: SlidersHorizontal },
+              { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
               { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
               { label: "Acessar plataforma", to: "/login", icon: Users },
               {
@@ -1042,32 +1046,42 @@ const servicos = [
 const modulos = [
   {
     icon: Building2,
-    title: "Catálogo de imóveis",
-    desc: "Cadastro completo com fotos, planta, vídeo e tour virtual.",
+    title: "Gestão completa de imóveis e leads",
+    desc: "Cadastre imóveis, acompanhe cada lead em um funil visual e feche mais negócios sem perder nada no caminho.",
   },
   {
-    icon: Users,
-    title: "Clientes e oportunidades",
-    desc: "Funil visual de vendas, distribuição automática e histórico de cada lead.",
+    icon: DollarSign,
+    title: "Comissões calculadas, não adivinhadas",
+    desc: "Da comissão ao fechamento contábil, com relatórios que mostram o que realmente importa.",
   },
   {
     icon: Globe2,
-    title: "Anúncios nos portais",
-    desc: "Publique automaticamente no OLX, VivaReal, ZAP e Wimóveis com um clique.",
+    title: "Um anúncio, todos os portais",
+    desc: "Publique no seu site e nos 7 principais portais do mercado — VivaReal, ZAP, Wimóveis, Chaves na Mão, Imovelweb, Mercado Livre e OLX — ao mesmo tempo, tudo sincronizado automaticamente.",
   },
   {
-    icon: Home,
-    title: "Gestão de locação",
-    desc: "Contratos, repasses, vistorias e ordens de serviço para o setor de aluguel.",
+    icon: Scale,
+    title: "Contratos sem risco",
+    desc: "Modelos prontos, versionamento e assinatura digital, do rascunho à assinatura, com rastreabilidade total.",
   },
   {
-    icon: Sparkles,
-    title: "Inteligência artificial",
-    desc: "Gere descrições de imóveis e mensagens personalizadas em segundos.",
+    icon: GraduationCap,
+    title: "Corretores mais preparados, credenciados pelo mercado",
+    desc: "Cursos e certificações para sua equipe hoje, e um caminho para o credenciamento formal ao CRECI (curso de TTI) diretamente pela plataforma, em breve.",
+  },
+  {
+    icon: SlidersHorizontal,
+    title: "Seu site, sua marca",
+    desc: "Um site profissional com seu domínio e sua identidade visual, pronto em minutos.",
+  },
+  {
+    icon: Plug,
+    title: "Conecte com o que você já usa",
+    desc: "API REST e webhooks para integrar o imob365 ao seu ecossistema, sem depender de suporte manual.",
   },
   {
     icon: ShieldCheck,
-    title: "Contratos digitais",
-    desc: "Modelos prontos, assinatura eletrônica e integração com cartórios.",
+    title: "Seus dados, isolados e protegidos",
+    desc: "Isolamento total entre imobiliárias, LGPD nativa e auditoria de cada ação sensível.",
   },
 ];

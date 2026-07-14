@@ -17,6 +17,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
+import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as PlanosRouteImport } from './routes/planos'
 import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -192,6 +193,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const PoliticaDePrivacidadeRoute = PoliticaDePrivacidadeRouteImport.update({
   id: '/politica-de-privacidade',
   path: '/politica-de-privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlataformaRoute = PlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlanosRoute = PlanosRouteImport.update({
@@ -922,6 +928,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -1065,6 +1072,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -1210,6 +1218,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
   '/planos': typeof PlanosRoute
+  '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -1358,6 +1367,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/plataforma'
     | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
@@ -1501,6 +1511,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/plataforma'
     | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
@@ -1645,6 +1656,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending-approval'
     | '/planos'
+    | '/plataforma'
     | '/politica-de-privacidade'
     | '/privacidade'
     | '/reset-password'
@@ -1792,6 +1804,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PendingApprovalRoute: typeof PendingApprovalRoute
   PlanosRoute: typeof PlanosRoute
+  PlataformaRoute: typeof PlataformaRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -1887,6 +1900,13 @@ declare module '@tanstack/react-router' {
       path: '/politica-de-privacidade'
       fullPath: '/politica-de-privacidade'
       preLoaderRoute: typeof PoliticaDePrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plataforma': {
+      id: '/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof PlataformaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/planos': {
@@ -3087,6 +3107,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PendingApprovalRoute: PendingApprovalRoute,
   PlanosRoute: PlanosRoute,
+  PlataformaRoute: PlataformaRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,

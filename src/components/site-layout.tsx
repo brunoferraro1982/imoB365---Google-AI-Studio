@@ -1090,33 +1090,20 @@ function SiteHeaderImpl() {
                           Valores
                         </span>
                         <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Soluções ideais para corretores autônomos e agências de imóveis.
+                          Do Free ao Business, escolha o plano do tamanho da sua operação.
                         </span>
                       </Link>
 
                       <Link
-                        to="/app/portais"
+                        to="/plataforma"
                         className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
                       >
                         <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Globe2 className="h-3.5 w-3.5 text-emerald-600" /> Divulgação & Parcerias
+                          <Globe2 className="h-3.5 w-3.5 text-emerald-600" /> Plataforma & Recursos
                         </span>
                         <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Anuncie automaticamente nos maiores portais de imóveis do país.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/app/configuracoes/dominios"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <SlidersHorizontal className="h-3.5 w-3.5 text-orange-500" /> Site com sua
-                          Marca
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Crie um portal de imóveis exclusivo com as cores e logotipo da sua
-                          empresa.
+                          Veja tudo que está incluído: imóveis, financeiro, marketing, jurídico e
+                          e-learning.
                         </span>
                       </Link>
                     </div>
@@ -1159,18 +1146,6 @@ function SiteHeaderImpl() {
                       Recursos Integradores
                     </span>
                     <div className="space-y-1">
-                      <Link
-                        to="/app/configuracoes/golive"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Sparkles className="h-3.5 w-3.5 text-primary" /> Painel Go-Live
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Auditoria e checklist completo de ativação do portal.
-                        </span>
-                      </Link>
-
                       <Link
                         to="/docs/api"
                         className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
@@ -1418,31 +1393,16 @@ function SiteHeaderImpl() {
                     </Link>
 
                     <Link
-                      to="/app/portais"
+                      to="/plataforma"
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
                     >
                       <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
                         <Globe2 className="h-4 w-4" />
                       </div>
                       <div className="flex flex-col">
-                        <span>Divulgação & Parcerias</span>
+                        <span>Plataforma & Recursos</span>
                         <span className="text-[10px] text-muted-foreground font-medium">
-                          Anunciar em múltiplos portais
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/app/configuracoes/dominios"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-orange-100 text-orange-850 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                        <SlidersHorizontal className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Site com sua Marca</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Layout personalizado e logotipo próprio
+                          Tudo que está incluído, por módulo
                         </span>
                       </div>
                     </Link>
@@ -1454,13 +1414,6 @@ function SiteHeaderImpl() {
                       Área Técnica (Devs)
                     </h3>
 
-                    <Link
-                      to="/app/configuracoes/golive"
-                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
-                    >
-                      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-                      <span>Painel Go-Live (Checklist)</span>
-                    </Link>
                     <Link
                       to="/docs/api"
                       className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
@@ -1525,7 +1478,7 @@ export function SiteFooter() {
             title="Para imobiliárias"
             links={[
               { label: "Planos e preços", to: "/planos", icon: CreditCard },
-              { label: "Recursos da plataforma", to: "/#recursos", icon: SlidersHorizontal },
+              { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
               { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
               { label: "Acessar plataforma", to: "/login", icon: Users },
               {
