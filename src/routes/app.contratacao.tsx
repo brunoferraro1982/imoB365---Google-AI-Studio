@@ -198,22 +198,20 @@ function ContratacaoPage() {
 
   // Grava a seleção de módulos (independente do plano ser pago ou não — o plano em
   // si só muda de verdade quando o Mercado Pago confirmar o pagamento, ver abaixo).
+  // Via RPC (não upsert direto): a escrita em tenant_modules é restrita a
+  // super_admin por RLS desde 20260713170000, e a cota precisa ser validada
+  // contra o plano ALVO desta compra, não o plano atual do tenant.
   async function saveModuleSelection() {
-    if (!tenantId) return;
-    const { data: dbModules } = await supabase.from("modules").select("slug");
-    const dbSlugs = new Set(dbModules?.map((m) => m.slug) || []);
+    if (!tenantId || !activePlan) return;
+    const selectedSlugs = modules
+      .filter((m) => !m.core && selectedModuleSlugs[m.slug])
+      .map((m) => m.slug);
 
-    const upsertPayload = modules
-      .filter((m) => dbSlugs.has(m.slug))
-      .map((m) => ({
-        tenant_id: tenantId,
-        module_slug: m.slug,
-        enabled: m.core || !!selectedModuleSlugs[m.slug],
-      }));
-
-    const { error } = await supabase
-      .from("tenant_modules")
-      .upsert(upsertPayload, { onConflict: "tenant_id,module_slug" });
+    const { error } = await supabase.rpc("set_tenant_optional_modules", {
+      _tenant_id: tenantId,
+      _plano_slug: activePlan.slug,
+      _module_slugs: selectedSlugs,
+    });
     if (error) throw error;
   }
 

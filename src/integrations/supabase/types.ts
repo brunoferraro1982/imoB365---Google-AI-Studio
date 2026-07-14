@@ -4158,8 +4158,12 @@ export type Database = {
           read_ct: number
         }[]
       }
+      set_tenant_optional_modules: {
+        Args: { _module_slugs: string[]; _plano_slug: string; _tenant_id: string }
+        Returns: undefined
+      }
       tenant_modules_quota: {
-        Args: { _tenant_id: string }
+        Args: { _plano_slug_override?: string; _tenant_id: string }
         Returns: {
           quota: number
           used: number
