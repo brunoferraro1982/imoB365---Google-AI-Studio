@@ -93,11 +93,25 @@ function BlogPostPage() {
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "/blog" },
+      { "@type": "ListItem", position: 3, name: post.titulo },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       {/* ── Header de navegação ── */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b">

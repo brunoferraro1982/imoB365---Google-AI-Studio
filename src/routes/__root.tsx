@@ -141,6 +141,11 @@ const ORGANIZATION_JSON_LD = {
   name: "imob365",
   logo: "/favicon.png",
   email: "contato@imob365.com.br",
+  sameAs: [
+    "https://www.facebook.com/imob365/",
+    "https://www.instagram.com/imob365/",
+    "https://www.linkedin.com/company/imob365/",
+  ],
   contactPoint: {
     "@type": "ContactPoint",
     telephone: "+5513997794382",

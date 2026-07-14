@@ -166,6 +166,16 @@ function ImovelDetail() {
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "/" },
+      { "@type": "ListItem", position: 2, name: "Buscar imóveis", item: "/buscar" },
+      { "@type": "ListItem", position: 3, name: imovel.titulo },
+    ],
+  };
+
   const enderecoLinha = [
     imovel.mostrar_endereco_publico
       ? `${imovel.endereco_logradouro ?? ""}${imovel.endereco_numero ? ", " + imovel.endereco_numero : ""}`
@@ -181,6 +191,10 @@ function ImovelDetail() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <TrackingPixels pixels={pixels} />
       <SiteHeader />
