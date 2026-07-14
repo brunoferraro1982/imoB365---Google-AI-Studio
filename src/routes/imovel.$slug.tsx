@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
-import { useServerFn } from "@tanstack/react-start";
+import { createServerFn, useServerFn } from "@tanstack/react-start";
 import { startConversationFromImovel } from "@/lib/chat.functions";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { FavoritoButton } from "@/components/FavoritoButton";
@@ -19,10 +19,6 @@ import { SimuladorFinanciamento } from "@/components/imovel/SimuladorFinanciamen
 import { HistoricoPreco } from "@/components/imovel/HistoricoPreco";
 import { ImoveisSimilares } from "@/components/imovel/ImoveisSimilares";
 import { AgendarVisita } from "@/components/imovel/AgendarVisita";
-
-export const Route = createFileRoute("/imovel/$slug")({
-  component: ImovelDetail,
-});
 
 type Imovel = {
   id: string;
@@ -49,9 +45,58 @@ type Imovel = {
   corretor_responsavel_id: string | null;
 };
 
+const fetchImovelBySlug = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }) => {
+    const { data, error } = await supabase
+      .from("imoveis")
+      .select("*")
+      .eq("slug", slug)
+      .eq("publicado", true)
+      .eq("status", "ativo")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Imóvel não encontrado");
+    return data as unknown as Imovel;
+  });
+
+export const Route = createFileRoute("/imovel/$slug")({
+  head: ({ loaderData }) => {
+    if (!loaderData) return { meta: [] };
+    const preco = formatBRL(loaderData.preco);
+    const titulo = `${loaderData.titulo} — ${preco} | imob365`;
+    const descricao = (loaderData.descricao ?? "").slice(0, 160);
+    return {
+      meta: [
+        { title: titulo },
+        { name: "description", content: descricao },
+        { property: "og:title", content: loaderData.titulo },
+        { property: "og:description", content: descricao },
+      ],
+    };
+  },
+  loader: async ({ params }) => fetchImovelBySlug({ data: params.slug }),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
+        <Home className="mb-4 h-12 w-12 text-muted-foreground/40" />
+        <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Este imóvel pode não estar publicado ou o endereço está incorreto.
+        </p>
+        <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
+          Voltar para a busca
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  component: ImovelDetail,
+});
+
 function ImovelDetail() {
-  const { slug } = Route.useParams();
-  const [imovel, setImovel] = useState<Imovel | null>(null);
+  const imovel = Route.useLoaderData();
   const [fotos, setFotos] = useState<{ storage_path: string; capa: boolean }[]>([]);
   const [tenantNome, setTenantNome] = useState<string>("");
   const [pixels, setPixels] = useState<any>(null);
@@ -60,89 +105,66 @@ function ImovelDetail() {
     whatsapp: string | null;
     slug: string;
   } | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      try {
-        const { data } = await supabase
-          .from("imoveis")
-          .select("*")
-          .eq("slug", slug)
-          .eq("publicado", true)
-          .eq("status", "ativo")
-          .maybeSingle();
-        if (!data) {
-          setLoading(false);
-          return;
-        }
-        setImovel(data as unknown as Imovel);
-        const results = await Promise.allSettled([
-          supabase
-            .from("imovel_fotos")
-            .select("storage_path,capa")
-            .eq("imovel_id", data.id)
-            .order("capa", { ascending: false })
-            .order("ordem"),
-          supabase.from("tenants").select("nome").eq("id", data.tenant_id).maybeSingle(),
-          data.corretor_responsavel_id
-            ? (supabase as any)
-                .from("corretores")
-                .select("nome,whatsapp,slug")
-                .eq("id", data.corretor_responsavel_id)
-                .maybeSingle()
-            : Promise.resolve({ data: null }),
-          (supabase as any)
-            .from("tenant_site_settings")
-            .select("ga4_id,gtm_id,fb_pixel_id,google_ads_id,hotjar_id,head_custom_html")
-            .eq("tenant_id", data.tenant_id)
-            .maybeSingle(),
-        ]);
-        const val = (r: PromiseSettledResult<any>) =>
-          r.status === "fulfilled" ? r.value : { data: null };
-        setFotos(val(results[0])?.data ?? []);
-        setTenantNome(val(results[1])?.data?.nome ?? "");
-        setCorretor(val(results[2])?.data ?? null);
-        setPixels(val(results[3])?.data ?? null);
-      } catch {
-        // silently handle — page will show "Imóvel não encontrado"
-      } finally {
-        setLoading(false);
-      }
+      const results = await Promise.allSettled([
+        supabase
+          .from("imovel_fotos")
+          .select("storage_path,capa")
+          .eq("imovel_id", imovel.id)
+          .order("capa", { ascending: false })
+          .order("ordem"),
+        supabase.from("tenants").select("nome").eq("id", imovel.tenant_id).maybeSingle(),
+        imovel.corretor_responsavel_id
+          ? (supabase as any)
+              .from("corretores")
+              .select("nome,whatsapp,slug")
+              .eq("id", imovel.corretor_responsavel_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+        (supabase as any)
+          .from("tenant_site_settings")
+          .select("ga4_id,gtm_id,fb_pixel_id,google_ads_id,hotjar_id,head_custom_html")
+          .eq("tenant_id", imovel.tenant_id)
+          .maybeSingle(),
+      ]);
+      const val = (r: PromiseSettledResult<any>) =>
+        r.status === "fulfilled" ? r.value : { data: null };
+      setFotos(val(results[0])?.data ?? []);
+      setTenantNome(val(results[1])?.data?.nome ?? "");
+      setCorretor(val(results[2])?.data ?? null);
+      setPixels(val(results[3])?.data ?? null);
     })();
-  }, [slug]);
+  }, [imovel.id, imovel.tenant_id, imovel.corretor_responsavel_id]);
 
   function publicUrl(path: string) {
     return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
   }
 
-  if (loading)
-    return (
-      <div className="min-h-screen bg-background">
-        <SiteHeader />
-        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
-          Carregando…
-        </div>
-        <SiteFooter />
-      </div>
-    );
-  if (!imovel)
-    return (
-      <div className="min-h-screen bg-background">
-        <SiteHeader />
-        <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
-          <Home className="mb-4 h-12 w-12 text-muted-foreground/40" />
-          <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Este imóvel pode não estar publicado ou o endereço está incorreto.
-          </p>
-          <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
-            Voltar para a busca
-          </Link>
-        </div>
-        <SiteFooter />
-      </div>
-    );
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: imovel.titulo,
+    description: imovel.descricao ?? undefined,
+    address: {
+      "@type": "PostalAddress",
+      ...(imovel.mostrar_endereco_publico && imovel.endereco_logradouro
+        ? {
+            streetAddress: `${imovel.endereco_logradouro}${imovel.endereco_numero ? ", " + imovel.endereco_numero : ""}`,
+          }
+        : {}),
+      addressLocality: imovel.endereco_cidade ?? undefined,
+      addressRegion: imovel.endereco_uf ?? undefined,
+      addressCountry: "BR",
+    },
+    offers: {
+      "@type": "Offer",
+      price: imovel.preco,
+      priceCurrency: "BRL",
+      availability: "https://schema.org/InStock",
+    },
+  };
 
   const enderecoLinha = [
     imovel.mostrar_endereco_publico
@@ -156,6 +178,10 @@ function ImovelDetail() {
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TrackingPixels pixels={pixels} />
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-10">

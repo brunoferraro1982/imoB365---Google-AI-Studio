@@ -337,7 +337,7 @@ function ContatoPage() {
                     className="text-[11px] text-muted-foreground leading-relaxed"
                   >
                     Li e aceito a{" "}
-                    <a href="/politica-de-privacidade" className="text-primary underline">
+                    <a href="/privacidade" className="text-primary underline">
                       Política de Privacidade
                     </a>{" "}
                     e concordo em ser contatado pela imoB365.

@@ -135,11 +135,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "imob365",
+  logo: "/favicon.png",
+  email: "contato@imob365.com.br",
+  contactPoint: {
+    "@type": "ContactPoint",
+    telephone: "+5513997794382",
+    contactType: "customer service",
+    email: "contato@imob365.com.br",
+  },
+};
+
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
       </head>
       <body>
         {children}

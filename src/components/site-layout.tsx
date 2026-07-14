@@ -1147,6 +1147,18 @@ function SiteHeaderImpl() {
                     </span>
                     <div className="space-y-1">
                       <Link
+                        to="/ajuda"
+                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
+                      >
+                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                          <BookOpen className="h-3.5 w-3.5 text-sky-600" /> Central de Ajuda
+                        </span>
+                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                          Guias rápidos por jornada: cadastro, comissões, portais e contratos.
+                        </span>
+                      </Link>
+
+                      <Link
                         to="/docs/api"
                         className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
                       >
@@ -1415,6 +1427,13 @@ function SiteHeaderImpl() {
                     </h3>
 
                     <Link
+                      to="/ajuda"
+                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
+                    >
+                      <BookOpen className="h-4 w-4 shrink-0 text-sky-600" />
+                      <span>Central de Ajuda</span>
+                    </Link>
+                    <Link
                       to="/docs/api"
                       className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
                     >
@@ -1479,6 +1498,7 @@ export function SiteFooter() {
             links={[
               { label: "Planos e preços", to: "/planos", icon: CreditCard },
               { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
+              { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
               { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
               { label: "Acessar plataforma", to: "/login", icon: Users },
               {

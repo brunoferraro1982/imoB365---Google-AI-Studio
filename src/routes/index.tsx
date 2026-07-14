@@ -34,6 +34,7 @@ import {
   Scale,
   GraduationCap,
   Plug,
+  BookOpen,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -45,6 +46,25 @@ import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro" },
+      {
+        name: "description",
+        content:
+          "Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil. Cadastre-se grátis e comece a divulgar seus imóveis em minutos.",
+      },
+      {
+        property: "og:title",
+        content: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro",
+      },
+      {
+        property: "og:description",
+        content:
+          "Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil.",
+      },
+    ],
+  }),
   component: Landing,
 });
 
@@ -899,6 +919,7 @@ export function SiteFooter() {
             links={[
               { label: "Planos e preços", to: "/planos", icon: CreditCard },
               { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
+              { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
               { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
               { label: "Acessar plataforma", to: "/login", icon: Users },
               {
