@@ -238,10 +238,9 @@ function Landing() {
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
               <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
               imobiliárias, corretores e clientes
-            
-            <Link to="/blog">Blog</Link>
-            <Link to="/consultoria">Consultoria</Link>
-</span>
+              <Link to="/blog">Blog</Link>
+              <Link to="/consultoria">Consultoria</Link>
+            </span>
             <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
@@ -715,7 +714,9 @@ function SiteHeaderImpl() {
   >(null);
   const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const handleMouseEnter = (menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365") => {
+  const handleMouseEnter = (
+    menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365",
+  ) => {
     if (menuTimeout) {
       clearTimeout(menuTimeout);
       setMenuTimeout(null);
@@ -755,7 +756,7 @@ function SiteHeaderImpl() {
               <span>(13) 99779-4382</span>
             </a>
           </div>
-            <InstitutionalNav />
+          <InstitutionalNav />
         </div>
       </div>
 
@@ -799,12 +800,32 @@ function SiteHeaderImpl() {
                   </span>
                   <div className="space-y-1">
                     {[
-                      { anchor: "quem-somos",       label: "Quem Somos",          desc: "Missão, visão e valores" },
-                      { anchor: "nossa-abordagem",  label: "Nossa Abordagem",     desc: "Os 3 pilares da nossa metodologia" },
-                      { anchor: "litoral-sul",      label: "Por que o Litoral Sul", desc: "Potencial de valorização da região" },
-                      { anchor: "numeros",          label: "Nossos Números",       desc: "365 dias, 3 cidades, R$3MI+" },
-                      { anchor: "servicos",         label: "Serviços",             desc: "Tudo que oferecemos" },
-                      { anchor: "depoimentos",      label: "Depoimentos",          desc: "O que nossos clientes dizem" },
+                      {
+                        anchor: "quem-somos",
+                        label: "Quem Somos",
+                        desc: "Missão, visão e valores",
+                      },
+                      {
+                        anchor: "nossa-abordagem",
+                        label: "Nossa Abordagem",
+                        desc: "Os 3 pilares da nossa metodologia",
+                      },
+                      {
+                        anchor: "litoral-sul",
+                        label: "Por que o Litoral Sul",
+                        desc: "Potencial de valorização da região",
+                      },
+                      {
+                        anchor: "numeros",
+                        label: "Nossos Números",
+                        desc: "365 dias, 3 cidades, R$3MI+",
+                      },
+                      { anchor: "servicos", label: "Serviços", desc: "Tudo que oferecemos" },
+                      {
+                        anchor: "depoimentos",
+                        label: "Depoimentos",
+                        desc: "O que nossos clientes dizem",
+                      },
                     ].map((item) => (
                       <Link
                         key={item.anchor}
@@ -1243,12 +1264,12 @@ function SiteHeaderImpl() {
                       A imoB365
                     </h3>
                     {[
-                      { anchor: "quem-somos",       label: "Quem Somos" },
-                      { anchor: "nossa-abordagem",  label: "Nossa Abordagem" },
-                      { anchor: "litoral-sul",      label: "Por que o Litoral Sul" },
-                      { anchor: "numeros",          label: "Nossos Números" },
-                      { anchor: "servicos",         label: "Serviços" },
-                      { anchor: "depoimentos",      label: "Depoimentos" },
+                      { anchor: "quem-somos", label: "Quem Somos" },
+                      { anchor: "nossa-abordagem", label: "Nossa Abordagem" },
+                      { anchor: "litoral-sul", label: "Por que o Litoral Sul" },
+                      { anchor: "numeros", label: "Nossos Números" },
+                      { anchor: "servicos", label: "Serviços" },
+                      { anchor: "depoimentos", label: "Depoimentos" },
                     ].map((item) => (
                       <Link
                         key={item.anchor}
@@ -1471,11 +1492,21 @@ export function SiteFooter() {
               clientes em todo o Brasil.
             </p>
             <div className="mt-5 flex gap-3">
-              {[Instagram, Facebook, Linkedin].map((Icon, i) => (
+              {[
+                { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
+                { Icon: Instagram, href: "https://www.instagram.com/imob365/", label: "Instagram" },
+                {
+                  Icon: Linkedin,
+                  href: "https://www.linkedin.com/company/imob365/",
+                  label: "LinkedIn",
+                },
+              ].map(({ Icon, href, label }) => (
                 <a
-                  key={i}
-                  href="#"
-                  aria-label="Rede social"
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
                   className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
                 >
                   <Icon className="h-4 w-4" />

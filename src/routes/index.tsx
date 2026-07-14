@@ -650,13 +650,9 @@ function Landing() {
                       </span>
                     </div>
                     <div className="p-4">
-                      <h3 className="line-clamp-1 text-sm font-semibold leading-snug">
-                        {e.nome}
-                      </h3>
+                      <h3 className="line-clamp-1 text-sm font-semibold leading-snug">{e.nome}</h3>
                       {e.construtora && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">
-                          por {e.construtora}
-                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">por {e.construtora}</p>
                       )}
                       <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3" />
@@ -892,11 +888,21 @@ export function SiteFooter() {
               clientes em todo o Brasil.
             </p>
             <div className="mt-5 flex gap-3">
-              {[Instagram, Facebook, Linkedin].map((Icon, i) => (
+              {[
+                { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
+                { Icon: Instagram, href: "https://www.instagram.com/imob365/", label: "Instagram" },
+                {
+                  Icon: Linkedin,
+                  href: "https://www.linkedin.com/company/imob365/",
+                  label: "LinkedIn",
+                },
+              ].map(({ Icon, href, label }) => (
                 <a
-                  key={i}
-                  href="#"
-                  aria-label="Rede social"
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
                   className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
                 >
                   <Icon className="h-4 w-4" />
