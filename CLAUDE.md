@@ -138,6 +138,7 @@ Usuários que entram via Google OAuth ou e-mail são redirecionados para `/auth/
 | `team.functions.ts`           | Tenant team management (invite, list, remove members)                        |
 | `admin.functions.ts`          | Admin server functions (listAdminUsers: profiles + auth emails/metadata)     |
 | `onboarding.functions.ts`     | Onboarding completion: validates input, calls `provision_trial_business()` RPC |
+| `mercadopago.functions.ts`    | `createMercadoPagoCheckout`: generates a dynamic checkout URL (preapproval or Checkout Pro) per tenant |
 
 ### Environment Variables
 
@@ -148,6 +149,8 @@ SUPABASE_PUBLISHABLE_KEY        # Client-safe anon key
 VITE_SUPABASE_URL               # Build-time Supabase URL
 VITE_SUPABASE_PUBLISHABLE_KEY   # Build-time anon key
 APP_URL                         # Canonical URL (OAuth callbacks)
+MERCADOPAGO_ACCESS_TOKEN        # Mercado Pago API token (server-side only — checkout/preapproval)
+MERCADOPAGO_WEBHOOK_SECRET      # Mercado Pago webhook HMAC signature secret (server-side only)
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
@@ -251,6 +254,17 @@ Custom domain components live in:
 | `src/routes/admin.tenants.tsx`   | Módulos de interesse como tags; edit modal com checkboxes de módulos                           |
 | `supabase/migrations/20260626000001*` | Fix chave `modulos` ausente em `plans.limites` — desbloqueava provisionamento de módulos no Trial |
 
+### 🔧 Correções recentes (2026-07-14)
+
+| Arquivo                          | Correção                                                                                      |
+| :------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260714180000_mercadopago_subscriptions.sql` | Gateway de pagamento: Mercado Pago (assinaturas via `preapproval_plan` + cobrança avulsa para o Pro anual); `payment_events` para idempotência de webhook; agenda de verdade para `cron_expire_trials()` (nunca tinha sido agendado) |
+| `src/integrations/mercadopago/client.server.ts` | Cliente server-only da API do Mercado Pago (`preapproval`, `checkout/preferences`, `payments`) |
+| `src/lib/mercadopago.functions.ts` | Server function `createMercadoPagoCheckout`: gera o link de checkout dinamicamente por tenant (`external_reference`) |
+| `src/routes/api.public.webhooks.mercadopago.ts` | Webhook de notificações (assinatura HMAC, idempotente) — ativa o tenant quando o pagamento é confirmado |
+| `src/routes/api.public.cron.expire-trials.ts` | Cron diário: período de graça de 3 dias no fim do trial, com e-mail de aviso antes do downgrade para Free |
+| `src/routes/app.contratacao.tsx`  | Troca escrita direta em `tenants` por redirect ao checkout do Mercado Pago (planos pagos); Free/Business inalterados |
+
 ### 📋 Backlog (próximas versões)
 
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
@@ -263,7 +277,6 @@ Custom domain components live in:
 - Health score de tenant para CS (Customer Success)
 - WhatsApp via Evolution API (integração real — substituir deep-link atual em `whatsapp.ts`)
 - Deploy em produção (Cloudflare Workers)
-- Gateway de pagamento (NuBank / Pagar.me — NuBank adquiriu Pagar.me em 2021)
 - CI/CD com SAST/DAST (GitHub Actions)
 - WhatsApp flutuante customizável por tenant no site público (número/mensagem/posição próprios — hoje o `WhatsAppFAB` é fixo com o número do imoB365)
 - Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)

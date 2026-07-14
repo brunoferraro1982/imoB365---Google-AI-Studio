@@ -2924,6 +2924,44 @@ export type Database = {
           },
         ]
       }
+      payment_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          mp_notification_id: string
+          processed_at: string | null
+          raw_payload: Json
+          tenant_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          mp_notification_id: string
+          processed_at?: string | null
+          raw_payload: Json
+          tenant_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          mp_notification_id?: string
+          processed_at?: string | null
+          raw_payload?: Json
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           ativo: boolean
@@ -2932,6 +2970,9 @@ export type Database = {
           limites: Json
           max_corretores: number
           modulos_incluidos: string[]
+          mp_anual_cobranca_avulsa: boolean
+          mp_preapproval_plan_id_anual: string | null
+          mp_preapproval_plan_id_mensal: string | null
           nome: string
           preco_anual: number | null
           preco_mensal: number
@@ -2946,6 +2987,9 @@ export type Database = {
           limites?: Json
           max_corretores?: number
           modulos_incluidos?: string[]
+          mp_anual_cobranca_avulsa?: boolean
+          mp_preapproval_plan_id_anual?: string | null
+          mp_preapproval_plan_id_mensal?: string | null
           nome: string
           preco_anual?: number | null
           preco_mensal?: number
@@ -2960,6 +3004,9 @@ export type Database = {
           limites?: Json
           max_corretores?: number
           modulos_incluidos?: string[]
+          mp_anual_cobranca_avulsa?: boolean
+          mp_preapproval_plan_id_anual?: string | null
+          mp_preapproval_plan_id_mensal?: string | null
           nome?: string
           preco_anual?: number | null
           preco_mensal?: number
@@ -3701,44 +3748,71 @@ export type Database = {
       }
       tenants: {
         Row: {
+          cancelled_at: string | null
           cnpj: string | null
           created_at: string
           creci_juridico: string | null
           dominio_proprio: string | null
+          downgrade_to: string | null
           id: string
+          mercadopago_payment_id: string | null
+          mercadopago_preapproval_id: string | null
           nome: string
+          payment_status: string
+          plan_cycle: string | null
+          plan_expires_at: string | null
           plano_slug: string | null
           slug: string
           status: Database["public"]["Enums"]["tenant_status"]
           tema: Json
+          trial_ends_at: string | null
+          trial_grace_ends_at: string | null
           updated_at: string
           watermark: Json
         }
         Insert: {
+          cancelled_at?: string | null
           cnpj?: string | null
           created_at?: string
           creci_juridico?: string | null
           dominio_proprio?: string | null
+          downgrade_to?: string | null
           id?: string
+          mercadopago_payment_id?: string | null
+          mercadopago_preapproval_id?: string | null
           nome: string
+          payment_status?: string
+          plan_cycle?: string | null
+          plan_expires_at?: string | null
           plano_slug?: string | null
           slug: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
+          trial_grace_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
         Update: {
+          cancelled_at?: string | null
           cnpj?: string | null
           created_at?: string
           creci_juridico?: string | null
           dominio_proprio?: string | null
+          downgrade_to?: string | null
           id?: string
+          mercadopago_payment_id?: string | null
+          mercadopago_preapproval_id?: string | null
           nome?: string
+          payment_status?: string
+          plan_cycle?: string | null
+          plan_expires_at?: string | null
           plano_slug?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["tenant_status"]
           tema?: Json
+          trial_ends_at?: string | null
+          trial_grace_ends_at?: string | null
           updated_at?: string
           watermark?: Json
         }
@@ -3967,6 +4041,10 @@ export type Database = {
       assign_lead_round_robin: { Args: { _tenant_id: string }; Returns: string }
       auth_tenant_id: { Args: never; Returns: string }
       compute_lead_matches: { Args: { _lead_id: string }; Returns: number }
+      cron_expire_trials: {
+        Args: never
+        Returns: { tenant_id: string; action: string }[]
+      }
       cron_snapshot_tenant_usage: { Args: never; Returns: number }
       current_tenant_id: { Args: { _user_id: string }; Returns: string }
       delete_email: {

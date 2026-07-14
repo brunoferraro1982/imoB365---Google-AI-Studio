@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
-import { Check, ShoppingBag, CheckCircle, ShieldCheck } from "lucide-react";
+import { Check, ShoppingBag, CheckCircle, ShieldCheck, MessageSquare } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,12 +9,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { ModuleSelectionGrid } from "@/components/admin/ModuleSelectionGrid";
+import { createMercadoPagoCheckout } from "@/lib/mercadopago.functions";
 import { toast } from "sonner";
 
 type SearchParams = {
   plano_id?: string;
   plano?: string;
 };
+
+type BillingCycle = "monthly" | "annual";
+
+const CHECKOUT_PLAN_SLUGS = new Set(["basic", "standard", "pro"]);
 
 export const Route = createFileRoute("/app/contratacao")({
   validateSearch: (raw: Record<string, unknown>): SearchParams => ({
@@ -28,6 +34,7 @@ type Plan = {
   nome: string;
   slug: string;
   preco_mensal: number;
+  preco_anual: number | null;
   limites: { imoveis?: number; modulos?: number; usuarios?: number } | null;
 };
 
@@ -49,13 +56,15 @@ function ContratacaoPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string>("");
+  const [ciclo, setCiclo] = useState<BillingCycle>("monthly");
   const [selectedModuleSlugs, setSelectedModuleSlugs] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const checkoutFn = useServerFn(createMercadoPagoCheckout);
 
-  // Dados de faturamento (usados manualmente pelo time comercial para emitir a nota —
-  // não há gateway de pagamento integrado ainda, ver backlog no CLAUDE.md)
+  // Dados de faturamento — usados para a nota fiscal (Free/Business não pagam por
+  // aqui: Free ativa na hora, Business fala com vendas).
   const [cnpjCpf, setCnpjCpf] = useState("");
   const [razaoSocial, setRazaoSocial] = useState("");
 
@@ -161,10 +170,14 @@ function ContratacaoPage() {
 
   const extraModulesCost = extraModulesCount * 29;
 
+  const planMonthlyEquivalent =
+    ciclo === "annual" && activePlan?.preco_anual
+      ? activePlan.preco_anual / 12
+      : (activePlan?.preco_mensal ?? 0);
+
   const totalCost = useMemo(() => {
-    const base = activePlan?.preco_mensal ?? 0;
-    return base + extraModulesCost;
-  }, [activePlan, extraModulesCost]);
+    return planMonthlyEquivalent + extraModulesCost;
+  }, [planMonthlyEquivalent, extraModulesCost]);
 
   // Handle checking/unchecking optional module
   function toggleModule(slug: string) {
@@ -183,6 +196,27 @@ function ContratacaoPage() {
     });
   }
 
+  // Grava a seleção de módulos (independente do plano ser pago ou não — o plano em
+  // si só muda de verdade quando o Mercado Pago confirmar o pagamento, ver abaixo).
+  async function saveModuleSelection() {
+    if (!tenantId) return;
+    const { data: dbModules } = await supabase.from("modules").select("slug");
+    const dbSlugs = new Set(dbModules?.map((m) => m.slug) || []);
+
+    const upsertPayload = modules
+      .filter((m) => dbSlugs.has(m.slug))
+      .map((m) => ({
+        tenant_id: tenantId,
+        module_slug: m.slug,
+        enabled: m.core || !!selectedModuleSlugs[m.slug],
+      }));
+
+    const { error } = await supabase
+      .from("tenant_modules")
+      .upsert(upsertPayload, { onConflict: "tenant_id,module_slug" });
+    if (error) throw error;
+  }
+
   // Submit Contracting Flow
   async function handleContract(e: React.FormEvent) {
     e.preventDefault();
@@ -194,6 +228,12 @@ function ContratacaoPage() {
       toast.error("Selecione um plano válido antes de contratar.");
       return;
     }
+
+    if (activePlan.slug === "business") {
+      window.location.href = "mailto:contato@imob365.com.br";
+      return;
+    }
+
     if (!cnpjCpf.trim()) {
       toast.error("Insira o documento CPF ou CNPJ de faturamento.");
       return;
@@ -201,42 +241,32 @@ function ContratacaoPage() {
 
     setSubmitting(true);
     try {
-      // 1. Update the tenant's plan slug in Supabase
-      const { error: tenantErr } = await supabase
-        .from("tenants")
-        .update({
-          plano_slug: activePlan.slug,
-        })
-        .eq("id", tenantId);
+      await saveModuleSelection();
 
-      if (tenantErr) throw tenantErr;
+      if (activePlan.slug === "free") {
+        // Sem cobrança — troca de plano é imediata, como já era antes.
+        const { error: tenantErr } = await supabase
+          .from("tenants")
+          .update({ plano_slug: "free" })
+          .eq("id", tenantId);
+        if (tenantErr) throw tenantErr;
+        setShowPaymentSuccess(true);
+        toast.success("Plano e módulos atualizados com sucesso!");
+        return;
+      }
 
-      // 2. Clear out older tenant_modules and insert the custom selection for the user!
-      // Buscamos quais slugs de módulos realmente existem no banco para evitar violação de integridade referencial (foreign key fkey)
-      const { data: dbModules } = await supabase.from("modules").select("slug");
-      const dbSlugs = new Set(dbModules?.map((m) => m.slug) || []);
+      if (!CHECKOUT_PLAN_SLUGS.has(activePlan.slug)) {
+        throw new Error("Este plano ainda não tem checkout automático configurado.");
+      }
 
-      const upsertPayload = modules
-        .filter((m) => dbSlugs.has(m.slug))
-        .map((m) => {
-          const isEnabled = m.core || !!selectedModuleSlugs[m.slug];
-          return {
-            tenant_id: tenantId,
-            module_slug: m.slug,
-            enabled: isEnabled,
-          };
-        });
-
-      const { error: modulesErr } = await supabase
-        .from("tenant_modules")
-        .upsert(upsertPayload, { onConflict: "tenant_id,module_slug" });
-
-      if (modulesErr) throw modulesErr;
-
-      setShowPaymentSuccess(true);
-      toast.success("Plano e módulos atualizados com sucesso!");
+      // Planos pagos: o plano só muda de verdade quando o webhook do Mercado
+      // Pago confirmar o pagamento — aqui só geramos o checkout e redirecionamos.
+      const { checkoutUrl } = await checkoutFn({
+        data: { planoSlug: activePlan.slug as "basic" | "standard" | "pro", ciclo },
+      });
+      window.location.href = checkoutUrl;
     } catch (err: any) {
-      toast.error("Falha ao concluir contratação: " + err.message);
+      toast.error("Falha ao iniciar contratação: " + err.message);
     } finally {
       setSubmitting(false);
     }
@@ -264,8 +294,7 @@ function ContratacaoPage() {
         </h1>
         <p className="mt-3 text-muted-foreground font-medium text-base sm:text-lg">
           Os recursos do plano <strong className="text-foreground">{activePlan?.nome}</strong> e os
-          módulos selecionados já estão ativos no seu painel. O faturamento correspondente é
-          combinado diretamente com o time comercial da imob365.
+          módulos selecionados já estão ativos no seu painel.
         </p>
 
         <div className="mt-8 rounded-2xl border border-border bg-white dark:bg-card p-6 text-left shadow-lg max-w-lg mx-auto space-y-4">
@@ -332,14 +361,37 @@ function ContratacaoPage() {
                 </span>
                 Selecione o Plano Base
               </h2>
-              <span className="text-xs text-muted-foreground font-semibold">
-                Upgrade/Downgrade imediato
-              </span>
+              <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-neutral-50 dark:bg-neutral-900 p-1">
+                <button
+                  type="button"
+                  onClick={() => setCiclo("monthly")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${
+                    ciclo === "monthly"
+                      ? "bg-primary text-white shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Mensal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCiclo("annual")}
+                  className={`rounded-md px-3 py-1.5 text-xs font-bold transition-colors ${
+                    ciclo === "annual"
+                      ? "bg-primary text-white shadow"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Anual
+                </button>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               {plans.map((p) => {
                 const isSelected = p.id === selectedPlanId;
+                const monthlyEquivalent =
+                  ciclo === "annual" && p.preco_anual ? p.preco_anual / 12 : p.preco_mensal;
                 return (
                   <button
                     key={p.id}
@@ -362,8 +414,13 @@ function ContratacaoPage() {
                       )}
                     </div>
                     <div className="mt-3">
-                      <span className="text-lg font-extrabold">{formatBRL(p.preco_mensal)}</span>
+                      <span className="text-lg font-extrabold">{formatBRL(monthlyEquivalent)}</span>
                       <span className="text-xs text-muted-foreground">/mês</span>
+                      {ciclo === "annual" && p.preco_anual ? (
+                        <div className="text-[10px] text-muted-foreground">
+                          {formatBRL(p.preco_anual)} cobrado anualmente
+                        </div>
+                      ) : null}
                     </div>
                     <div className="mt-4 pt-3 border-t border-border/60 w-full text-[11px] text-muted-foreground space-y-1 font-medium">
                       <div className="flex justify-between">
@@ -422,9 +479,9 @@ function ContratacaoPage() {
               Dados para nota fiscal
             </h2>
             <p className="mb-5 text-xs text-muted-foreground">
-              Não processamos pagamento automático aqui ainda — ao confirmar, seu plano e módulos já
-              entram em vigor, e nosso time comercial entra em contato para combinar o faturamento
-              com base nesses dados.
+              {activePlan?.slug === "free"
+                ? "Plano gratuito — seu plano e módulos entram em vigor na hora, sem cobrança."
+                : "Usamos esses dados para a nota fiscal. Ao confirmar, você será redirecionado ao Mercado Pago para concluir o pagamento com segurança — seu plano só é ativado depois da confirmação."}
             </p>
 
             <div className="grid gap-5 sm:grid-cols-2">
@@ -434,7 +491,7 @@ function ContratacaoPage() {
                 </Label>
                 <Input
                   id="cnpjCpf"
-                  required
+                  required={activePlan?.slug !== "business"}
                   placeholder="00.000.000/0001-00 ou 000.000.000-00"
                   value={cnpjCpf}
                   onChange={(e) => setCnpjCpf(e.target.value)}
@@ -448,7 +505,7 @@ function ContratacaoPage() {
                 </Label>
                 <Input
                   id="razaoSocial"
-                  required
+                  required={activePlan?.slug !== "business"}
                   placeholder="Ex: Imobiliária Bairro Seguro LTDA"
                   value={razaoSocial}
                   onChange={(e) => setRazaoSocial(e.target.value)}
@@ -472,7 +529,7 @@ function ContratacaoPage() {
               <div className="flex justify-between items-start">
                 <span className="text-muted-foreground">Plano Base ({activePlan?.nome}):</span>
                 <span className="text-foreground font-bold">
-                  {formatBRL(activePlan?.preco_mensal ?? 0)}
+                  {formatBRL(planMonthlyEquivalent)}
                 </span>
               </div>
 
@@ -486,7 +543,8 @@ function ContratacaoPage() {
                   <div className="space-y-0.5">
                     <span className="text-muted-foreground block">Módulos Excedentes:</span>
                     <span className="text-[11px] text-muted-foreground leading-none">
-                      ({extraModulesCount} extras opcionais)
+                      ({extraModulesCount} extras opcionais — valor de referência, ainda não
+                      incluído na cobrança automática do Mercado Pago)
                     </span>
                   </div>
                   <span className="text-foreground font-bold">{formatBRL(extraModulesCost)}</span>
@@ -550,12 +608,24 @@ function ContratacaoPage() {
               {submitting ? (
                 <>
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  <span>Processando ativação...</span>
+                  <span>
+                    {activePlan?.slug === "free" ? "Processando ativação..." : "Redirecionando..."}
+                  </span>
+                </>
+              ) : activePlan?.slug === "business" ? (
+                <>
+                  <MessageSquare className="h-5 w-5" />
+                  <span>Falar com vendas</span>
+                </>
+              ) : activePlan?.slug === "free" ? (
+                <>
+                  <ShieldCheck className="h-5 w-5" />
+                  <span>Confirmar e Ativar Assinatura</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="h-5 w-5" />
-                  <span>Confirmar e Ativar Assinatura</span>
+                  <span>Ir para pagamento no Mercado Pago</span>
                 </>
               )}
             </Button>
