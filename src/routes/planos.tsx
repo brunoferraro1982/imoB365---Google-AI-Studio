@@ -103,6 +103,10 @@ const MODULE_MATRIX: { label: string; values: [string, string, string, string, s
   { label: "Jurídico (modelos)", values: ["—", "—", "✓", "✓", "✓"] },
   { label: "Jurídico (assinatura digital)", values: ["—", "—", "—", "✓", "✓"] },
   { label: "API / Webhooks", values: ["—", "—", "—", "✓", "✓"] },
+  {
+    label: "Segurança & Compliance (LGPD, auditoria)",
+    values: ["✓", "✓", "✓", "✓", "✓"],
+  },
   { label: "Suporte", values: ["E-mail", "E-mail", "Prioritário", "Prioritário", "Dedicado+SLA"] },
 ];
 
