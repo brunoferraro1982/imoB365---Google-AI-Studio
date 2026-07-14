@@ -1,20 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import {
-  Building,
-  MapPin,
-  Calendar,
-  Landmark,
-  Maximize2,
-  ChevronLeft,
-} from "lucide-react";
+import { Building, MapPin, Calendar, Landmark, Maximize2, ChevronLeft } from "lucide-react";
+import { createServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-
-export const Route = createFileRoute("/empreendimento/$slug")({
-  component: EmpreendimentoDetail,
-});
 
 type Unidade = {
   id: string;
@@ -25,6 +15,76 @@ type Unidade = {
   preco: number | null;
   status: string;
 };
+
+type Empreendimento = {
+  id: string;
+  slug: string;
+  nome: string;
+  construtora: string | null;
+  fase: string;
+  endereco_logradouro: string | null;
+  endereco_numero: string | null;
+  endereco_bairro: string | null;
+  endereco_cidade: string | null;
+  endereco_uf: string | null;
+  descricao: string | null;
+  fotos_urls: string[] | null;
+  unidades_total: number | null;
+  entrega_prevista: string | null;
+  cnpj_construtora: string | null;
+};
+
+const fetchEmpreendimentoBySlug = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }) => {
+    const { data, error } = await (supabase as any)
+      .from("empreendimentos")
+      .select("*")
+      .eq("slug", slug)
+      .eq("publicado", true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw new Error("Empreendimento não encontrado");
+    return data as Empreendimento;
+  });
+
+export const Route = createFileRoute("/empreendimento/$slug")({
+  head: ({ loaderData }) => {
+    if (!loaderData) return { meta: [] };
+    const descricao = (
+      loaderData.descricao ?? `${loaderData.nome} — empreendimento imobiliário`
+    ).slice(0, 160);
+    return {
+      meta: [
+        { title: `${loaderData.nome} | imob365` },
+        { name: "description", content: descricao },
+        { property: "og:title", content: loaderData.nome },
+        { property: "og:description", content: descricao },
+        ...(loaderData.fotos_urls?.[0]
+          ? [{ property: "og:image", content: loaderData.fotos_urls[0] }]
+          : []),
+      ],
+    };
+  },
+  loader: async ({ params }) => fetchEmpreendimentoBySlug({ data: params.slug }),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
+        <Landmark className="mb-4 h-12 w-12 text-muted-foreground/40" />
+        <h1 className="text-2xl font-bold">Empreendimento não encontrado</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Este empreendimento pode não estar publicado ou o endereço está incorreto.
+        </p>
+        <Link to="/empreendimentos" className="mt-4 text-primary hover:underline">
+          Ver todos os empreendimentos
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  component: EmpreendimentoDetail,
+});
 
 const STATUS_LABEL: Record<string, string> = {
   disponivel: "Disponível",
@@ -48,69 +108,20 @@ const FASE_LABEL: Record<string, string> = {
 };
 
 function EmpreendimentoDetail() {
-  const { slug } = Route.useParams();
-  const [emp, setEmp] = useState<any>(null);
+  const emp = Route.useLoaderData();
   const [unidades, setUnidades] = useState<Unidade[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      try {
-        const { data } = await (supabase as any)
-          .from("empreendimentos")
-          .select("*")
-          .eq("slug", slug)
-          .eq("publicado", true)
-          .maybeSingle();
-        if (!data) {
-          setLoading(false);
-          return;
-        }
-        setEmp(data);
-
-        const { data: us } = await (supabase as any)
-          .from("empreendimento_unidades")
-          .select("id,bloco,numero,andar,area,preco,status")
-          .eq("empreendimento_id", data.id)
-          .order("bloco")
-          .order("numero");
-        setUnidades((us as Unidade[]) ?? []);
-      } catch {
-        // handled by loading/not-found state
-      } finally {
-        setLoading(false);
-      }
+      const { data: us } = await (supabase as any)
+        .from("empreendimento_unidades")
+        .select("id,bloco,numero,andar,area,preco,status")
+        .eq("empreendimento_id", emp.id)
+        .order("bloco")
+        .order("numero");
+      setUnidades((us as Unidade[]) ?? []);
     })();
-  }, [slug]);
-
-  if (loading)
-    return (
-      <div className="min-h-screen bg-background">
-        <SiteHeader />
-        <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
-          Carregando…
-        </div>
-        <SiteFooter />
-      </div>
-    );
-
-  if (!emp)
-    return (
-      <div className="min-h-screen bg-background">
-        <SiteHeader />
-        <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
-          <Landmark className="mb-4 h-12 w-12 text-muted-foreground/40" />
-          <h1 className="text-2xl font-bold">Empreendimento não encontrado</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Este empreendimento pode não estar publicado ou o endereço está incorreto.
-          </p>
-          <Link to="/empreendimentos" className="mt-4 text-primary hover:underline">
-            Ver todos os empreendimentos
-          </Link>
-        </div>
-        <SiteFooter />
-      </div>
-    );
+  }, [emp.id]);
 
   const endereco = [
     emp.endereco_logradouro,
@@ -126,8 +137,39 @@ function EmpreendimentoDetail() {
     ? Math.min(...disponiveis.filter((u) => u.preco).map((u) => u.preco!))
     : null;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateListing",
+    name: emp.nome,
+    description: emp.descricao ?? undefined,
+    image: emp.fotos_urls?.[0] ?? undefined,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: emp.endereco_logradouro
+        ? `${emp.endereco_logradouro}${emp.endereco_numero ? ", " + emp.endereco_numero : ""}`
+        : undefined,
+      addressLocality: emp.endereco_cidade ?? undefined,
+      addressRegion: emp.endereco_uf ?? undefined,
+      addressCountry: "BR",
+    },
+    ...(menorPreco != null
+      ? {
+          offers: {
+            "@type": "Offer",
+            price: menorPreco,
+            priceCurrency: "BRL",
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-10">
         <Link
@@ -256,9 +298,7 @@ function EmpreendimentoDetail() {
                   </div>
                 )}
                 {emp.cnpj_construtora && (
-                  <div className="text-xs text-muted-foreground">
-                    CNPJ: {emp.cnpj_construtora}
-                  </div>
+                  <div className="text-xs text-muted-foreground">CNPJ: {emp.cnpj_construtora}</div>
                 )}
               </dl>
             </div>

@@ -76,8 +76,29 @@ function BlogPostPage() {
 
   const autorNome = (post as unknown as { autor?: { nome: string | null } | null }).autor?.nome;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.seo_titulo ?? post.titulo,
+    description: post.resumo ?? undefined,
+    image: post.imagem_url ?? undefined,
+    datePublished: post.publicado_em ?? undefined,
+    author: autorNome
+      ? { "@type": "Person", name: autorNome }
+      : { "@type": "Organization", name: "imob365" },
+    publisher: {
+      "@type": "Organization",
+      name: "imob365",
+      logo: { "@type": "ImageObject", url: "/favicon.png" },
+    },
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* ── Header de navegação ── */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border-b">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">

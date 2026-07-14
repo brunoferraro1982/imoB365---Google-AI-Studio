@@ -5,6 +5,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/empreendimentos")({
+  head: () => ({
+    meta: [
+      { title: "Empreendimentos e lançamentos — imob365" },
+      {
+        name: "description",
+        content:
+          "Lançamentos e empreendimentos em fase de obras ou pré-lançamento das imobiliárias parceiras do imob365.",
+      },
+      { property: "og:title", content: "Empreendimentos e lançamentos — imob365" },
+      {
+        property: "og:description",
+        content: "Conheça os novos empreendimentos das imobiliárias parceiras do imob365.",
+      },
+    ],
+  }),
   component: EmpreendimentosPublic,
 });
 

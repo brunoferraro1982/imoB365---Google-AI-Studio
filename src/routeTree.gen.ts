@@ -38,6 +38,7 @@ import { Route as CalculadoraAvaliacaoRouteImport } from './routes/calculadora-a
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AImob365RouteImport } from './routes/a-imob365'
 import { Route as IndexRouteImport } from './routes/index'
@@ -299,6 +300,11 @@ const BlogRoute = BlogRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaRoute = AjudaRouteImport.update({
+  id: '/ajuda',
+  path: '/ajuda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -908,6 +914,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
@@ -1054,6 +1061,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
+  '/ajuda': typeof AjudaRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1198,6 +1206,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
+  '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
@@ -1347,6 +1356,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/admin'
+    | '/ajuda'
     | '/app'
     | '/blog'
     | '/buscar'
@@ -1493,6 +1503,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/a-imob365'
+    | '/ajuda'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -1636,6 +1647,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/admin'
+    | '/ajuda'
     | '/app'
     | '/blog'
     | '/buscar'
@@ -1784,6 +1796,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AImob365Route: typeof AImob365Route
   AdminRoute: typeof AdminRouteWithChildren
+  AjudaRoute: typeof AjudaRoute
   AppRoute: typeof AppRouteWithChildren
   BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
@@ -2047,6 +2060,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda': {
+      id: '/ajuda'
+      path: '/ajuda'
+      fullPath: '/ajuda'
+      preLoaderRoute: typeof AjudaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -3087,6 +3107,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AImob365Route: AImob365Route,
   AdminRoute: AdminRouteWithChildren,
+  AjudaRoute: AjudaRoute,
   AppRoute: AppRouteWithChildren,
   BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
