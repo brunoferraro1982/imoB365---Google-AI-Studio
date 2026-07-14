@@ -25,8 +25,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+type SearchParams = {
+  plano?: string;
+};
+
 export const Route = createFileRoute("/signup")({
   head: () => ({ meta: [{ title: "Criar conta — imob365" }] }),
+  validateSearch: (raw: Record<string, unknown>): SearchParams => ({
+    plano: typeof raw.plano === "string" ? raw.plano : undefined,
+  }),
   component: SignupPage,
 });
 
@@ -58,8 +65,17 @@ const PLANS = [
   },
 ];
 
+// PLANS.value usa "Free" capitalizado como sentinela (ver checagens
+// `planoPretendido === "Free"` abaixo), enquanto /planos manda o slug em
+// minúsculas (mesmo formato de plans.slug no banco) — precisa mapear.
+function planoFromSlug(slug: string | undefined): string {
+  const match = PLANS.find((p) => p.value.toLowerCase() === slug?.toLowerCase());
+  return match?.value ?? "Free";
+}
+
 function SignupPage() {
   const navigate = useNavigate();
+  const { plano } = Route.useSearch();
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
 
@@ -81,7 +97,7 @@ function SignupPage() {
   const [agenciaInformada, setAgenciaInformada] = useState(""); // typed name of imobiliaria
 
   // Plan & Payment Fields
-  const [planoPretendido, setPlanoPretendido] = useState("Free");
+  const [planoPretendido, setPlanoPretendido] = useState(() => planoFromSlug(plano));
   const [pagamentoMetodo, setPagamentoMetodo] = useState<"Pix" | "Boleto" | "Cartao">("Pix");
   const [cardNome, setCardNome] = useState("");
   const [cardNumber, setCardNumber] = useState("");
