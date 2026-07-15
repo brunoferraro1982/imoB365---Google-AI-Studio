@@ -63,6 +63,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env staging
+          environment: staging
           secrets: |
             SUPABASE_URL
             SUPABASE_PUBLISHABLE_KEY
@@ -115,6 +116,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --env production
+          environment: production
           secrets: |
             SUPABASE_URL
             SUPABASE_PUBLISHABLE_KEY
