@@ -280,3 +280,4 @@ Custom domain components live in:
 - CI/CD com SAST/DAST (GitHub Actions)
 - WhatsApp flutuante customizável por tenant no site público (número/mensagem/posição próprios — hoje o `WhatsAppFAB` é fixo com o número do imoB365)
 - Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
+- Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção em `portal.imob365.com.br`
