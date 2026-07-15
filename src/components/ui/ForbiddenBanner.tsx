@@ -32,8 +32,8 @@ export function ForbiddenBanner() {
     >
       <ShieldAlert className="h-4 w-4 shrink-0 text-red-500" />
       <span>
-        Você não tem permissão para acessar este módulo.
-        Entre em contato com o administrador se precisar de acesso.
+        Você não tem permissão para acessar este módulo. Entre em contato com o administrador se
+        precisar de acesso.
       </span>
     </div>
   );

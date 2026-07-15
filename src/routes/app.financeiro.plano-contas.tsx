@@ -9,7 +9,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/financeiro/plano-contas")({
-  beforeLoad: moduleGuard("financeiro"), component: PlanoContas });
+  beforeLoad: moduleGuard("financeiro"),
+  component: PlanoContas,
+});
 
 function PlanoContas() {
   const { tenantId } = useAuth();

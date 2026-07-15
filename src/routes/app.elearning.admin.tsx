@@ -8,17 +8,32 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import {
-  Plus, Pencil, Trash2, ChevronLeft, ChevronRight, GraduationCap,
-  BookOpen, Play, FileText, ExternalLink, Sparkles, Globe, EyeOff,
-  FileDown, ArrowUp, ArrowDown,
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  BookOpen,
+  Play,
+  FileText,
+  ExternalLink,
+  Sparkles,
+  Globe,
+  EyeOff,
+  FileDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import { can } from "@/lib/permissions";
 import type { AppRole } from "@/hooks/useAuth";
@@ -66,8 +81,14 @@ type Aula = {
 // ─── Slug helper ─────────────────────────────────────────────────────────────
 
 function slugify(t: string) {
-  return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "-").replace(/-+/g, "-");
+  return t
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 }
 
 // ─── Seed content ────────────────────────────────────────────────────────────
@@ -76,7 +97,8 @@ const SEED_CURSOS = [
   {
     titulo: "Jornada para se tornar corretor com CRECI",
     slug: "jornada-corretor-creci",
-    descricao: "Do zero ao CRECI: entenda a profissão, os requisitos de habilitação, o processo de registro e os primeiros passos na carreira de corretor de imóveis no Brasil.",
+    descricao:
+      "Do zero ao CRECI: entenda a profissão, os requisitos de habilitação, o processo de registro e os primeiros passos na carreira de corretor de imóveis no Brasil.",
     nivel: "iniciante",
     carga_horaria_min: 240,
     status: "published",
@@ -294,7 +316,8 @@ const SEED_CURSOS = [
   {
     titulo: "Como captar imóveis",
     slug: "como-captar-imoveis",
-    descricao: "Técnicas comprovadas para aumentar seu portfólio: abordagem de proprietários, negociação de exclusividade, avaliação de imóveis e documentação de captação.",
+    descricao:
+      "Técnicas comprovadas para aumentar seu portfólio: abordagem de proprietários, negociação de exclusividade, avaliação de imóveis e documentação de captação.",
     nivel: "intermediario",
     carga_horaria_min: 180,
     status: "published",
@@ -479,7 +502,8 @@ const SEED_CURSOS = [
   {
     titulo: "Dicas sobre administração imobiliária",
     slug: "administracao-imobiliaria",
-    descricao: "Gestão do negócio, marketing digital, atendimento ao cliente e administração de locações: um guia completo para corretores autônomos e pequenas imobiliárias.",
+    descricao:
+      "Gestão do negócio, marketing digital, atendimento ao cliente e administração de locações: um guia completo para corretores autônomos e pequenas imobiliárias.",
     nivel: "intermediario",
     carga_horaria_min: 200,
     status: "published",
@@ -752,20 +776,52 @@ const SEED_CURSOS = [
 type View = "cursos" | "modulos" | "aulas";
 
 type CursoForm = {
-  titulo: string; slug: string; descricao: string; imagem_capa_url: string;
-  nivel: string; carga_horaria_min: number; status: string; ordem: number;
+  titulo: string;
+  slug: string;
+  descricao: string;
+  imagem_capa_url: string;
+  nivel: string;
+  carga_horaria_min: number;
+  status: string;
+  ordem: number;
 };
 
 type ModuloForm = { titulo: string; descricao: string; ordem: number };
 
 type AulaForm = {
-  titulo: string; tipo: string; conteudo_html: string; video_url: string;
-  arquivo_url: string; link_externo: string; duracao_min: number; ordem: number; gratuita: boolean;
+  titulo: string;
+  tipo: string;
+  conteudo_html: string;
+  video_url: string;
+  arquivo_url: string;
+  link_externo: string;
+  duracao_min: number;
+  ordem: number;
+  gratuita: boolean;
 };
 
-const EMPTY_CURSO: CursoForm = { titulo: "", slug: "", descricao: "", imagem_capa_url: "", nivel: "iniciante", carga_horaria_min: 0, status: "draft", ordem: 0 };
+const EMPTY_CURSO: CursoForm = {
+  titulo: "",
+  slug: "",
+  descricao: "",
+  imagem_capa_url: "",
+  nivel: "iniciante",
+  carga_horaria_min: 0,
+  status: "draft",
+  ordem: 0,
+};
 const EMPTY_MODULO: ModuloForm = { titulo: "", descricao: "", ordem: 0 };
-const EMPTY_AULA: AulaForm = { titulo: "", tipo: "texto", conteudo_html: "", video_url: "", arquivo_url: "", link_externo: "", duracao_min: 5, ordem: 0, gratuita: false };
+const EMPTY_AULA: AulaForm = {
+  titulo: "",
+  tipo: "texto",
+  conteudo_html: "",
+  video_url: "",
+  arquivo_url: "",
+  link_externo: "",
+  duracao_min: 5,
+  ordem: 0,
+  gratuita: false,
+};
 
 function ElearningAdmin() {
   const { isAdmin, roles, tenantId } = useAuth();
@@ -793,7 +849,9 @@ function ElearningAdmin() {
   const [moduloForm, setModuloForm] = useState<ModuloForm>(EMPTY_MODULO);
   const [aulaForm, setAulaForm] = useState<AulaForm>(EMPTY_AULA);
 
-  useEffect(() => { loadCursos(); }, []);
+  useEffect(() => {
+    loadCursos();
+  }, []);
 
   // Auto-seed: popula com exemplos na primeira vez que o tenant não tem cursos
   useEffect(() => {
@@ -816,12 +874,20 @@ function ElearningAdmin() {
   }
 
   async function loadModulos(cursoId: string) {
-    const { data } = await db.from("elearning_modulos").select("*").eq("curso_id", cursoId).order("ordem");
+    const { data } = await db
+      .from("elearning_modulos")
+      .select("*")
+      .eq("curso_id", cursoId)
+      .order("ordem");
     setModulos(data ?? []);
   }
 
   async function loadAulas(moduloId: string) {
-    const { data } = await db.from("elearning_aulas").select("*").eq("modulo_id", moduloId).order("ordem");
+    const { data } = await db
+      .from("elearning_aulas")
+      .select("*")
+      .eq("modulo_id", moduloId)
+      .order("ordem");
     setAulas(data ?? []);
   }
 
@@ -835,14 +901,28 @@ function ElearningAdmin() {
 
   function openEditCurso(c: Curso) {
     setEditingId(c.id);
-    setCursoForm({ titulo: c.titulo, slug: c.slug, descricao: c.descricao ?? "", imagem_capa_url: c.imagem_capa_url ?? "", nivel: c.nivel, carga_horaria_min: c.carga_horaria_min, status: c.status, ordem: c.ordem });
+    setCursoForm({
+      titulo: c.titulo,
+      slug: c.slug,
+      descricao: c.descricao ?? "",
+      imagem_capa_url: c.imagem_capa_url ?? "",
+      nivel: c.nivel,
+      carga_horaria_min: c.carga_horaria_min,
+      status: c.status,
+      ordem: c.ordem,
+    });
     setCursoModal(true);
   }
 
   async function saveCurso() {
     if (!cursoForm.titulo) return toast.error("Título obrigatório");
     setSaving(true);
-    const payload = { ...cursoForm, tenant_id: tenantId, slug: cursoForm.slug || slugify(cursoForm.titulo), updated_at: new Date().toISOString() };
+    const payload = {
+      ...cursoForm,
+      tenant_id: tenantId,
+      slug: cursoForm.slug || slugify(cursoForm.titulo),
+      updated_at: new Date().toISOString(),
+    };
     const { error } = editingId
       ? await db.from("elearning_cursos").update(payload).eq("id", editingId)
       : await db.from("elearning_cursos").insert(payload);
@@ -857,7 +937,10 @@ function ElearningAdmin() {
     if (!(await confirmDialog("Excluir este curso e todo seu conteúdo permanentemente?"))) return;
     const { error } = await db.from("elearning_cursos").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    if (selectedCurso?.id === id) { setSelectedCurso(null); setView("cursos"); }
+    if (selectedCurso?.id === id) {
+      setSelectedCurso(null);
+      setView("cursos");
+    }
     loadCursos();
   }
 
@@ -893,7 +976,10 @@ function ElearningAdmin() {
     if (!(await confirmDialog("Excluir este módulo e suas aulas?"))) return;
     const { error } = await db.from("elearning_modulos").delete().eq("id", id);
     if (error) return toast.error(error.message);
-    if (selectedModulo?.id === id) { setSelectedModulo(null); setView("modulos"); }
+    if (selectedModulo?.id === id) {
+      setSelectedModulo(null);
+      setView("modulos");
+    }
     loadModulos(selectedCurso!.id);
   }
 
@@ -907,7 +993,17 @@ function ElearningAdmin() {
 
   function openEditAula(a: Aula) {
     setEditingId(a.id);
-    setAulaForm({ titulo: a.titulo, tipo: a.tipo, conteudo_html: a.conteudo_html ?? "", video_url: a.video_url ?? "", arquivo_url: a.arquivo_url ?? "", link_externo: a.link_externo ?? "", duracao_min: a.duracao_min, ordem: a.ordem, gratuita: a.gratuita });
+    setAulaForm({
+      titulo: a.titulo,
+      tipo: a.tipo,
+      conteudo_html: a.conteudo_html ?? "",
+      video_url: a.video_url ?? "",
+      arquivo_url: a.arquivo_url ?? "",
+      link_externo: a.link_externo ?? "",
+      duracao_min: a.duracao_min,
+      ordem: a.ordem,
+      gratuita: a.gratuita,
+    });
     setAulaModal(true);
   }
 
@@ -946,9 +1042,14 @@ function ElearningAdmin() {
     try {
       for (const curso of SEED_CURSOS) {
         const { modulos: mods, ...cursoData } = curso;
-        const { data: c, error: ce } = await db.from("elearning_cursos")
-          .upsert({ ...cursoData, tenant_id: tid, updated_at: new Date().toISOString() }, { onConflict: "slug,tenant_id" })
-          .select("id").single();
+        const { data: c, error: ce } = await db
+          .from("elearning_cursos")
+          .upsert(
+            { ...cursoData, tenant_id: tid, updated_at: new Date().toISOString() },
+            { onConflict: "slug,tenant_id" },
+          )
+          .select("id")
+          .single();
         if (ce) {
           toast.error(`Erro ao criar curso "${curso.titulo}": ${ce.message}.`);
           return;
@@ -957,8 +1058,11 @@ function ElearningAdmin() {
 
         for (const mod of mods) {
           const { aulas: als, ...modData } = mod;
-          const { data: m, error: me } = await db.from("elearning_modulos")
-            .insert({ ...modData, curso_id: c.id, tenant_id: tid }).select("id").single();
+          const { data: m, error: me } = await db
+            .from("elearning_modulos")
+            .insert({ ...modData, curso_id: c.id, tenant_id: tid })
+            .select("id")
+            .single();
           if (me || !m) continue;
 
           for (const aula of als) {
@@ -1012,11 +1116,20 @@ function ElearningAdmin() {
       {/* Migration warning */}
       {migrationError && (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
-          <p className="font-semibold text-destructive mb-1">Tabelas do E-Learning não encontradas no banco de dados.</p>
-          <p className="text-muted-foreground mb-2">Execute a migração SQL no Supabase antes de usar este módulo:</p>
+          <p className="font-semibold text-destructive mb-1">
+            Tabelas do E-Learning não encontradas no banco de dados.
+          </p>
+          <p className="text-muted-foreground mb-2">
+            Execute a migração SQL no Supabase antes de usar este módulo:
+          </p>
           <ol className="list-decimal list-inside space-y-0.5 text-muted-foreground text-xs">
             <li>Acesse o painel do Supabase → SQL Editor</li>
-            <li>Cole o conteúdo de <code className="bg-muted px-1 rounded">supabase/migrations/20260615000001_elearning_module.sql</code></li>
+            <li>
+              Cole o conteúdo de{" "}
+              <code className="bg-muted px-1 rounded">
+                supabase/migrations/20260615000001_elearning_module.sql
+              </code>
+            </li>
             <li>Execute e recarregue esta página</li>
           </ol>
         </div>
@@ -1031,17 +1144,34 @@ function ElearningAdmin() {
           </div>
           {/* Breadcrumb */}
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <button onClick={() => setView("cursos")} className={`hover:text-foreground ${view === "cursos" ? "text-primary font-semibold" : ""}`}>Cursos</button>
+            <button
+              onClick={() => setView("cursos")}
+              className={`hover:text-foreground ${view === "cursos" ? "text-primary font-semibold" : ""}`}
+            >
+              Cursos
+            </button>
             {selectedCurso && (
               <>
                 <ChevronRight className="h-3 w-3" />
-                <button onClick={() => { setView("modulos"); setSelectedModulo(null); }} className={`hover:text-foreground truncate max-w-[150px] ${view === "modulos" ? "text-primary font-semibold" : ""}`}>{selectedCurso.titulo}</button>
+                <button
+                  onClick={() => {
+                    setView("modulos");
+                    setSelectedModulo(null);
+                  }}
+                  className={`hover:text-foreground truncate max-w-[150px] ${view === "modulos" ? "text-primary font-semibold" : ""}`}
+                >
+                  {selectedCurso.titulo}
+                </button>
               </>
             )}
             {selectedModulo && (
               <>
                 <ChevronRight className="h-3 w-3" />
-                <span className={`truncate max-w-[150px] ${view === "aulas" ? "text-primary font-semibold" : ""}`}>{selectedModulo.titulo}</span>
+                <span
+                  className={`truncate max-w-[150px] ${view === "aulas" ? "text-primary font-semibold" : ""}`}
+                >
+                  {selectedModulo.titulo}
+                </span>
               </>
             )}
           </div>
@@ -1049,7 +1179,7 @@ function ElearningAdmin() {
         <div className="flex gap-2">
           {view === "cursos" && (
             <>
-<Button size="sm" onClick={openNewCurso} className="gap-1.5">
+              <Button size="sm" onClick={openNewCurso} className="gap-1.5">
                 <Plus className="h-4 w-4" /> Novo curso
               </Button>
             </>
@@ -1071,12 +1201,17 @@ function ElearningAdmin() {
       {view === "cursos" && (
         <div>
           {loading ? (
-            <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 rounded-xl bg-muted animate-pulse"/>)}</div>
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-16 rounded-xl bg-muted animate-pulse" />
+              ))}
+            </div>
           ) : cursos.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border p-12 text-center">
-              <GraduationCap className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3"/>
-              <p className="text-sm text-muted-foreground">Nenhum curso criado ainda. Carregando exemplos…</p>
-
+              <GraduationCap className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
+                Nenhum curso criado ainda. Carregando exemplos…
+              </p>
             </div>
           ) : (
             <div className="rounded-xl border border-border overflow-hidden">
@@ -1087,27 +1222,52 @@ function ElearningAdmin() {
                     <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Nível</th>
                     <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Carga</th>
                     <th className="text-left px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3"/>
+                    <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody>
                   {cursos.map((c, i) => (
-                    <tr key={c.id} className={`border-t border-border/60 hover:bg-muted/20 cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`} onClick={() => selectCurso(c)}>
+                    <tr
+                      key={c.id}
+                      className={`border-t border-border/60 hover:bg-muted/20 cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`}
+                      onClick={() => selectCurso(c)}
+                    >
                       <td className="px-4 py-3">
                         <div className="font-medium truncate max-w-xs">{c.titulo}</div>
                         <div className="text-[11px] text-muted-foreground">/{c.slug}</div>
                       </td>
-                      <td className="px-4 py-3 hidden sm:table-cell capitalize text-muted-foreground text-xs">{c.nivel}</td>
-                      <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs">{c.carga_horaria_min > 0 ? `${c.carga_horaria_min}min` : "—"}</td>
+                      <td className="px-4 py-3 hidden sm:table-cell capitalize text-muted-foreground text-xs">
+                        {c.nivel}
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs">
+                        {c.carga_horaria_min > 0 ? `${c.carga_horaria_min}min` : "—"}
+                      </td>
                       <td className="px-4 py-3">
-                        <Badge variant={c.status === "published" ? "default" : "secondary"} className={`text-[10px] ${c.status === "published" ? "bg-green-100 text-green-800 border-green-200" : ""}`}>
-                          {c.status === "published" ? <><Globe className="h-2.5 w-2.5 mr-1"/>Publicado</> : <><EyeOff className="h-2.5 w-2.5 mr-1"/>Rascunho</>}
+                        <Badge
+                          variant={c.status === "published" ? "default" : "secondary"}
+                          className={`text-[10px] ${c.status === "published" ? "bg-green-100 text-green-800 border-green-200" : ""}`}
+                        >
+                          {c.status === "published" ? (
+                            <>
+                              <Globe className="h-2.5 w-2.5 mr-1" />
+                              Publicado
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="h-2.5 w-2.5 mr-1" />
+                              Rascunho
+                            </>
+                          )}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1 justify-end">
-                          <Button size="sm" variant="ghost" onClick={() => openEditCurso(c)}><Pencil className="h-3.5 w-3.5"/></Button>
-                          <Button size="sm" variant="ghost" onClick={() => deleteCurso(c.id)}><Trash2 className="h-3.5 w-3.5 text-destructive"/></Button>
+                          <Button size="sm" variant="ghost" onClick={() => openEditCurso(c)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteCurso(c.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -1133,18 +1293,28 @@ function ElearningAdmin() {
                   <tr>
                     <th className="text-left px-4 py-3 font-medium">Módulo</th>
                     <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Ordem</th>
-                    <th className="px-4 py-3"/>
+                    <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody>
                   {modulos.map((m, i) => (
-                    <tr key={m.id} className={`border-t border-border/60 hover:bg-muted/20 cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`} onClick={() => selectModulo(m)}>
+                    <tr
+                      key={m.id}
+                      className={`border-t border-border/60 hover:bg-muted/20 cursor-pointer ${i % 2 ? "bg-muted/10" : ""}`}
+                      onClick={() => selectModulo(m)}
+                    >
                       <td className="px-4 py-3 font-medium">{m.titulo}</td>
-                      <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground text-xs">{m.ordem}</td>
-                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                      <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground text-xs">
+                        {m.ordem}
+                      </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1 justify-end">
-                          <Button size="sm" variant="ghost" onClick={() => openEditModulo(m)}><Pencil className="h-3.5 w-3.5"/></Button>
-                          <Button size="sm" variant="ghost" onClick={() => deleteModulo(m.id)}><Trash2 className="h-3.5 w-3.5 text-destructive"/></Button>
+                          <Button size="sm" variant="ghost" onClick={() => openEditModulo(m)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => deleteModulo(m.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -1170,24 +1340,45 @@ function ElearningAdmin() {
                   <tr>
                     <th className="text-left px-4 py-3 font-medium">Aula</th>
                     <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Tipo</th>
-                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Duração</th>
-                    <th className="px-4 py-3"/>
+                    <th className="text-left px-4 py-3 font-medium hidden md:table-cell">
+                      Duração
+                    </th>
+                    <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody>
                   {aulas.map((a, i) => {
-                    const Icon = a.tipo === "video" ? Play : a.tipo === "pdf" ? FileDown : a.tipo === "link" ? ExternalLink : FileText;
+                    const Icon =
+                      a.tipo === "video"
+                        ? Play
+                        : a.tipo === "pdf"
+                          ? FileDown
+                          : a.tipo === "link"
+                            ? ExternalLink
+                            : FileText;
                     return (
-                      <tr key={a.id} className={`border-t border-border/60 ${i % 2 ? "bg-muted/10" : ""}`}>
+                      <tr
+                        key={a.id}
+                        className={`border-t border-border/60 ${i % 2 ? "bg-muted/10" : ""}`}
+                      >
                         <td className="px-4 py-3 font-medium">{a.titulo}</td>
                         <td className="px-4 py-3 hidden sm:table-cell">
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground"><Icon className="h-3 w-3"/>{a.tipo}</span>
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Icon className="h-3 w-3" />
+                            {a.tipo}
+                          </span>
                         </td>
-                        <td className="px-4 py-3 hidden md:table-cell text-xs text-muted-foreground">{a.duracao_min}min</td>
+                        <td className="px-4 py-3 hidden md:table-cell text-xs text-muted-foreground">
+                          {a.duracao_min}min
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 justify-end">
-                            <Button size="sm" variant="ghost" onClick={() => openEditAula(a)}><Pencil className="h-3.5 w-3.5"/></Button>
-                            <Button size="sm" variant="ghost" onClick={() => deleteAula(a.id)}><Trash2 className="h-3.5 w-3.5 text-destructive"/></Button>
+                            <Button size="sm" variant="ghost" onClick={() => openEditAula(a)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => deleteAula(a.id)}>
+                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -1203,29 +1394,58 @@ function ElearningAdmin() {
       {/* ── Modal Curso ── */}
       <Dialog open={cursoModal} onOpenChange={setCursoModal}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editingId ? "Editar curso" : "Novo curso"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Editar curso" : "Novo curso"}</DialogTitle>
+          </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid gap-1.5">
               <Label>Título *</Label>
-              <Input value={cursoForm.titulo} onChange={e => setCursoForm(f => ({ ...f, titulo: e.target.value, slug: f.slug || slugify(e.target.value) }))} placeholder="Nome do curso" />
+              <Input
+                value={cursoForm.titulo}
+                onChange={(e) =>
+                  setCursoForm((f) => ({
+                    ...f,
+                    titulo: e.target.value,
+                    slug: f.slug || slugify(e.target.value),
+                  }))
+                }
+                placeholder="Nome do curso"
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Slug</Label>
-              <Input value={cursoForm.slug} onChange={e => setCursoForm(f => ({ ...f, slug: slugify(e.target.value) }))} placeholder="url-do-curso" />
+              <Input
+                value={cursoForm.slug}
+                onChange={(e) => setCursoForm((f) => ({ ...f, slug: slugify(e.target.value) }))}
+                placeholder="url-do-curso"
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Descrição</Label>
-              <Textarea value={cursoForm.descricao} onChange={e => setCursoForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
+              <Textarea
+                value={cursoForm.descricao}
+                onChange={(e) => setCursoForm((f) => ({ ...f, descricao: e.target.value }))}
+                rows={3}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>URL da imagem de capa</Label>
-              <Input value={cursoForm.imagem_capa_url} onChange={e => setCursoForm(f => ({ ...f, imagem_capa_url: e.target.value }))} placeholder="https://..." />
+              <Input
+                value={cursoForm.imagem_capa_url}
+                onChange={(e) => setCursoForm((f) => ({ ...f, imagem_capa_url: e.target.value }))}
+                placeholder="https://..."
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <Label>Nível</Label>
-                <Select value={cursoForm.nivel} onValueChange={v => setCursoForm(f => ({ ...f, nivel: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={cursoForm.nivel}
+                  onValueChange={(v) => setCursoForm((f) => ({ ...f, nivel: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="iniciante">Iniciante</SelectItem>
                     <SelectItem value="intermediario">Intermediário</SelectItem>
@@ -1235,14 +1455,25 @@ function ElearningAdmin() {
               </div>
               <div className="grid gap-1.5">
                 <Label>Carga horária (min)</Label>
-                <Input type="number" value={cursoForm.carga_horaria_min} onChange={e => setCursoForm(f => ({ ...f, carga_horaria_min: +e.target.value }))} />
+                <Input
+                  type="number"
+                  value={cursoForm.carga_horaria_min}
+                  onChange={(e) =>
+                    setCursoForm((f) => ({ ...f, carga_horaria_min: +e.target.value }))
+                  }
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
                 <Label>Status</Label>
-                <Select value={cursoForm.status} onValueChange={v => setCursoForm(f => ({ ...f, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={cursoForm.status}
+                  onValueChange={(v) => setCursoForm((f) => ({ ...f, status: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Rascunho</SelectItem>
                     <SelectItem value="published">Publicado</SelectItem>
@@ -1251,13 +1482,21 @@ function ElearningAdmin() {
               </div>
               <div className="grid gap-1.5">
                 <Label>Ordem</Label>
-                <Input type="number" value={cursoForm.ordem} onChange={e => setCursoForm(f => ({ ...f, ordem: +e.target.value }))} />
+                <Input
+                  type="number"
+                  value={cursoForm.ordem}
+                  onChange={(e) => setCursoForm((f) => ({ ...f, ordem: +e.target.value }))}
+                />
               </div>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setCursoModal(false)}>Cancelar</Button>
-            <Button onClick={saveCurso} disabled={saving}>{saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}</Button>
+            <Button variant="outline" onClick={() => setCursoModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveCurso} disabled={saving}>
+              {saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1265,24 +1504,42 @@ function ElearningAdmin() {
       {/* ── Modal Módulo ── */}
       <Dialog open={moduloModal} onOpenChange={setModuloModal}>
         <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editingId ? "Editar módulo" : "Novo módulo"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Editar módulo" : "Novo módulo"}</DialogTitle>
+          </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid gap-1.5">
               <Label>Título *</Label>
-              <Input value={moduloForm.titulo} onChange={e => setModuloForm(f => ({ ...f, titulo: e.target.value }))} placeholder="Ex: Fundamentos da Captação" />
+              <Input
+                value={moduloForm.titulo}
+                onChange={(e) => setModuloForm((f) => ({ ...f, titulo: e.target.value }))}
+                placeholder="Ex: Fundamentos da Captação"
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Descrição</Label>
-              <Textarea value={moduloForm.descricao} onChange={e => setModuloForm(f => ({ ...f, descricao: e.target.value }))} rows={2} />
+              <Textarea
+                value={moduloForm.descricao}
+                onChange={(e) => setModuloForm((f) => ({ ...f, descricao: e.target.value }))}
+                rows={2}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label>Ordem</Label>
-              <Input type="number" value={moduloForm.ordem} onChange={e => setModuloForm(f => ({ ...f, ordem: +e.target.value }))} />
+              <Input
+                type="number"
+                value={moduloForm.ordem}
+                onChange={(e) => setModuloForm((f) => ({ ...f, ordem: +e.target.value }))}
+              />
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setModuloModal(false)}>Cancelar</Button>
-            <Button onClick={saveModulo} disabled={saving}>{saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}</Button>
+            <Button variant="outline" onClick={() => setModuloModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveModulo} disabled={saving}>
+              {saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1290,17 +1547,27 @@ function ElearningAdmin() {
       {/* ── Modal Aula ── */}
       <Dialog open={aulaModal} onOpenChange={setAulaModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editingId ? "Editar aula" : "Nova aula"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Editar aula" : "Nova aula"}</DialogTitle>
+          </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid gap-1.5">
               <Label>Título *</Label>
-              <Input value={aulaForm.titulo} onChange={e => setAulaForm(f => ({ ...f, titulo: e.target.value }))} />
+              <Input
+                value={aulaForm.titulo}
+                onChange={(e) => setAulaForm((f) => ({ ...f, titulo: e.target.value }))}
+              />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="grid gap-1.5">
                 <Label>Tipo</Label>
-                <Select value={aulaForm.tipo} onValueChange={v => setAulaForm(f => ({ ...f, tipo: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  value={aulaForm.tipo}
+                  onValueChange={(v) => setAulaForm((f) => ({ ...f, tipo: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="texto">Texto / Leitura</SelectItem>
                     <SelectItem value="video">Vídeo</SelectItem>
@@ -1311,30 +1578,50 @@ function ElearningAdmin() {
               </div>
               <div className="grid gap-1.5">
                 <Label>Duração (min)</Label>
-                <Input type="number" value={aulaForm.duracao_min} onChange={e => setAulaForm(f => ({ ...f, duracao_min: +e.target.value }))} />
+                <Input
+                  type="number"
+                  value={aulaForm.duracao_min}
+                  onChange={(e) => setAulaForm((f) => ({ ...f, duracao_min: +e.target.value }))}
+                />
               </div>
               <div className="grid gap-1.5">
                 <Label>Ordem</Label>
-                <Input type="number" value={aulaForm.ordem} onChange={e => setAulaForm(f => ({ ...f, ordem: +e.target.value }))} />
+                <Input
+                  type="number"
+                  value={aulaForm.ordem}
+                  onChange={(e) => setAulaForm((f) => ({ ...f, ordem: +e.target.value }))}
+                />
               </div>
             </div>
 
             {aulaForm.tipo === "video" && (
               <div className="grid gap-1.5">
                 <Label>URL do vídeo (YouTube, Vimeo ou MP4 direto)</Label>
-                <Input value={aulaForm.video_url} onChange={e => setAulaForm(f => ({ ...f, video_url: e.target.value }))} placeholder="https://www.youtube.com/watch?v=..." />
+                <Input
+                  value={aulaForm.video_url}
+                  onChange={(e) => setAulaForm((f) => ({ ...f, video_url: e.target.value }))}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
               </div>
             )}
             {aulaForm.tipo === "pdf" && (
               <div className="grid gap-1.5">
                 <Label>URL do PDF</Label>
-                <Input value={aulaForm.arquivo_url} onChange={e => setAulaForm(f => ({ ...f, arquivo_url: e.target.value }))} placeholder="https://..." />
+                <Input
+                  value={aulaForm.arquivo_url}
+                  onChange={(e) => setAulaForm((f) => ({ ...f, arquivo_url: e.target.value }))}
+                  placeholder="https://..."
+                />
               </div>
             )}
             {aulaForm.tipo === "link" && (
               <div className="grid gap-1.5">
                 <Label>Link externo</Label>
-                <Input value={aulaForm.link_externo} onChange={e => setAulaForm(f => ({ ...f, link_externo: e.target.value }))} placeholder="https://..." />
+                <Input
+                  value={aulaForm.link_externo}
+                  onChange={(e) => setAulaForm((f) => ({ ...f, link_externo: e.target.value }))}
+                  placeholder="https://..."
+                />
               </div>
             )}
 
@@ -1342,7 +1629,7 @@ function ElearningAdmin() {
               <Label>Conteúdo HTML {aulaForm.tipo === "texto" ? "*" : "(complementar)"}</Label>
               <Textarea
                 value={aulaForm.conteudo_html}
-                onChange={e => setAulaForm(f => ({ ...f, conteudo_html: e.target.value }))}
+                onChange={(e) => setAulaForm((f) => ({ ...f, conteudo_html: e.target.value }))}
                 rows={10}
                 className="font-mono text-xs"
                 placeholder="<h2>Título</h2><p>Parágrafo...</p>"
@@ -1350,13 +1637,25 @@ function ElearningAdmin() {
             </div>
 
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="gratuita" checked={aulaForm.gratuita} onChange={e => setAulaForm(f => ({ ...f, gratuita: e.target.checked }))} className="h-4 w-4 rounded" />
-              <Label htmlFor="gratuita" className="cursor-pointer">Aula gratuita (preview sem matrícula)</Label>
+              <input
+                type="checkbox"
+                id="gratuita"
+                checked={aulaForm.gratuita}
+                onChange={(e) => setAulaForm((f) => ({ ...f, gratuita: e.target.checked }))}
+                className="h-4 w-4 rounded"
+              />
+              <Label htmlFor="gratuita" className="cursor-pointer">
+                Aula gratuita (preview sem matrícula)
+              </Label>
             </div>
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => setAulaModal(false)}>Cancelar</Button>
-            <Button onClick={saveAula} disabled={saving}>{saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}</Button>
+            <Button variant="outline" onClick={() => setAulaModal(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveAula} disabled={saving}>
+              {saving ? "Salvando…" : editingId ? "Salvar" : "Criar"}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

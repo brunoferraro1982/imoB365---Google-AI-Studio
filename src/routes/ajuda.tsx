@@ -1,5 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Building2, DollarSign, Megaphone, Scale, GraduationCap, MessageSquare } from "lucide-react";
+import {
+  Building2,
+  DollarSign,
+  Megaphone,
+  Scale,
+  GraduationCap,
+  MessageSquare,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 

@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
 
-export const Route = createFileRoute("/app/contratos/")({ 
+export const Route = createFileRoute("/app/contratos/")({
   beforeLoad: moduleGuard("juridico"),
   component: ContratosList,
 });
@@ -41,10 +41,23 @@ const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "dest
 };
 
 export const ASSINATURA_INFO: Record<string, { label: string; className: string }> = {
-  rascunho: { label: "Não enviado", className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" },
-  enviado: { label: "Aguardando", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300" },
-  assinado_parcial: { label: "Parcial (1/2)", className: "bg-indigo-100 text-indigo-800 animate-pulse dark:bg-indigo-900/40 dark:text-indigo-300" },
-  assinado_total: { label: "Assinado ✓", className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300" },
+  rascunho: {
+    label: "Não enviado",
+    className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
+  },
+  enviado: {
+    label: "Aguardando",
+    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
+  },
+  assinado_parcial: {
+    label: "Parcial (1/2)",
+    className:
+      "bg-indigo-100 text-indigo-800 animate-pulse dark:bg-indigo-900/40 dark:text-indigo-300",
+  },
+  assinado_total: {
+    label: "Assinado ✓",
+    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
+  },
 };
 
 type Contrato = {
@@ -58,15 +71,7 @@ type Contrato = {
   updated_at: string;
 };
 
-function StatCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string;
-  value: string | number;
-  sub?: string;
-}) {
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -256,15 +261,14 @@ function ContratosList() {
             </thead>
             <tbody>
               {filtered.map((c) => {
-                const assInfo = ASSINATURA_INFO[c.assinatura_status ?? "rascunho"] ?? ASSINATURA_INFO.rascunho;
+                const assInfo =
+                  ASSINATURA_INFO[c.assinatura_status ?? "rascunho"] ?? ASSINATURA_INFO.rascunho;
                 return (
                   <tr
                     key={c.id}
                     className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium">
-                      {c.numero ?? `#${c.id.slice(0, 8)}`}
-                    </td>
+                    <td className="px-4 py-3 font-medium">{c.numero ?? `#${c.id.slice(0, 8)}`}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {TIPO_LABEL[c.tipo] ?? c.tipo}
                     </td>
@@ -273,9 +277,7 @@ function ContratosList() {
                         {STATUS_LABEL[c.status] ?? c.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums">
-                      {formatBRL(c.valor)}
-                    </td>
+                    <td className="px-4 py-3 text-right tabular-nums">{formatBRL(c.valor)}</td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {c.data_inicio
                         ? new Date(c.data_inicio + "T00:00:00").toLocaleDateString("pt-BR")

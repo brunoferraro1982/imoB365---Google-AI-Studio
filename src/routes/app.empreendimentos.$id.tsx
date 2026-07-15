@@ -242,12 +242,11 @@ function EmpDetail() {
         {(emp.fotos_urls ?? []).length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {(emp.fotos_urls as string[]).map((url: string, i: number) => (
-              <div key={i} className="group relative overflow-hidden rounded-lg border border-border">
-                <img
-                  src={url}
-                  alt={`Foto ${i + 1}`}
-                  className="aspect-[4/3] w-full object-cover"
-                />
+              <div
+                key={i}
+                className="group relative overflow-hidden rounded-lg border border-border"
+              >
+                <img src={url} alt={`Foto ${i + 1}`} className="aspect-[4/3] w-full object-cover" />
                 <button
                   type="button"
                   onClick={() => removeFoto(i)}

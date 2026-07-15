@@ -3,7 +3,14 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  GraduationCap, Clock, BookOpen, ChevronRight, Trophy, Play, BarChart2, Lock,
+  GraduationCap,
+  Clock,
+  BookOpen,
+  ChevronRight,
+  Trophy,
+  Play,
+  BarChart2,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -87,10 +94,7 @@ function ElearningHub() {
     const courseIds = rawCourses.map((c: Course) => c.id);
 
     const [{ data: modulos }, { data: progresso }] = await Promise.all([
-      db
-        .from("elearning_modulos")
-        .select("id, curso_id")
-        .in("curso_id", courseIds),
+      db.from("elearning_modulos").select("id, curso_id").in("curso_id", courseIds),
       user?.id
         ? db
             .from("elearning_progresso")
@@ -102,10 +106,7 @@ function ElearningHub() {
 
     const moduloIds = (modulos ?? []).map((m: any) => m.id);
     const { data: aulas } = moduloIds.length
-      ? await db
-          .from("elearning_aulas")
-          .select("id, modulo_id")
-          .in("modulo_id", moduloIds)
+      ? await db.from("elearning_aulas").select("id, modulo_id").in("modulo_id", moduloIds)
       : { data: [] };
 
     const completedSet = new Set((progresso ?? []).map((p: any) => p.aula_id));
@@ -138,9 +139,7 @@ function ElearningHub() {
     setLoading(false);
   }
 
-  const filtered = filterNivel
-    ? courses.filter((c) => c.nivel === filterNivel)
-    : courses;
+  const filtered = filterNivel ? courses.filter((c) => c.nivel === filterNivel) : courses;
 
   const emCurso = courses.filter((c) => c.progresso > 0 && c.progresso < 100);
   const concluidos = courses.filter((c) => c.progresso === 100);
@@ -166,10 +165,15 @@ function ElearningHub() {
             { icon: BarChart2, label: "Em andamento", value: emCurso.length },
             { icon: Trophy, label: "Concluídos", value: concluidos.length },
           ].map((s) => (
-            <div key={s.label} className="text-center border border-border rounded-xl px-4 py-2.5 bg-card min-w-[90px]">
+            <div
+              key={s.label}
+              className="text-center border border-border rounded-xl px-4 py-2.5 bg-card min-w-[90px]"
+            >
               <s.icon className="h-4 w-4 text-primary mx-auto mb-0.5" />
               <div className="text-xl font-bold">{s.value}</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">{s.label}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
@@ -219,7 +223,8 @@ function ElearningHub() {
           <GraduationCap className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">Nenhum curso disponível ainda.</p>
           <p className="text-xs text-muted-foreground/60 mt-1">
-            Acesse <strong>Gerenciar cursos</strong> para adicionar ou use o botão de cursos de exemplo.
+            Acesse <strong>Gerenciar cursos</strong> para adicionar ou use o botão de cursos de
+            exemplo.
           </p>
         </div>
       ) : (
@@ -273,7 +278,9 @@ function CourseCard({ course: c }: { course: CourseWithProgress }) {
       {/* Content */}
       <div className="flex flex-col flex-1 p-4 gap-2">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${NIVEL_COLOR[c.nivel] ?? "bg-muted text-muted-foreground border-border"}`}>
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${NIVEL_COLOR[c.nivel] ?? "bg-muted text-muted-foreground border-border"}`}
+          >
             {NIVEL_LABEL[c.nivel] ?? c.nivel}
           </span>
           {c.total_aulas > 0 && (
@@ -293,7 +300,9 @@ function CourseCard({ course: c }: { course: CourseWithProgress }) {
         </h3>
 
         {c.descricao && (
-          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{c.descricao}</p>
+          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+            {c.descricao}
+          </p>
         )}
 
         <div className="mt-auto pt-2">

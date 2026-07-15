@@ -50,7 +50,9 @@ function FinanceiroList() {
     setItems(data ?? []);
     setLoading(false);
   }
-  useEffect(() => { if (tenantId) load(); }, [tenantId]);
+  useEffect(() => {
+    if (tenantId) load();
+  }, [tenantId]);
 
   async function remove(id: string) {
     if (!(await confirmDialog("Excluir este lançamento?"))) return;
@@ -175,7 +177,9 @@ function FinanceiroList() {
                 <tr key={l.id} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-medium">{l.descricao}</td>
                   <td className="px-4 py-3 text-muted-foreground">{l.categoria ?? "—"}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{new Date(l.data_vencimento + 'T12:00:00').toLocaleDateString('pt-BR')}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {new Date(l.data_vencimento + "T12:00:00").toLocaleDateString("pt-BR")}
+                  </td>
                   <td className="px-4 py-3">
                     <Badge variant={STATUS_VARIANT[l.status] ?? "secondary"}>
                       {STATUS_LABEL[l.status]}

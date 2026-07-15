@@ -3,8 +3,19 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  ChevronLeft, ChevronRight, CheckCircle2, Circle, Play, FileText,
-  ExternalLink, FileDown, BookOpen, GraduationCap, ChevronDown, ChevronUp, Trophy,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  Circle,
+  Play,
+  FileText,
+  ExternalLink,
+  FileDown,
+  BookOpen,
+  GraduationCap,
+  ChevronDown,
+  ChevronUp,
+  Trophy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -52,10 +63,12 @@ function getEmbedUrl(url: string): { type: "iframe" | "video"; src: string } | n
   if (!url) return null;
 
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s?]+)/);
-  if (yt) return { type: "iframe", src: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1` };
+  if (yt)
+    return { type: "iframe", src: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1` };
 
   const vm = url.match(/vimeo\.com\/(\d+)/);
-  if (vm) return { type: "iframe", src: `https://player.vimeo.com/video/${vm[1]}?byline=0&portrait=0` };
+  if (vm)
+    return { type: "iframe", src: `https://player.vimeo.com/video/${vm[1]}?byline=0&portrait=0` };
 
   if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) return { type: "video", src: url };
 
@@ -109,7 +122,9 @@ function LessonContent({ aula }: { aula: Aula }) {
     return (
       <div className="rounded-2xl border border-border bg-muted/30 p-8 text-center space-y-4">
         <ExternalLink className="h-10 w-10 text-primary mx-auto" />
-        <p className="text-sm text-muted-foreground">Este conteúdo está disponível em um link externo.</p>
+        <p className="text-sm text-muted-foreground">
+          Este conteúdo está disponível em um link externo.
+        </p>
         <a href={aula.link_externo} target="_blank" rel="noopener noreferrer">
           <Button className="gap-2">
             <ExternalLink className="h-4 w-4" /> Acessar conteúdo externo
@@ -146,8 +161,16 @@ function CourseViewer() {
     const db = supabase as any;
 
     const [{ data: c }, { data: mods }] = await Promise.all([
-      db.from("elearning_cursos").select("id,titulo,descricao,nivel,carga_horaria_min").eq("id", cursoId).maybeSingle(),
-      db.from("elearning_modulos").select("id,titulo,descricao,ordem").eq("curso_id", cursoId).order("ordem"),
+      db
+        .from("elearning_cursos")
+        .select("id,titulo,descricao,nivel,carga_horaria_min")
+        .eq("id", cursoId)
+        .maybeSingle(),
+      db
+        .from("elearning_modulos")
+        .select("id,titulo,descricao,ordem")
+        .eq("curso_id", cursoId)
+        .order("ordem"),
     ]);
 
     if (!c) {
@@ -161,7 +184,9 @@ function CourseViewer() {
     const { data: aulasRaw } = modIds.length
       ? await db
           .from("elearning_aulas")
-          .select("id,modulo_id,titulo,tipo,conteudo_html,video_url,arquivo_url,link_externo,duracao_min,ordem,gratuita")
+          .select(
+            "id,modulo_id,titulo,tipo,conteudo_html,video_url,arquivo_url,link_externo,duracao_min,ordem,gratuita",
+          )
           .in("modulo_id", modIds)
           .order("ordem")
       : { data: [] };
@@ -220,9 +245,21 @@ function CourseViewer() {
 
     if (isComplete) {
       await db.from("elearning_progresso").delete().eq("user_id", user.id).eq("aula_id", aulaId);
-      setCompleted((s) => { const n = new Set(s); n.delete(aulaId); return n; });
+      setCompleted((s) => {
+        const n = new Set(s);
+        n.delete(aulaId);
+        return n;
+      });
     } else {
-      await db.from("elearning_progresso").upsert({ user_id: user.id, aula_id: aulaId, completada: true, completada_em: new Date().toISOString() }, { onConflict: "user_id,aula_id" });
+      await db.from("elearning_progresso").upsert(
+        {
+          user_id: user.id,
+          aula_id: aulaId,
+          completada: true,
+          completada_em: new Date().toISOString(),
+        },
+        { onConflict: "user_id,aula_id" },
+      );
       setCompleted((s) => new Set([...s, aulaId]));
       if (nextAula) {
         setTimeout(() => setActiveAulaId(nextAula.id), 600);
@@ -258,13 +295,18 @@ function CourseViewer() {
       <aside className="hidden lg:flex w-80 xl:w-96 shrink-0 flex-col border-r border-border bg-card/60 overflow-y-auto">
         {/* Course header */}
         <div className="p-4 border-b border-border/60 bg-muted/20">
-          <Link to="/app/elearning" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors">
+          <Link
+            to="/app/elearning"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mb-3 transition-colors"
+          >
             <ChevronLeft className="h-3.5 w-3.5" /> Todos os cursos
           </Link>
           <h2 className="font-bold text-sm leading-snug">{curso.titulo}</h2>
           <div className="mt-2 space-y-1">
             <div className="flex justify-between text-[11px] text-muted-foreground">
-              <span>{completedCount}/{totalAulas} aulas</span>
+              <span>
+                {completedCount}/{totalAulas} aulas
+              </span>
               <span>{progress}%</span>
             </div>
             <Progress value={progress} className="h-1.5" />
@@ -285,48 +327,65 @@ function CourseViewer() {
                   <span className="flex-1 text-left">
                     {mi + 1}. {m.titulo}
                   </span>
-                  <span className="text-[10px] font-normal">{mDone}/{m.aulas.length}</span>
-                  {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                  <span className="text-[10px] font-normal">
+                    {mDone}/{m.aulas.length}
+                  </span>
+                  {expanded ? (
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  )}
                 </button>
 
-                {expanded && m.aulas.map((a, ai) => {
-                  const active = a.id === activeAulaId;
-                  const done = completed.has(a.id);
-                  const TypeIcon = a.tipo === "video" ? Play
-                    : a.tipo === "pdf" ? FileDown
-                    : a.tipo === "link" ? ExternalLink
-                    : FileText;
-                  return (
-                    <button
-                      key={a.id}
-                      onClick={() => setActiveAulaId(a.id)}
-                      className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-all ${
-                        active
-                          ? "bg-primary/10 border-l-2 border-primary pl-3"
-                          : "hover:bg-muted/50 border-l-2 border-transparent pl-3"
-                      }`}
-                    >
-                      <div className="mt-0.5 shrink-0">
-                        {done ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Circle className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground/40"}`} />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs leading-snug line-clamp-2 ${active ? "font-semibold text-primary" : done ? "text-muted-foreground line-through" : "text-foreground/80"}`}>
-                          {ai + 1}. {a.titulo}
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <TypeIcon className="h-2.5 w-2.5 text-muted-foreground/50" />
-                          {a.duracao_min > 0 && (
-                            <span className="text-[10px] text-muted-foreground/60">{a.duracao_min}min</span>
+                {expanded &&
+                  m.aulas.map((a, ai) => {
+                    const active = a.id === activeAulaId;
+                    const done = completed.has(a.id);
+                    const TypeIcon =
+                      a.tipo === "video"
+                        ? Play
+                        : a.tipo === "pdf"
+                          ? FileDown
+                          : a.tipo === "link"
+                            ? ExternalLink
+                            : FileText;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={() => setActiveAulaId(a.id)}
+                        className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-all ${
+                          active
+                            ? "bg-primary/10 border-l-2 border-primary pl-3"
+                            : "hover:bg-muted/50 border-l-2 border-transparent pl-3"
+                        }`}
+                      >
+                        <div className="mt-0.5 shrink-0">
+                          {done ? (
+                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Circle
+                              className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground/40"}`}
+                            />
                           )}
                         </div>
-                      </div>
-                    </button>
-                  );
-                })}
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`text-xs leading-snug line-clamp-2 ${active ? "font-semibold text-primary" : done ? "text-muted-foreground line-through" : "text-foreground/80"}`}
+                          >
+                            {ai + 1}. {a.titulo}
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <TypeIcon className="h-2.5 w-2.5 text-muted-foreground/50" />
+                            {a.duracao_min > 0 && (
+                              <span className="text-[10px] text-muted-foreground/60">
+                                {a.duracao_min}min
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             );
           })}
@@ -343,15 +402,25 @@ function CourseViewer() {
           <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
             {/* Breadcrumb */}
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Link to="/app/elearning" className="hover:text-foreground transition-colors">E-Learning</Link>
+              <Link to="/app/elearning" className="hover:text-foreground transition-colors">
+                E-Learning
+              </Link>
               <ChevronRight className="h-3 w-3" />
-              <span className="font-medium text-foreground truncate max-w-[200px]">{curso.titulo}</span>
+              <span className="font-medium text-foreground truncate max-w-[200px]">
+                {curso.titulo}
+              </span>
             </div>
 
             {/* Lesson title */}
             <div>
               <Badge variant="outline" className="mb-2 text-[10px]">
-                {currentAula.tipo === "video" ? "Vídeo" : currentAula.tipo === "pdf" ? "PDF" : currentAula.tipo === "link" ? "Link externo" : "Leitura"}
+                {currentAula.tipo === "video"
+                  ? "Vídeo"
+                  : currentAula.tipo === "pdf"
+                    ? "PDF"
+                    : currentAula.tipo === "link"
+                      ? "Link externo"
+                      : "Leitura"}
               </Badge>
               <h1 className="text-xl font-bold tracking-tight">{currentAula.titulo}</h1>
             </div>
@@ -418,12 +487,18 @@ function CourseViewer() {
             {progress === 100 && (
               <div className="rounded-2xl border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-800 p-6 text-center space-y-2">
                 <Trophy className="h-10 w-10 text-green-500 mx-auto" />
-                <h3 className="font-bold text-green-700 dark:text-green-400">Parabéns! Curso concluído!</h3>
+                <h3 className="font-bold text-green-700 dark:text-green-400">
+                  Parabéns! Curso concluído!
+                </h3>
                 <p className="text-sm text-green-600 dark:text-green-500">
                   Você completou todas as {totalAulas} aulas de <strong>{curso.titulo}</strong>.
                 </p>
                 <Link to="/app/elearning">
-                  <Button variant="outline" size="sm" className="mt-2 border-green-300 text-green-700 hover:bg-green-100">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 border-green-300 text-green-700 hover:bg-green-100"
+                  >
                     <BookOpen className="mr-2 h-4 w-4" /> Ver outros cursos
                   </Button>
                 </Link>

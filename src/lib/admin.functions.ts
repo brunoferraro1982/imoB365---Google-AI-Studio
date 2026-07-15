@@ -23,8 +23,9 @@ export const listAdminUsers = createServerFn({ method: "GET" })
         u.id,
         {
           email: u.email ?? null,
-          creci: (u.user_metadata as Record<string, unknown>)?.creci as string | null ?? null,
-          provider: (u.app_metadata as Record<string, unknown>)?.provider as string | null ?? null,
+          creci: ((u.user_metadata as Record<string, unknown>)?.creci as string | null) ?? null,
+          provider:
+            ((u.app_metadata as Record<string, unknown>)?.provider as string | null) ?? null,
           created_at: u.created_at ?? null,
         },
       ]),

@@ -9,24 +9,24 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronRight, Home } from "lucide-react";
 
 const PATH_LABELS: Record<string, string> = {
-  app:            "Início",
-  imobiliario:    "Imobiliário",
-  imoveis:        "Imóveis",
-  leads:          "Leads",
-  visitas:        "Visitas",
-  financeiro:     "Financeiro",
+  app: "Início",
+  imobiliario: "Imobiliário",
+  imoveis: "Imóveis",
+  leads: "Leads",
+  visitas: "Visitas",
+  financeiro: "Financeiro",
   "plano-contas": "Plano de Contas",
-  "centros-custo":"Centros de Custo",
-  lancamentos:    "Lançamentos",
-  comissoes:      "Comissões",
-  juridico:       "Jurídico",
-  contratos:      "Contratos",
-  modelos:        "Modelos",
-  marketing:      "Marketing",
-  campanhas:      "Campanhas",
-  ajustes:        "Ajustes",
-  configuracoes:  "Configurações",
-  admin:          "Admin",
+  "centros-custo": "Centros de Custo",
+  lancamentos: "Lançamentos",
+  comissoes: "Comissões",
+  juridico: "Jurídico",
+  contratos: "Contratos",
+  modelos: "Modelos",
+  marketing: "Marketing",
+  campanhas: "Campanhas",
+  ajustes: "Ajustes",
+  configuracoes: "Configurações",
+  admin: "Admin",
 };
 
 interface BreadcrumbItem {
@@ -49,7 +49,10 @@ export function GlobalBreadcrumb() {
   if (items.length <= 1) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+    <nav
+      aria-label="Breadcrumb"
+      className="flex items-center gap-1 text-sm text-muted-foreground mb-4"
+    >
       <Link to="/app" aria-label="Início" className="hover:text-foreground">
         <Home className="h-3.5 w-3.5" />
       </Link>
@@ -63,10 +66,7 @@ export function GlobalBreadcrumb() {
                 {item.label}
               </span>
             ) : (
-              <Link
-                to={item.path as "/app"}
-                className="hover:text-foreground transition-colors"
-              >
+              <Link to={item.path as "/app"} className="hover:text-foreground transition-colors">
                 {item.label}
               </Link>
             )}

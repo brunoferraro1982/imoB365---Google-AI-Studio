@@ -151,22 +151,15 @@ function AdminAprovacoes() {
                 </div>
                 <div className="min-w-0 space-y-0.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm truncate">
-                      {reg.nome ?? reg.email}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className="text-[9px] uppercase font-bold shrink-0"
-                    >
+                    <span className="font-bold text-sm truncate">{reg.nome ?? reg.email}</span>
+                    <Badge variant="outline" className="text-[9px] uppercase font-bold shrink-0">
                       {reg.tipo_usuario === "imobiliaria" ? "Imobiliária" : "Corretor"}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{reg.email}</p>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5">
                     {reg.creci && (
-                      <span className="text-[10px] text-muted-foreground">
-                        CRECI: {reg.creci}
-                      </span>
+                      <span className="text-[10px] text-muted-foreground">CRECI: {reg.creci}</span>
                     )}
                     {reg.imobiliaria_nome && (
                       <span className="text-[10px] text-muted-foreground">
@@ -174,9 +167,7 @@ function AdminAprovacoes() {
                       </span>
                     )}
                     {reg.cnpj && (
-                      <span className="text-[10px] text-muted-foreground">
-                        CNPJ: {reg.cnpj}
-                      </span>
+                      <span className="text-[10px] text-muted-foreground">CNPJ: {reg.cnpj}</span>
                     )}
                     <span className="text-[10px] text-muted-foreground/60">
                       {formattedDate(reg.created_at)}

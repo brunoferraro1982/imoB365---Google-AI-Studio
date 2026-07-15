@@ -9,7 +9,7 @@
  */
 
 const STATIC_REDIRECTS: Record<string, string> = {
-  "/app/configuracoes/plano-contas":  "/app/financeiro/plano-contas",
+  "/app/configuracoes/plano-contas": "/app/financeiro/plano-contas",
   "/app/configuracoes/centros-custo": "/app/financeiro/centros-custo",
 };
 

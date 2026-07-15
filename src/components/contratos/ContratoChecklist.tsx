@@ -68,9 +68,14 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
       setApplying(false);
       return toast.error("Modelo sem itens");
     }
-    const rows = (tplItens as Array<{
-      etapa: string; titulo: string; obrigatorio: boolean; ordem: number;
-    }>).map((i) => ({
+    const rows = (
+      tplItens as Array<{
+        etapa: string;
+        titulo: string;
+        obrigatorio: boolean;
+        ordem: number;
+      }>
+    ).map((i) => ({
       tenant_id: tenantId,
       contrato_id: contratoId,
       etapa: i.etapa,
@@ -97,7 +102,11 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
     setItens((prev) =>
       prev.map((i) =>
         i.id === item.id
-          ? { ...i, concluido: !i.concluido, concluido_em: !i.concluido ? new Date().toISOString() : null }
+          ? {
+              ...i,
+              concluido: !i.concluido,
+              concluido_em: !i.concluido ? new Date().toISOString() : null,
+            }
           : i,
       ),
     );
@@ -171,9 +180,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
               {applying ? "Aplicando…" : "Aplicar"}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Ou adicione itens manualmente abaixo.
-          </p>
+          <p className="text-xs text-muted-foreground">Ou adicione itens manualmente abaixo.</p>
         </div>
       )}
 
@@ -197,7 +204,8 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
           {pendObrig > 0 && (
             <p className="flex items-center gap-1 text-[11px] text-destructive">
               <AlertCircle className="h-3 w-3" />
-              {pendObrig} item{pendObrig > 1 ? "s" : ""} obrigatório{pendObrig > 1 ? "s" : ""} pendente{pendObrig > 1 ? "s" : ""}
+              {pendObrig} item{pendObrig > 1 ? "s" : ""} obrigatório{pendObrig > 1 ? "s" : ""}{" "}
+              pendente{pendObrig > 1 ? "s" : ""}
             </p>
           )}
         </div>

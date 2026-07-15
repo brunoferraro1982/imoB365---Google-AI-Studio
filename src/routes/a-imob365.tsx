@@ -173,17 +173,19 @@ function AImob365Page() {
     <>
       <SiteHeader />
       <div className="min-h-screen bg-background">
-
         {/* ─── HERO ───────────────────────────────────────────────── */}
         <section
           id="hero"
           className="relative py-20 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900 to-background overflow-hidden"
         >
           {/* Background pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: "radial-gradient(circle at 25px 25px, white 2px, transparent 0)",
-            backgroundSize: "50px 50px",
-          }} />
+          <div
+            className="absolute inset-0 opacity-[0.03]"
+            style={{
+              backgroundImage: "radial-gradient(circle at 25px 25px, white 2px, transparent 0)",
+              backgroundSize: "50px 50px",
+            }}
+          />
 
           <div className="container max-w-4xl mx-auto text-center space-y-6 relative z-10">
             <span className="inline-block bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-primary/30">
@@ -198,9 +200,9 @@ function AImob365Page() {
               <span className="text-primary">Somos Parceiros do Seu Patrimônio.</span>
             </h1>
             <p className="text-white/65 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
-              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura.
-              Operamos 365 dias por ano em Santos, Praia Grande e São Vicente com inteligência,
-              dados e total transparência.
+              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura. Operamos
+              365 dias por ano em Santos, Praia Grande e São Vicente com inteligência, dados e total
+              transparência.
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <a
@@ -274,7 +276,10 @@ function AImob365Page() {
                 <h3 className="font-black text-sm uppercase tracking-wide">Nossos Valores</h3>
                 <ul className="space-y-1.5">
                   {VALORES.map((v) => (
-                    <li key={v} className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                    <li
+                      key={v}
+                      className="flex items-start gap-2 text-[11px] text-muted-foreground"
+                    >
                       <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                       {v}
                     </li>
@@ -290,8 +295,8 @@ function AImob365Page() {
                 do Litoral Sul de São Paulo: a necessidade de uma consultoria que entenda o imóvel
                 não apenas como uma moradia, mas como um <strong>ativo estratégico</strong>. Com
                 foco em Santos, Praia Grande e São Vicente, operamos{" "}
-                <strong>365 dias por ano</strong> para garantir que cada oportunidade seja
-                capturada no momento certo.
+                <strong>365 dias por ano</strong> para garantir que cada oportunidade seja capturada
+                no momento certo.
               </p>
             </div>
           </div>
@@ -321,7 +326,9 @@ function AImob365Page() {
                   <span className="absolute top-4 right-4 text-5xl font-black text-muted/20 select-none leading-none">
                     {i + 1}
                   </span>
-                  <div className={`h-10 w-10 rounded-xl ${p.color} flex items-center justify-center`}>
+                  <div
+                    className={`h-10 w-10 rounded-xl ${p.color} flex items-center justify-center`}
+                  >
                     <p.icon className="h-5 w-5" />
                   </div>
                   <h3 className="font-bold text-sm">{p.titulo}</h3>
@@ -369,11 +376,16 @@ function AImob365Page() {
                 <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
                   Unimos
                 </p>
-                {["Curadoria técnica", "Análise de dados", "Atendimento personalizado"].map((item) => (
-                  <div key={item} className="rounded-xl bg-background/70 border border-border/40 py-3 px-4">
-                    <span className="text-sm font-bold">{item}</span>
-                  </div>
-                ))}
+                {["Curadoria técnica", "Análise de dados", "Atendimento personalizado"].map(
+                  (item) => (
+                    <div
+                      key={item}
+                      className="rounded-xl bg-background/70 border border-border/40 py-3 px-4"
+                    >
+                      <span className="text-sm font-bold">{item}</span>
+                    </div>
+                  ),
+                )}
                 <p className="text-xs text-muted-foreground">
                   Para investidores e famílias que buscam o melhor do Litoral Sul de SP
                 </p>
@@ -440,7 +452,9 @@ function AImob365Page() {
                   to="/contato"
                   className="group flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 hover:border-primary/40 hover:shadow-md transition-all"
                 >
-                  <div className={`h-10 w-10 rounded-xl ${s.color} flex items-center justify-center`}>
+                  <div
+                    className={`h-10 w-10 rounded-xl ${s.color} flex items-center justify-center`}
+                  >
                     {s.icone_url ? (
                       <img src={s.icone_url} alt="" className="h-6 w-6 object-cover rounded" />
                     ) : (

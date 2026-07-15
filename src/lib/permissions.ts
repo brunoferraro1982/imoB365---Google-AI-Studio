@@ -25,53 +25,53 @@ export type AppAction = "read" | "write" | "delete" | "config";
 const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>> = {
   super_admin: {
     imobiliario: ["read", "write", "delete", "config"],
-    juridico:    ["read", "write", "delete", "config"],
-    financeiro:  ["read", "write", "delete", "config"],
-    marketing:   ["read", "write", "delete", "config"],
-    ajustes:     ["read", "write", "delete", "config"],
-    elearning:   ["read", "write", "delete", "config"],
-    admin:       ["read", "write", "delete", "config"],
+    juridico: ["read", "write", "delete", "config"],
+    financeiro: ["read", "write", "delete", "config"],
+    marketing: ["read", "write", "delete", "config"],
+    ajustes: ["read", "write", "delete", "config"],
+    elearning: ["read", "write", "delete", "config"],
+    admin: ["read", "write", "delete", "config"],
   },
   admin: {
     imobiliario: ["read", "write", "delete", "config"],
-    juridico:    ["read", "write", "delete", "config"],
-    financeiro:  ["read", "write", "delete", "config"],
-    marketing:   ["read", "write", "delete", "config"],
-    ajustes:     ["read", "write", "config"],
-    elearning:   ["read", "write", "config"],
-    admin:       [], // sem acesso ao painel super-admin
+    juridico: ["read", "write", "delete", "config"],
+    financeiro: ["read", "write", "delete", "config"],
+    marketing: ["read", "write", "delete", "config"],
+    ajustes: ["read", "write", "config"],
+    elearning: ["read", "write", "config"],
+    admin: [], // sem acesso ao painel super-admin
   },
   broker: {
     imobiliario: ["read", "write"],
-    juridico:    ["read"],
-    financeiro:  [],              // SEM ACESSO — dados financeiros protegidos
-    marketing:   ["read"],
-    ajustes:     [],
-    elearning:   ["read"],
+    juridico: ["read"],
+    financeiro: [], // SEM ACESSO — dados financeiros protegidos
+    marketing: ["read"],
+    ajustes: [],
+    elearning: ["read"],
   },
   juridico: {
     imobiliario: ["read"],
-    juridico:    ["read", "write", "delete", "config"],
-    financeiro:  [],
-    marketing:   [],
-    ajustes:     [],
-    elearning:   ["read"],
+    juridico: ["read", "write", "delete", "config"],
+    financeiro: [],
+    marketing: [],
+    ajustes: [],
+    elearning: ["read"],
   },
   financeiro: {
     imobiliario: ["read"],
-    juridico:    [],
-    financeiro:  ["read", "write", "delete", "config"],
-    marketing:   [],
-    ajustes:     [],
-    elearning:   ["read"],
+    juridico: [],
+    financeiro: ["read", "write", "delete", "config"],
+    marketing: [],
+    ajustes: [],
+    elearning: ["read"],
   },
   atendente: {
     imobiliario: ["read", "write"], // leads e visitas
-    juridico:    [],
-    financeiro:  [],
-    marketing:   ["read"],
-    ajustes:     [],
-    elearning:   ["read"],
+    juridico: [],
+    financeiro: [],
+    marketing: ["read"],
+    ajustes: [],
+    elearning: ["read"],
   },
 };
 
@@ -128,7 +128,7 @@ export function canAndEnabled(
   roles: AppRole[],
   enabledModules: AppModule[],
   module: AppModule,
-  action: AppAction
+  action: AppAction,
 ): boolean {
   return isModuleEnabled(enabledModules, module) && can(roles, module, action);
 }

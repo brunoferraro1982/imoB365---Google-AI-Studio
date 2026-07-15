@@ -33,8 +33,8 @@ export function useModuleAccess(module: AppModule): boolean {
 export function useModulePermissions(module: AppModule) {
   const { roles } = useAuth();
   return {
-    read:   can(roles, module, "read"),
-    write:  can(roles, module, "write"),
+    read: can(roles, module, "read"),
+    write: can(roles, module, "write"),
     delete: can(roles, module, "delete"),
     config: can(roles, module, "config"),
   };

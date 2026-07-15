@@ -63,7 +63,9 @@ export function ContratoForm({ contratoId }: Props) {
     template_id: "",
   });
 
-  const [imoveis, setImoveis] = useState<Array<{ id: string; titulo: string; codigo_interno: string | null }>>([]);
+  const [imoveis, setImoveis] = useState<
+    Array<{ id: string; titulo: string; codigo_interno: string | null }>
+  >([]);
   const [leads, setLeads] = useState<Array<{ id: string; nome: string }>>([]);
   const [corretores, setCorretores] = useState<Array<{ id: string; nome: string }>>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -87,11 +89,7 @@ export function ContratoForm({ contratoId }: Props) {
           .eq("tenant_id", tenantId)
           .eq("ativo", true)
           .order("nome"),
-        supabase
-          .from("contrato_templates")
-          .select("id,nome,tipo")
-          .eq("ativo", true)
-          .order("nome"),
+        supabase.from("contrato_templates").select("id,nome,tipo").eq("ativo", true).order("nome"),
       ]);
       setImoveis(i ?? []);
       setLeads(l ?? []);
@@ -161,9 +159,14 @@ export function ContratoForm({ contratoId }: Props) {
       .eq("template_id", form.template_id)
       .order("ordem");
     if (!tplItens?.length) return;
-    const rows = (tplItens as Array<{
-      etapa: string; titulo: string; obrigatorio: boolean; ordem: number;
-    }>).map((i) => ({
+    const rows = (
+      tplItens as Array<{
+        etapa: string;
+        titulo: string;
+        obrigatorio: boolean;
+        ordem: number;
+      }>
+    ).map((i) => ({
       tenant_id: tenantId,
       contrato_id: contratoId,
       etapa: i.etapa,
@@ -403,11 +406,7 @@ export function ContratoForm({ contratoId }: Props) {
       </section>
 
       <div className="flex justify-end gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => navigate({ to: "/app/contratos" })}
-        >
+        <Button type="button" variant="outline" onClick={() => navigate({ to: "/app/contratos" })}>
           Cancelar
         </Button>
         <Button type="submit" disabled={saving}>

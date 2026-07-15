@@ -18,8 +18,8 @@ function PendingApproval() {
         <div className="space-y-2">
           <h1 className="text-xl font-black tracking-tight">Aguardando aprovação</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Sua solicitação de acesso foi recebida com sucesso. Nossa equipe irá
-            analisar os seus dados e você receberá uma notificação por e-mail.
+            Sua solicitação de acesso foi recebida com sucesso. Nossa equipe irá analisar os seus
+            dados e você receberá uma notificação por e-mail.
           </p>
         </div>
 

@@ -19,7 +19,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AppRole } from "@/hooks/useAuth";
 
 export class AuthError extends Error {
-  constructor(message: string, public status: number = 401) {
+  constructor(
+    message: string,
+    public status: number = 401,
+  ) {
     super(message);
     this.name = "AuthError";
   }
@@ -30,7 +33,10 @@ export class AuthError extends Error {
  * Lança AuthError 401 se não autenticado.
  */
 export async function getServerUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error || !user) throw new AuthError("Não autenticado", 401);
   return user;
 }
@@ -57,10 +63,7 @@ export async function getServerTenantId(): Promise<string> {
  */
 export async function getServerRoles(): Promise<AppRole[]> {
   const user = await getServerUser();
-  const { data } = await supabase
-    .from("user_roles")
-    .select("role")
-    .eq("user_id", user.id);
+  const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
   return (data ?? []).map((r) => r.role as AppRole);
 }
 
@@ -70,10 +73,7 @@ export async function getServerRoles(): Promise<AppRole[]> {
  */
 export async function requireServerAuth() {
   const user = await getServerUser();
-  const [tenantId, roles] = await Promise.all([
-    getServerTenantId(),
-    getServerRoles(),
-  ]);
+  const [tenantId, roles] = await Promise.all([getServerTenantId(), getServerRoles()]);
   return { user, tenantId, roles };
 }
 
@@ -85,10 +85,7 @@ export async function requireServerRole(...requiredRoles: AppRole[]) {
   const { user, tenantId, roles } = await requireServerAuth();
   const hasRole = requiredRoles.some((r) => roles.includes(r));
   if (!hasRole) {
-    throw new AuthError(
-      `Acesso negado. Requer: ${requiredRoles.join(" ou ")}`,
-      403
-    );
+    throw new AuthError(`Acesso negado. Requer: ${requiredRoles.join(" ou ")}`, 403);
   }
   return { user, tenantId, roles };
 }

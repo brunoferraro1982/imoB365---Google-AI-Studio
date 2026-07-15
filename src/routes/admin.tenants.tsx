@@ -152,7 +152,9 @@ function AdminTenants() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   const toggle = (id: string) =>
     setExpanded((prev) => {
@@ -173,14 +175,21 @@ function AdminTenants() {
     "mod-elearn": "E-Learning",
   };
   const parseModules = (raw: string | null) =>
-    (raw ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+    (raw ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
   const usersOf = (tenantId: string) => users.filter((u) => u.tenant_id === tenantId);
   const orphanUsers = users.filter((u) => !u.tenant_id);
 
   const fmtDate = (d: string | null) => {
     if (!d) return "—";
-    return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+    return new Date(d).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   const matchesSearch = (usr: ProfileUser) => {
@@ -206,8 +215,14 @@ function AdminTenants() {
   // ── Actions ──
 
   async function updateTenantField(id: string, field: string, value: string) {
-    const { error } = await supabase.from("tenants").update({ [field]: value } as never).eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    const { error } = await supabase
+      .from("tenants")
+      .update({ [field]: value } as never)
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Imobiliária atualizada.");
     load();
   }
@@ -217,7 +232,10 @@ function AdminTenants() {
     setLoading(true);
     const { error } = await supabase.from("tenants").delete().eq("id", id);
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Imobiliária excluída.");
     load();
   }
@@ -226,9 +244,15 @@ function AdminTenants() {
     if (!editTenantModal) return;
     const { error } = await supabase
       .from("tenants")
-      .update({ nome: editTenantModal.nome.trim(), cnpj: editTenantModal.cnpj.trim() || null } as never)
+      .update({
+        nome: editTenantModal.nome.trim(),
+        cnpj: editTenantModal.cnpj.trim() || null,
+      } as never)
       .eq("id", editTenantModal.tenant.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Imobiliária atualizada.");
     setEditTenantModal(null);
     load();
@@ -245,7 +269,10 @@ function AdminTenants() {
         plano_pretendido: editUserModal.plano_pretendido || null,
       } as never)
       .eq("id", editUserModal.user.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     toast.success("Usuário atualizado.");
     setEditUserModal(null);
     load();
@@ -253,7 +280,10 @@ function AdminTenants() {
 
   async function blockUser(userId: string, nome: string | null) {
     if (!(await confirmDialog(`Bloquear ${nome || "este usuário"}?`))) return;
-    await supabase.from("profiles").update({ aprovado: false } as never).eq("id", userId);
+    await supabase
+      .from("profiles")
+      .update({ aprovado: false } as never)
+      .eq("id", userId);
     toast.success("Usuário bloqueado.");
     load();
   }
@@ -274,36 +304,85 @@ function AdminTenants() {
 
   async function executeApproval() {
     if (!approvalModal) return;
-    const { user, tenantMode, selectedTenantId, newTenantName, selectedRole, paymentValid } = approvalModal;
+    const { user, tenantMode, selectedTenantId, newTenantName, selectedRole, paymentValid } =
+      approvalModal;
     setLoading(true);
     try {
       let finalTenantId = selectedTenantId;
 
       if (tenantMode === "create") {
-        if (!newTenantName.trim()) { toast.error("Nome do tenant é obrigatório."); setLoading(false); return; }
-        const slug = newTenantName.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        if (!newTenantName.trim()) {
+          toast.error("Nome do tenant é obrigatório.");
+          setLoading(false);
+          return;
+        }
+        const slug = newTenantName
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[̀-ͯ]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
         const planSlug = (() => {
-          const norm = (x: string | null) => (x ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+          const norm = (x: string | null) =>
+            (x ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
           const want = norm(user.plano_pretendido);
           const found = plans.find((pl) => norm(pl.nome) === want || pl.slug === want);
-          return found?.slug ?? plans.find((pl) => /free|gratis/.test(norm(pl.nome)))?.slug ?? plans[0]?.slug ?? "free";
+          return (
+            found?.slug ??
+            plans.find((pl) => /free|gratis/.test(norm(pl.nome)))?.slug ??
+            plans[0]?.slug ??
+            "free"
+          );
         })();
-        const { data: newT, error: tErr } = await supabase.from("tenants").insert({ nome: newTenantName.trim(), slug, status: "active", plano_slug: planSlug } as never).select().maybeSingle();
-        if (tErr || !newT) throw new Error("Erro ao criar tenant: " + (tErr?.message || "Não retornado"));
+        const { data: newT, error: tErr } = await supabase
+          .from("tenants")
+          .insert({
+            nome: newTenantName.trim(),
+            slug,
+            status: "active",
+            plano_slug: planSlug,
+          } as never)
+          .select()
+          .maybeSingle();
+        if (tErr || !newT)
+          throw new Error("Erro ao criar tenant: " + (tErr?.message || "Não retornado"));
         finalTenantId = (newT as Tenant).id;
       }
 
       if (finalTenantId) {
         await supabase.from("user_roles").delete().eq("user_id", user.id);
-        await supabase.from("user_roles").insert({ user_id: user.id, tenant_id: finalTenantId, role: selectedRole } as never);
+        await supabase
+          .from("user_roles")
+          .insert({ user_id: user.id, tenant_id: finalTenantId, role: selectedRole } as never);
       }
 
       if (user.tipo_usuario === "corretor" && finalTenantId) {
-        const slug = (user.nome || "corretor").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-        await supabase.from("corretores").insert({ tenant_id: finalTenantId, user_id: user.id, nome: user.nome || "Corretor", email: user.email || `${slug}@exemplo.com`, slug, ativo: true, publico: true } as never);
+        const slug = (user.nome || "corretor")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[̀-ͯ]/g, "")
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+        await supabase.from("corretores").insert({
+          tenant_id: finalTenantId,
+          user_id: user.id,
+          nome: user.nome || "Corretor",
+          email: user.email || `${slug}@exemplo.com`,
+          slug,
+          ativo: true,
+          publico: true,
+        } as never);
       }
 
-      const { error: profileErr } = await supabase.from("profiles").update({ tenant_id: finalTenantId || null, aprovado: true, pagamento_validado: paymentValid, tipo_usuario: user.tipo_usuario } as never).eq("id", user.id);
+      const { error: profileErr } = await supabase
+        .from("profiles")
+        .update({
+          tenant_id: finalTenantId || null,
+          aprovado: true,
+          pagamento_validado: paymentValid,
+          tipo_usuario: user.tipo_usuario,
+        } as never)
+        .eq("id", user.id);
       if (profileErr) throw new Error("Erro ao atualizar perfil: " + profileErr.message);
 
       toast.success(`${user.nome} aprovado!`);
@@ -321,14 +400,18 @@ function AdminTenants() {
   function UserRow({ usr, indent = false }: { usr: ProfileUser; indent?: boolean }) {
     const mappedTenant = tenants.find((t) => t.id === usr.tenant_id);
     return (
-      <div className={`flex items-center gap-3 py-2.5 px-4 hover:bg-muted/30 transition group ${indent ? "pl-12" : ""}`}>
+      <div
+        className={`flex items-center gap-3 py-2.5 px-4 hover:bg-muted/30 transition group ${indent ? "pl-12" : ""}`}
+      >
         <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center shrink-0">
           <User className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sm text-foreground truncate">{usr.nome || "Sem nome"}</span>
+            <span className="font-bold text-sm text-foreground truncate">
+              {usr.nome || "Sem nome"}
+            </span>
             {usr.tipo_usuario && (
               <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
                 {usr.tipo_usuario}
@@ -346,13 +429,22 @@ function AdminTenants() {
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground">
             {usr.email && (
-              <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{usr.email}</span>
+              <span className="flex items-center gap-1">
+                <Mail className="h-3 w-3" />
+                {usr.email}
+              </span>
             )}
             {usr.telefone && (
-              <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{usr.telefone}</span>
+              <span className="flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                {usr.telefone}
+              </span>
             )}
             {usr.creci && (
-              <span className="flex items-center gap-1"><BadgeCheck className="h-3 w-3" />CRECI {usr.creci}</span>
+              <span className="flex items-center gap-1">
+                <BadgeCheck className="h-3 w-3" />
+                CRECI {usr.creci}
+              </span>
             )}
           </div>
         </div>
@@ -360,14 +452,19 @@ function AdminTenants() {
         {/* Tags for unlinked users */}
         {!indent && !usr.tenant_id && (
           <div className="flex items-center gap-1.5 shrink-0">
-            {usr.plano_pretendido && parseModules(usr.plano_pretendido).map((m) => (
-              <span key={m} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-violet-500/10 text-violet-600 border border-violet-500/20">
-                {MODULE_LABELS[m] || m}
-              </span>
-            ))}
+            {usr.plano_pretendido &&
+              parseModules(usr.plano_pretendido).map((m) => (
+                <span
+                  key={m}
+                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-violet-500/10 text-violet-600 border border-violet-500/20"
+                >
+                  {MODULE_LABELS[m] || m}
+                </span>
+              ))}
             {usr.imobiliaria_nome && (
               <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-amber-500/10 text-amber-700 border border-amber-500/20">
-                <LinkIcon className="h-2.5 w-2.5" />{usr.imobiliaria_nome}
+                <LinkIcon className="h-2.5 w-2.5" />
+                {usr.imobiliaria_nome}
               </span>
             )}
             {!usr.imobiliaria_nome && usr.tipo_usuario === "corretor" && (
@@ -381,40 +478,63 @@ function AdminTenants() {
         {/* Actions */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition shrink-0"
+            >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
             {!usr.aprovado && (
               <>
-                <DropdownMenuItem onClick={() => setApprovalModal({
-                  isOpen: true, user: usr,
-                  tenantMode: usr.tipo_usuario === "imobiliaria" ? "create" : "link",
-                  selectedTenantId: usr.tenant_id || "",
-                  newTenantName: usr.imobiliaria_nome || "",
-                  selectedRole: usr.tipo_usuario === "imobiliaria" ? "admin" : "broker",
-                  paymentValid: true,
-                })}>
-                  <UserCheck className="h-3.5 w-3.5 mr-2" />Aprovar
+                <DropdownMenuItem
+                  onClick={() =>
+                    setApprovalModal({
+                      isOpen: true,
+                      user: usr,
+                      tenantMode: usr.tipo_usuario === "imobiliaria" ? "create" : "link",
+                      selectedTenantId: usr.tenant_id || "",
+                      newTenantName: usr.imobiliaria_nome || "",
+                      selectedRole: usr.tipo_usuario === "imobiliaria" ? "admin" : "broker",
+                      paymentValid: true,
+                    })
+                  }
+                >
+                  <UserCheck className="h-3.5 w-3.5 mr-2" />
+                  Aprovar
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem onClick={() => setEditUserModal({
-              user: usr, nome: usr.nome || "", telefone: usr.telefone || "",
-              tipo_usuario: usr.tipo_usuario || "", plano_pretendido: usr.plano_pretendido || "",
-            })}>
-              <Pencil className="h-3.5 w-3.5 mr-2" />Editar
+            <DropdownMenuItem
+              onClick={() =>
+                setEditUserModal({
+                  user: usr,
+                  nome: usr.nome || "",
+                  telefone: usr.telefone || "",
+                  tipo_usuario: usr.tipo_usuario || "",
+                  plano_pretendido: usr.plano_pretendido || "",
+                })
+              }
+            >
+              <Pencil className="h-3.5 w-3.5 mr-2" />
+              Editar
             </DropdownMenuItem>
             {usr.aprovado && (
               <DropdownMenuItem onClick={() => blockUser(usr.id, usr.nome)}>
-                <Ban className="h-3.5 w-3.5 mr-2" />Bloquear
+                <Ban className="h-3.5 w-3.5 mr-2" />
+                Bloquear
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => deleteUser(usr.id)} className="text-red-600 focus:text-red-600">
-              <Trash2 className="h-3.5 w-3.5 mr-2" />Excluir
+            <DropdownMenuItem
+              onClick={() => deleteUser(usr.id)}
+              className="text-red-600 focus:text-red-600"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              Excluir
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -475,9 +595,11 @@ function AdminTenants() {
                   onClick={() => toggle(t.id)}
                 >
                   <button className="shrink-0 text-muted-foreground">
-                    {isOpen
-                      ? <ChevronDown className="h-4 w-4" />
-                      : <ChevronRight className="h-4 w-4" />}
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
                   </button>
 
                   <Building2 className="h-5 w-5 text-primary shrink-0" />
@@ -485,7 +607,9 @@ function AdminTenants() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-extrabold text-sm text-foreground">{t.nome}</span>
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${statusColor[t.status] ?? "text-muted-foreground bg-muted"}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold ${statusColor[t.status] ?? "text-muted-foreground bg-muted"}`}
+                      >
                         {statusLabel[t.status] ?? t.status}
                       </span>
                     </div>
@@ -493,7 +617,8 @@ function AdminTenants() {
                       <span className="font-mono">{t.slug}</span>
                       {t.cnpj && <span>CNPJ: {t.cnpj}</span>}
                       <span className="flex items-center gap-0.5">
-                        <CalendarDays className="h-3 w-3" />{fmtDate(t.created_at)}
+                        <CalendarDays className="h-3 w-3" />
+                        {fmtDate(t.created_at)}
                       </span>
                     </div>
                   </div>
@@ -512,38 +637,66 @@ function AdminTenants() {
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem onClick={() => setEditTenantModal({ tenant: t, nome: t.nome, cnpj: t.cnpj ?? "" })}>
-                          <Pencil className="h-3.5 w-3.5 mr-2" />Editar
+                        <DropdownMenuItem
+                          onClick={() =>
+                            setEditTenantModal({ tenant: t, nome: t.nome, cnpj: t.cnpj ?? "" })
+                          }
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-2" />
+                          Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Select value={t.plano_slug ?? ""} onValueChange={(v) => updateTenantField(t.id, "plano_slug", v)}>
+                          <Select
+                            value={t.plano_slug ?? ""}
+                            onValueChange={(v) => updateTenantField(t.id, "plano_slug", v)}
+                          >
                             <SelectTrigger className="h-6 w-full border-0 shadow-none p-0 text-xs font-normal">
-                              <div className="flex items-center gap-2"><Crown className="h-3.5 w-3.5" />Alterar plano</div>
+                              <div className="flex items-center gap-2">
+                                <Crown className="h-3.5 w-3.5" />
+                                Alterar plano
+                              </div>
                             </SelectTrigger>
                             <SelectContent>
                               {plans.map((p) => (
-                                <SelectItem key={p.slug} value={p.slug} className="text-xs">{p.nome}</SelectItem>
+                                <SelectItem key={p.slug} value={p.slug} className="text-xs">
+                                  {p.nome}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                         </DropdownMenuItem>
                         {t.status !== "suspended" ? (
-                          <DropdownMenuItem onClick={() => updateTenantField(t.id, "status", "suspended")}>
-                            <Ban className="h-3.5 w-3.5 mr-2" />Suspender
+                          <DropdownMenuItem
+                            onClick={() => updateTenantField(t.id, "status", "suspended")}
+                          >
+                            <Ban className="h-3.5 w-3.5 mr-2" />
+                            Suspender
                           </DropdownMenuItem>
                         ) : (
-                          <DropdownMenuItem onClick={() => updateTenantField(t.id, "status", "active")}>
-                            <UserCheck className="h-3.5 w-3.5 mr-2" />Reativar
+                          <DropdownMenuItem
+                            onClick={() => updateTenantField(t.id, "status", "active")}
+                          >
+                            <UserCheck className="h-3.5 w-3.5 mr-2" />
+                            Reativar
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => deleteTenant(t.id)} className="text-red-600 focus:text-red-600">
-                          <Trash2 className="h-3.5 w-3.5 mr-2" />Excluir
+                        <DropdownMenuItem
+                          onClick={() => deleteTenant(t.id)}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          Excluir
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -606,36 +759,68 @@ function AdminTenants() {
               {approvalModal.user.email && <div>{approvalModal.user.email}</div>}
               {approvalModal.user.creci && <div>CRECI: {approvalModal.user.creci}</div>}
               {approvalModal.user.plano_pretendido && (
-                <div>Módulos: {parseModules(approvalModal.user.plano_pretendido).map((m) => MODULE_LABELS[m] || m).join(", ")}</div>
+                <div>
+                  Módulos:{" "}
+                  {parseModules(approvalModal.user.plano_pretendido)
+                    .map((m) => MODULE_LABELS[m] || m)
+                    .join(", ")}
+                </div>
               )}
             </div>
             <div className="space-y-4">
               <div>
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Tenant</Label>
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                  Tenant
+                </Label>
                 <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-muted/60 mb-2">
-                  <button type="button" onClick={() => setApprovalModal((prev) => prev ? { ...prev, tenantMode: "create" } : null)}
-                    className={`py-2 text-[10px] font-bold rounded-lg border border-transparent ${approvalModal.tenantMode === "create" ? "bg-card text-primary shadow-sm border-border" : "text-muted-foreground"}`}>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setApprovalModal((prev) => (prev ? { ...prev, tenantMode: "create" } : null))
+                    }
+                    className={`py-2 text-[10px] font-bold rounded-lg border border-transparent ${approvalModal.tenantMode === "create" ? "bg-card text-primary shadow-sm border-border" : "text-muted-foreground"}`}
+                  >
                     Criar Novo
                   </button>
-                  <button type="button" disabled={tenants.length === 0}
-                    onClick={() => setApprovalModal((prev) => prev ? { ...prev, tenantMode: "link" } : null)}
-                    className={`py-2 text-[10px] font-bold rounded-lg border border-transparent disabled:opacity-50 ${approvalModal.tenantMode === "link" ? "bg-card text-primary shadow-sm border-border" : "text-muted-foreground"}`}>
+                  <button
+                    type="button"
+                    disabled={tenants.length === 0}
+                    onClick={() =>
+                      setApprovalModal((prev) => (prev ? { ...prev, tenantMode: "link" } : null))
+                    }
+                    className={`py-2 text-[10px] font-bold rounded-lg border border-transparent disabled:opacity-50 ${approvalModal.tenantMode === "link" ? "bg-card text-primary shadow-sm border-border" : "text-muted-foreground"}`}
+                  >
                     Vincular Existente
                   </button>
                 </div>
                 {approvalModal.tenantMode === "create" ? (
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-muted-foreground">Nome do novo tenant:</Label>
-                    <Input value={approvalModal.newTenantName}
-                      onChange={(e) => setApprovalModal((prev) => prev ? { ...prev, newTenantName: e.target.value } : null)}
-                      className="h-8 text-xs" placeholder="Ex: Alvorada Imóveis Ltda" />
+                    <Label className="text-[10px] text-muted-foreground">
+                      Nome do novo tenant:
+                    </Label>
+                    <Input
+                      value={approvalModal.newTenantName}
+                      onChange={(e) =>
+                        setApprovalModal((prev) =>
+                          prev ? { ...prev, newTenantName: e.target.value } : null,
+                        )
+                      }
+                      className="h-8 text-xs"
+                      placeholder="Ex: Alvorada Imóveis Ltda"
+                    />
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <Label className="text-[10px] text-muted-foreground">Selecione o tenant:</Label>
-                    <select value={approvalModal.selectedTenantId}
-                      onChange={(e) => setApprovalModal((prev) => prev ? { ...prev, selectedTenantId: e.target.value } : null)}
-                      className="w-full border border-border bg-card rounded-lg p-2 h-9 text-xs">
+                    <select
+                      value={approvalModal.selectedTenantId}
+                      onChange={(e) =>
+                        setApprovalModal((prev) =>
+                          prev ? { ...prev, selectedTenantId: e.target.value } : null,
+                        )
+                      }
+                      className="w-full border border-border bg-card rounded-lg p-2 h-9 text-xs"
+                    >
                       <option value="">-- Selecione --</option>
                       {tenants.map((t) => {
                         const p = planFor(t.plano_slug);
@@ -653,27 +838,60 @@ function AdminTenants() {
               </div>
               <div className="grid grid-cols-2 gap-3.5">
                 <div>
-                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Papel</Label>
-                  <select value={approvalModal.selectedRole}
-                    onChange={(e) => setApprovalModal((prev) => prev ? { ...prev, selectedRole: e.target.value as "admin" | "broker" } : null)}
-                    className="w-full border border-border bg-card rounded-lg p-2 h-8 text-xs">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                    Papel
+                  </Label>
+                  <select
+                    value={approvalModal.selectedRole}
+                    onChange={(e) =>
+                      setApprovalModal((prev) =>
+                        prev
+                          ? { ...prev, selectedRole: e.target.value as "admin" | "broker" }
+                          : null,
+                      )
+                    }
+                    className="w-full border border-border bg-card rounded-lg p-2 h-8 text-xs"
+                  >
                     <option value="admin">Admin</option>
                     <option value="broker">Corretor</option>
                   </select>
                 </div>
                 <div>
-                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">Pagamento</Label>
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+                    Pagamento
+                  </Label>
                   <div className="flex items-center gap-2 mt-1.5 h-7">
-                    <input type="checkbox" id="paymentValidCheck" checked={approvalModal.paymentValid}
-                      onChange={(e) => setApprovalModal((prev) => prev ? { ...prev, paymentValid: e.target.checked } : null)}
-                      className="h-4 w-4 text-primary bg-muted rounded border-border" />
-                    <label htmlFor="paymentValidCheck" className="text-xs font-semibold text-foreground">Validado</label>
+                    <input
+                      type="checkbox"
+                      id="paymentValidCheck"
+                      checked={approvalModal.paymentValid}
+                      onChange={(e) =>
+                        setApprovalModal((prev) =>
+                          prev ? { ...prev, paymentValid: e.target.checked } : null,
+                        )
+                      }
+                      className="h-4 w-4 text-primary bg-muted rounded border-border"
+                    />
+                    <label
+                      htmlFor="paymentValidCheck"
+                      className="text-xs font-semibold text-foreground"
+                    >
+                      Validado
+                    </label>
                   </div>
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setApprovalModal(null)}>Cancelar</Button>
-                <Button className="flex-1 text-xs h-9" onClick={executeApproval}>Aprovar e Liberar</Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 text-xs h-9"
+                  onClick={() => setApprovalModal(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button className="flex-1 text-xs h-9" onClick={executeApproval}>
+                  Aprovar e Liberar
+                </Button>
               </div>
             </div>
           </div>
@@ -685,20 +903,46 @@ function AdminTenants() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in zoom-in-95 duration-200 text-left text-sm">
             <h3 className="text-lg font-extrabold tracking-tight mb-4 flex items-center gap-1.5">
-              <Pencil className="h-5 w-5 text-primary" />Editar Imobiliária
+              <Pencil className="h-5 w-5 text-primary" />
+              Editar Imobiliária
             </h3>
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nome</Label>
-                <Input value={editTenantModal.nome} onChange={(e) => setEditTenantModal((prev) => prev ? { ...prev, nome: e.target.value } : null)} className="h-8 text-xs" />
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Nome
+                </Label>
+                <Input
+                  value={editTenantModal.nome}
+                  onChange={(e) =>
+                    setEditTenantModal((prev) => (prev ? { ...prev, nome: e.target.value } : null))
+                  }
+                  className="h-8 text-xs"
+                />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">CNPJ</Label>
-                <Input value={editTenantModal.cnpj} onChange={(e) => setEditTenantModal((prev) => prev ? { ...prev, cnpj: e.target.value } : null)} className="h-8 text-xs" placeholder="00.000.000/0001-00" />
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  CNPJ
+                </Label>
+                <Input
+                  value={editTenantModal.cnpj}
+                  onChange={(e) =>
+                    setEditTenantModal((prev) => (prev ? { ...prev, cnpj: e.target.value } : null))
+                  }
+                  className="h-8 text-xs"
+                  placeholder="00.000.000/0001-00"
+                />
               </div>
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setEditTenantModal(null)}>Cancelar</Button>
-                <Button className="flex-1 text-xs h-9" onClick={saveTenantEdit}>Salvar</Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 text-xs h-9"
+                  onClick={() => setEditTenantModal(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button className="flex-1 text-xs h-9" onClick={saveTenantEdit}>
+                  Salvar
+                </Button>
               </div>
             </div>
           </div>
@@ -710,43 +954,83 @@ function AdminTenants() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
           <div className="bg-card border border-border w-full max-w-sm rounded-2xl p-6 shadow-xl animate-in zoom-in-95 duration-200 text-left text-sm">
             <h3 className="text-lg font-extrabold tracking-tight mb-1 flex items-center gap-1.5">
-              <Pencil className="h-5 w-5 text-primary" />Editar Usuário
+              <Pencil className="h-5 w-5 text-primary" />
+              Editar Usuário
             </h3>
             <div className="text-[10px] text-muted-foreground mb-4">{editUserModal.user.email}</div>
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Nome</Label>
-                <Input value={editUserModal.nome} onChange={(e) => setEditUserModal((prev) => prev ? { ...prev, nome: e.target.value } : null)} className="h-8 text-xs" />
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Nome
+                </Label>
+                <Input
+                  value={editUserModal.nome}
+                  onChange={(e) =>
+                    setEditUserModal((prev) => (prev ? { ...prev, nome: e.target.value } : null))
+                  }
+                  className="h-8 text-xs"
+                />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Telefone</Label>
-                <Input value={editUserModal.telefone} onChange={(e) => setEditUserModal((prev) => prev ? { ...prev, telefone: e.target.value } : null)} className="h-8 text-xs" placeholder="(11) 99999-9999" />
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Telefone
+                </Label>
+                <Input
+                  value={editUserModal.telefone}
+                  onChange={(e) =>
+                    setEditUserModal((prev) =>
+                      prev ? { ...prev, telefone: e.target.value } : null,
+                    )
+                  }
+                  className="h-8 text-xs"
+                  placeholder="(11) 99999-9999"
+                />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Tipo</Label>
-                <select value={editUserModal.tipo_usuario} onChange={(e) => setEditUserModal((prev) => prev ? { ...prev, tipo_usuario: e.target.value } : null)}
-                  className="w-full border border-border bg-card rounded-lg p-2 h-8 text-xs">
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Tipo
+                </Label>
+                <select
+                  value={editUserModal.tipo_usuario}
+                  onChange={(e) =>
+                    setEditUserModal((prev) =>
+                      prev ? { ...prev, tipo_usuario: e.target.value } : null,
+                    )
+                  }
+                  className="w-full border border-border bg-card rounded-lg p-2 h-8 text-xs"
+                >
                   <option value="">—</option>
                   <option value="corretor">Corretor</option>
                   <option value="imobiliaria">Imobiliária</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Módulos de Interesse</Label>
+                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Módulos de Interesse
+                </Label>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {Object.entries(MODULE_LABELS).map(([slug, label]) => {
                     const mods = parseModules(editUserModal.plano_pretendido);
                     const checked = mods.includes(slug);
                     return (
-                      <button key={slug} type="button"
+                      <button
+                        key={slug}
+                        type="button"
                         onClick={() => {
                           const current = parseModules(editUserModal.plano_pretendido);
-                          const next = checked ? current.filter((m) => m !== slug) : [...current, slug];
-                          setEditUserModal((prev) => prev ? { ...prev, plano_pretendido: next.join(",") } : null);
+                          const next = checked
+                            ? current.filter((m) => m !== slug)
+                            : [...current, slug];
+                          setEditUserModal((prev) =>
+                            prev ? { ...prev, plano_pretendido: next.join(",") } : null,
+                          );
                         }}
                         className={`inline-flex items-center rounded-full px-2.5 py-1 text-[10px] font-bold border transition ${
-                          checked ? "bg-primary/10 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border"
-                        }`}>
+                          checked
+                            ? "bg-primary/10 text-primary border-primary/30"
+                            : "bg-muted text-muted-foreground border-border"
+                        }`}
+                      >
                         {label}
                       </button>
                     );
@@ -754,8 +1038,16 @@ function AdminTenants() {
                 </div>
               </div>
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1 text-xs h-9" onClick={() => setEditUserModal(null)}>Cancelar</Button>
-                <Button className="flex-1 text-xs h-9" onClick={saveUserEdit}>Salvar</Button>
+                <Button
+                  variant="outline"
+                  className="flex-1 text-xs h-9"
+                  onClick={() => setEditUserModal(null)}
+                >
+                  Cancelar
+                </Button>
+                <Button className="flex-1 text-xs h-9" onClick={saveUserEdit}>
+                  Salvar
+                </Button>
               </div>
             </div>
           </div>

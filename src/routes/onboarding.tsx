@@ -159,7 +159,10 @@ function Onboarding() {
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => { setTipo("corretor"); setStep(2); }}
+                onClick={() => {
+                  setTipo("corretor");
+                  setStep(2);
+                }}
                 className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <UserCheck className="h-8 w-8 text-primary" />
@@ -171,7 +174,10 @@ function Onboarding() {
                 </div>
               </button>
               <button
-                onClick={() => { setTipo("imobiliaria"); setStep(2); }}
+                onClick={() => {
+                  setTipo("imobiliaria");
+                  setStep(2);
+                }}
                 className="flex flex-col items-center gap-3 p-5 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all focus:outline-none focus:ring-2 focus:ring-primary/40"
               >
                 <Building2 className="h-8 w-8 text-primary" />
@@ -199,7 +205,10 @@ function Onboarding() {
 
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label htmlFor="onb-nome" className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                <Label
+                  htmlFor="onb-nome"
+                  className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                >
                   Nome Completo
                 </Label>
                 <Input
@@ -213,7 +222,10 @@ function Onboarding() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="onb-tel" className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                <Label
+                  htmlFor="onb-tel"
+                  className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                >
                   Telefone / WhatsApp
                 </Label>
                 <div className="relative">
@@ -230,7 +242,10 @@ function Onboarding() {
 
               {tipo === "corretor" && (
                 <div className="space-y-1">
-                  <Label htmlFor="onb-creci" className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                  <Label
+                    htmlFor="onb-creci"
+                    className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                  >
                     CRECI
                   </Label>
                   <Input
@@ -247,7 +262,10 @@ function Onboarding() {
               {tipo === "imobiliaria" && (
                 <>
                   <div className="space-y-1">
-                    <Label htmlFor="onb-imob" className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                    <Label
+                      htmlFor="onb-imob"
+                      className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                    >
                       Nome da Imobiliária
                     </Label>
                     <Input
@@ -260,9 +278,14 @@ function Onboarding() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="onb-cnpj" className="text-xs font-bold uppercase text-muted-foreground tracking-wider">
+                    <Label
+                      htmlFor="onb-cnpj"
+                      className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                    >
                       CNPJ{" "}
-                      <span className="normal-case font-normal text-muted-foreground/60">(opcional)</span>
+                      <span className="normal-case font-normal text-muted-foreground/60">
+                        (opcional)
+                      </span>
                     </Label>
                     <Input
                       id="onb-cnpj"
@@ -302,7 +325,8 @@ function Onboarding() {
               Quais módulos você pretende utilizar?
             </p>
             <p className="text-[10px] text-center text-muted-foreground -mt-2">
-              Selecione as funcionalidades de interesse. Isso nos ajuda a configurar sua experiência.
+              Selecione as funcionalidades de interesse. Isso nos ajuda a configurar sua
+              experiência.
             </p>
 
             <div className="space-y-2">
@@ -321,9 +345,11 @@ function Onboarding() {
                         : "border-border hover:border-primary/40"
                     }`}
                   >
-                    <div className={`mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
-                    }`}>
+                    <div
+                      className={`mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        selected ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"
+                      }`}
+                    >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -339,13 +365,19 @@ function Onboarding() {
                         {mod.descricao}
                       </p>
                     </div>
-                    <div className={`mt-1 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition ${
-                      selected
-                        ? "bg-primary border-primary"
-                        : "border-border"
-                    }`}>
+                    <div
+                      className={`mt-1 h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition ${
+                        selected ? "bg-primary border-primary" : "border-border"
+                      }`}
+                    >
                       {selected && (
-                        <svg className="h-3 w-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg
+                          className="h-3 w-3 text-primary-foreground"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}

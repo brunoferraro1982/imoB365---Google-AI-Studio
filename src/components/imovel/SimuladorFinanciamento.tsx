@@ -16,11 +16,11 @@ interface BancoPreset {
 }
 
 const BANCOS: BancoPreset[] = [
-  { nome: "Caixa Econômica", curto: "Caixa",    taxa: 9.5,   sigla: "CEF", cor: "#0070AF" },
-  { nome: "Itaú Unibanco",   curto: "Itaú",     taxa: 10.49, sigla: "ITÁ", cor: "#FF6600" },
-  { nome: "Banco Bradesco",  curto: "Bradesco",  taxa: 10.9,  sigla: "BRD", cor: "#CC092F" },
-  { nome: "Santander Brasil",curto: "Santander", taxa: 11.2,  sigla: "SAN", cor: "#EC0000" },
-  { nome: "Banco do Brasil", curto: "BB",        taxa: 10.2,  sigla: "BB",  cor: "#F9D000" },
+  { nome: "Caixa Econômica", curto: "Caixa", taxa: 9.5, sigla: "CEF", cor: "#0070AF" },
+  { nome: "Itaú Unibanco", curto: "Itaú", taxa: 10.49, sigla: "ITÁ", cor: "#FF6600" },
+  { nome: "Banco Bradesco", curto: "Bradesco", taxa: 10.9, sigla: "BRD", cor: "#CC092F" },
+  { nome: "Santander Brasil", curto: "Santander", taxa: 11.2, sigla: "SAN", cor: "#EC0000" },
+  { nome: "Banco do Brasil", curto: "BB", taxa: 10.2, sigla: "BB", cor: "#F9D000" },
 ];
 
 function calcular(
@@ -132,11 +132,14 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                 }`}
               >
                 <span
-                className="inline-flex items-center justify-center w-7 h-7 rounded font-black shrink-0 text-[9px] leading-none"
-                style={{ background: banco.cor, color: banco.cor === "#F9D000" ? "#1a1a1a" : "#ffffff" }}
-              >
-                {banco.sigla}
-              </span>
+                  className="inline-flex items-center justify-center w-7 h-7 rounded font-black shrink-0 text-[9px] leading-none"
+                  style={{
+                    background: banco.cor,
+                    color: banco.cor === "#F9D000" ? "#1a1a1a" : "#ffffff",
+                  }}
+                >
+                  {banco.sigla}
+                </span>
                 <span className="mt-1 block text-xs font-semibold leading-tight">
                   {banco.curto}
                 </span>

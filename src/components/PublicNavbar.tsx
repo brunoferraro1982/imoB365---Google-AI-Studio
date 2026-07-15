@@ -9,9 +9,9 @@
  * Se já existe um SiteHeader, substitua seu conteúdo por este ou copie os links.
  */
 
-import { useState, useEffect } from 'react'
-import { Link, useRouterState } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
+import { useState, useEffect } from "react";
+import { Link, useRouterState } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -20,75 +20,86 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, X, Phone, Building2, FileText, Users, Home, Info, MessageCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+} from "@/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Menu,
+  X,
+  Phone,
+  Building2,
+  FileText,
+  Users,
+  Home,
+  Info,
+  MessageCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const WHATSAPP_URL = 'https://wa.me/+5513997794382?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consultoria.'
-const PHONE = '(13) 99779-4382'
+const WHATSAPP_URL =
+  "https://wa.me/+5513997794382?text=Ol%C3%A1!%20Gostaria%20de%20agendar%20uma%20consultoria.";
+const PHONE = "(13) 99779-4382";
 
 const IMOVEIS_SUBMENU = [
   {
-    href: '/buscar?tipo=apartamento',
-    label: 'Apartamentos',
-    desc: 'Unidades residenciais no Litoral Sul',
+    href: "/buscar?tipo=apartamento",
+    label: "Apartamentos",
+    desc: "Unidades residenciais no Litoral Sul",
   },
   {
-    href: '/buscar?tipo=apartamento-alto-padrao',
-    label: 'Alto Padrão',
-    desc: 'Coberturas e Garden frente ao mar',
+    href: "/buscar?tipo=apartamento-alto-padrao",
+    label: "Alto Padrão",
+    desc: "Coberturas e Garden frente ao mar",
   },
   {
-    href: '/buscar?tipo=casa',
-    label: 'Casas',
-    desc: 'Residências e casas de praia',
+    href: "/buscar?tipo=casa",
+    label: "Casas",
+    desc: "Residências e casas de praia",
   },
   {
-    href: '/buscar?tipo=terreno',
-    label: 'Terrenos',
-    desc: 'Terrenos para construção e incorporação',
+    href: "/buscar?tipo=terreno",
+    label: "Terrenos",
+    desc: "Terrenos para construção e incorporação",
   },
   {
-    href: '/buscar?tipo=comercial',
-    label: 'Corporativo',
-    desc: 'Salas comerciais e investimento',
+    href: "/buscar?tipo=comercial",
+    label: "Corporativo",
+    desc: "Salas comerciais e investimento",
   },
   {
-    href: '/buscar',
-    label: 'Ver todos os imóveis →',
-    desc: 'Portfólio completo de R$ 3 MI',
+    href: "/buscar",
+    label: "Ver todos os imóveis →",
+    desc: "Portfólio completo de R$ 3 MI",
     highlight: true,
   },
-]
+];
 
 const NAV_LINKS = [
-  { href: '/sobre', label: 'Sobre a imoB365', icon: Info },
-  { href: '/blog', label: 'Blog', icon: FileText },
-  { href: '/consultoria', label: 'Consultoria', icon: Users },
-  { href: '/contato', label: 'Contato', icon: Phone },
-]
+  { href: "/sobre", label: "Sobre a imoB365", icon: Info },
+  { href: "/blog", label: "Blog", icon: FileText },
+  { href: "/consultoria", label: "Consultoria", icon: Users },
+  { href: "/contato", label: "Contato", icon: Phone },
+];
 
 export function PublicNavbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/')
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50'
-          : 'bg-white/80 backdrop-blur-sm',
+          ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-border/50"
+          : "bg-white/80 backdrop-blur-sm",
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -112,7 +123,9 @@ export function PublicNavbar() {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link
                       to="/"
-                      className={cn(isActive('/') && pathname === '/' && 'text-primary font-semibold')}
+                      className={cn(
+                        isActive("/") && pathname === "/" && "text-primary font-semibold",
+                      )}
                     >
                       Home
                     </Link>
@@ -124,7 +137,7 @@ export function PublicNavbar() {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link
                       to="/sobre"
-                      className={cn(isActive('/sobre') && 'text-primary font-semibold')}
+                      className={cn(isActive("/sobre") && "text-primary font-semibold")}
                     >
                       Sobre
                     </Link>
@@ -134,7 +147,7 @@ export function PublicNavbar() {
                 {/* Imóveis — com submenu */}
                 <NavigationMenuItem>
                   <NavigationMenuTrigger
-                    className={cn(isActive('/buscar') && 'text-primary font-semibold')}
+                    className={cn(isActive("/buscar") && "text-primary font-semibold")}
                   >
                     Imóveis
                   </NavigationMenuTrigger>
@@ -146,15 +159,15 @@ export function PublicNavbar() {
                             <Link
                               to={item.href}
                               className={cn(
-                                'block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors',
-                                'hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-                                item.highlight && 'col-span-2 bg-primary/5 hover:bg-primary/10',
+                                "block select-none rounded-md p-3 leading-none no-underline outline-none transition-colors",
+                                "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                                item.highlight && "col-span-2 bg-primary/5 hover:bg-primary/10",
                               )}
                             >
                               <div
                                 className={cn(
-                                  'text-sm font-medium leading-none',
-                                  item.highlight && 'text-primary',
+                                  "text-sm font-medium leading-none",
+                                  item.highlight && "text-primary",
                                 )}
                               >
                                 {item.label}
@@ -175,7 +188,7 @@ export function PublicNavbar() {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link
                       to="/blog"
-                      className={cn(isActive('/blog') && 'text-primary font-semibold')}
+                      className={cn(isActive("/blog") && "text-primary font-semibold")}
                     >
                       Blog
                     </Link>
@@ -187,7 +200,7 @@ export function PublicNavbar() {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link
                       to="/consultoria"
-                      className={cn(isActive('/consultoria') && 'text-primary font-semibold')}
+                      className={cn(isActive("/consultoria") && "text-primary font-semibold")}
                     >
                       Consultoria
                     </Link>
@@ -199,7 +212,7 @@ export function PublicNavbar() {
                   <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
                     <Link
                       to="/contato"
-                      className={cn(isActive('/contato') && 'text-primary font-semibold')}
+                      className={cn(isActive("/contato") && "text-primary font-semibold")}
                     >
                       Contato
                     </Link>
@@ -214,7 +227,11 @@ export function PublicNavbar() {
             <Button asChild variant="ghost" size="sm">
               <Link to="/login">Entrar</Link>
             </Button>
-            <Button asChild size="sm" className="gap-1.5 bg-green-600 hover:bg-green-700 text-white">
+            <Button
+              asChild
+              size="sm"
+              className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+            >
               <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="w-4 h-4" />
                 Agendar Conversa
@@ -232,7 +249,12 @@ export function PublicNavbar() {
             <SheetContent side="right" className="w-80 pt-12">
               <nav className="flex flex-col gap-1">
                 <MobileLink to="/" label="Home" icon={Home} onClick={() => setMobileOpen(false)} />
-                <MobileLink to="/sobre" label="Sobre a imoB365" icon={Info} onClick={() => setMobileOpen(false)} />
+                <MobileLink
+                  to="/sobre"
+                  label="Sobre a imoB365"
+                  icon={Info}
+                  onClick={() => setMobileOpen(false)}
+                />
 
                 {/* Imóveis expandido no mobile */}
                 <div className="px-3 py-2">
@@ -246,9 +268,9 @@ export function PublicNavbar() {
                         to={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
-                          'text-sm py-1.5 px-2 rounded-md transition-colors',
-                          'hover:bg-accent hover:text-accent-foreground',
-                          item.highlight && 'text-primary font-medium',
+                          "text-sm py-1.5 px-2 rounded-md transition-colors",
+                          "hover:bg-accent hover:text-accent-foreground",
+                          item.highlight && "text-primary font-medium",
                         )}
                       >
                         {item.label}
@@ -273,7 +295,10 @@ export function PublicNavbar() {
                       Entrar
                     </Link>
                   </Button>
-                  <Button asChild className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white">
+                  <Button
+                    asChild
+                    className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
+                  >
                     <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                       <MessageCircle className="w-4 h-4" />
                       Agendar Conversa
@@ -291,7 +316,7 @@ export function PublicNavbar() {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
 function MobileLink({
@@ -300,10 +325,10 @@ function MobileLink({
   icon: Icon,
   onClick,
 }: {
-  to: string
-  label: string
-  icon: React.ElementType
-  onClick: () => void
+  to: string;
+  label: string;
+  icon: React.ElementType;
+  onClick: () => void;
 }) {
   return (
     <Link
@@ -314,5 +339,5 @@ function MobileLink({
       <Icon className="w-4 h-4 text-muted-foreground" />
       {label}
     </Link>
-  )
+  );
 }

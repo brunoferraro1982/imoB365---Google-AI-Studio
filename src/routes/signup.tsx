@@ -377,7 +377,14 @@ function SignupPage() {
                     variant="outline"
                     className="p-2 h-10 w-full"
                     onClick={() => {
-                      void supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } }).then(({ error }) => { if (error) toast.error(`Erro ao conectar com Google: ${error.message}`); });
+                      void supabase.auth
+                        .signInWithOAuth({
+                          provider: "google",
+                          options: { redirectTo: `${window.location.origin}/auth/callback` },
+                        })
+                        .then(({ error }) => {
+                          if (error) toast.error(`Erro ao conectar com Google: ${error.message}`);
+                        });
                     }}
                   >
                     <Chrome className="h-4 w-4 text-red-500" />
