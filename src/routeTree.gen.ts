@@ -144,11 +144,13 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
+import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
+import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
@@ -847,6 +849,12 @@ const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
   path: '/contratos/$id/imprimir',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicWebhooksMercadopagoRoute =
+  ApiPublicWebhooksMercadopagoRouteImport.update({
+    id: '/api/public/webhooks/mercadopago',
+    path: '/api/public/webhooks/mercadopago',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksDeliverRoute =
   ApiPublicWebhooksDeliverRouteImport.update({
     id: '/api/public/webhooks/deliver',
@@ -874,6 +882,12 @@ const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
   path: '/api/public/cron/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronExpireTrialsRoute =
+  ApiPublicCronExpireTrialsRouteImport.update({
+    id: '/api/public/cron/expire-trials',
+    path: '/api/public/cron/expire-trials',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronContratosSlaRoute =
   ApiPublicCronContratosSlaRouteImport.update({
     id: '/api/public/cron/contratos-sla',
@@ -1041,11 +1055,13 @@ export interface FileRoutesByFullPath {
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
+  '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1184,11 +1200,13 @@ export interface FileRoutesByTo {
   '/conta/chat': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
+  '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1333,11 +1351,13 @@ export interface FileRoutesById {
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
+  '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1483,11 +1503,13 @@ export interface FileRouteTypes {
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/contratos-sla'
+    | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
     | '/lovable/email/auth/preview'
@@ -1626,11 +1648,13 @@ export interface FileRouteTypes {
     | '/conta/chat'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/contratos-sla'
+    | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
     | '/lovable/email/auth/preview'
@@ -1774,11 +1798,13 @@ export interface FileRouteTypes {
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/contratos-sla'
+    | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
     | '/lovable/email/auth/preview'
@@ -1842,11 +1868,13 @@ export interface RootRouteChildren {
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
+  ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
+  ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -2804,6 +2832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContratosIdImprimirRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/webhooks/mercadopago': {
+      id: '/api/public/webhooks/mercadopago'
+      path: '/api/public/webhooks/mercadopago'
+      fullPath: '/api/public/webhooks/mercadopago'
+      preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/deliver': {
       id: '/api/public/webhooks/deliver'
       path: '/api/public/webhooks/deliver'
@@ -2837,6 +2872,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/snapshot'
       fullPath: '/api/public/cron/snapshot'
       preLoaderRoute: typeof ApiPublicCronSnapshotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/expire-trials': {
+      id: '/api/public/cron/expire-trials'
+      path: '/api/public/cron/expire-trials'
+      fullPath: '/api/public/cron/expire-trials'
+      preLoaderRoute: typeof ApiPublicCronExpireTrialsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/contratos-sla': {
@@ -3153,11 +3195,13 @@ const rootRouteChildren: RootRouteChildren = {
   SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
+  ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
+  ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
