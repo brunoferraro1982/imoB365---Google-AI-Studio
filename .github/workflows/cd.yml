@@ -73,7 +73,7 @@ jobs:
         if: success()
         run: |
           echo "✅ Deploy de staging concluído — commit ${{ github.sha }}"
-          echo "🔗 URL: https://imob365-staging.workers.dev"
+          echo "🔗 Worker: tanstack-start-app-staging (URL exata depende do subdomínio workers.dev da conta)"
 
   # ─────────────────────────────────────────────────────────────
   # JOB 2: Deploy para Produção (branch main)
@@ -135,4 +135,4 @@ jobs:
         if: success()
         run: |
           echo "✅ Deploy de produção concluído — commit ${{ github.sha }}"
-          echo "🔗 URL: https://imob365.workers.dev"
+          echo "🔗 Worker: tanstack-start-app (URL exata depende do subdomínio workers.dev da conta, até portal.imob365.com.br ser configurado)"

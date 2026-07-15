@@ -3,5 +3,21 @@
   "name": "tanstack-start-app",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "src/server.ts",
+  // Aponta pro resultado do build (gerado por "npm run build"), não pro
+  // fonte bruto — wrangler deploy usa o próprio esbuild pra empacotar
+  // "main" e não entende os módulos virtuais que só o Vite resolve
+  // (ex.: "tanstack-start-manifest:v"), então main tem que ser o output
+  // já processado, não src/server.ts.
+  "main": "dist/server/server.js",
+  "env": {
+    // Sem rotas customizadas ainda — portal.imob365.com.br não está
+    // configurado na Cloudflare. Fica acessível via *.workers.dev até o
+    // domínio próprio entrar no ar.
+    "staging": {
+      "name": "tanstack-start-app-staging",
+    },
+    "production": {
+      "name": "tanstack-start-app",
+    },
+  },
 }
