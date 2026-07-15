@@ -39,6 +39,13 @@ const PreapprovalSchema = z.object({
   external_reference: z.string().nullable().optional(),
   preapproval_plan_id: z.string().nullable().optional(),
   init_point: z.string().optional(),
+  auto_recurring: z
+    .object({
+      transaction_amount: z.number().optional(),
+      currency_id: z.string().optional(),
+    })
+    .nullable()
+    .optional(),
 });
 export type Preapproval = z.infer<typeof PreapprovalSchema>;
 
@@ -46,6 +53,8 @@ const PaymentSchema = z.object({
   id: z.union([z.string(), z.number()]),
   status: z.string(),
   external_reference: z.string().nullable().optional(),
+  transaction_amount: z.number().optional(),
+  currency_id: z.string().optional(),
 });
 export type MpPayment = z.infer<typeof PaymentSchema>;
 

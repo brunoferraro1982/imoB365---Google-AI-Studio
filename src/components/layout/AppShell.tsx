@@ -2,6 +2,7 @@ import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-route
 import { useEffect } from "react";
 import { ChatBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
+import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
 import {
   Building2,
   Users,
@@ -38,6 +39,7 @@ import {
   LayoutGrid,
   HeartHandshake,
   Upload,
+  Receipt,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -170,6 +172,7 @@ const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
   { to: "/admin/planos", label: "Planos", icon: Banknote },
+  { to: "/admin/faturamento", label: "Faturamento", icon: Receipt },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
   { to: "/admin/modulos", label: "Módulos", icon: Globe2 },
   { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
@@ -517,6 +520,7 @@ function AdminLayout({
                 />
                 {item.label}
                 {item.label === "Aprovações" && <ApprovalsNavBadge />}
+                {item.label === "Faturamento" && <FaturamentoNavBadge />}
               </Link>
             );
           })}
