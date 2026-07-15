@@ -57,6 +57,20 @@ jobs:
       - name: Build
         run: npm run build
 
+      # wrangler-action sempre tenta subir os secrets ANTES de rodar o
+      # comando de deploy — na primeira vez, o Worker do ambiente ainda não
+      # existe, então o upload de secrets falha ("object identifier is
+      # invalid") antes mesmo do deploy criar o Worker. Esse primeiro passo
+      # (sem "secrets") garante que o Worker exista; nas próximas execuções
+      # ele já existe e este passo só faz um redeploy idempotente.
+      - name: Deploy para Cloudflare Workers (staging) — bootstrap
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env staging
+          environment: staging
+
       - name: Deploy para Cloudflare Workers (staging)
         uses: cloudflare/wrangler-action@v3
         with:
@@ -109,6 +123,16 @@ jobs:
 
       - name: Build de produção
         run: npm run build
+
+      # Ver comentário equivalente no job de staging: bootstrap sem secrets
+      # primeiro, pra garantir que o Worker exista antes do upload de secrets.
+      - name: Deploy para Cloudflare Workers (produção) — bootstrap
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env production
+          environment: production
 
       - name: Deploy para Cloudflare Workers (produção)
         uses: cloudflare/wrangler-action@v3
