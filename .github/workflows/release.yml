@@ -59,8 +59,7 @@ jobs:
             ${{ steps.changelog.outputs.CHANGELOG }}
 
             ---
-            **Deploy:** Cloudflare Workers  
-            **Commit:** `${{ github.sha }}`  
+            **Commit:** `${{ github.sha }}`
             **Data:** ${{ github.event.repository.updated_at }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
