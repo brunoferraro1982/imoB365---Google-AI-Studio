@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import {
   Phone,
   Mail,
-  MapPin,
+  Globe,
   MessageCircle,
   ArrowRight,
   Clock,
@@ -24,8 +24,7 @@ export const Route = createFileRoute("/contato")({
       { title: "Contato | imoB365 — Consultoria Imobiliária" },
       {
         name: "description",
-        content:
-          "Entre em contato com a imoB365. Atendimento 365 dias por ano em Santos, Praia Grande e São Vicente.",
+        content: "Entre em contato com a imoB365. Atendimento 365 dias por ano em todo o Brasil.",
       },
     ],
   }),
@@ -48,9 +47,9 @@ const CONTATOS = [
     color: "bg-purple-100/70 text-purple-800",
   },
   {
-    icon: MapPin,
-    titulo: "Região Atendida",
-    desc: "Praia Grande · Santos · São Vicente, SP",
+    icon: Globe,
+    titulo: "Atendimento",
+    desc: "Todo o Brasil, 365 dias por ano",
     href: null,
     color: "bg-primary/10 text-primary",
   },
@@ -66,7 +65,7 @@ const CONTATOS = [
 const STATS = [
   { valor: "2h", label: "Tempo médio de resposta", icon: Clock },
   { valor: "365", label: "Dias por ano atendendo", icon: Star },
-  { valor: "3", label: "Cidades no Litoral Sul", icon: MapPin },
+  { valor: "Brasil", label: "Cobertura de atendimento", icon: Globe },
   { valor: "100%", label: "Foco no seu atendimento", icon: ShieldCheck },
 ];
 
@@ -132,8 +131,8 @@ function ContatoPage() {
               <span className="text-primary">o Seu Próximo Patrimônio.</span>
             </h1>
             <p className="text-white/65 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
-              Nossa equipe especializada no mercado de alto padrão do Litoral Sul retorna em até 2
-              horas nos dias úteis. Conte pra gente o que você procura.
+              Nossa equipe especializada no mercado de alto padrão retorna em até 2 horas nos dias
+              úteis. Conte pra gente o que você procura.
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <a
@@ -363,7 +362,7 @@ function ContatoPage() {
             </span>
             <h2 className="text-2xl font-black tracking-tight">Conheça mais sobre a imoB365</h2>
             <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Descubra nossa missão, valores e como atuamos no Litoral Sul de São Paulo.
+              Descubra nossa missão, nossos valores e como atuamos em todo o Brasil.
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <Link

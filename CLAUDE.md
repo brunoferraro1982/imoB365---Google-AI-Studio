@@ -265,6 +265,15 @@ Custom domain components live in:
 | `src/routes/api.public.cron.expire-trials.ts` | Cron diário: período de graça de 3 dias no fim do trial, com e-mail de aviso antes do downgrade para Free |
 | `src/routes/app.contratacao.tsx`  | Troca escrita direta em `tenants` por redirect ao checkout do Mercado Pago (planos pagos); Free/Business inalterados |
 
+### 🔧 Correções recentes (2026-07-15)
+
+| Arquivo                          | Correção                                                                                      |
+| :------------------------------- | :-------------------------------------------------------------------------------------------- |
+| `src/routes/a-imob365.tsx`        | Remove todo vínculo geográfico ("Litoral Sul de SP", Santos/Praia Grande/São Vicente): head/meta, hero, Missão/Visão, narrativa, stat "cidades"→"Brasil"; seção `#litoral-sul` reconstruída como `#nosso-padrao` (curadoria) mantendo o mesmo layout 2 colunas |
+| `src/routes/contato.tsx`          | Idem: head/meta, hero, CTA final, card "Região Atendida"→"Atendimento" (Todo o Brasil), stat "cidades"→"Brasil" |
+| `src/routes/consultoria.tsx`      | Idem: head/meta e corpo sem menção a região                                                    |
+| `src/components/site-layout.tsx`  | Nav mega-menu/mobile: label "Por que o Litoral Sul"→"Nosso Padrão de Curadoria", anchor `litoral-sul`→`nosso-padrao` |
+
 ### 📋 Backlog (próximas versões)
 
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
@@ -283,3 +292,4 @@ Custom domain components live in:
 - Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção em `portal.imob365.com.br`
 - Limpeza de lint/TypeScript pré-existente no CI: ~4219 erros de prettier/eslint e ~172 erros de `tsc --noEmit` espalhados por dezenas de arquivos não relacionados às sprints recentes (ex.: `onboarding.tsx`, `signup.tsx`, `imovel.$slug.tsx`, `workers/redirects.ts`) — os jobs `Lint & Format`/`TypeScript` do `ci.yml` continuam vermelhos por causa disso (não bloqueia o build real, só o gate de qualidade)
 - Reativar o pipeline de deploy Cloudflare Workers (`.github/workflows/cd.yml`, removido em 2026-07-15 por não estar em uso) quando for a hora de ir ao ar de verdade — guia de secrets em `GITHUB-SECRETS.md`; `wrangler.jsonc` já tem os blocos `env.staging`/`env.production` e o `main` corrigido para o build (`dist/server/server.js`), mas a config de `assets` (client estático) para servir `dist/client` ainda não foi validada com um deploy real
+- Considerar Proposta B3 do reposicionamento nacional (mapa estilizado do Brasil com pontos/rede de conexão) como evolução visual futura da seção `#nosso-padrao` em `/a-imob365`, hoje resolvida via B2 (reaproveito de layout, troca de texto) — não há nenhum elemento de mapa/visual de localização no site público ainda
