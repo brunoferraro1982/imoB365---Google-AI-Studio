@@ -35,34 +35,38 @@ function verifySignature(opts: {
   return timingSafeEqual(a, b);
 }
 
-async function activateFromPreapproval(preapprovalId: string, tenantId: string) {
+// A assinatura é criada sem plano associado (ver client.server.ts e
+// mercadopago.functions.ts - preapproval_plan_id exigiria card_token_id na
+// criação via API), então external_reference carrega tenantId:planoSlug:ciclo
+// diretamente em vez de depender de mp_preapproval_plan_id_* em `plans`.
+function parseExternalReference(
+  ref: string | null | undefined,
+): { tenantId: string; planoSlug: string; ciclo: string } | null {
+  if (!ref) return null;
+  const [tenantId, planoSlug, ciclo] = ref.split(":");
+  if (!tenantId || !planoSlug || !ciclo) return null;
+  return { tenantId, planoSlug, ciclo };
+}
+
+async function activateFromPreapproval(
+  preapprovalId: string,
+  ref: { tenantId: string; planoSlug: string; ciclo: string },
+) {
   const preapproval = await fetchPreapproval(preapprovalId);
   if (preapproval.status !== "authorized") return { activated: false, status: preapproval.status };
-
-  const preapprovalPlanId = preapproval.preapproval_plan_id;
-  const { data: plan } = await supabaseAdmin
-    .from("plans")
-    .select("slug, mp_preapproval_plan_id_mensal, mp_preapproval_plan_id_anual")
-    .or(
-      `mp_preapproval_plan_id_mensal.eq.${preapprovalPlanId},mp_preapproval_plan_id_anual.eq.${preapprovalPlanId}`,
-    )
-    .maybeSingle();
-  if (!plan) return { activated: false, status: "plan_not_found" };
-
-  const cycle = plan.mp_preapproval_plan_id_anual === preapprovalPlanId ? "annual" : "monthly";
 
   await supabaseAdmin
     .from("tenants")
     .update({
-      plano_slug: plan.slug,
+      plano_slug: ref.planoSlug,
       status: "active",
       payment_status: "authorized",
       mercadopago_preapproval_id: preapprovalId,
-      plan_cycle: cycle,
+      plan_cycle: ref.ciclo,
       trial_ends_at: null,
       trial_grace_ends_at: null,
     })
-    .eq("id", tenantId);
+    .eq("id", ref.tenantId);
 
   return { activated: true, status: preapproval.status };
 }
@@ -152,10 +156,10 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
 
           if (eventType === "subscription_preapproval") {
             const preapproval = await fetchPreapproval(resourceId);
-            const tenantId = preapproval.external_reference;
-            if (tenantId) {
-              const r = await activateFromPreapproval(resourceId, tenantId);
-              result = { ...r, tenantId };
+            const ref = parseExternalReference(preapproval.external_reference);
+            if (ref) {
+              const r = await activateFromPreapproval(resourceId, ref);
+              result = { ...r, tenantId: ref.tenantId };
             }
           } else if (eventType === "payment") {
             const payment = await fetchPayment(resourceId);

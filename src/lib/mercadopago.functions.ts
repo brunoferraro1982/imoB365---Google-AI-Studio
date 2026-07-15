@@ -28,9 +28,7 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
 
     const { data: plan, error: planError } = await supabaseAdmin
       .from("plans")
-      .select(
-        "slug, nome, preco_mensal, preco_anual, mp_preapproval_plan_id_mensal, mp_preapproval_plan_id_anual, mp_anual_cobranca_avulsa",
-      )
+      .select("slug, nome, preco_mensal, preco_anual, mp_anual_cobranca_avulsa")
       .eq("slug", data.planoSlug)
       .maybeSingle();
     if (planError) throw new Error("Erro ao carregar plano: " + planError.message);
@@ -51,7 +49,7 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
     if (data.ciclo === "annual" && plan.mp_anual_cobranca_avulsa) {
       // Caso avulso: hoje só o Pro anual — Checkout Pro clássico, sem preapproval_plan.
       const preference = await createCheckoutPreference({
-        title: `imob365 — Plano ${plan.nome} (anual)`,
+        title: `imob365 - Plano ${plan.nome} (anual)`,
         price: Number(plan.preco_anual ?? plan.preco_mensal * 12),
         externalReference: profile.tenant_id,
         payerEmail,
@@ -59,18 +57,20 @@ export const createMercadoPagoCheckout = createServerFn({ method: "POST" })
       });
       checkoutUrl = preference.init_point;
     } else {
-      const preapprovalPlanId =
+      // Assinatura sem plano associado (ver client.server.ts): preapproval_plan_id
+      // exigiria card_token_id na criação via API, o que não temos aqui - o valor
+      // e a frequência são enviados inline. external_reference carrega
+      // tenantId:planoSlug:ciclo para o webhook conseguir ativar o plano certo
+      // sem depender de um preapproval_plan_id.
+      const transactionAmount =
         data.ciclo === "annual"
-          ? plan.mp_preapproval_plan_id_anual
-          : plan.mp_preapproval_plan_id_mensal;
-      if (!preapprovalPlanId) {
-        throw new Error(
-          `Plano ${plan.nome} (${data.ciclo === "annual" ? "anual" : "mensal"}) não tem checkout automático configurado.`,
-        );
-      }
+          ? Number(plan.preco_anual ?? plan.preco_mensal * 12)
+          : Number(plan.preco_mensal);
       const preapproval = await createPreapproval({
-        preapprovalPlanId,
-        externalReference: profile.tenant_id,
+        reason: `imob365 - Plano ${plan.nome} (${data.ciclo === "annual" ? "anual" : "mensal"})`,
+        transactionAmount,
+        frequency: data.ciclo === "annual" ? 12 : 1,
+        externalReference: `${profile.tenant_id}:${plan.slug}:${data.ciclo}`,
         payerEmail,
         backUrl,
       });

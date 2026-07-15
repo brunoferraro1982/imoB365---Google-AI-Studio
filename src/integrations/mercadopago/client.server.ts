@@ -26,6 +26,7 @@ async function mpFetch<T>(path: string, init: RequestInit): Promise<T> {
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {
+    console.error("Erro na API do Mercado Pago", res.status, body);
     const message = body?.message ?? body?.error ?? `Mercado Pago API respondeu ${res.status}`;
     throw new Error(`Mercado Pago: ${message}`);
   }
@@ -49,12 +50,24 @@ const PaymentSchema = z.object({
 export type MpPayment = z.infer<typeof PaymentSchema>;
 
 /**
- * Cria uma assinatura (preapproval) a partir de um preapproval_plan_id já
- * configurado no painel do Mercado Pago. Devolve init_point para o usuário
- * completar a autorização (cartão) no checkout hospedado do Mercado Pago.
+ * Cria uma assinatura (preapproval) SEM plano associado, com pagamento
+ * pendente — o Mercado Pago devolve um init_point para o cliente completar
+ * o cartão na própria página hospedada dele.
+ *
+ * IMPORTANTE: assinaturas criadas com preapproval_plan_id SEMPRE exigem
+ * card_token_id na criação via API (documentado pelo Mercado Pago — "a
+ * subscription with an associated plan must always be created with your
+ * card_token_id and with the status Authorized"), então não dá pra usar o
+ * preapproval_plan_id aqui para obter um checkout sem cartão em mãos. Por
+ * isso a recorrência (valor/frequência) é enviada inline via auto_recurring
+ * em vez de referenciar o plano já criado no painel — a assinatura resultante
+ * não aparece agrupada sob o Plano no painel do Mercado Pago, mas cobra o
+ * mesmo valor/frequência.
  */
 export async function createPreapproval(opts: {
-  preapprovalPlanId: string;
+  reason: string;
+  transactionAmount: number;
+  frequency: number; // 1 = mensal, 12 = anual (frequency_type sempre "months")
   externalReference: string;
   payerEmail: string;
   backUrl: string;
@@ -62,9 +75,15 @@ export async function createPreapproval(opts: {
   const body = await mpFetch<unknown>("/preapproval", {
     method: "POST",
     body: JSON.stringify({
-      preapproval_plan_id: opts.preapprovalPlanId,
+      reason: opts.reason,
       external_reference: opts.externalReference,
       payer_email: opts.payerEmail,
+      auto_recurring: {
+        frequency: opts.frequency,
+        frequency_type: "months",
+        transaction_amount: opts.transactionAmount,
+        currency_id: "BRL",
+      },
       back_url: opts.backUrl,
       status: "pending",
     }),
