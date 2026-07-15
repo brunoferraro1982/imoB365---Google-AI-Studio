@@ -77,6 +77,7 @@ import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
 import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
 import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes'
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
+import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
@@ -497,6 +498,11 @@ const AdminIntegracoesRoute = AdminIntegracoesRouteImport.update({
 const AdminFlagsRoute = AdminFlagsRouteImport.update({
   id: '/flags',
   path: '/flags',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminFaturamentoRoute = AdminFaturamentoRouteImport.update({
+  id: '/faturamento',
+  path: '/faturamento',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
@@ -961,6 +967,7 @@ export interface FileRoutesByFullPath {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1108,6 +1115,7 @@ export interface FileRoutesByTo {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1257,6 +1265,7 @@ export interface FileRoutesById {
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
+  '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1409,6 +1418,7 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
+    | '/admin/faturamento'
     | '/admin/flags'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -1556,6 +1566,7 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
+    | '/admin/faturamento'
     | '/admin/flags'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -1704,6 +1715,7 @@ export interface FileRouteTypes {
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
+    | '/admin/faturamento'
     | '/admin/flags'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -2363,6 +2375,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFlagsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/faturamento': {
+      id: '/admin/faturamento'
+      path: '/faturamento'
+      fullPath: '/admin/faturamento'
+      preLoaderRoute: typeof AdminFaturamentoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/emails': {
       id: '/admin/emails'
       path: '/emails'
@@ -2930,6 +2949,7 @@ interface AdminRouteChildren {
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
   AdminBlogRoute: typeof AdminBlogRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
+  AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
   AdminIntegracoesRoute: typeof AdminIntegracoesRoute
   AdminLimitesRoute: typeof AdminLimitesRoute
@@ -2943,6 +2963,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditoriaRoute: AdminAuditoriaRoute,
   AdminBlogRoute: AdminBlogRoute,
   AdminEmailsRoute: AdminEmailsRoute,
+  AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminFlagsRoute: AdminFlagsRoute,
   AdminIntegracoesRoute: AdminIntegracoesRoute,
   AdminLimitesRoute: AdminLimitesRoute,

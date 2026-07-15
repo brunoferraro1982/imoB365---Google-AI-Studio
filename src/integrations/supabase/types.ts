@@ -2926,7 +2926,9 @@ export type Database = {
       }
       payment_events: {
         Row: {
+          amount: number | null
           created_at: string
+          currency: string
           event_type: string
           id: string
           mp_notification_id: string
@@ -2935,7 +2937,9 @@ export type Database = {
           tenant_id: string | null
         }
         Insert: {
+          amount?: number | null
           created_at?: string
+          currency?: string
           event_type: string
           id?: string
           mp_notification_id: string
@@ -2944,7 +2948,9 @@ export type Database = {
           tenant_id?: string | null
         }
         Update: {
+          amount?: number | null
           created_at?: string
+          currency?: string
           event_type?: string
           id?: string
           mp_notification_id?: string

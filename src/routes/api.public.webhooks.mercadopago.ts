@@ -48,12 +48,29 @@ function parseExternalReference(
   return { tenantId, planoSlug, ciclo };
 }
 
+// Status de preapproval do Mercado Pago que fazem sentido sincronizar em
+// tenants.payment_status mesmo quando não é "authorized" — sem isso, uma
+// assinatura que entra em atraso (paused) ou é cancelada nunca reflete no
+// banco, já que só o caminho "authorized" escrevia em tenants antes.
+const SYNCABLE_PREAPPROVAL_STATUSES = new Set(["paused", "cancelled", "pending"]);
+
 async function activateFromPreapproval(
   preapprovalId: string,
   ref: { tenantId: string; planoSlug: string; ciclo: string },
 ) {
   const preapproval = await fetchPreapproval(preapprovalId);
-  if (preapproval.status !== "authorized") return { activated: false, status: preapproval.status };
+  const amount = preapproval.auto_recurring?.transaction_amount ?? null;
+  const currency = preapproval.auto_recurring?.currency_id ?? "BRL";
+
+  if (preapproval.status !== "authorized") {
+    if (SYNCABLE_PREAPPROVAL_STATUSES.has(preapproval.status)) {
+      await supabaseAdmin
+        .from("tenants")
+        .update({ payment_status: preapproval.status })
+        .eq("id", ref.tenantId);
+    }
+    return { activated: false, status: preapproval.status, amount, currency };
+  }
 
   await supabaseAdmin
     .from("tenants")
@@ -68,12 +85,16 @@ async function activateFromPreapproval(
     })
     .eq("id", ref.tenantId);
 
-  return { activated: true, status: preapproval.status };
+  return { activated: true, status: preapproval.status, amount, currency };
 }
 
 async function activateFromPayment(paymentId: string, tenantId: string) {
   const payment = await fetchPayment(paymentId);
-  if (payment.status !== "approved") return { activated: false, status: payment.status };
+  const amount = payment.transaction_amount ?? null;
+  const currency = payment.currency_id ?? "BRL";
+
+  if (payment.status !== "approved")
+    return { activated: false, status: payment.status, amount, currency };
 
   // Hoje o único combo de cobrança avulsa é o Pro anual (ver migration
   // 20260714180000_mercadopago_subscriptions.sql) — sem renovação automática,
@@ -92,7 +113,7 @@ async function activateFromPayment(paymentId: string, tenantId: string) {
     })
     .eq("id", tenantId);
 
-  return { activated: true, status: payment.status };
+  return { activated: true, status: payment.status, amount, currency };
 }
 
 export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
@@ -152,7 +173,13 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
         }
 
         try {
-          let result: { activated: boolean; status: string; tenantId?: string } | null = null;
+          let result: {
+            activated: boolean;
+            status: string;
+            amount: number | null;
+            currency: string | null;
+            tenantId?: string;
+          } | null = null;
 
           if (eventType === "subscription_preapproval") {
             const preapproval = await fetchPreapproval(resourceId);
@@ -178,6 +205,8 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
             .update({
               processed_at: new Date().toISOString(),
               tenant_id: result?.tenantId ?? null,
+              amount: result?.amount ?? null,
+              currency: result?.currency ?? "BRL",
             })
             .eq("mp_notification_id", notificationId);
 
