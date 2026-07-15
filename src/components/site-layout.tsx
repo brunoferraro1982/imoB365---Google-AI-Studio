@@ -811,14 +811,14 @@ function SiteHeaderImpl() {
                         desc: "Os 3 pilares da nossa metodologia",
                       },
                       {
-                        anchor: "litoral-sul",
-                        label: "Por que o Litoral Sul",
-                        desc: "Potencial de valorização da região",
+                        anchor: "nosso-padrao",
+                        label: "Nosso Padrão de Curadoria",
+                        desc: "Como selecionamos cada imóvel",
                       },
                       {
                         anchor: "numeros",
                         label: "Nossos Números",
-                        desc: "365 dias, 3 cidades, R$3MI+",
+                        desc: "365 dias, cobertura nacional, R$3MI+",
                       },
                       { anchor: "servicos", label: "Serviços", desc: "Tudo que oferecemos" },
                       {
@@ -1266,7 +1266,7 @@ function SiteHeaderImpl() {
                     {[
                       { anchor: "quem-somos", label: "Quem Somos" },
                       { anchor: "nossa-abordagem", label: "Nossa Abordagem" },
-                      { anchor: "litoral-sul", label: "Por que o Litoral Sul" },
+                      { anchor: "nosso-padrao", label: "Nosso Padrão de Curadoria" },
                       { anchor: "numeros", label: "Nossos Números" },
                       { anchor: "servicos", label: "Serviços" },
                       { anchor: "depoimentos", label: "Depoimentos" },

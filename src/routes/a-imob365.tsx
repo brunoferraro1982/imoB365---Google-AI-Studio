@@ -7,7 +7,6 @@ import {
   Building2,
   ArrowRight,
   Phone,
-  MapPin,
   TrendingUp,
   Users,
   Star,
@@ -17,6 +16,7 @@ import {
   Home,
   Wrench,
   Award,
+  Globe,
 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { TestimonialsSection } from "@/components/portal/TestimonialsSection";
@@ -25,11 +25,11 @@ import { PartnersSection } from "@/components/portal/PartnersSection";
 export const Route = createFileRoute("/a-imob365")({
   head: () => ({
     meta: [
-      { title: "A imoB365 | Inteligência Imobiliária no Litoral Sul de SP" },
+      { title: "A imoB365 | Inteligência Imobiliária de Alto Padrão" },
       {
         name: "description",
         content:
-          "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão em Praia Grande, Santos e São Vicente, 365 dias por ano.",
+          "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento 365 dias por ano em todo o Brasil.",
       },
     ],
   }),
@@ -133,7 +133,7 @@ const VALORES = [
 
 const STATS = [
   { valor: "365", label: "Dias por ano atendendo", icon: Star },
-  { valor: "3", label: "Cidades no Litoral Sul", icon: MapPin },
+  { valor: "Brasil", label: "Cobertura de atendimento", icon: Globe },
   { valor: "R$ 3MI+", label: "Portfólio disponível", icon: TrendingUp },
   { valor: "100%", label: "Foco no seu patrimônio", icon: Eye },
 ];
@@ -201,8 +201,7 @@ function AImob365Page() {
             </h1>
             <p className="text-white/65 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
               A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura. Operamos
-              365 dias por ano em Santos, Praia Grande e São Vicente com inteligência, dados e total
-              transparência.
+              365 dias por ano, em todo o Brasil, com inteligência, dados e total transparência.
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <a
@@ -250,8 +249,8 @@ function AImob365Page() {
                 <h3 className="font-black text-sm uppercase tracking-wide">Nossa Missão</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   Transformar decisões imobiliárias em patrimônio sólido, conectando clientes
-                  exigentes às melhores oportunidades do Litoral Sul de São Paulo com inteligência,
-                  dados e total transparência.
+                  exigentes às melhores oportunidades do mercado imobiliário de alto padrão com
+                  inteligência, dados e total transparência.
                 </p>
               </div>
 
@@ -262,9 +261,9 @@ function AImob365Page() {
                 </div>
                 <h3 className="font-black text-sm uppercase tracking-wide">Nossa Visão</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Ser a referência em consultoria imobiliária de alto padrão no Litoral Sul de São
-                  Paulo, reconhecida pela excelência na análise de mercado e pelo compromisso
-                  inabalável com os interesses de nossos clientes.
+                  Ser a referência nacional em consultoria imobiliária de alto padrão, reconhecida
+                  pela excelência na análise de mercado e pelo compromisso inabalável com os
+                  interesses de nossos clientes.
                 </p>
               </div>
 
@@ -292,11 +291,10 @@ function AImob365Page() {
             <div className="mt-8 rounded-2xl bg-muted/40 border border-border/40 p-6 md:p-8">
               <p className="text-sm text-foreground/80 leading-relaxed">
                 A <strong>imoB365</strong> nasceu para preencher uma lacuna no mercado imobiliário
-                do Litoral Sul de São Paulo: a necessidade de uma consultoria que entenda o imóvel
-                não apenas como uma moradia, mas como um <strong>ativo estratégico</strong>. Com
-                foco em Santos, Praia Grande e São Vicente, operamos{" "}
-                <strong>365 dias por ano</strong> para garantir que cada oportunidade seja capturada
-                no momento certo.
+                de alto padrão: a necessidade de uma consultoria que entenda o imóvel não apenas
+                como uma moradia, mas como um <strong>ativo estratégico</strong>. Operamos{" "}
+                <strong>365 dias por ano</strong>, em todo o Brasil, para garantir que cada
+                oportunidade seja capturada no momento certo.
               </p>
             </div>
           </div>
@@ -339,27 +337,26 @@ function AImob365Page() {
           </div>
         </section>
 
-        {/* ─── POR QUE O LITORAL SUL ──────────────────────────────── */}
-        <section id="litoral-sul" className="py-14 px-4 scroll-mt-20">
+        {/* ─── NOSSO PADRÃO DE CURADORIA ──────────────────────────── */}
+        <section id="nosso-padrao" className="py-14 px-4 scroll-mt-20">
           <div className="container max-w-4xl mx-auto">
             <div className="grid gap-8 md:grid-cols-2 items-center">
               <div className="space-y-5">
                 <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-                  Por que o Litoral Sul?
+                  Nosso Padrão de Curadoria
                 </span>
                 <h2 className="text-2xl font-black tracking-tight">
-                  Uma região com potencial de valorização acelerada
+                  Cada imóvel passa por uma análise rigorosa antes de chegar até você
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Acreditamos no potencial de valorização acelerada da nossa região. Seja uma
-                  cobertura no <strong>Canto do Forte</strong> ou um apartamento Garden na{" "}
-                  <strong>Ponta da Praia</strong>, nosso papel é filtrar o ruído do mercado e
-                  entregar para você apenas o que é extraordinário.
+                  Não trabalhamos com volume — trabalhamos com precisão. Cada oportunidade que chega
+                  até você já passou por uma triagem de dados, liquidez e potencial de valorização,
+                  para que sua decisão seja sempre segura.
                 </p>
                 <div className="space-y-3">
                   {[
-                    { icon: MapPin, label: "Santos, Praia Grande e São Vicente" },
-                    { icon: TrendingUp, label: "Histórico consistente de valorização" },
+                    { icon: BarChart3, label: "Análise de dados de mercado em tempo real" },
+                    { icon: TrendingUp, label: "Histórico e potencial de valorização" },
                     { icon: Building2, label: "Empreendimentos de alto padrão e liquidez" },
                     { icon: ShieldCheck, label: "Segurança jurídica em cada etapa" },
                   ].map((item) => (
@@ -387,7 +384,8 @@ function AImob365Page() {
                   ),
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Para investidores e famílias que buscam o melhor do Litoral Sul de SP
+                  Para investidores e famílias que buscam o melhor do mercado imobiliário de alto
+                  padrão
                 </p>
               </div>
             </div>
@@ -431,7 +429,7 @@ function AImob365Page() {
               </h2>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg mx-auto">
                 Da curadoria ao contrato, cuidamos de cada etapa para que você invista com
-                tranquilidade no Litoral Sul de São Paulo.
+                tranquilidade em qualquer região do país.
               </p>
             </div>
 

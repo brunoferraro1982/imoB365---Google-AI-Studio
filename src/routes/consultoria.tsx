@@ -7,11 +7,11 @@ import { SiteHeader, SiteFooter } from "@/components/site-layout";
 export const Route = createFileRoute("/consultoria")({
   head: () => ({
     meta: [
-      { title: "Consultoria Imobiliária | imoB365 — Litoral Sul de SP" },
+      { title: "Consultoria Imobiliária | imoB365" },
       {
         name: "description",
         content:
-          "Administração de imóveis, gestão contratual, lançamentos exclusivos e imóveis de alto padrão em Praia Grande, Santos e São Vicente.",
+          "Administração de imóveis, gestão contratual, lançamentos exclusivos e imóveis de alto padrão em todo o Brasil.",
       },
     ],
   }),
@@ -51,7 +51,7 @@ function ConsultoriaPage() {
             <h1 className="text-3xl font-black tracking-tight">Soluções Imobiliárias Completas</h1>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xl mx-auto">
               Da curadoria ao contrato, cuidamos de cada etapa para que você invista com
-              tranquilidade e segurança jurídica no Litoral Sul de São Paulo.
+              tranquilidade e segurança jurídica em qualquer região do país.
             </p>
           </div>
         </section>
