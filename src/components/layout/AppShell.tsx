@@ -133,7 +133,6 @@ const tenantModules: Module[] = [
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
       { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
       { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
-      { to: "/app/configuracoes/dominios", label: "Domínios", icon: Globe },
     ],
   },
   {
