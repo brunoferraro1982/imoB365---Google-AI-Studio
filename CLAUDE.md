@@ -274,8 +274,19 @@ Custom domain components live in:
 | `src/routes/consultoria.tsx`      | Idem: head/meta e corpo sem menção a região                                                    |
 | `src/components/site-layout.tsx`  | Nav mega-menu/mobile: label "Por que o Litoral Sul"→"Nosso Padrão de Curadoria", anchor `litoral-sul`→`nosso-padrao` |
 
+### 🔧 Correções recentes (2026-07-16)
+
+| Arquivo                                   | Correção                                                                                      |
+| :----------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `src/lib/creditScore.ts`                   | Novo: `gerarAnaliseRisco()` — extrai/compartilha a lógica de score (antes só em `app.leads.$id.tsx`), acrescenta `fatores`, `historico` e `recomendacoes` para a nova página |
+| `src/lib/format.ts`                        | Novo: `maskCPF()` e `isValidCPF()` (dígito verificador real)                                   |
+| `src/routes/app.leads.$id.tsx`             | Refatorado para usar `gerarAnaliseRisco()`/`maskCPF()`/`isValidCPF()` — mesmo comportamento visual, sem duplicar lógica |
+| `src/routes/app.leads.analise-risco.tsx`   | Nova página "Análise de Risco" (`/app/leads/analise-risco`): consulta de CPF, gráficos (gauge, composição do score, tendência 6 meses via recharts) e conteúdo qualitativo para o corretor apresentar ao proprietário do imóvel; opção de vincular a um lead (grava nota na timeline) e de imprimir |
+| `src/components/layout/AppShell.tsx`       | Novo item de menu "Análise de Risco" no grupo Imobiliário; `print:hidden` no header/aside do app shell (suporta o botão Imprimir da nova página) |
+
 ### 📋 Backlog (próximas versões)
 
+- Integração real com bureau de crédito (Serasa Experian ou similar) para a "Análise de Risco" (`/app/leads/analise-risco`, `src/lib/creditScore.ts`) — hoje o score/fatores/histórico são derivados deterministicamente do CPF (mock, sem chamada externa real, mesma lógica já usada no widget de `app.leads.$id.tsx` desde a Sprint 7); substituir por chamada real quando houver contrato/API key (`SERASA_API_KEY`, documentar em `.env.example`)
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
 - API pública documentada (Swagger/OpenAPI) para integrações externas
 - SLA formal documentado nos Termos de Uso
