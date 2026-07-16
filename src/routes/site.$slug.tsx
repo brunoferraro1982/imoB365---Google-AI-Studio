@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useMemo } from "react";
 import { Building2, MapPin, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
 import { SiteWidgetsLayout, useSiteWidgets } from "@/components/site/SiteWidgets";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
@@ -14,6 +15,10 @@ import { DEFAULT_SECOES, type LayoutKey, type SectionDbItem } from "@/lib/siteSe
 
 export const Route = createFileRoute("/site/$slug")({
   component: TenantHome,
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => {
+    const preview = search.preview === "1" || search.preview === true;
+    return preview ? { preview: true } : {};
+  },
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug} — Imóveis` },
@@ -30,6 +35,8 @@ function photoUrl(path: string) {
 
 function TenantHome() {
   const { slug } = Route.useParams();
+  const { preview } = Route.useSearch();
+  const { tenantId: authTenantId } = useAuth();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [hero, setHero] = useState<any>({});
   const [sobre, setSobre] = useState<string>("");
@@ -53,14 +60,20 @@ function TenantHome() {
         setLoading(false);
         return;
       }
+      // A prévia (usada em /app/site/previa) só ignora o filtro de publicado
+      // quando o próprio membro do tenant está olhando o seu site — a
+      // policy RLS `site_settings_members_read` já cobre esse acesso, então
+      // isso só controla a query no cliente, não abre nenhum acesso novo.
+      const isOwnTenantPreview = preview && authTenantId === tenant.id;
+      let settingsQuery = supabase
+        .from("tenant_site_settings")
+        .select("*")
+        .eq("tenant_id", tenant.id);
+      if (!isOwnTenantPreview) settingsQuery = settingsQuery.eq("publicado", true);
+
       const [{ data: cfg }, { data: pages }, { data: imv }, { count: blogCount }] =
         await Promise.all([
-          supabase
-            .from("tenant_site_settings")
-            .select("*")
-            .eq("tenant_id", tenant.id)
-            .eq("publicado", true)
-            .maybeSingle(),
+          settingsQuery.maybeSingle(),
           supabase
             .from("tenant_pages")
             .select("slug,titulo")
@@ -121,7 +134,7 @@ function TenantHome() {
       }
       setLoading(false);
     })();
-  }, [slug]);
+  }, [slug, preview, authTenantId]);
 
   const stats = useMemo(() => {
     const cidades = new Set(imoveis.map((i) => i.endereco_cidade).filter(Boolean));
