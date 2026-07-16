@@ -97,6 +97,7 @@ import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
+import { Route as AppSitePreviaRouteImport } from './routes/app.site.previa'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
@@ -597,6 +598,11 @@ const AppSiteWidgetsConteudoRoute = AppSiteWidgetsConteudoRouteImport.update({
   path: '/widgets-conteudo',
   getParentRoute: () => AppSiteRoute,
 } as any)
+const AppSitePreviaRoute = AppSitePreviaRouteImport.update({
+  id: '/previa',
+  path: '/previa',
+  getParentRoute: () => AppSiteRoute,
+} as any)
 const AppSiteBlogRoute = AppSiteBlogRouteImport.update({
   id: '/blog',
   path: '/blog',
@@ -1020,6 +1026,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/previa': typeof AppSitePreviaRoute
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
@@ -1163,6 +1170,7 @@ export interface FileRoutesByTo {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/previa': typeof AppSitePreviaRoute
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
@@ -1312,6 +1320,7 @@ export interface FileRoutesById {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
+  '/app/site/previa': typeof AppSitePreviaRoute
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
@@ -1462,6 +1471,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
+    | '/app/site/previa'
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
@@ -1605,6 +1615,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
+    | '/app/site/previa'
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
@@ -1753,6 +1764,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
+    | '/app/site/previa'
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
@@ -2476,6 +2488,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteWidgetsConteudoRouteImport
       parentRoute: typeof AppSiteRoute
     }
+    '/app/site/previa': {
+      id: '/app/site/previa'
+      path: '/previa'
+      fullPath: '/app/site/previa'
+      preLoaderRoute: typeof AppSitePreviaRouteImport
+      parentRoute: typeof AppSiteRoute
+    }
     '/app/site/blog': {
       id: '/app/site/blog'
       path: '/blog'
@@ -2957,6 +2976,7 @@ const AppConfiguracoesRouteWithChildren =
 interface AppSiteRouteChildren {
   AppSiteAssistenteRoute: typeof AppSiteAssistenteRoute
   AppSiteBlogRoute: typeof AppSiteBlogRoute
+  AppSitePreviaRoute: typeof AppSitePreviaRoute
   AppSiteWidgetsConteudoRoute: typeof AppSiteWidgetsConteudoRoute
   AppSiteIndexRoute: typeof AppSiteIndexRoute
 }
@@ -2964,6 +2984,7 @@ interface AppSiteRouteChildren {
 const AppSiteRouteChildren: AppSiteRouteChildren = {
   AppSiteAssistenteRoute: AppSiteAssistenteRoute,
   AppSiteBlogRoute: AppSiteBlogRoute,
+  AppSitePreviaRoute: AppSitePreviaRoute,
   AppSiteWidgetsConteudoRoute: AppSiteWidgetsConteudoRoute,
   AppSiteIndexRoute: AppSiteIndexRoute,
 }

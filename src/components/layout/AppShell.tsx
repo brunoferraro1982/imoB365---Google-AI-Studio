@@ -40,6 +40,7 @@ import {
   HeartHandshake,
   Upload,
   Receipt,
+  Eye,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -127,9 +128,10 @@ const tenantModules: Module[] = [
     label: "Site",
     icon: Globe,
     items: [
+      { to: "/app/site/previa", label: "Prévia do Site", icon: Eye },
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
-      { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
+      { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
     ],
   },
