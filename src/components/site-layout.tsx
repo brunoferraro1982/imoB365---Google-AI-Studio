@@ -52,6 +52,7 @@ import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
 import { useAuth } from "@/hooks/useAuth";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
+import { MegaNavHeader, type MegaNavConfig, type MegaNavLeaf } from "@/components/site/MegaNav";
 
 export const Route = createFileRoute("/")({
   component: Landing,
@@ -707,776 +708,290 @@ function Field({
   );
 }
 
+const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
+  {
+    key: "quem-somos",
+    to: "/a-imob365",
+    hash: "quem-somos",
+    label: "Quem Somos",
+    desc: "Missão, visão e valores",
+  },
+  {
+    key: "nossa-abordagem",
+    to: "/a-imob365",
+    hash: "nossa-abordagem",
+    label: "Nossa Abordagem",
+    desc: "Os 3 pilares da nossa metodologia",
+  },
+  {
+    key: "nosso-padrao",
+    to: "/a-imob365",
+    hash: "nosso-padrao",
+    label: "Nosso Padrão de Curadoria",
+    desc: "Como selecionamos cada imóvel",
+  },
+  {
+    key: "numeros",
+    to: "/a-imob365",
+    hash: "numeros",
+    label: "Nossos Números",
+    desc: "365 dias, cobertura nacional, R$3MI+",
+  },
+  {
+    key: "servicos",
+    to: "/a-imob365",
+    hash: "servicos",
+    label: "Serviços",
+    desc: "Tudo que oferecemos",
+  },
+  {
+    key: "depoimentos",
+    to: "/a-imob365",
+    hash: "depoimentos",
+    label: "Depoimentos",
+    desc: "O que nossos clientes dizem",
+  },
+];
+
+function buildCorporateNavConfig(user: unknown): MegaNavConfig {
+  const anunciarTo = user ? "/app/imoveis/novo" : "/signup";
+  return {
+    logo: <Logo className="h-9 w-auto" />,
+    logoTo: "/",
+    topBar: {
+      contacts: [
+        { icon: Mail, label: "contato@imob365.com.br", href: "mailto:contato@imob365.com.br" },
+        { icon: Phone, label: "(13) 99779-4382", href: "https://wa.me/5513997794382" },
+      ],
+      nav: <InstitutionalNav />,
+    },
+    groups: [
+      {
+        key: "a-imob365",
+        label: "A imoB365",
+        panelClassName:
+          "absolute left-1/2 -translate-x-[200px] top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50",
+        columns: [{ eyebrow: "Conheça a imoB365", leaves: CORPORATE_A_IMOB365_LEAVES }],
+        ctaLeaf: { label: "Agendar Consultoria", to: "/contato" },
+        mobileLabel: "A imoB365",
+      },
+      {
+        key: "encontrar",
+        label: "Encontrar Imóveis",
+        panelClassName:
+          "absolute left-1/2 -translate-x-[150px] top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden",
+        columns: [
+          {
+            eyebrow: "Disponíveis",
+            leaves: [
+              {
+                key: "comprar",
+                to: "/buscar",
+                label: "Comprar Imóvel",
+                desc: "Apartamentos, coberturas e casas exclusivas.",
+                icon: Building2,
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+              },
+              {
+                key: "alugar",
+                to: "/buscar",
+                label: "Alugar Imóvel",
+                desc: "Locação ágil, sem burocracia ou fiador tradicional.",
+                icon: Key,
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+              },
+              {
+                key: "empreendimentos",
+                to: "/empreendimentos",
+                label: "Empreendimentos",
+                desc: "Lançamentos e novos empreendimentos das parceiras.",
+                icon: Landmark,
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+              },
+            ],
+          },
+          {
+            eyebrow: "Inteligência",
+            leaves: [
+              {
+                key: "comparador",
+                to: "/comparar",
+                label: "Comparador",
+                desc: "Compare até 4 imóveis lado a lado em tempo real.",
+                icon: Layers,
+                iconClassName: "text-emerald-600",
+                mobileChipClassName:
+                  "bg-emerald-100/70 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+              },
+              {
+                key: "busca-mapa",
+                to: "/buscar",
+                label: "Busca por Mapa",
+                desc: "Navegue pelas melhores regiões de forma geométrica.",
+                icon: Search,
+                iconClassName: "text-primary",
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "ferramentas",
+        label: "Ferramentas & Simuladores",
+        panelClassName:
+          "absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden",
+        columns: [
+          {
+            eyebrow: "Simuladores",
+            leaves: [
+              {
+                key: "financiamento",
+                to: "/calculadora-financiamento",
+                label: "Financiamento SAC",
+                desc: "Estime as parcelas decrescentes do imóvel de forma simples.",
+                icon: Calculator,
+                iconClassName: "text-primary",
+                mobileChipClassName:
+                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
+              },
+              {
+                key: "itbi",
+                to: "/calculadora-itbi",
+                label: "Imposto de ITBI",
+                desc: "Verifique taxas de prefeitura e cartório de registro.",
+                icon: Calculator,
+                iconClassName: "text-orange-500",
+                mobileChipClassName:
+                  "bg-orange-100 text-orange-700 group-hover:bg-orange-500 group-hover:text-white",
+              },
+              {
+                key: "mudanca",
+                to: "/calculadora-mudanca",
+                label: "Custo de Mudança",
+                desc: "Planeje custos de frete e logística para o novo lar.",
+                icon: Truck,
+                iconClassName: "text-indigo-500",
+                mobileChipClassName:
+                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
+              },
+              {
+                key: "avaliacao",
+                to: "/calculadora-avaliacao",
+                label: "Quanto Vale meu Imóvel",
+                desc: "Estimativa de valor por CEP, metragem e tipo do imóvel.",
+                icon: Home,
+                iconClassName: "text-emerald-600",
+                mobileChipClassName:
+                  "bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white",
+              },
+            ],
+          },
+          {
+            eyebrow: "Análise Cadastral",
+            leaves: [
+              {
+                key: "score-serasa",
+                label: "Score Serasa Experian",
+                desc: "Validação de CPF de inquilinos e proponentes integrados na hora da proposta (/leads).",
+                icon: ShieldCheck,
+                iconClassName: "text-sky-700",
+                badge: "Novo",
+                static: true,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "imobiliarias",
+        label: "Para Imobiliárias",
+        mobileLabel: "Para Imobiliárias & Corretores",
+        panelClassName:
+          "absolute right-[120px] top-full mt-2 w-[290px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden",
+        columns: [
+          {
+            eyebrow: "Recursos de Negócio",
+            leaves: [
+              {
+                key: "planos",
+                to: "/planos",
+                label: "Planos & Valores",
+                desc: "Do Free ao Business, escolha o plano do tamanho da sua operação.",
+                icon: CreditCard,
+                iconClassName: "animate-pulse text-primary",
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+              },
+              {
+                key: "plataforma",
+                to: "/plataforma",
+                label: "Plataforma & Recursos",
+                desc: "Veja tudo que está incluído: imóveis, financeiro, marketing, jurídico e e-learning.",
+                icon: Globe2,
+                iconClassName: "text-emerald-600",
+                mobileChipClassName:
+                  "bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+              },
+            ],
+          },
+        ],
+      },
+      {
+        key: "tecnico",
+        label: "Área Técnica",
+        mobileLabel: "Área Técnica (Devs)",
+        flatMobileStyle: true,
+        panelClassName:
+          "absolute right-0 top-full mt-2 w-[280px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden",
+        columns: [
+          {
+            eyebrow: "Recursos Integradores",
+            leaves: [
+              {
+                key: "ajuda",
+                to: "/ajuda",
+                label: "Central de Ajuda",
+                desc: "Guias rápidos por jornada: cadastro, comissões, portais e contratos.",
+                icon: BookOpen,
+                iconClassName: "text-sky-600",
+              },
+              {
+                key: "docs-api",
+                to: "/docs/api",
+                label: "Documentação API",
+                desc: "Disparadores REST e webhooks técnicos para ERPs de imobiliárias.",
+                icon: Terminal,
+                labelClassName: "text-emerald-600",
+                iconClassName: "text-emerald-600",
+              },
+              {
+                key: "status",
+                to: "/status",
+                label: "Servidores & APIs",
+                desc: "Verificação em tempo real da integridade de bancos de dados.",
+                icon: Activity,
+                iconClassName: "text-pink-600",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    ctaButton: { label: "Anunciar Imóvel", to: anunciarTo, icon: PlusCircle },
+    mobileQuickAction: { label: "Anunciar meu Imóvel", to: anunciarTo, icon: PlusCircle },
+    extraCtas: () => <HeaderUserMenu />,
+  };
+}
+
 function SiteHeaderImpl() {
   const { user } = useAuth();
-  const [activeMenu, setActiveMenu] = useState<
-    "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365" | null
-  >(null);
-  const [menuTimeout, setMenuTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnter = (
-    menu: "encontrar" | "ferramentas" | "imobiliarias" | "tecnico" | "a-imob365",
-  ) => {
-    if (menuTimeout) {
-      clearTimeout(menuTimeout);
-      setMenuTimeout(null);
-    }
-    setActiveMenu(menu);
-  };
-
-  const handleMouseLeave = () => {
-    const timeout = setTimeout(() => {
-      setActiveMenu(null);
-    }, 220);
-    setMenuTimeout(timeout);
-  };
-
-  return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md shadow-xs transition-all duration-300 font-sans">
-      {/* BARRA SUPERIOR PRETA COM CONTATOS */}
-      <div className="bg-neutral-950 text-white text-[11px] font-semibold py-2 px-6 border-b border-white/5">
-        <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
-          {/* Email / Telefone */}
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-5 text-white/80 w-full sm:w-auto">
-            <a
-              href="mailto:contato@imob365.com.br"
-              className="flex items-center gap-2 hover:text-primary transition-colors duration-200"
-            >
-              <Mail className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
-              <span>contato@imob365.com.br</span>
-            </a>
-            <span className="hidden sm:inline text-white/20 select-none">|</span>
-            <a
-              href="https://wa.me/5513997794382"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-primary transition-colors duration-200"
-            >
-              <Phone className="h-3.5 w-3.5 text-primary shrink-0 transition-transform hover:scale-110" />
-              <span>(13) 99779-4382</span>
-            </a>
-          </div>
-          <InstitutionalNav />
-        </div>
-      </div>
-
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 relative">
-        <Link to="/" className="flex items-center transition-transform hover:scale-[1.015]">
-          <Logo className="h-9 w-auto" />
-        </Link>
-
-        {/* DESKTOP NAV WITH MEGA MENU POPUPS */}
-        <nav className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex text-[13px] xl:text-sm font-semibold text-foreground/85 tracking-tight xl:tracking-normal shrink-0">
-          {/* MEGA MENU: A imoB365 (substitui Home) */}
-          <div
-            className="relative"
-            onMouseEnter={() => handleMouseEnter("a-imob365")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                activeMenu === "a-imob365"
-                  ? "bg-muted text-primary"
-                  : "hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <span>A imoB365</span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "a-imob365" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeMenu === "a-imob365" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-[200px] top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50"
-                >
-                  <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80 mb-3">
-                    Conheça a imoB365
-                  </span>
-                  <div className="space-y-1">
-                    {[
-                      {
-                        anchor: "quem-somos",
-                        label: "Quem Somos",
-                        desc: "Missão, visão e valores",
-                      },
-                      {
-                        anchor: "nossa-abordagem",
-                        label: "Nossa Abordagem",
-                        desc: "Os 3 pilares da nossa metodologia",
-                      },
-                      {
-                        anchor: "nosso-padrao",
-                        label: "Nosso Padrão de Curadoria",
-                        desc: "Como selecionamos cada imóvel",
-                      },
-                      {
-                        anchor: "numeros",
-                        label: "Nossos Números",
-                        desc: "365 dias, cobertura nacional, R$3MI+",
-                      },
-                      { anchor: "servicos", label: "Serviços", desc: "Tudo que oferecemos" },
-                      {
-                        anchor: "depoimentos",
-                        label: "Depoimentos",
-                        desc: "O que nossos clientes dizem",
-                      },
-                    ].map((item) => (
-                      <Link
-                        key={item.anchor}
-                        to="/a-imob365"
-                        hash={item.anchor}
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                          {item.label}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          {item.desc}
-                        </span>
-                      </Link>
-                    ))}
-                    <div className="pt-2 mt-1 border-t border-border/40">
-                      <Link
-                        to="/contato"
-                        className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-[11px] font-bold text-white hover:bg-primary/90 transition-colors"
-                        onClick={() => setActiveMenu(null)}
-                      >
-                        Agendar Consultoria
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* MEGA MENU 1: ENCONTRAR IMÓVEIS */}
-          <div
-            className="relative"
-            onMouseEnter={() => handleMouseEnter("encontrar")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                activeMenu === "encontrar"
-                  ? "bg-muted text-primary"
-                  : "hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <span>Encontrar Imóveis</span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "encontrar" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeMenu === "encontrar" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-[150px] top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
-                >
-                  <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Disponíveis
-                    </span>
-                    <div className="space-y-1">
-                      <Link
-                        to="/buscar"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          <Building2 className="h-3.5 w-3.5" /> Comprar Imóvel
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Apartamentos, coberturas e casas exclusivas.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/buscar"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          <Key className="h-3.5 w-3.5" /> Alugar Imóvel
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Locação ágil, sem burocracia ou fiador tradicional.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/empreendimentos"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          <Landmark className="h-3.5 w-3.5" /> Empreendimentos
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Lançamentos e novos empreendimentos das parceiras.
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="border-l border-border/60 pl-4 space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Inteligência
-                    </span>
-                    <div className="space-y-1">
-                      <Link
-                        to="/comparar"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          <Layers className="h-3.5 w-3.5 text-emerald-600" /> Comparador
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Compare até 4 imóveis lado a lado em tempo real.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/buscar"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1">
-                          <Search className="h-3.5 w-3.5 text-primary" /> Busca por Mapa
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Navegue pelas melhores regiões de forma geométrica.
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* MEGA MENU 2: FERRAMENTAS & SIMULADORES */}
-          <div
-            className="relative"
-            onMouseEnter={() => handleMouseEnter("ferramentas")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                activeMenu === "ferramentas"
-                  ? "bg-muted text-primary"
-                  : "hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <span>Ferramentas & Simuladores</span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "ferramentas" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeMenu === "ferramentas" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden"
-                >
-                  <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Simuladores
-                    </span>
-                    <div className="space-y-1">
-                      <Link
-                        to="/calculadora-financiamento"
-                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Calculator className="h-3.5 w-3.5 text-primary" /> Financiamento SAC
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Estime as parcelas decrescentes do imóvel de forma simples.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/calculadora-itbi"
-                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Calculator className="h-3.5 w-3.5 text-orange-500" /> Imposto de ITBI
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Verifique taxas de prefeitura e cartório de registro.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/calculadora-mudanca"
-                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Truck className="h-3.5 w-3.5 text-indigo-500" /> Custo de Mudança
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Planeje custos de frete e logística para o novo lar.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/calculadora-avaliacao"
-                        className="flex flex-col p-2 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Home className="h-3.5 w-3.5 text-emerald-600" /> Quanto Vale meu Imóvel
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Estimativa de valor por CEP, metragem e tipo do imóvel.
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="border-l border-border/60 pl-4 space-y-2">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Análise Cadastral
-                    </span>
-
-                    <div className="p-3 bg-muted/40 rounded-xl border border-border/65 space-y-1.5">
-                      <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded border border-sky-200">
-                        Novo
-                      </span>
-                      <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                        <ShieldCheck className="h-3.5 w-3.5 text-sky-700" /> Score Serasa Experian
-                      </h4>
-                      <p className="text-[10px] text-muted-foreground leading-snug">
-                        Validação de CPF de inquilinos e proponentes integrados na hora da proposta
-                        (/leads).
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* MEGA MENU 3: PARA IMOBILIÁRIAS */}
-          <div
-            className="relative"
-            onMouseEnter={() => handleMouseEnter("imobiliarias")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                activeMenu === "imobiliarias"
-                  ? "bg-muted text-primary"
-                  : "hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <span>Para Imobiliárias</span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "imobiliarias" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeMenu === "imobiliarias" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute right-[120px] top-full mt-2 w-[290px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
-                >
-                  <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Recursos de Negócio
-                    </span>
-                    <div className="space-y-1">
-                      <Link
-                        to="/planos"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <CreditCard className="h-3.5 w-3.5 animate-pulse text-primary" /> Planos &
-                          Valores
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Do Free ao Business, escolha o plano do tamanho da sua operação.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/plataforma"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Globe2 className="h-3.5 w-3.5 text-emerald-600" /> Plataforma & Recursos
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Veja tudo que está incluído: imóveis, financeiro, marketing, jurídico e
-                          e-learning.
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* MEGA MENU 4: ÁREA TÉCNICA */}
-          <div
-            className="relative"
-            onMouseEnter={() => handleMouseEnter("tecnico")}
-            onMouseLeave={handleMouseLeave}
-          >
-            <button
-              className={`flex items-center gap-1 px-2 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer whitespace-nowrap ${
-                activeMenu === "tecnico"
-                  ? "bg-muted text-primary"
-                  : "hover:bg-muted/50 hover:text-foreground"
-              }`}
-            >
-              <span>Área Técnica</span>
-              <ChevronDown
-                className={`h-3.5 w-3.5 opacity-70 transition-transform duration-200 ${activeMenu === "tecnico" ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeMenu === "tecnico" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 8 }}
-                  transition={{ duration: 0.18, ease: "easeOut" }}
-                  className="absolute right-0 top-full mt-2 w-[280px] rounded-2xl border border-border bg-background p-4.5 shadow-xl flex flex-col gap-3.5 z-50 overflow-hidden"
-                >
-                  <div className="space-y-3">
-                    <span className="text-[10px] block font-extrabold uppercase tracking-widest text-muted-foreground/80">
-                      Recursos Integradores
-                    </span>
-                    <div className="space-y-1">
-                      <Link
-                        to="/ajuda"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <BookOpen className="h-3.5 w-3.5 text-sky-600" /> Central de Ajuda
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Guias rápidos por jornada: cadastro, comissões, portais e contratos.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/docs/api"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-emerald-600 group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Terminal className="h-3.5 w-3.5" /> Documentação API
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Disparadores REST e webhooks técnicos para ERPs de imobiliárias.
-                        </span>
-                      </Link>
-
-                      <Link
-                        to="/status"
-                        className="flex flex-col p-2.5 rounded-xl hover:bg-muted/65 transition-colors group"
-                      >
-                        <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
-                          <Activity className="h-3.5 w-3.5 text-pink-600" /> Servidores & APIs
-                        </span>
-                        <span className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-                          Verificação em tempo real da integridade de bancos de dados.
-                        </span>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </nav>
-
-        <div className="flex items-center gap-2.5">
-          {/* HIGH VISIBILITY SEARCH CTA KEY FOR ANNOUNCEMENTS */}
-          <Link
-            to={user ? "/app/imoveis/novo" : "/signup"}
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#e86620] hover:from-[#e86620] hover:to-orange-500 text-white px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02]"
-          >
-            <PlusCircle className="h-3.8 w-3.8 shrink-0" />
-            <span>Anunciar Imóvel</span>
-          </Link>
-
-          {/* USER MENU & MOBILE BURGER */}
-          <HeaderUserMenu />
-
-          {/* MOBILE NAV BURGER */}
-          <div className="lg:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-full hover:bg-muted/60 transition-colors"
-                  aria-label="Menu de navegação"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="w-[310px] sm:w-[370px] p-0 flex flex-col bg-background/95 backdrop-blur-md"
-              >
-                <SheetHeader className="px-6 py-5 border-b border-border/50">
-                  <SheetTitle className="text-left font-bold tracking-tight text-foreground flex items-center justify-between">
-                    <Logo className="h-8 w-auto" />
-                  </SheetTitle>
-                </SheetHeader>
-
-                <div className="flex-1 overflow-y-auto px-4 py-5 space-y-5 text-xs">
-                  {/* MOBILE QUICK CTA FOR ANNOUNCE PROPERTY */}
-                  <div className="px-3 pb-2">
-                    <Link
-                      to={user ? "/app/imoveis/novo" : "/signup"}
-                      className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-[#e86620] px-4 py-3.5 text-xs font-black text-white shadow-sm hover:scale-[1.01] transition-all text-center"
-                    >
-                      <PlusCircle className="h-4.5 w-4.5 shrink-0" />
-                      <span>Anunciar meu Imóvel</span>
-                    </Link>
-                  </div>
-
-                  {/* A imoB365 Mobile */}
-                  <div className="space-y-1">
-                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
-                      A imoB365
-                    </h3>
-                    {[
-                      { anchor: "quem-somos", label: "Quem Somos" },
-                      { anchor: "nossa-abordagem", label: "Nossa Abordagem" },
-                      { anchor: "nosso-padrao", label: "Nosso Padrão de Curadoria" },
-                      { anchor: "numeros", label: "Nossos Números" },
-                      { anchor: "servicos", label: "Serviços" },
-                      { anchor: "depoimentos", label: "Depoimentos" },
-                    ].map((item) => (
-                      <Link
-                        key={item.anchor}
-                        to="/a-imob365"
-                        hash={item.anchor}
-                        className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                      >
-                        <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                          <ChevronRight className="h-4 w-4" />
-                        </div>
-                        <span>{item.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-
-                  {/* Category 1 Mobile */}
-                  <div className="space-y-1">
-                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
-                      Encontrar Imóveis
-                    </h3>
-
-                    <Link
-                      to="/buscar"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                        <Building2 className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Comprar Imóvel</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          As melhores residências e prédios
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/buscar"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                        <Key className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Alugar Imóvel</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Contratos ágeis e sem fiador
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/comparar"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-emerald-100/70 text-emerald-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <Layers className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Comparador de Imóveis</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Lado a lado em tempo real
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-
-                  {/* Category 2 Mobile */}
-                  <div className="space-y-1">
-                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
-                      Simuladores e Cálculos
-                    </h3>
-
-                    <Link
-                      to="/calculadora-financiamento"
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <Calculator className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Financiamento SAC</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Parcelas decrescentes de financiamento
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/calculadora-itbi"
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-orange-100 text-orange-700 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors">
-                        <Calculator className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Simulador de ITBI</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Custos de transferência e impostos
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/calculadora-mudanca"
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                        <Truck className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Custo de Mudança</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Previsão logística e fretes
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/calculadora-avaliacao"
-                      className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-emerald-100 text-emerald-700 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <Home className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Quanto Vale meu Imóvel</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Estimativa por CEP e metragem
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-
-                  {/* Category 3 Mobile */}
-                  <div className="space-y-1">
-                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2.5">
-                      Para Imobiliárias & Corretores
-                    </h3>
-
-                    <Link
-                      to="/planos"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors">
-                        <CreditCard className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Planos e Preços</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Opções para corretores e agências
-                        </span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/plataforma"
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 text-foreground font-semibold transition-all group"
-                    >
-                      <div className="p-2 bg-emerald-100 text-emerald-800 rounded-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-                        <Globe2 className="h-4 w-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span>Plataforma & Recursos</span>
-                        <span className="text-[10px] text-muted-foreground font-medium">
-                          Tudo que está incluído, por módulo
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-
-                  {/* Category 4 Devs Mobile */}
-                  <div className="space-y-1 border-t border-border/50 pt-3">
-                    <h3 className="px-3 text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/85 mb-2">
-                      Área Técnica (Devs)
-                    </h3>
-
-                    <Link
-                      to="/ajuda"
-                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
-                    >
-                      <BookOpen className="h-4 w-4 shrink-0 text-sky-600" />
-                      <span>Central de Ajuda</span>
-                    </Link>
-                    <Link
-                      to="/docs/api"
-                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
-                    >
-                      <Terminal className="h-4 w-4 shrink-0 text-emerald-600" />
-                      <span>Documentação de API</span>
-                    </Link>
-                    <Link
-                      to="/status"
-                      className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
-                    >
-                      <Activity className="h-4 w-4 shrink-0 text-pink-600" />
-                      <span>Servidores & APIs (Status)</span>
-                    </Link>
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
+  const config = buildCorporateNavConfig(user);
+  return <MegaNavHeader config={config} />;
 }
 
 export function SiteFooter() {

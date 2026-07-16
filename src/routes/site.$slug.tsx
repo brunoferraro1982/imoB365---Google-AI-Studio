@@ -107,6 +107,7 @@ function TenantHome() {
         settings: cfg,
         pages: (pages ?? []) as any,
         hasBlog: (blogCount ?? 0) > 0,
+        hasSobre: !!cfg.sobre_html?.trim(),
       });
       setHero(cfg);
       setSobre(cfg.sobre_html ?? "");

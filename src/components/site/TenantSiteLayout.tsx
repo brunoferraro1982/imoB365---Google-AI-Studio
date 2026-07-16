@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { Link } from "@tanstack/react-router";
 import {
   Instagram,
   Facebook,
@@ -9,10 +7,9 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Menu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { MegaNavHeader, type MegaNavConfig } from "@/components/site/MegaNav";
 
 export type SiteCtx = {
   tenantId: string;
@@ -32,106 +29,61 @@ export type SiteCtx = {
   };
   pages: { slug: string; titulo: string }[];
   hasBlog?: boolean;
+  hasSobre?: boolean;
 };
 
-export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: React.ReactNode }) {
-  const cor = ctx.settings.cor_destaque || undefined;
-  const [mobileOpen, setMobileOpen] = useState(false);
+function buildTenantNavConfig(ctx: SiteCtx): MegaNavConfig {
   const waHref = ctx.settings.contato_whatsapp
     ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
     : null;
+  return {
+    logo: ctx.logoUrl ? (
+      <img src={ctx.logoUrl} alt={ctx.tenantNome} className="h-9 max-w-[170px] object-contain" />
+    ) : (
+      <span className="text-lg font-bold tracking-tight">{ctx.tenantNome}</span>
+    ),
+    logoTo: `/site/${ctx.tenantSlug}`,
+    groups: [
+      { key: "inicio", label: "Início", to: `/site/${ctx.tenantSlug}` },
+      { key: "imoveis", label: "Imóveis", to: `/site/${ctx.tenantSlug}`, hash: "imoveis" },
+      ...(ctx.hasSobre
+        ? [{ key: "sobre", label: "Sobre", to: `/site/${ctx.tenantSlug}`, hash: "sobre" }]
+        : []),
+      ...ctx.pages.map((p) => ({
+        key: `page-${p.slug}`,
+        label: p.titulo,
+        to: `/site/${ctx.tenantSlug}/p/${p.slug}`,
+      })),
+      ...(ctx.hasBlog ? [{ key: "blog", label: "Blog", to: `/site/${ctx.tenantSlug}/blog` }] : []),
+      { key: "contato", label: "Contato", to: `/site/${ctx.tenantSlug}`, hash: "contato" },
+    ],
+    extraCtas: () =>
+      waHref ? (
+        <a href={waHref} target="_blank" rel="noopener noreferrer" className="hidden sm:block">
+          <Button
+            size="sm"
+            className="gap-1.5 rounded-full bg-primary text-primary-foreground shadow-sm hover:opacity-90"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+            Fale conosco
+          </Button>
+        </a>
+      ) : null,
+  };
+}
 
-  const navLinks = (
-    <>
-      <Link
-        to="/site/$slug"
-        params={{ slug: ctx.tenantSlug }}
-        className="text-muted-foreground transition-colors hover:text-foreground"
-        onClick={() => setMobileOpen(false)}
-      >
-        Início
-      </Link>
-      {ctx.pages.map((p) => (
-        <Link
-          key={p.slug}
-          to="/site/$slug/p/$pageSlug"
-          params={{ slug: ctx.tenantSlug, pageSlug: p.slug }}
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          onClick={() => setMobileOpen(false)}
-        >
-          {p.titulo}
-        </Link>
-      ))}
-      {ctx.hasBlog && (
-        <Link
-          to="/site/$slug/blog"
-          params={{ slug: ctx.tenantSlug }}
-          className="text-muted-foreground transition-colors hover:text-foreground"
-          onClick={() => setMobileOpen(false)}
-        >
-          Blog
-        </Link>
-      )}
-    </>
-  );
+export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: React.ReactNode }) {
+  const cor = ctx.settings.cor_destaque || undefined;
+  const waHref = ctx.settings.contato_whatsapp
+    ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
+    : null;
 
   return (
     <div
       className="min-h-screen bg-background text-foreground"
       style={cor ? ({ "--site-accent": cor, "--primary": cor } as React.CSSProperties) : undefined}
     >
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
-          <Link
-            to="/site/$slug"
-            params={{ slug: ctx.tenantSlug }}
-            className="flex items-center gap-2 text-lg font-bold tracking-tight"
-          >
-            {ctx.logoUrl ? (
-              <img
-                src={ctx.logoUrl}
-                alt={ctx.tenantNome}
-                className="h-9 max-w-[170px] object-contain"
-              />
-            ) : (
-              ctx.tenantNome
-            )}
-          </Link>
-
-          <nav className="hidden items-center gap-7 text-sm font-medium md:flex">{navLinks}</nav>
-
-          <div className="flex items-center gap-2">
-            {waHref && (
-              <a
-                href={waHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:block"
-              >
-                <Button
-                  size="sm"
-                  className="gap-1.5 rounded-full bg-primary text-primary-foreground shadow-sm hover:opacity-90"
-                >
-                  <MessageCircle className="h-3.5 w-3.5" />
-                  Fale conosco
-                </Button>
-              </a>
-            )}
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="md:hidden">
-                  <Menu className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-72">
-                <nav className="mt-10 flex flex-col gap-5 px-6 text-base font-medium">
-                  {navLinks}
-                </nav>
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </header>
+      <MegaNavHeader config={buildTenantNavConfig(ctx)} />
 
       <main>{children}</main>
 
