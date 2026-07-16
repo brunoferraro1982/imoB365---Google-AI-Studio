@@ -9,7 +9,16 @@ import { toast } from "sonner";
 import type { LayoutKey } from "@/lib/siteSections";
 import type { SiteCtx } from "@/components/site/TenantSiteLayout";
 
-export function ContactSection({ variant, ctx }: { variant: LayoutKey; ctx: SiteCtx }) {
+export function ContactSection({
+  variant,
+  ctx,
+  compact,
+}: {
+  variant: LayoutKey;
+  ctx: SiteCtx;
+  /** Renderização em 1 coluna e sem container próprio, para área lateral (layout 'amplo'). */
+  compact?: boolean;
+}) {
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", mensagem: "" });
   const [sending, setSending] = useState(false);
   const waHref = ctx.settings.contato_whatsapp
@@ -36,13 +45,16 @@ export function ContactSection({ variant, ctx }: { variant: LayoutKey; ctx: Site
     setForm({ nome: "", email: "", telefone: "", mensagem: "" });
   }
 
-  const containerClass =
-    variant === "boutique"
+  const containerClass = compact
+    ? "grid gap-8"
+    : variant === "boutique"
       ? "mx-auto grid max-w-3xl gap-12 px-6 py-24"
       : "mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1fr_1.2fr]";
 
+  const Wrapper = compact ? "div" : "section";
+
   return (
-    <section className="border-t border-border">
+    <Wrapper className={compact ? undefined : "border-t border-border"}>
       <div className={containerClass}>
         <div>
           <h2 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">Fale com a gente</h2>
@@ -127,6 +139,6 @@ export function ContactSection({ variant, ctx }: { variant: LayoutKey; ctx: Site
           </Button>
         </form>
       </div>
-    </section>
+    </Wrapper>
   );
 }

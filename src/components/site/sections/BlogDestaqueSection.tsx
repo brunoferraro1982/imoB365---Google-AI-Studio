@@ -16,10 +16,13 @@ export function BlogDestaqueSection({
   variant,
   tenantId,
   tenantSlug,
+  compact,
 }: {
   variant: LayoutKey;
   tenantId: string;
   tenantSlug: string;
+  /** Renderização em 1 coluna, para quando o bloco está numa área lateral (layout 'amplo'). */
+  compact?: boolean;
 }) {
   const [posts, setPosts] = useState<Post[]>([]);
 
@@ -42,23 +45,32 @@ export function BlogDestaqueSection({
 
   if (posts.length === 0) return null;
 
-  const cols = variant === "boutique" ? "sm:grid-cols-2" : "sm:grid-cols-3";
+  const cols = compact ? "" : variant === "boutique" ? "sm:grid-cols-2" : "sm:grid-cols-3";
+  const shownPosts = compact ? posts.slice(0, 3) : posts;
 
   return (
     <div>
       <div className="mb-8 flex items-center gap-2">
-        <Newspaper className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Blog em destaque</h2>
+        <Newspaper className={compact ? "h-4 w-4 text-primary" : "h-5 w-5 text-primary"} />
+        <h2
+          className={
+            compact
+              ? "text-lg font-bold tracking-tight"
+              : "text-2xl font-bold tracking-tight md:text-3xl"
+          }
+        >
+          Blog em destaque
+        </h2>
       </div>
       <div className={`grid gap-6 ${cols}`}>
-        {posts.map((p) => (
+        {shownPosts.map((p) => (
           <Link
             key={p.id}
             to="/site/$slug/blog/$postSlug"
             params={{ slug: tenantSlug, postSlug: p.slug }}
             className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-md"
           >
-            {p.imagem_url && (
+            {p.imagem_url && !compact && (
               <div className="aspect-[16/9] overflow-hidden bg-muted">
                 <img
                   src={p.imagem_url}
@@ -72,7 +84,7 @@ export function BlogDestaqueSection({
               <h3 className="line-clamp-2 font-semibold group-hover:text-primary transition-colors">
                 {p.titulo}
               </h3>
-              {p.resumo && (
+              {p.resumo && !compact && (
                 <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.resumo}</p>
               )}
             </div>

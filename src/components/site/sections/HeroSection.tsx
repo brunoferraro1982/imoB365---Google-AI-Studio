@@ -118,6 +118,46 @@ export function HeroSection({
     );
   }
 
+  if (variant === "amplo") {
+    return (
+      <section className="relative overflow-hidden border-b border-border">
+        <div className="h-1.5 w-full bg-primary" />
+        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
+            <ShieldCheck className="h-3.5 w-3.5" />
+            Site oficial de {ctx.tenantNome}
+          </div>
+          <h1 className="max-w-2xl text-3xl font-bold tracking-tight md:text-5xl">
+            {hero.hero_titulo || ctx.tenantNome}
+          </h1>
+          {hero.hero_subtitulo && (
+            <p className="mt-4 max-w-xl text-base text-muted-foreground">{hero.hero_subtitulo}</p>
+          )}
+          <div className="mt-8 flex flex-wrap items-center gap-8">
+            <a href="#imoveis">
+              <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
+                {hero.hero_cta_label || "Ver imóveis"}
+              </Button>
+            </a>
+            {stats.length > 0 && (
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                {stats.map((s) => (
+                  <div key={s.label} className="flex items-center gap-2.5">
+                    <s.icon className="h-4 w-4 text-primary" />
+                    <div className="text-left">
+                      <div className="text-base font-bold leading-tight">{s.value}</div>
+                      <div className="text-xs text-muted-foreground">{s.label}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   // classico (default) — visual atual, sem nenhuma mudança
   return (
     <section className="relative overflow-hidden border-b border-border">

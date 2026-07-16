@@ -1,6 +1,14 @@
 export type SectionKey = "imoveis" | "sobre" | "blog_destaque" | "contato";
 
-export type SectionDbItem = { key: SectionKey; visivel: boolean; ordem: number };
+export type Zona = "navbar" | "content" | "meta";
+
+export type SectionDbItem = {
+  key: SectionKey;
+  visivel: boolean;
+  ordem: number;
+  /** Área da página onde o bloco aparece — só usada pelo layout 'amplo'. Default 'content'. */
+  zona?: Zona;
+};
 
 export const SECTION_LABELS: Record<SectionKey, string> = {
   imoveis: "Imóveis em destaque",
@@ -16,7 +24,13 @@ export const DEFAULT_SECOES: SectionDbItem[] = [
   { key: "contato", visivel: true, ordem: 3 },
 ];
 
-export type LayoutKey = "classico" | "editorial" | "vitrine" | "boutique";
+export type LayoutKey = "classico" | "editorial" | "vitrine" | "boutique" | "amplo";
+
+export const ZONA_LABELS: Record<Zona, string> = {
+  navbar: "Menu lateral",
+  content: "Conteúdo central",
+  meta: "Coluna de destaque",
+};
 
 export const LAYOUT_INFO: Record<LayoutKey, { label: string; desc: string }> = {
   classico: {
@@ -34,6 +48,10 @@ export const LAYOUT_INFO: Record<LayoutKey, { label: string; desc: string }> = {
   boutique: {
     label: "Boutique",
     desc: "Muito espaço em branco, visual discreto e elegante — ideal para atendimento mais exclusivo.",
+  },
+  amplo: {
+    label: "Amplo",
+    desc: "Layout largo com áreas configuráveis: escolha em qual coluna (menu lateral, conteúdo central ou coluna de destaque) cada bloco do seu site aparece.",
   },
 };
 
@@ -57,6 +75,12 @@ export const LAYOUT_SUGGESTED_SECOES: Record<LayoutKey, SectionDbItem[]> = {
     { key: "contato", visivel: true, ordem: 2 },
     { key: "blog_destaque", visivel: false, ordem: 3 },
   ],
+  amplo: [
+    { key: "imoveis", visivel: true, ordem: 0, zona: "content" },
+    { key: "contato", visivel: true, ordem: 1, zona: "content" },
+    { key: "sobre", visivel: true, ordem: 0, zona: "navbar" },
+    { key: "blog_destaque", visivel: false, ordem: 0, zona: "meta" },
+  ],
 };
 
 export function secoesEqual(a: SectionDbItem[], b: SectionDbItem[]): boolean {
@@ -64,6 +88,9 @@ export function secoesEqual(a: SectionDbItem[], b: SectionDbItem[]): boolean {
   const sortedA = [...a].sort((x, y) => x.ordem - y.ordem);
   const sortedB = [...b].sort((x, y) => x.ordem - y.ordem);
   return sortedA.every(
-    (item, i) => item.key === sortedB[i].key && item.visivel === sortedB[i].visivel,
+    (item, i) =>
+      item.key === sortedB[i].key &&
+      item.visivel === sortedB[i].visivel &&
+      (item.zona ?? "content") === (sortedB[i].zona ?? "content"),
   );
 }
