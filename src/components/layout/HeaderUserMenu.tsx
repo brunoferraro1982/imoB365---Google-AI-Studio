@@ -295,7 +295,7 @@ export function HeaderUserMenu() {
                     </div>
                     <div className="space-y-0.5">
                       <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors block font-sans">
-                        Nossos Planos Starter & Pro
+                        Nossos Planos Standard & Pro
                       </span>
                       <span className="text-[9.5px] text-muted-foreground/80 leading-normal block font-sans">
                         Escolha o pacote perfeito para o seu crescimento como corretor ou
