@@ -614,7 +614,7 @@ export function HeaderUserMenu() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0 flex-1">
-                            <h5 className="text-xs font-bold text-foreground leading-tight">
+                            <h5 className="text-xs font-bold text-foreground leading-tight break-words line-clamp-2">
                               {nomeExibicao}
                             </h5>
                             <span className="text-[10px] text-muted-foreground truncate block font-mono mt-0.5">
