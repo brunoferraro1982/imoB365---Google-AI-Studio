@@ -1,3 +1,5 @@
+> **Arquivado em 2026-07-20.** Documento histórico — todos os itens abaixo já estavam corrigidos no momento do arquivamento. Não é mais mantido ativamente; ver `CLAUDE.md` para o backlog atual.
+
 # Status dos Bugs Críticos — imob365
 
 | ID        | Item                                               | Módulo                | Severidade | Status           |
