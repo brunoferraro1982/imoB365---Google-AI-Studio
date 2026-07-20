@@ -199,6 +199,18 @@ function TenantHome() {
     const metaItems = byZona("meta");
     const hasNavbar = navbarItems.length > 0;
     const hasMeta = metaItems.length > 0;
+    // Sem largura fixa forçada abaixo de lg — empilha em 1 coluna no mobile
+    // em vez de esconder navbar/meta (eram `hidden lg:block`, sumiam de vez
+    // no celular). A partir de lg, vira grid com as colunas laterais de
+    // 260px que existirem.
+    const gridColsClass =
+      hasNavbar && hasMeta
+        ? "lg:grid-cols-[260px_minmax(0,1fr)_260px]"
+        : hasNavbar
+          ? "lg:grid-cols-[260px_minmax(0,1fr)]"
+          : hasMeta
+            ? "lg:grid-cols-[minmax(0,1fr)_260px]"
+            : "";
 
     return (
       <TenantSiteLayout ctx={ctx}>
@@ -206,14 +218,9 @@ function TenantHome() {
 
         <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
 
-        <div
-          className="mx-auto grid max-w-6xl gap-10 px-6 py-16"
-          style={{
-            gridTemplateColumns: `${hasNavbar ? "260px " : ""}minmax(0,1fr)${hasMeta ? " 260px" : ""}`,
-          }}
-        >
+        <div className={`mx-auto grid max-w-6xl gap-10 px-6 py-16 ${gridColsClass}`}>
           {hasNavbar && (
-            <aside className="hidden space-y-12 lg:block">
+            <aside className="space-y-12">
               {navbarItems.map((s) => (
                 <div key={s.key} id={s.key}>
                   {renderBlock(s, true)}
@@ -229,7 +236,7 @@ function TenantHome() {
             ))}
           </div>
           {hasMeta && (
-            <aside className="hidden space-y-12 lg:block">
+            <aside className="space-y-12">
               {metaItems.map((s) => (
                 <div key={s.key} id={s.key}>
                   {renderBlock(s, true)}
