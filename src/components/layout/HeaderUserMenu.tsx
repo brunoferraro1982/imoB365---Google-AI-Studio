@@ -530,91 +530,91 @@ export function HeaderUserMenu() {
                   </div>
                 ) : (
                   /* STATE B: AUTHENTICATED USER IN PORTAL */
-                  <div className="grid gap-4 md:grid-cols-12">
-                    {/* LEFT PANEL: MAIN LINKS */}
-                    <div className="md:col-span-7 space-y-2">
-                      <span className="bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block">
-                        Acesso Fácil
-                      </span>
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-12">
+                      {/* LEFT PANEL: MAIN LINKS */}
+                      <div className="md:col-span-7 space-y-2">
+                        <span className="bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block">
+                          Acesso Fácil
+                        </span>
 
-                      {/* PAINEL (APP / HOME) */}
-                      <Link
-                        to="/app"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
-                      >
-                        <LayoutDashboard className="h-4 w-4 text-primary" />
-                        <div className="flex-1">
-                          <span className="block font-bold">Painel Imobiliário</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
-                            Seus imóveis, leads coletados, CRECI e propostas.
-                          </span>
-                        </div>
-                      </Link>
-
-                      {/* CONFIGS */}
-                      <Link
-                        to="/app/configuracoes"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
-                      >
-                        <Settings2 className="h-4 w-4 text-slate-600" />
-                        <div className="flex-1">
-                          <span className="block font-bold">Configurar Sistema</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
-                            Definição de canais, domínios, equipe e taxas.
-                          </span>
-                        </div>
-                      </Link>
-
-                      {/* MINHA CONTA */}
-                      <Link
-                        to="/conta"
-                        onClick={() => setIsOpen(false)}
-                        className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
-                      >
-                        <User className="h-4 w-4 text-emerald-600" />
-                        <div className="flex-1">
-                          <span className="block font-bold">Perfil & Perfil Geral</span>
-                          <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
-                            Ajuste de cadastro pessoal e segurança securitária.
-                          </span>
-                        </div>
-                      </Link>
-
-                      {/* MEUS FAVORITOS */}
-                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/65">
+                        {/* PAINEL (APP / HOME) */}
                         <Link
-                          to="/conta/favoritos"
+                          to="/app"
                           onClick={() => setIsOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
                         >
-                          <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-55 animate-pulse" />
-                          <span>Meus Favoritos</span>
+                          <LayoutDashboard className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <span className="block font-bold">Painel Imobiliário</span>
+                            <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                              Seus imóveis, leads coletados, CRECI e propostas.
+                            </span>
+                          </div>
                         </Link>
+
+                        {/* CONFIGS */}
                         <Link
-                          to="/conta/buscas"
+                          to="/app/configuracoes"
                           onClick={() => setIsOpen(false)}
-                          className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
                         >
-                          <Bookmark className="h-3.5 w-3.5 text-amber-500" />
-                          <span>Minhas Buscas</span>
+                          <Settings2 className="h-4 w-4 text-slate-600" />
+                          <div className="flex-1">
+                            <span className="block font-bold">Configurar Sistema</span>
+                            <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                              Definição de canais, domínios, equipe e taxas.
+                            </span>
+                          </div>
                         </Link>
+
+                        {/* MINHA CONTA */}
+                        <Link
+                          to="/conta"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
+                        >
+                          <User className="h-4 w-4 text-emerald-600" />
+                          <div className="flex-1">
+                            <span className="block font-bold">Perfil & Perfil Geral</span>
+                            <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                              Ajuste de cadastro pessoal e segurança securitária.
+                            </span>
+                          </div>
+                        </Link>
+
+                        {/* MEUS FAVORITOS */}
+                        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/65">
+                          <Link
+                            to="/conta/favoritos"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                          >
+                            <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-55 animate-pulse" />
+                            <span>Meus Favoritos</span>
+                          </Link>
+                          <Link
+                            to="/conta/buscas"
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                          >
+                            <Bookmark className="h-3.5 w-3.5 text-amber-500" />
+                            <span>Minhas Buscas</span>
+                          </Link>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* RIGHT CARD: GLASSMORPHIC PROFILE OVERVIEW */}
-                    <div className="md:col-span-5 min-w-0 bg-muted/60 p-4 rounded-xl border border-border/80 flex flex-col justify-between space-y-4">
-                      <div className="space-y-3">
+                      {/* RIGHT CARD: GLASSMORPHIC PROFILE OVERVIEW */}
+                      <div className="md:col-span-5 min-w-0 bg-muted/60 p-4 rounded-xl border border-border/80 space-y-3">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                          <Avatar className="h-10 w-10 ring-2 ring-primary/20 shrink-0">
                             {avatar && <AvatarImage src={avatar} alt={nomeExibicao} />}
                             <AvatarFallback className="text-xs bg-primary/10 text-primary font-bold">
                               {initials(profile?.nome, user.email)}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="min-w-0">
-                            <h5 className="text-xs font-bold text-foreground truncate">
+                          <div className="min-w-0 flex-1">
+                            <h5 className="text-xs font-bold text-foreground leading-tight">
                               {nomeExibicao}
                             </h5>
                             <span className="text-[10px] text-muted-foreground truncate block font-mono mt-0.5">
@@ -626,7 +626,7 @@ export function HeaderUserMenu() {
                         {/* ROLES BADGES */}
                         <div className="space-y-1">
                           <span className="text-[8px] uppercase tracking-wider text-muted-foreground block font-bold">
-                            Papéis do Consórcio
+                            Função
                           </span>
                           <div className="flex flex-wrap gap-1">
                             {roles.length > 0 ? (
@@ -650,32 +650,33 @@ export function HeaderUserMenu() {
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="space-y-2 border-t border-border/80 pt-3">
-                        <Link
-                          to="/app/imoveis/novo"
-                          onClick={() => setIsOpen(false)}
-                          className="w-full"
-                        >
-                          <Button
-                            size="sm"
-                            className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:opacity-90 transition-opacity overflow-hidden"
-                          >
-                            <PlusCircle className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate">Anunciar novo imóvel</span>
-                          </Button>
-                        </Link>
-
+                    {/* FULL-WIDTH ACTIONS — fora da coluna estreita pra não truncar "Anunciar novo imóvel" */}
+                    <div className="space-y-2 border-t border-border/80 pt-3">
+                      <Link
+                        to="/app/imoveis/novo"
+                        onClick={() => setIsOpen(false)}
+                        className="block"
+                      >
                         <Button
-                          variant="ghost"
                           size="sm"
-                          onClick={handleSignOut}
-                          className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-2xs font-extrabold flex items-center justify-center gap-1.5"
+                          className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:opacity-90 transition-opacity"
                         >
-                          <LogOut className="h-3.5 w-3.5" />
-                          <span>Sair</span>
+                          <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                          <span>Anunciar novo imóvel</span>
                         </Button>
-                      </div>
+                      </Link>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleSignOut}
+                        className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-2xs font-extrabold flex items-center justify-center gap-1.5"
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>Sair</span>
+                      </Button>
                     </div>
                   </div>
                 )}
