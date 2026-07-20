@@ -173,7 +173,9 @@ export function BlogManager({
         const { error } = await supabase
           .from("blog_posts")
           .update(payload)
-          .eq("id", currentPost.id);
+          // isNew = !currentPost.id já garante id definido neste branch —
+          // TS não propaga o narrow através da variável derivada.
+          .eq("id", currentPost.id!);
         if (error) throw error;
         toast.success("Artigo atualizado com sucesso!");
       } else {
