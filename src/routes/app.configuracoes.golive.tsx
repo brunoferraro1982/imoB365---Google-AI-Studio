@@ -102,13 +102,13 @@ function GoLivePage() {
           id: "tenant",
           label: "Dados da imobiliária preenchidos (CNPJ + CRECI)",
           done: !!(tenant.cnpj && tenant.creci_juridico),
-          link: "/app/configuracoes/imobiliaria",
+          link: "/app/site",
         },
         {
           id: "plano",
           label: "Plano selecionado",
           done: !!tenant.plano_slug,
-          link: "/app/configuracoes/imobiliaria",
+          link: "/app/site",
         },
         {
           id: "site",

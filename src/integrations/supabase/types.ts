@@ -3711,7 +3711,6 @@ export type Database = {
           cnpj: string | null;
           created_at: string;
           creci_juridico: string | null;
-          dominio_proprio: string | null;
           downgrade_to: string | null;
           id: string;
           mercadopago_payment_id: string | null;
@@ -3734,7 +3733,6 @@ export type Database = {
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
-          dominio_proprio?: string | null;
           downgrade_to?: string | null;
           id?: string;
           mercadopago_payment_id?: string | null;
@@ -3757,7 +3755,6 @@ export type Database = {
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
-          dominio_proprio?: string | null;
           downgrade_to?: string | null;
           id?: string;
           mercadopago_payment_id?: string | null;

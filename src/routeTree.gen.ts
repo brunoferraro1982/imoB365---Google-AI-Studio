@@ -125,7 +125,6 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
-import { Route as AppConfiguracoesImobiliariaRouteImport } from './routes/app.configuracoes.imobiliaria'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
@@ -133,7 +132,6 @@ import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
-import { Route as AppConfiguracoesBrandingRouteImport } from './routes/app.configuracoes.branding'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
@@ -747,12 +745,6 @@ const AppConfiguracoesNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
-const AppConfiguracoesImobiliariaRoute =
-  AppConfiguracoesImobiliariaRouteImport.update({
-    id: '/imobiliaria',
-    path: '/imobiliaria',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
 const AppConfiguracoesGoliveRoute = AppConfiguracoesGoliveRouteImport.update({
   id: '/golive',
   path: '/golive',
@@ -789,12 +781,6 @@ const AppConfiguracoesCadenciasRoute =
   AppConfiguracoesCadenciasRouteImport.update({
     id: '/cadencias',
     path: '/cadencias',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
-const AppConfiguracoesBrandingRoute =
-  AppConfiguracoesBrandingRouteImport.update({
-    id: '/branding',
-    path: '/branding',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
 const AppConfiguracoesApiRoute = AppConfiguracoesApiRouteImport.update({
@@ -1006,7 +992,6 @@ export interface FileRoutesByFullPath {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
-  '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1014,7 +999,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1152,7 +1136,6 @@ export interface FileRoutesByTo {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
-  '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1160,7 +1143,6 @@ export interface FileRoutesByTo {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1304,7 +1286,6 @@ export interface FileRoutesById {
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
-  '/app/configuracoes/branding': typeof AppConfiguracoesBrandingRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1312,7 +1293,6 @@ export interface FileRoutesById {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/imobiliaria': typeof AppConfiguracoesImobiliariaRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1457,7 +1437,6 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
-    | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1465,7 +1444,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/imobiliaria'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1603,7 +1581,6 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
-    | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1611,7 +1588,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/imobiliaria'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1754,7 +1730,6 @@ export interface FileRouteTypes {
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/configuracoes/api'
-    | '/app/configuracoes/branding'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1762,7 +1737,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/imobiliaria'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -2710,13 +2684,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
-    '/app/configuracoes/imobiliaria': {
-      id: '/app/configuracoes/imobiliaria'
-      path: '/imobiliaria'
-      fullPath: '/app/configuracoes/imobiliaria'
-      preLoaderRoute: typeof AppConfiguracoesImobiliariaRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
     '/app/configuracoes/golive': {
       id: '/app/configuracoes/golive'
       path: '/golive'
@@ -2764,13 +2731,6 @@ declare module '@tanstack/react-router' {
       path: '/cadencias'
       fullPath: '/app/configuracoes/cadencias'
       preLoaderRoute: typeof AppConfiguracoesCadenciasRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
-    '/app/configuracoes/branding': {
-      id: '/app/configuracoes/branding'
-      path: '/branding'
-      fullPath: '/app/configuracoes/branding'
-      preLoaderRoute: typeof AppConfiguracoesBrandingRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/configuracoes/api': {
@@ -2976,7 +2936,6 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
-  AppConfiguracoesBrandingRoute: typeof AppConfiguracoesBrandingRoute
   AppConfiguracoesCadenciasRoute: typeof AppConfiguracoesCadenciasRoute
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
@@ -2984,7 +2943,6 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
-  AppConfiguracoesImobiliariaRoute: typeof AppConfiguracoesImobiliariaRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -2996,7 +2954,6 @@ interface AppConfiguracoesRouteChildren {
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesApiRoute: AppConfiguracoesApiRoute,
-  AppConfiguracoesBrandingRoute: AppConfiguracoesBrandingRoute,
   AppConfiguracoesCadenciasRoute: AppConfiguracoesCadenciasRoute,
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
@@ -3004,7 +2961,6 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
-  AppConfiguracoesImobiliariaRoute: AppConfiguracoesImobiliariaRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,

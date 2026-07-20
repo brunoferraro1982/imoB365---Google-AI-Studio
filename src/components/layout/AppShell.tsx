@@ -132,8 +132,6 @@ const tenantModules: Module[] = [
       { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
-      { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
-      { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
     ],
   },
   {
