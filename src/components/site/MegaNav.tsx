@@ -217,6 +217,8 @@ function MobileGroupSection({
 export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [menuTimeout, setMenuTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobile = () => setMobileOpen(false);
 
   const handleMouseEnter = (key: string) => {
     if (menuTimeout) {
@@ -354,7 +356,7 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
           {config.extraCtas?.()}
 
           <div className="lg:hidden">
-            <Sheet>
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
                 <Button
                   variant="ghost"
@@ -381,6 +383,7 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
                       <Link
                         to={config.mobileQuickAction.to}
                         className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-[#e86620] px-4 py-3.5 text-xs font-black text-white shadow-sm hover:scale-[1.01] transition-all text-center"
+                        onClick={closeMobile}
                       >
                         {config.mobileQuickAction.icon && (
                           <config.mobileQuickAction.icon className="h-4.5 w-4.5 shrink-0" />
@@ -397,11 +400,12 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
                         to={group.to}
                         hash={group.hash}
                         className="flex items-center gap-3.5 px-3 py-2 text-muted-foreground hover:text-foreground font-semibold transition-colors"
+                        onClick={closeMobile}
                       >
                         <span>{group.mobileLabel ?? group.label}</span>
                       </Link>
                     ) : (
-                      <MobileGroupSection key={group.key} group={group} onNavigate={() => {}} />
+                      <MobileGroupSection key={group.key} group={group} onNavigate={closeMobile} />
                     ),
                   )}
                 </div>
