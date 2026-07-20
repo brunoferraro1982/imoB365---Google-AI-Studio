@@ -3399,47 +3399,6 @@ export type Database = {
           },
         ];
       };
-      tenant_domains: {
-        Row: {
-          created_at: string;
-          dominio: string;
-          id: string;
-          primario: boolean;
-          tenant_id: string;
-          updated_at: string;
-          verificado: boolean;
-          verification_token: string;
-        };
-        Insert: {
-          created_at?: string;
-          dominio: string;
-          id?: string;
-          primario?: boolean;
-          tenant_id: string;
-          updated_at?: string;
-          verificado?: boolean;
-          verification_token?: string;
-        };
-        Update: {
-          created_at?: string;
-          dominio?: string;
-          id?: string;
-          primario?: boolean;
-          tenant_id?: string;
-          updated_at?: string;
-          verificado?: boolean;
-          verification_token?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "tenant_domains_tenant_id_fkey";
-            columns: ["tenant_id"];
-            isOneToOne: false;
-            referencedRelation: "tenants";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       tenant_feature_flags: {
         Row: {
           enabled: boolean;

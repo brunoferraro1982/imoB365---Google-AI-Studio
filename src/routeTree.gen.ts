@@ -129,7 +129,6 @@ import { Route as AppConfiguracoesImobiliariaRouteImport } from './routes/app.co
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
-import { Route as AppConfiguracoesDominiosRouteImport } from './routes/app.configuracoes.dominios'
 import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.configuracoes.checklist'
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
@@ -769,12 +768,6 @@ const AppConfiguracoesEquipeRoute = AppConfiguracoesEquipeRouteImport.update({
   path: '/equipe',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
-const AppConfiguracoesDominiosRoute =
-  AppConfiguracoesDominiosRouteImport.update({
-    id: '/dominios',
-    path: '/dominios',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
 const AppConfiguracoesChecklistRoute =
   AppConfiguracoesChecklistRouteImport.update({
     id: '/checklist',
@@ -1018,7 +1011,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
-  '/app/configuracoes/dominios': typeof AppConfiguracoesDominiosRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
@@ -1165,7 +1157,6 @@ export interface FileRoutesByTo {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
-  '/app/configuracoes/dominios': typeof AppConfiguracoesDominiosRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
@@ -1318,7 +1309,6 @@ export interface FileRoutesById {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
-  '/app/configuracoes/dominios': typeof AppConfiguracoesDominiosRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
@@ -1472,7 +1462,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
-    | '/app/configuracoes/dominios'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
@@ -1619,7 +1608,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
-    | '/app/configuracoes/dominios'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
@@ -1771,7 +1759,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
-    | '/app/configuracoes/dominios'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
@@ -2751,13 +2738,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesEquipeRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
-    '/app/configuracoes/dominios': {
-      id: '/app/configuracoes/dominios'
-      path: '/dominios'
-      fullPath: '/app/configuracoes/dominios'
-      preLoaderRoute: typeof AppConfiguracoesDominiosRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
     '/app/configuracoes/checklist': {
       id: '/app/configuracoes/checklist'
       path: '/checklist'
@@ -3001,7 +2981,6 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
   AppConfiguracoesChecklistRoute: typeof AppConfiguracoesChecklistRoute
-  AppConfiguracoesDominiosRoute: typeof AppConfiguracoesDominiosRoute
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
@@ -3022,7 +3001,6 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
   AppConfiguracoesChecklistRoute: AppConfiguracoesChecklistRoute,
-  AppConfiguracoesDominiosRoute: AppConfiguracoesDominiosRoute,
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,

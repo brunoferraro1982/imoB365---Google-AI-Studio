@@ -18,7 +18,6 @@ import {
   Share2,
   TrendingUp,
   FileCheck2,
-  Sliders,
   Server,
   HelpCircle,
   Code,
@@ -68,7 +67,7 @@ function GoLivePage() {
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [t, sset, imv, cor, dom, pages, pf] = await Promise.all([
+      const [t, sset, imv, cor, pages, pf] = await Promise.all([
         supabase
           .from("tenants")
           .select("nome,cnpj,creci_juridico,plano_slug")
@@ -85,7 +84,6 @@ function GoLivePage() {
           .select("id", { count: "exact", head: true })
           .eq("ativo", true)
           .limit(1),
-        supabase.from("tenant_domains").select("*").eq("tenant_id", tenantId),
         supabase
           .from("tenant_pages")
           .select("id", { count: "exact", head: true })
@@ -96,7 +94,6 @@ function GoLivePage() {
 
       const tenant: any = t.data ?? {};
       const ss: any = sset.data ?? {};
-      const domainsList: any[] = dom.data ?? [];
       const feedsList: any[] = pf.data ?? [];
 
       // Build general Operational Check list
@@ -137,31 +134,21 @@ function GoLivePage() {
           done: (pages.count ?? 0) > 0,
           link: "/app/site",
         },
-        {
-          id: "dominio",
-          label: "Domínio próprio verificado (opcional)",
-          done: domainsList.some((d) => d.verificado),
-          link: "/app/configuracoes/dominios",
-        },
       ];
       setChecks(list);
 
       // Audit detailed pending integrations status
-      const tempEmailHasDomain = domainsList.some((d) => d.verificado);
       const emailDiag: IntegrationDiagnosis = {
         id: "email",
         name: "E-mail Transacional",
         category: "Comunicação",
-        status: tempEmailHasDomain ? "active" : "pending",
-        statusText: tempEmailHasDomain ? "Configurado e ativo" : "Pendente (Usa domínio genérico)",
+        status: "pending",
+        statusText: "Pendente (Usa domínio genérico)",
         description:
           "Templates funcionais baseados em React Email integrados ao fluxo (Cadastros, Recuperação de senha, Magic-links, Convites e Notificações de Leads).",
-        details: tempEmailHasDomain
-          ? "Domínio remetente próprio verificado. Notificações estão saindo com sua marca."
-          : "Sem domínio de remetente próprio ativo. Envios automáticos de segurança e notificações ocorrem via domínio genérico padrão: 'notify.imob365.com.br'.",
+        details:
+          "Envios automáticos de segurança e notificações ocorrem via domínio genérico padrão: 'notify.imob365.com.br'.",
         icon: Mail,
-        actionText: "Verificar Domínio",
-        actionLink: "/app/configuracoes/dominios",
       };
 
       // Check Real Estate Portals
@@ -191,27 +178,6 @@ function GoLivePage() {
         icon: Globe2,
         actionText: "Ajustar Portais",
         actionLink: "/app/portais",
-      };
-
-      // Check Domains white label
-      const activeDomains = domainsList.filter((d) => d.verificado).length;
-      const domainDiag: IntegrationDiagnosis = {
-        id: "domains",
-        name: "Domínios White-label",
-        category: "Infraestrutura",
-        status: activeDomains > 0 ? "active" : "pending",
-        statusText:
-          activeDomains > 0
-            ? `${activeDomains} domínio(s) configurado(s)`
-            : "Pendente de apontamento DNS",
-        description: "Hospedagem e isolamento da marca sob domínio customizado da imobiliária.",
-        details:
-          activeDomains > 0
-            ? `Domínio próprio verificado com sucesso pelo inquilino.`
-            : "Nenhum apontamento DNS (registro CNAME e IP A) verificado ainda no painel. O site está rodando no subdomínio provisório da imob365.",
-        icon: Sliders,
-        actionText: "Gerenciar DNS",
-        actionLink: "/app/configuracoes/dominios",
       };
 
       // Check Google Maps / Geocoding
@@ -320,7 +286,6 @@ function GoLivePage() {
       setDiagnostics([
         emailDiag,
         portalDiag,
-        domainDiag,
         mapsDiag,
         waDiag,
         trackingDiag,
@@ -434,12 +399,6 @@ function GoLivePage() {
                   >
                     {c.label}
                   </span>
-                  {c.id === "dominio" && (
-                    <span className="text-[10px] block text-muted-foreground mt-0.5 font-sans">
-                      Permite hospedar no link oficial da sua imobiliária (ex:
-                      portal.imobiliaria.com)
-                    </span>
-                  )}
                   {c.id === "tenant" && (
                     <span className="text-[10px] block text-muted-foreground mt-0.5 font-sans">
                       Dados necessários para emissão de Notas Fiscais, recibos e relatórios de
