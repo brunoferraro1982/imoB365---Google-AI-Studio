@@ -2,6 +2,26 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ Fluxo obrigatório de ambientes e deploy (leia isto primeiro)
+
+Existem exatamente **2 ambientes** — não há staging separado:
+
+| Ambiente | Onde roda | Banco/Auth/Storage |
+| :--- | :--- | :--- |
+| **Dev** | `localhost` (`npm run dev`) | Supabase **Cloud** (projeto `rqwljbqvyiyajvrdpzao`) |
+| **Produção** | VPS Hostinger (`portal.imob365.com.br`, IP `179.197.231.61`) | Supabase **self-hosted** (Docker Compose na própria VPS) |
+
+**Fluxo obrigatório para toda alteração de código, funcionalidade ou feature nova:**
+
+1. Desenvolver e testar localmente em **dev** (`localhost` + Supabase Cloud) — nunca testar/experimentar direto contra o self-hosted de produção.
+2. Abrir PR para `develop` — o CI (`ci.yml`, `qa-regression.yml`, `supabase-migrations.yml`) valida lint, TypeScript, build, QA e sintaxe de migrations.
+3. Mergear em `develop`. Isso ainda **não** vai para produção — `develop` é só a branch de integração.
+4. Quando pronto para liberar, abrir PR `develop` → `main`. Mergear esse PR **dispara o deploy automático** via `.github/workflows/deploy.yml`: build (`DEPLOY_TARGET=node`) → rsync para a VPS → restart do `imob365-app.service` → health check em `https://portal.imob365.com.br/`.
+5. **Migrations de schema (`supabase/migrations/*.sql`) nunca são aplicadas automaticamente em produção** — o workflow de deploy só *avisa* (warning) se o PR trouxe migrations novas; aplicá-las no Postgres self-hosted da VPS é sempre um passo manual e confirmado à parte. Motivo: já foi encontrado drift real entre o histórico de migrations local e o schema de produção (objetos criados manualmente via Supabase Studio sem migration correspondente — ver changelog "Deploy em produção" abaixo) — não automatizar até esse processo estar mais maduro/confiável.
+6. **Nunca aplicar mudança de schema direto em produção via SQL Editor/Studio manual** — sempre criar uma migration versionada no repo primeiro, mesmo que seja aplicada manualmente depois. É exatamente esse hábito que causou o drift acima.
+
+Secrets do GitHub Actions relevantes: `VPS_SSH_HOST`, `VPS_SSH_KEY` (chave dedicada só de deploy, não a pessoal), `VPS_SUPABASE_URL`, `VPS_SUPABASE_PUBLISHABLE_KEY`, `VPS_GEMINI_API_KEY`. Os secrets antigos `PROD_SUPABASE_*`/`STAGING_SUPABASE_*`/`CLOUDFLARE_*` são de antes da migração para self-hosted e estão obsoletos.
+
 ## Project Context
 
 **imoB365** is a multi-tenant SaaS platform for the Brazilian real estate market.
