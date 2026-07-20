@@ -46,11 +46,11 @@ No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
 - **Framework**: TanStack Start (SSR + file-based routing) + React 19
 - **Routing**: TanStack Router — `src/routeTree.gen.ts` is auto-generated; **never edit manually**
 - **State/Data**: TanStack Query (`@tanstack/react-query`)
-- **Backend/DB**: Supabase (Postgres + Auth + Realtime + RLS)
+- **Backend/DB**: Supabase self-hosted (Postgres 17 + Auth/GoTrue + Realtime + Storage + RLS via Docker Compose, VPS própria) — mesmo stack open-source da Supabase Cloud, mesma API `@supabase/supabase-js`
 - **AI**: Google Gemini via `@google/genai` (`src/lib/ai.functions.ts`)
 - **Styling**: Tailwind CSS v4 + shadcn/ui (Radix UI primitives in `src/components/ui/`)
 - **Maps**: Leaflet + react-leaflet (`src/components/MapaImoveis.tsx`)
-- **Deployment**: não decidido — `wrangler.jsonc`/`@cloudflare/vite-plugin` existem no repo como scaffolding herdado, mas Cloudflare **não está no escopo** de hospedagem de produção (ver backlog)
+- **Deployment**: VPS Hostinger (Ubuntu 24.04, Docker), build Nitro `node-server` (`DEPLOY_TARGET=node npm run build`), systemd (`imob365-app.service`) + nginx reverse proxy + TLS Let's Encrypt em `portal.imob365.com.br`. `wrangler.jsonc`/`@cloudflare/vite-plugin` seguem no repo como scaffolding herdado do build padrão (Lovable), mas Cloudflare **não está no escopo** de hospedagem de produção
 
 ### Route Segments
 
@@ -296,6 +296,26 @@ Custom domain components live in:
 | ~172 erros de `tsc --noEmit` (Grupo A: `imovel.$slug.tsx`, `empreendimento.$slug.tsx`, `blog_.$slug.tsx`; Grupo B: 8 arquivos) | Pré-requisito pro deploy em produção. Grupo A: mesma causa raiz — `Route.useLoaderData()`/`head({ loaderData })` não infere o retorno do `createServerFn` usado no `loader`, corrigido com type assertion no ponto de uso (`errorComponent` garante os dados quando o componente renderiza). Grupo B: triagem individual por arquivo — inclui achado real de bug em `app.admin.aprovacoes.tsx` (consultava tabela inexistente `pending_registrations`; reescrito pra usar `listAdminUsers` filtrado por `!aprovado`, mesma fonte já usada em `ApprovalsNavBadge.tsx`). `npx tsc --noEmit` → 0 erros |
 | `vite.config.ts`, `src/nitro-node-renderer.ts` (novo) | Fix: build com `DEPLOY_TARGET=node npm run build` (preset Nitro `node-server`, alvo VPS próprio) servia HTML de placeholder em toda rota (`<title>My Google AI Studio App</title>`) em vez do SSR real — Nitro detecta automaticamente o `index.html` da raiz do projeto como rota catch-all de fallback (SPA) e essa rota vencia sobre o handler SSR real do TanStack Start, que estava corretamente empacotado mas nunca era roteado. Corrigido com `nitro.renderer.handler` apontando pro novo adaptador, só pro build `DEPLOY_TARGET=node` — build padrão (Cloudflare/Lovable) não é afetado. Validado: HTML renderizado corretamente (58KB, título/meta tags reais) em `/`, `/login`, `/buscar` (rota com dado real); build padrão continua gerando `dist/server/server.js` normalmente |
 
+### 🚀 Deploy em produção — VPS Hostinger + Supabase self-hosted (2026-07-20)
+
+Infraestrutura provisionada, migrada e validada de ponta a ponta contra a VPS real (`portal.imob365.com.br`, IP `179.197.231.61`, KVM2 — 2 vCPU/8GB/96GB, Ubuntu 24.04). Site em produção, HTTPS válido, dados reais migrados.
+
+| Item                              | O que foi feito                                                                                |
+| :--------------------------------- | :----------------------------------------------------------------------------------------------- |
+| Hardening da VPS                   | SSH só por chave (`PasswordAuthentication no`, `PermitRootLogin prohibit-password` — havia um drop-in do cloud-init da Hostinger sobrescrevendo isso, corrigido em `/etc/ssh/sshd_config.d/50-cloud-init.conf`); UFW ativo liberando só 22/80/443. Achado de segurança real corrigido: portas do Docker (Postgres 5432/6543, Kong 8000/8443) publicavam em `0.0.0.0`, **ignorando o UFW por completo** (Docker gerencia iptables por fora do UFW) — restrito pra bind em `127.0.0.1` no `docker-compose.yml` |
+| Supabase self-hosted                | Docker Compose oficial (`supabase/supabase`), 11 containers saudáveis (Postgres 17, GoTrue, PostgREST, Kong, Storage, Realtime, Studio, imgproxy, Supavisor). Chaves geradas via `utils/generate-keys.sh` + `utils/add-new-auth-keys.sh` oficiais (legacy JWT + novas chaves opacas `sb_publishable_`/`sb_secret_`, mesmo formato já usado pelo app) |
+| Migração de dados reais              | `supabase db dump --db-url` (role-only + schema + `--data-only --use-copy`) direto contra o projeto Cloud (`rqwljbqvyiyajvrdpzao`) — **não** replay das migrations locais, que têm drift real vs. produção (ver achado abaixo). Restaurado com sucesso: 94 tabelas, `auth.users` (2 contas reais), `tenants`, `imoveis` (5), `leads`, `user_roles`, etc. Arquivos de Storage (11 fotos + 1 logo) baixados da Cloud e re-enviados ao self-host via API REST (`storage/v1/object`) |
+| **Drift real descoberto**: migrations locais ≠ schema de produção | Ao tentar recriar o schema via replay das 98 migrations locais (só pra teste, antes do dump real), 6 migrations falharam por referenciar objetos que existem na Cloud mas nunca foram commitados como migration: tabelas renomeadas sem migration (`modelos_contrato`→`contrato_templates`, `lancamentos`→`lancamentos_financeiros`), tabelas inexistentes localmente (`campanhas`, `documentos`, ambas existem em produção), coluna `elearning_cursos.tenant_id` nunca criada por migration, e a função `is_super_admin_safe()` (**usada em 6 migrations, controla quem vira super_admin**) nunca commitada. O dump real da Cloud trouxe o schema verdadeiro (94 tabelas vs. 78 do replay) — confirma que o histórico de migrations do repo não é fonte de verdade completa da produção |
+| TLS + domínio                       | nginx como reverse proxy (`portal.imob365.com.br`→app Node porta 3000, `api.portal.imob365.com.br`→Kong porta 8000), certificados Let's Encrypt via certbot pros dois domínios, renovação automática validada (`certbot renew --dry-run`) |
+| App em produção                     | Deploy via systemd (`imob365-app.service`, restart automático), build `DEPLOY_TARGET=node` apontando pro Supabase self-hosted |
+| `src/nitro-node-renderer.ts`        | **Segundo bug real do Nitro `node-server`, achado só ao testar em navegador de verdade (não só curl/SSR)**: a página renderizava HTML correto mas nunca hidratava no cliente — zero erros no console, zero requisições de rede, travada pra sempre em "Carregando...". Causa: o renderer importava `./server` → `@tanstack/react-start/server-entry`, fazendo o Vite/Rollup empacotar uma **segunda cópia independente** do runtime do TanStack Start só pra essa entrada, com seu próprio manifest resolvido separadamente do `services.ssr` que o Nitro já constrói corretamente — essa segunda cópia caía, de forma não-determinística, numa referência de entrada de cliente só-de-dev que não existe em produção. Corrigido usando `fetchViteEnv("ssr", ...)` (`nitro/vite/runtime`) pra delegar pro serviço SSR que o próprio Nitro já constrói certo, em vez de disparar um build duplicado. Validado: 4 builds do zero consecutivas sem falha (antes era flaky) |
+| Achado de UX/dados                  | Ao testar `/buscar` com sessão logada (usuário real migrado), confirmado que escrita via RLS também funciona (favoritar um imóvel persistiu corretamente) |
+
+**Pendências para produção 100% completa** (não bloqueiam o que já está no ar):
+- Google OAuth: precisa reconfigurar Client ID/Secret no self-host com redirect URI `https://api.portal.imob365.com.br/auth/v1/callback`
+- SMTP: ainda usando placeholder (`fake_mail_user`) — sem isso, e-mails de confirmação/recuperação de senha do GoTrue não são enviados de verdade
+- A migration `20260521134506_..._f9f2cc82...sql` (seed do papel `super_admin` do usuário real) não foi aplicada durante os testes de schema — não é mais necessária, pois o dump real já trouxe `user_roles` populado
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
@@ -322,7 +342,7 @@ Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudfla
 
 - CI/CD com SAST/DAST (GitHub Actions)
 - Limpeza de lint/prettier pré-existente no CI: ~4219 erros de prettier/eslint espalhados por dezenas de arquivos não relacionados às sprints recentes — o job `Lint & Format` do `ci.yml` continua vermelho por causa disso (não bloqueia o build real, só o gate de qualidade). Os ~172 erros de `tsc --noEmit` já foram corrigidos em 2026-07-20 (ver changelog acima)
-- Deploy em produção — plataforma **decidida em 2026-07-20**: VPS Hostinger (KVM) + Supabase self-hosted via Docker Compose (sem custo de plano gerenciado; Cloudflare não está no escopo). Em execução: fix de TS ✅, build Nitro `node-server` funcional ✅ (PR #46), pendente — provisionar/configurar o VPS, migrar dados da Supabase Cloud (`supabase db dump`/restore), documentar rotina de backup/monitoramento do Postgres self-hosted (deixa de ser responsabilidade da Supabase Cloud)
+- Deploy em produção — **no ar desde 2026-07-20**: VPS Hostinger + Supabase self-hosted, `https://portal.imob365.com.br`, dados reais migrados (ver changelog "Deploy em produção" acima para detalhes completos). Pendente: reconfigurar Google OAuth pro self-host (redirect URI novo), configurar SMTP real (hoje placeholder — e-mails de auth não são enviados), documentar rotina de backup/monitoramento do Postgres self-hosted (deixa de ser responsabilidade da Supabase Cloud), reconciliar o drift descoberto entre as migrations locais e o schema real de produção (6 objetos não rastreados: ver changelog)
 
 #### Institucional
 
