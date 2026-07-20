@@ -24,6 +24,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
         {
           email: u.email ?? null,
           creci: ((u.user_metadata as Record<string, unknown>)?.creci as string | null) ?? null,
+          cnpj: ((u.user_metadata as Record<string, unknown>)?.cnpj as string | null) ?? null,
           provider:
             ((u.app_metadata as Record<string, unknown>)?.provider as string | null) ?? null,
           created_at: u.created_at ?? null,
@@ -45,6 +46,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
       telefone: (p.telefone as string) ?? null,
       email: authMap.get(p.id as string)?.email ?? null,
       creci: authMap.get(p.id as string)?.creci ?? null,
+      cnpj: authMap.get(p.id as string)?.cnpj ?? null,
       provider: authMap.get(p.id as string)?.provider ?? null,
       auth_created_at: authMap.get(p.id as string)?.created_at ?? null,
     }));

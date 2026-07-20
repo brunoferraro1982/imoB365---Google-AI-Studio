@@ -62,15 +62,20 @@ const fetchImovelBySlug = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/imovel/$slug")({
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [] };
-    const preco = formatBRL(loaderData.preco);
-    const titulo = `${loaderData.titulo} — ${preco} | imob365`;
-    const descricao = (loaderData.descricao ?? "").slice(0, 160);
+    // TanStack Router não infere corretamente o tipo de retorno do loader
+    // nesta combinação com createServerFn (loaderData cai pra `never`) —
+    // asserção manual, o errorComponent já garante que os dados existem
+    // aqui quando o componente chega a renderizar.
+    const imovel = loaderData as Imovel | undefined;
+    if (!imovel) return { meta: [] };
+    const preco = formatBRL(imovel.preco);
+    const titulo = `${imovel.titulo} — ${preco} | imob365`;
+    const descricao = (imovel.descricao ?? "").slice(0, 160);
     return {
       meta: [
         { title: titulo },
         { name: "description", content: descricao },
-        { property: "og:title", content: loaderData.titulo },
+        { property: "og:title", content: imovel.titulo },
         { property: "og:description", content: descricao },
       ],
     };
@@ -96,7 +101,9 @@ export const Route = createFileRoute("/imovel/$slug")({
 });
 
 function ImovelDetail() {
-  const imovel = Route.useLoaderData();
+  // Mesma asserção de `head` acima — Route.useLoaderData() infere `never`
+  // nesta rota; o errorComponent garante que o dado existe aqui.
+  const imovel = Route.useLoaderData() as Imovel;
   const [fotos, setFotos] = useState<{ storage_path: string; capa: boolean }[]>([]);
   const [tenantNome, setTenantNome] = useState<string>("");
   const [pixels, setPixels] = useState<any>(null);

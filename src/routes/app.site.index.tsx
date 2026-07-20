@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ExternalLink,
   Plus,
@@ -9,6 +9,7 @@ import {
   Settings2,
   Sparkles,
   ArrowRight,
+  Upload,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,8 @@ import { ColorPickerField } from "@/components/ui/color-picker-field";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
+import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
+import { SECTION_LABELS, DEFAULT_SECOES, type SectionDbItem } from "@/lib/siteSections";
 
 export const Route = createFileRoute("/app/site/")({
   component: SitePage,
@@ -51,6 +54,7 @@ type Settings = {
   google_ads_id: string | null;
   hotjar_id: string | null;
   head_custom_html: string | null;
+  secoes: SectionDbItem[];
 };
 
 type Page = {
@@ -62,6 +66,21 @@ type Page = {
   publicada: boolean;
   updated_at: string;
 };
+
+type Identidade = {
+  nome: string;
+  slug: string;
+  cnpj: string;
+  creci_juridico: string;
+};
+
+type Tema = {
+  logo_url?: string;
+  primary_color?: string;
+  accent_color?: string;
+};
+
+const EMPTY_IDENTIDADE: Identidade = { nome: "", slug: "", cnpj: "", creci_juridico: "" };
 
 const EMPTY: Settings = {
   tenant_id: "",
@@ -86,6 +105,7 @@ const EMPTY: Settings = {
   google_ads_id: "",
   hotjar_id: "",
   head_custom_html: "",
+  secoes: DEFAULT_SECOES,
 };
 
 function SitePage() {
@@ -100,12 +120,25 @@ function SitePage() {
   const [editing, setEditing] = useState<Page | null>(null);
   const [savingPage, setSavingPage] = useState(false);
 
+  const [identidade, setIdentidade] = useState<Identidade>(EMPTY_IDENTIDADE);
+  const [planoSlug, setPlanoSlug] = useState<string | null>(null);
+  const [tenantStatus, setTenantStatus] = useState<string | null>(null);
+  const [savingIdentidade, setSavingIdentidade] = useState(false);
+
+  const [tema, setTema] = useState<Tema>({});
+  const [savingMarca, setSavingMarca] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
       setLoading(true);
       const [{ data: t }, { data: cfg }, { data: pg }] = await Promise.all([
-        supabase.from("tenants").select("slug,nome").eq("id", tenantId).maybeSingle(),
+        supabase
+          .from("tenants")
+          .select("slug,nome,cnpj,creci_juridico,tema,plano_slug,status")
+          .eq("id", tenantId)
+          .maybeSingle(),
         supabase.from("tenant_site_settings").select("*").eq("tenant_id", tenantId).maybeSingle(),
         supabase
           .from("tenant_pages")
@@ -115,7 +148,21 @@ function SitePage() {
       ]);
       setTenantSlug(t?.slug ?? "");
       setTenantNome(t?.nome ?? "");
-      if (cfg) setS({ ...EMPTY, ...cfg });
+      setIdentidade({
+        nome: t?.nome ?? "",
+        slug: t?.slug ?? "",
+        cnpj: t?.cnpj ?? "",
+        creci_juridico: t?.creci_juridico ?? "",
+      });
+      setPlanoSlug(t?.plano_slug ?? null);
+      setTenantStatus(t?.status ?? null);
+      setTema((t?.tema as Tema) ?? {});
+      if (cfg)
+        setS({
+          ...EMPTY,
+          ...cfg,
+          secoes: (cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES,
+        });
       else setS({ ...EMPTY, tenant_id: tenantId });
       setPages((pg ?? []) as Page[]);
       setLoading(false);
@@ -124,6 +171,59 @@ function SitePage() {
 
   function set<K extends keyof Settings>(k: K, v: Settings[K]) {
     setS((p) => ({ ...p, [k]: v }));
+  }
+
+  async function saveIdentidade(e: FormEvent) {
+    e.preventDefault();
+    if (!tenantId) return;
+    setSavingIdentidade(true);
+    const { error } = await supabase
+      .from("tenants")
+      .update({
+        nome: identidade.nome,
+        slug: identidade.slug,
+        cnpj: identidade.cnpj,
+        creci_juridico: identidade.creci_juridico,
+      })
+      .eq("id", tenantId);
+    setSavingIdentidade(false);
+    if (error) return toast.error(error.message);
+    setTenantSlug(identidade.slug);
+    setTenantNome(identidade.nome);
+    toast.success("Identidade atualizada");
+  }
+
+  async function uploadLogo(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !tenantId) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error("Logo deve ter no máximo 2MB");
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
+    const path = `${tenantId}/logo-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("tenant-branding")
+      .upload(path, file, { upsert: true });
+    if (error) {
+      setUploadingLogo(false);
+      return toast.error(error.message);
+    }
+    const { data: pub } = supabase.storage.from("tenant-branding").getPublicUrl(path);
+    setTema((t) => ({ ...t, logo_url: pub.publicUrl }));
+    setUploadingLogo(false);
+    toast.success("Logo enviada");
+  }
+
+  async function saveMarca(e: FormEvent) {
+    e.preventDefault();
+    if (!tenantId) return;
+    setSavingMarca(true);
+    const { error } = await supabase
+      .from("tenants")
+      .update({ tema: tema as any })
+      .eq("id", tenantId);
+    setSavingMarca(false);
+    if (error) return toast.error(error.message);
+    toast.success("Marca atualizada");
   }
 
   async function save(e: FormEvent) {
@@ -251,6 +351,148 @@ function SitePage() {
           </Link>
         </div>
       )}
+
+      <form onSubmit={saveIdentidade} className="mb-6 max-w-4xl space-y-6">
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-4 text-base font-semibold">Identidade</h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Nome fantasia *">
+              <Input
+                required
+                value={identidade.nome}
+                onChange={(e) => setIdentidade((d) => ({ ...d, nome: e.target.value }))}
+                maxLength={200}
+              />
+            </Field>
+            <Field label="Slug (URL pública)">
+              <Input
+                value={identidade.slug}
+                onChange={(e) => setIdentidade((d) => ({ ...d, slug: e.target.value }))}
+                maxLength={80}
+              />
+            </Field>
+            <Field label="CNPJ">
+              <Input
+                value={identidade.cnpj}
+                onChange={(e) => setIdentidade((d) => ({ ...d, cnpj: e.target.value }))}
+                maxLength={20}
+                placeholder="00.000.000/0000-00"
+              />
+            </Field>
+            <Field label="CRECI Jurídico (CRECI-J)">
+              <Input
+                value={identidade.creci_juridico}
+                onChange={(e) => setIdentidade((d) => ({ ...d, creci_juridico: e.target.value }))}
+                maxLength={40}
+              />
+            </Field>
+          </div>
+          <div className="mt-4 flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4 text-xs text-muted-foreground">
+            <div>
+              <div>
+                Plano atual: <span className="font-medium text-foreground">{planoSlug ?? "—"}</span>
+              </div>
+              <div>
+                Status: <span className="font-medium text-foreground">{tenantStatus ?? "—"}</span>
+              </div>
+            </div>
+            <span>Para mudar plano ou status, fale com o super-admin.</span>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" disabled={savingIdentidade}>
+              {savingIdentidade ? "Salvando…" : "Salvar identidade"}
+            </Button>
+          </div>
+        </section>
+      </form>
+
+      <form onSubmit={saveMarca} className="mb-6 max-w-4xl space-y-6">
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Marca</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Logotipo e cores da sua marca. Aparecem no site público e em e-mails.
+          </p>
+          <div className="flex items-center gap-6">
+            <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
+              {tema.logo_url ? (
+                <img src={tema.logo_url} alt="Logo" className="max-h-20 max-w-36 object-contain" />
+              ) : (
+                <span className="text-xs text-muted-foreground">Sem logo</span>
+              )}
+            </div>
+            <div>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted">
+                <Upload className="h-4 w-4" />
+                {uploadingLogo ? "Enviando…" : "Enviar logo"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={uploadLogo}
+                />
+              </label>
+              {tema.logo_url && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2"
+                  onClick={() => setTema((t) => ({ ...t, logo_url: undefined }))}
+                >
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <Field label="Cor primária da marca">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={tema.primary_color || "#0f172a"}
+                  onChange={(e) => setTema((t) => ({ ...t, primary_color: e.target.value }))}
+                  className="h-10 w-14 cursor-pointer rounded border border-border"
+                />
+                <Input
+                  value={tema.primary_color || "#0f172a"}
+                  onChange={(e) => setTema((t) => ({ ...t, primary_color: e.target.value }))}
+                  maxLength={9}
+                />
+              </div>
+            </Field>
+            <Field label="Cor de destaque da marca">
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={tema.accent_color || "#3b82f6"}
+                  onChange={(e) => setTema((t) => ({ ...t, accent_color: e.target.value }))}
+                  className="h-10 w-14 cursor-pointer rounded border border-border"
+                />
+                <Input
+                  value={tema.accent_color || "#3b82f6"}
+                  onChange={(e) => setTema((t) => ({ ...t, accent_color: e.target.value }))}
+                  maxLength={9}
+                />
+              </div>
+            </Field>
+          </div>
+          <div
+            className="mt-4 rounded-lg border border-border p-4"
+            style={{
+              background: `linear-gradient(135deg, ${tema.primary_color || "#0f172a"}, ${tema.accent_color || "#3b82f6"})`,
+            }}
+          >
+            <div className="text-sm font-medium text-white">
+              Pré-visualização do cabeçalho público
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button type="submit" disabled={savingMarca}>
+              {savingMarca ? "Salvando…" : "Salvar marca"}
+            </Button>
+          </div>
+        </section>
+      </form>
 
       <form onSubmit={save} className="mb-10 max-w-4xl space-y-6">
         <section className="rounded-xl border border-border bg-card p-6">
@@ -400,6 +642,37 @@ function SitePage() {
               />
             </Field>
           </div>
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Seções da página inicial</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Escolha a ordem e quais seções aparecem na home do seu site. O Hero (topo) é sempre
+            fixo.
+          </p>
+          <SectionOrderEditor
+            pinnedLabel="Hero"
+            items={s.secoes
+              .slice()
+              .sort((a, b) => a.ordem - b.ordem)
+              .map(
+                (d): SectionItem => ({
+                  key: d.key,
+                  label: SECTION_LABELS[d.key] ?? d.key,
+                  visivel: d.visivel,
+                }),
+              )}
+            onChange={(next) =>
+              set(
+                "secoes",
+                next.map((item, i) => ({
+                  key: item.key as SectionDbItem["key"],
+                  visivel: item.visivel,
+                  ordem: i,
+                })),
+              )
+            }
+          />
         </section>
 
         <Collapsible className="rounded-xl border border-border bg-card">

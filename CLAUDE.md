@@ -46,11 +46,11 @@ No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
 - **Framework**: TanStack Start (SSR + file-based routing) + React 19
 - **Routing**: TanStack Router — `src/routeTree.gen.ts` is auto-generated; **never edit manually**
 - **State/Data**: TanStack Query (`@tanstack/react-query`)
-- **Backend/DB**: Supabase (Postgres + Auth + Realtime + RLS)
+- **Backend/DB**: Supabase self-hosted (Postgres 17 + Auth/GoTrue + Realtime + Storage + RLS via Docker Compose, VPS própria) — mesmo stack open-source da Supabase Cloud, mesma API `@supabase/supabase-js`
 - **AI**: Google Gemini via `@google/genai` (`src/lib/ai.functions.ts`)
 - **Styling**: Tailwind CSS v4 + shadcn/ui (Radix UI primitives in `src/components/ui/`)
 - **Maps**: Leaflet + react-leaflet (`src/components/MapaImoveis.tsx`)
-- **Deployment**: Cloudflare Workers (via `@cloudflare/vite-plugin`)
+- **Deployment**: VPS Hostinger (Ubuntu 24.04, Docker), build Nitro `node-server` (`DEPLOY_TARGET=node npm run build`), systemd (`imob365-app.service`) + nginx reverse proxy + TLS Let's Encrypt em `portal.imob365.com.br`. `wrangler.jsonc`/`@cloudflare/vite-plugin` seguem no repo como scaffolding herdado do build padrão (Lovable), mas Cloudflare **não está no escopo** de hospedagem de produção
 
 ### Route Segments
 
@@ -274,22 +274,77 @@ Custom domain components live in:
 | `src/routes/consultoria.tsx`      | Idem: head/meta e corpo sem menção a região                                                    |
 | `src/components/site-layout.tsx`  | Nav mega-menu/mobile: label "Por que o Litoral Sul"→"Nosso Padrão de Curadoria", anchor `litoral-sul`→`nosso-padrao` |
 
+### 🔧 Correções recentes (2026-07-16)
+
+| Arquivo                                   | Correção                                                                                      |
+| :----------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `src/lib/creditScore.ts`                   | Novo: `gerarAnaliseRisco()` — extrai/compartilha a lógica de score (antes só em `app.leads.$id.tsx`), acrescenta `fatores`, `historico` e `recomendacoes` para a nova página |
+| `src/lib/format.ts`                        | Novo: `maskCPF()` e `isValidCPF()` (dígito verificador real)                                   |
+| `src/routes/app.leads.$id.tsx`             | Refatorado para usar `gerarAnaliseRisco()`/`maskCPF()`/`isValidCPF()` — mesmo comportamento visual, sem duplicar lógica |
+| `src/routes/app.leads.analise-risco.tsx`   | Nova página "Análise de Risco" (`/app/leads/analise-risco`): consulta de CPF, gráficos (gauge, composição do score, tendência 6 meses via recharts) e conteúdo qualitativo para o corretor apresentar ao proprietário do imóvel; opção de vincular a um lead (grava nota na timeline) e de imprimir |
+| `src/components/layout/AppShell.tsx`       | Novo item de menu "Análise de Risco" no grupo Imobiliário; `print:hidden` no header/aside do app shell (suporta o botão Imprimir da nova página) |
+
+### 🔧 Correções recentes (2026-07-20)
+
+| Arquivo                                      | Correção                                                                                      |
+| :-------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260720120000_favoritos_imovel_fk.sql` | Fix: `favoritos.imovel_id` nunca teve FK para `imoveis(id)` — `listarFavoritos()` (embed `imoveis:imovel_id(...)`) quebrava com "Could not find a relationship..." em `/conta/favoritos`; mesma causa já corrigida antes em `visitas` |
+| `src/lib/favoritos.functions.ts`             | Nova server function `atualizarFavoritoPasta` — reaproveita a coluna `pasta` (já existente, nunca usada pela UI) |
+| `src/routes/conta.favoritos.tsx`             | Organização por pasta (presets: "Para visitar" / "Comparar" / "Descartado"): filtro por chips + seletor por card; mantido (avaliado como PO/UX/marketing: não é redundante com o ranking agregado de favoritos do corretor em `/app/relatorios`, é a lista pessoal do usuário) |
+| `src/components/layout/HeaderUserMenu.tsx`   | Mega menu (área logada): "Nossos Planos Starter & Pro" → "Nossos Planos Standard & Pro" (não existe plano "Starter"; o nome correto é "Standard", `plan-stand`); "Atalhos Operacionais"→"Acesso Fácil" com o mesmo destaque visual de "Central Imob365"; "Desconectar Conta"→"Sair"; "Papéis do Consórcio"→"Função"; botão "Anunciar novo imóvel" movido pra fora da coluna estreita do card de perfil (texto estava truncando); nome do usuário sem `truncate` forçado (`break-words`+`line-clamp-2`, evita estourar quando cai no fallback pro e-mail) |
+| `src/routes/index.tsx`, `src/components/site-layout.tsx` | Remove auto-logout de 5min forçado na home (`supabase.auth.signOut()` sem base em atividade real do usuário — resquício de debug, não documentado como política de segurança) |
+| ~172 erros de `tsc --noEmit` (Grupo A: `imovel.$slug.tsx`, `empreendimento.$slug.tsx`, `blog_.$slug.tsx`; Grupo B: 8 arquivos) | Pré-requisito pro deploy em produção. Grupo A: mesma causa raiz — `Route.useLoaderData()`/`head({ loaderData })` não infere o retorno do `createServerFn` usado no `loader`, corrigido com type assertion no ponto de uso (`errorComponent` garante os dados quando o componente renderiza). Grupo B: triagem individual por arquivo — inclui achado real de bug em `app.admin.aprovacoes.tsx` (consultava tabela inexistente `pending_registrations`; reescrito pra usar `listAdminUsers` filtrado por `!aprovado`, mesma fonte já usada em `ApprovalsNavBadge.tsx`). `npx tsc --noEmit` → 0 erros |
+| `vite.config.ts`, `src/nitro-node-renderer.ts` (novo) | Fix: build com `DEPLOY_TARGET=node npm run build` (preset Nitro `node-server`, alvo VPS próprio) servia HTML de placeholder em toda rota (`<title>My Google AI Studio App</title>`) em vez do SSR real — Nitro detecta automaticamente o `index.html` da raiz do projeto como rota catch-all de fallback (SPA) e essa rota vencia sobre o handler SSR real do TanStack Start, que estava corretamente empacotado mas nunca era roteado. Corrigido com `nitro.renderer.handler` apontando pro novo adaptador, só pro build `DEPLOY_TARGET=node` — build padrão (Cloudflare/Lovable) não é afetado. Validado: HTML renderizado corretamente (58KB, título/meta tags reais) em `/`, `/login`, `/buscar` (rota com dado real); build padrão continua gerando `dist/server/server.js` normalmente |
+
+### 🚀 Deploy em produção — VPS Hostinger + Supabase self-hosted (2026-07-20)
+
+Infraestrutura provisionada, migrada e validada de ponta a ponta contra a VPS real (`portal.imob365.com.br`, IP `179.197.231.61`, KVM2 — 2 vCPU/8GB/96GB, Ubuntu 24.04). Site em produção, HTTPS válido, dados reais migrados.
+
+| Item                              | O que foi feito                                                                                |
+| :--------------------------------- | :----------------------------------------------------------------------------------------------- |
+| Hardening da VPS                   | SSH só por chave (`PasswordAuthentication no`, `PermitRootLogin prohibit-password` — havia um drop-in do cloud-init da Hostinger sobrescrevendo isso, corrigido em `/etc/ssh/sshd_config.d/50-cloud-init.conf`); UFW ativo liberando só 22/80/443. Achado de segurança real corrigido: portas do Docker (Postgres 5432/6543, Kong 8000/8443) publicavam em `0.0.0.0`, **ignorando o UFW por completo** (Docker gerencia iptables por fora do UFW) — restrito pra bind em `127.0.0.1` no `docker-compose.yml` |
+| Supabase self-hosted                | Docker Compose oficial (`supabase/supabase`), 11 containers saudáveis (Postgres 17, GoTrue, PostgREST, Kong, Storage, Realtime, Studio, imgproxy, Supavisor). Chaves geradas via `utils/generate-keys.sh` + `utils/add-new-auth-keys.sh` oficiais (legacy JWT + novas chaves opacas `sb_publishable_`/`sb_secret_`, mesmo formato já usado pelo app) |
+| Migração de dados reais              | `supabase db dump --db-url` (role-only + schema + `--data-only --use-copy`) direto contra o projeto Cloud (`rqwljbqvyiyajvrdpzao`) — **não** replay das migrations locais, que têm drift real vs. produção (ver achado abaixo). Restaurado com sucesso: 94 tabelas, `auth.users` (2 contas reais), `tenants`, `imoveis` (5), `leads`, `user_roles`, etc. Arquivos de Storage (11 fotos + 1 logo) baixados da Cloud e re-enviados ao self-host via API REST (`storage/v1/object`) |
+| **Drift real descoberto**: migrations locais ≠ schema de produção | Ao tentar recriar o schema via replay das 98 migrations locais (só pra teste, antes do dump real), 6 migrations falharam por referenciar objetos que existem na Cloud mas nunca foram commitados como migration: tabelas renomeadas sem migration (`modelos_contrato`→`contrato_templates`, `lancamentos`→`lancamentos_financeiros`), tabelas inexistentes localmente (`campanhas`, `documentos`, ambas existem em produção), coluna `elearning_cursos.tenant_id` nunca criada por migration, e a função `is_super_admin_safe()` (**usada em 6 migrations, controla quem vira super_admin**) nunca commitada. O dump real da Cloud trouxe o schema verdadeiro (94 tabelas vs. 78 do replay) — confirma que o histórico de migrations do repo não é fonte de verdade completa da produção |
+| TLS + domínio                       | nginx como reverse proxy (`portal.imob365.com.br`→app Node porta 3000, `api.portal.imob365.com.br`→Kong porta 8000), certificados Let's Encrypt via certbot pros dois domínios, renovação automática validada (`certbot renew --dry-run`) |
+| App em produção                     | Deploy via systemd (`imob365-app.service`, restart automático), build `DEPLOY_TARGET=node` apontando pro Supabase self-hosted |
+| `src/nitro-node-renderer.ts`        | **Segundo bug real do Nitro `node-server`, achado só ao testar em navegador de verdade (não só curl/SSR)**: a página renderizava HTML correto mas nunca hidratava no cliente — zero erros no console, zero requisições de rede, travada pra sempre em "Carregando...". Causa: o renderer importava `./server` → `@tanstack/react-start/server-entry`, fazendo o Vite/Rollup empacotar uma **segunda cópia independente** do runtime do TanStack Start só pra essa entrada, com seu próprio manifest resolvido separadamente do `services.ssr` que o Nitro já constrói corretamente — essa segunda cópia caía, de forma não-determinística, numa referência de entrada de cliente só-de-dev que não existe em produção. Corrigido usando `fetchViteEnv("ssr", ...)` (`nitro/vite/runtime`) pra delegar pro serviço SSR que o próprio Nitro já constrói certo, em vez de disparar um build duplicado. Validado: 4 builds do zero consecutivas sem falha (antes era flaky) |
+| Achado de UX/dados                  | Ao testar `/buscar` com sessão logada (usuário real migrado), confirmado que escrita via RLS também funciona (favoritar um imóvel persistiu corretamente) |
+
+**Pendências para produção 100% completa** (não bloqueiam o que já está no ar):
+- Google OAuth: precisa reconfigurar Client ID/Secret no self-host com redirect URI `https://api.portal.imob365.com.br/auth/v1/callback`
+- SMTP: ainda usando placeholder (`fake_mail_user`) — sem isso, e-mails de confirmação/recuperação de senha do GoTrue não são enviados de verdade
+- A migration `20260521134506_..._f9f2cc82...sql` (seed do papel `super_admin` do usuário real) não foi aplicada durante os testes de schema — não é mais necessária, pois o dump real já trouxe `user_roles` populado
+
 ### 📋 Backlog (próximas versões)
+
+Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
+
+#### Integrações externas pendentes (hoje mockadas ou parciais)
+
+- Bureau de crédito real (Serasa Experian ou similar) para a "Análise de Risco" (`/app/leads/analise-risco`, `src/lib/creditScore.ts`) — hoje o score/fatores/histórico são derivados deterministicamente do CPF (mock, sem chamada externa real, mesma lógica já usada no widget de `app.leads.$id.tsx` desde a Sprint 7); substituir por chamada real quando houver contrato/API key (`SERASA_API_KEY`, documentar em `.env.example`)
+- WhatsApp real via Evolution API: (1) substituir o deep-link `wa.me` atual em `whatsapp.ts` por integração real; (2) tornar o `WhatsAppFAB` do site público customizável por tenant (número/mensagem/posição próprios) — hoje é fixo com o número do imoB365
+- Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção
+- Integração CRECI via API nacional para validação de matrícula
+
+#### Produto — módulos e funcionalidades novas
 
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
 - API pública documentada (Swagger/OpenAPI) para integrações externas
-- SLA formal documentado nos Termos de Uso
 - Módulo de Atendimento ao Contratante (suporte in-app, tickets, chat)
+- Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
 - `mod-mkt-aut` — Cadências de automação (em desenvolvimento; bloqueado até QA)
-- Integração CRECI via API nacional para validação de matrícula
+- Loop de marketing para `/conta/favoritos`: notificar o lead por e-mail quando um imóvel favoritado mudar de preço ou sair do ar, e lembrete de retorno após X dias sem acessar — hoje a página só lista/organiza, não há nenhum gatilho automático de volta pro usuário
 - NPS in-app após 30 dias de uso ativo
 - Health score de tenant para CS (Customer Success)
-- WhatsApp via Evolution API (integração real — substituir deep-link atual em `whatsapp.ts`)
-- Deploy em produção (Cloudflare Workers)
+
+#### Infraestrutura, qualidade e operação
+
 - CI/CD com SAST/DAST (GitHub Actions)
-- WhatsApp flutuante customizável por tenant no site público (número/mensagem/posição próprios — hoje o `WhatsAppFAB` é fixo com o número do imoB365)
-- Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
-- Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção em `portal.imob365.com.br`
-- Limpeza de lint/TypeScript pré-existente no CI: ~4219 erros de prettier/eslint e ~172 erros de `tsc --noEmit` espalhados por dezenas de arquivos não relacionados às sprints recentes (ex.: `onboarding.tsx`, `signup.tsx`, `imovel.$slug.tsx`, `workers/redirects.ts`) — os jobs `Lint & Format`/`TypeScript` do `ci.yml` continuam vermelhos por causa disso (não bloqueia o build real, só o gate de qualidade)
-- Reativar o pipeline de deploy Cloudflare Workers (`.github/workflows/cd.yml`, removido em 2026-07-15 por não estar em uso) quando for a hora de ir ao ar de verdade — guia de secrets em `GITHUB-SECRETS.md`; `wrangler.jsonc` já tem os blocos `env.staging`/`env.production` e o `main` corrigido para o build (`dist/server/server.js`), mas a config de `assets` (client estático) para servir `dist/client` ainda não foi validada com um deploy real
+- Limpeza de lint/prettier pré-existente no CI: ~4219 erros de prettier/eslint espalhados por dezenas de arquivos não relacionados às sprints recentes — o job `Lint & Format` do `ci.yml` continua vermelho por causa disso (não bloqueia o build real, só o gate de qualidade). Os ~172 erros de `tsc --noEmit` já foram corrigidos em 2026-07-20 (ver changelog acima)
+- Deploy em produção — **no ar desde 2026-07-20**: VPS Hostinger + Supabase self-hosted, `https://portal.imob365.com.br`, dados reais migrados (ver changelog "Deploy em produção" acima para detalhes completos). Pendente: reconfigurar Google OAuth pro self-host (redirect URI novo), configurar SMTP real (hoje placeholder — e-mails de auth não são enviados), documentar rotina de backup/monitoramento do Postgres self-hosted (deixa de ser responsabilidade da Supabase Cloud), reconciliar o drift descoberto entre as migrations locais e o schema real de produção (6 objetos não rastreados: ver changelog)
+
+#### Institucional
+
+- SLA formal documentado nos Termos de Uso
 - Considerar Proposta B3 do reposicionamento nacional (mapa estilizado do Brasil com pontos/rede de conexão) como evolução visual futura da seção `#nosso-padrao` em `/a-imob365`, hoje resolvida via B2 (reaproveito de layout, troca de texto) — não há nenhum elemento de mapa/visual de localização no site público ainda

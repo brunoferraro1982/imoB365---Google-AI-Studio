@@ -50,19 +50,20 @@ const fetchEmpreendimentoBySlug = createServerFn({ method: "GET" })
 
 export const Route = createFileRoute("/empreendimento/$slug")({
   head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [] };
-    const descricao = (
-      loaderData.descricao ?? `${loaderData.nome} — empreendimento imobiliário`
-    ).slice(0, 160);
+    // TanStack Router não infere corretamente o tipo de retorno do loader
+    // nesta combinação com createServerFn (loaderData cai pra `never`) —
+    // asserção manual, o errorComponent já garante que os dados existem
+    // aqui quando o componente chega a renderizar.
+    const emp = loaderData as Empreendimento | undefined;
+    if (!emp) return { meta: [] };
+    const descricao = (emp.descricao ?? `${emp.nome} — empreendimento imobiliário`).slice(0, 160);
     return {
       meta: [
-        { title: `${loaderData.nome} | imob365` },
+        { title: `${emp.nome} | imob365` },
         { name: "description", content: descricao },
-        { property: "og:title", content: loaderData.nome },
+        { property: "og:title", content: emp.nome },
         { property: "og:description", content: descricao },
-        ...(loaderData.fotos_urls?.[0]
-          ? [{ property: "og:image", content: loaderData.fotos_urls[0] }]
-          : []),
+        ...(emp.fotos_urls?.[0] ? [{ property: "og:image", content: emp.fotos_urls[0] }] : []),
       ],
     };
   },
@@ -108,7 +109,9 @@ const FASE_LABEL: Record<string, string> = {
 };
 
 function EmpreendimentoDetail() {
-  const emp = Route.useLoaderData();
+  // Mesma asserção de `head` acima — Route.useLoaderData() infere `never`
+  // nesta rota; o errorComponent garante que o dado existe aqui.
+  const emp = Route.useLoaderData() as Empreendimento;
   const [unidades, setUnidades] = useState<Unidade[]>([]);
 
   useEffect(() => {
@@ -194,7 +197,7 @@ function EmpreendimentoDetail() {
         </Link>
 
         {/* GALERIA */}
-        {emp.fotos_urls?.length > 0 && (
+        {emp.fotos_urls && emp.fotos_urls.length > 0 && (
           <div className="mb-8 grid gap-2 overflow-hidden rounded-xl md:grid-cols-3">
             {emp.fotos_urls.slice(0, 6).map((url: string, i: number) => (
               <img

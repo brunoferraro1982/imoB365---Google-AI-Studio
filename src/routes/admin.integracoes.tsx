@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Link2, Globe, Mail, Rss, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Link2, Mail, Rss, CheckCircle2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
@@ -11,7 +11,6 @@ export const Route = createFileRoute("/admin/integracoes")({
 type TenantRow = { id: string; nome: string };
 type WebhookRow = { tenant_id: string; ativo: boolean };
 type DeliveryRow = { tenant_id: string; status: string };
-type DomainRow = { tenant_id: string; verificado: boolean };
 type FeedRow = { tenant_id: string; enabled: boolean };
 type EmailRow = { status: string };
 
@@ -20,14 +19,13 @@ function AdminIntegracoes() {
   const [tenants, setTenants] = useState<TenantRow[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookRow[]>([]);
   const [deliveries, setDeliveries] = useState<DeliveryRow[]>([]);
-  const [domains, setDomains] = useState<DomainRow[]>([]);
   const [feeds, setFeeds] = useState<FeedRow[]>([]);
   const [emails, setEmails] = useState<EmailRow[]>([]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [t, w, d, dom, f, e] = await Promise.all([
+      const [t, w, d, f, e] = await Promise.all([
         supabase.from("tenants").select("id,nome").order("nome"),
         supabase.from("tenant_webhooks").select("tenant_id,ativo"),
         supabase
@@ -35,7 +33,6 @@ function AdminIntegracoes() {
           .select("tenant_id,status")
           .order("created_at", { ascending: false })
           .limit(2000),
-        supabase.from("tenant_domains").select("tenant_id,verificado"),
         supabase.from("portal_feeds").select("tenant_id,enabled"),
         supabase
           .from("email_send_log")
@@ -46,7 +43,6 @@ function AdminIntegracoes() {
       setTenants((t.data as TenantRow[]) ?? []);
       setWebhooks((w.data as WebhookRow[]) ?? []);
       setDeliveries((d.data as DeliveryRow[]) ?? []);
-      setDomains((dom.data as DomainRow[]) ?? []);
       setFeeds((f.data as FeedRow[]) ?? []);
       setEmails((e.data as EmailRow[]) ?? []);
       setLoading(false);
@@ -57,25 +53,21 @@ function AdminIntegracoes() {
     const webhooksAtivos = webhooks.filter((w) => w.ativo).length;
     const entregasOk = deliveries.filter((d) => d.status === "entregue").length;
     const entregasTotal = deliveries.length;
-    const dominiosVerificados = domains.filter((d) => d.verificado).length;
     const emailsFalha = emails.filter((e) => e.status !== "sent").length;
     return {
       webhooksAtivos,
       taxaEntrega: entregasTotal > 0 ? Math.round((entregasOk / entregasTotal) * 100) : null,
-      dominiosVerificados,
-      dominiosTotal: domains.length,
       emailsFalha,
       emailsTotal: emails.length,
       feedsAtivos: feeds.filter((f) => f.enabled).length,
     };
-  }, [webhooks, deliveries, domains, emails, feeds]);
+  }, [webhooks, deliveries, emails, feeds]);
 
   const porTenant = useMemo(() => {
     return tenants
       .map((t) => {
         const wh = webhooks.filter((w) => w.tenant_id === t.id);
         const dl = deliveries.filter((d) => d.tenant_id === t.id);
-        const dm = domains.filter((d) => d.tenant_id === t.id);
         const fd = feeds.filter((f) => f.tenant_id === t.id);
         return {
           id: t.id,
@@ -83,24 +75,19 @@ function AdminIntegracoes() {
           webhooksAtivos: wh.filter((w) => w.ativo).length,
           entregasOk: dl.filter((d) => d.status === "entregue").length,
           entregasTotal: dl.length,
-          dominiosVerificados: dm.filter((d) => d.verificado).length,
-          dominiosTotal: dm.length,
           feedsAtivos: fd.filter((f) => f.enabled).length,
         };
       })
-      .filter(
-        (r) =>
-          r.webhooksAtivos > 0 || r.entregasTotal > 0 || r.dominiosTotal > 0 || r.feedsAtivos > 0,
-      );
-  }, [tenants, webhooks, deliveries, domains, feeds]);
+      .filter((r) => r.webhooksAtivos > 0 || r.entregasTotal > 0 || r.feedsAtivos > 0);
+  }, [tenants, webhooks, deliveries, feeds]);
 
   return (
     <div className="space-y-8 p-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Saúde das integrações</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Visão consolidada, entre todos os tenants, de webhooks, domínios, e-mail e feeds de portal
-          — cada imobiliária configura os próprios em{" "}
+          Visão consolidada, entre todos os tenants, de webhooks, e-mail e feeds de portal — cada
+          imobiliária configura os próprios em{" "}
           <code className="rounded bg-muted px-1">/app/configuracoes</code>; aqui é só
           monitoramento.
         </p>
@@ -125,13 +112,6 @@ function AdminIntegracoes() {
                   ? "text-emerald-600"
                   : "text-amber-600"
               }
-            />
-            <StatCard
-              icon={Globe}
-              label="Domínios verificados"
-              value={`${agg.dominiosVerificados} / ${agg.dominiosTotal}`}
-              sub="TXT confirmado"
-              tone="text-emerald-600"
             />
             <StatCard
               icon={Mail}
@@ -159,14 +139,13 @@ function AdminIntegracoes() {
                   <th className="px-4 py-2">Imobiliária</th>
                   <th className="px-4 py-2">Webhooks ativos</th>
                   <th className="px-4 py-2">Entregas</th>
-                  <th className="px-4 py-2">Domínios verificados</th>
                   <th className="px-4 py-2">Feeds ativos</th>
                 </tr>
               </thead>
               <tbody>
                 {porTenant.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
+                    <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
                       Nenhum tenant com integrações configuradas ainda.
                     </td>
                   </tr>
@@ -193,9 +172,6 @@ function AdminIntegracoes() {
                       ) : (
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
-                    </td>
-                    <td className="px-4 py-2">
-                      {r.dominiosVerificados} / {r.dominiosTotal}
                     </td>
                     <td className="px-4 py-2">{r.feedsAtivos}</td>
                   </tr>

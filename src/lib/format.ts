@@ -59,3 +59,31 @@ export function formatQuota(n: number | null | undefined): string {
   if (n === -1) return "Ilimitado";
   return String(n);
 }
+
+export function maskCPF(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+}
+
+export function isValidCPF(cpf: string): boolean {
+  const digits = cpf.replace(/\D/g, "");
+  if (digits.length !== 11 || /^(\d)\1{10}$/.test(digits)) return false;
+
+  const calcDigit = (base: string) => {
+    let sum = 0;
+    let weight = base.length + 1;
+    for (const ch of base) {
+      sum += Number(ch) * weight;
+      weight--;
+    }
+    const rest = (sum * 10) % 11;
+    return rest === 10 ? 0 : rest;
+  };
+
+  const d1 = calcDigit(digits.slice(0, 9));
+  const d2 = calcDigit(digits.slice(0, 9) + d1);
+  return digits === digits.slice(0, 9) + String(d1) + String(d2);
+}

@@ -1574,6 +1574,7 @@ export type Database = {
           corretor_id: string | null;
           created_at: string;
           created_by: string | null;
+          custom_data: Json;
           data_pagamento: string | null;
           data_vencimento: string;
           descricao: string;
@@ -1594,6 +1595,7 @@ export type Database = {
           corretor_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          custom_data?: Json;
           data_pagamento?: string | null;
           data_vencimento?: string;
           descricao: string;
@@ -1614,6 +1616,7 @@ export type Database = {
           corretor_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          custom_data?: Json;
           data_pagamento?: string | null;
           data_vencimento?: string;
           descricao?: string;
@@ -3399,47 +3402,6 @@ export type Database = {
           },
         ];
       };
-      tenant_domains: {
-        Row: {
-          created_at: string;
-          dominio: string;
-          id: string;
-          primario: boolean;
-          tenant_id: string;
-          updated_at: string;
-          verificado: boolean;
-          verification_token: string;
-        };
-        Insert: {
-          created_at?: string;
-          dominio: string;
-          id?: string;
-          primario?: boolean;
-          tenant_id: string;
-          updated_at?: string;
-          verificado?: boolean;
-          verification_token?: string;
-        };
-        Update: {
-          created_at?: string;
-          dominio?: string;
-          id?: string;
-          primario?: boolean;
-          tenant_id?: string;
-          updated_at?: string;
-          verificado?: boolean;
-          verification_token?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "tenant_domains_tenant_id_fkey";
-            columns: ["tenant_id"];
-            isOneToOne: false;
-            referencedRelation: "tenants";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       tenant_feature_flags: {
         Row: {
           enabled: boolean;
@@ -3593,9 +3555,11 @@ export type Database = {
           hero_titulo: string | null;
           hotjar_id: string | null;
           instagram_url: string | null;
+          layout: string;
           linkedin_url: string | null;
           meta_description: string | null;
           publicado: boolean;
+          secoes: Json;
           sobre_html: string | null;
           tenant_id: string;
           updated_at: string;
@@ -3619,9 +3583,11 @@ export type Database = {
           hero_titulo?: string | null;
           hotjar_id?: string | null;
           instagram_url?: string | null;
+          layout?: string;
           linkedin_url?: string | null;
           meta_description?: string | null;
           publicado?: boolean;
+          secoes?: Json;
           sobre_html?: string | null;
           tenant_id: string;
           updated_at?: string;
@@ -3645,15 +3611,64 @@ export type Database = {
           hero_titulo?: string | null;
           hotjar_id?: string | null;
           instagram_url?: string | null;
+          layout?: string;
           linkedin_url?: string | null;
           meta_description?: string | null;
           publicado?: boolean;
+          secoes?: Json;
           sobre_html?: string | null;
           tenant_id?: string;
           updated_at?: string;
           youtube_url?: string | null;
         };
         Relationships: [];
+      };
+      tenant_site_widgets: {
+        Row: {
+          ativo: boolean;
+          config: Json;
+          created_at: string;
+          id: string;
+          ordem: number;
+          posicao: string;
+          tenant_id: string;
+          tipo: string;
+          titulo: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          posicao?: string;
+          tenant_id: string;
+          tipo: string;
+          titulo?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          posicao?: string;
+          tenant_id?: string;
+          tipo?: string;
+          titulo?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_site_widgets_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tenant_usage_snapshots: {
         Row: {
@@ -3752,7 +3767,6 @@ export type Database = {
           cnpj: string | null;
           created_at: string;
           creci_juridico: string | null;
-          dominio_proprio: string | null;
           downgrade_to: string | null;
           id: string;
           mercadopago_payment_id: string | null;
@@ -3775,7 +3789,6 @@ export type Database = {
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
-          dominio_proprio?: string | null;
           downgrade_to?: string | null;
           id?: string;
           mercadopago_payment_id?: string | null;
@@ -3798,7 +3811,6 @@ export type Database = {
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
-          dominio_proprio?: string | null;
           downgrade_to?: string | null;
           id?: string;
           mercadopago_payment_id?: string | null;
@@ -4149,6 +4161,10 @@ export type Database = {
       public_visita_nps: {
         Args: { _comentario: string; _score: number; _token: string };
         Returns: undefined;
+      };
+      provision_trial_business: {
+        Args: { p_imob_nome?: string | null; p_nome: string; p_tipo: string; p_user_id: string };
+        Returns: Json;
       };
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number };

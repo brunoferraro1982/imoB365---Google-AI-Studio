@@ -73,6 +73,7 @@ function TenantBlogPage() {
         settings: cfg,
         pages: (pages ?? []) as { slug: string; titulo: string }[],
         hasBlog: true,
+        hasSobre: !!cfg.sobre_html?.trim(),
       });
       setPosts((postsData as Post[]) ?? []);
       setLoading(false);

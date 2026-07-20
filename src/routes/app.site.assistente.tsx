@@ -13,6 +13,8 @@ import {
   Code2,
   PartyPopper,
   Sparkles,
+  LayoutTemplate,
+  LayoutGrid,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,6 +24,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ColorPickerField } from "@/components/ui/color-picker-field";
+import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
+import {
+  SECTION_LABELS,
+  DEFAULT_SECOES,
+  LAYOUT_INFO,
+  LAYOUT_SUGGESTED_SECOES,
+  ZONA_LABELS,
+  secoesEqual,
+  type SectionDbItem,
+  type LayoutKey,
+  type Zona,
+} from "@/lib/siteSections";
 import { slugify } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -33,12 +47,14 @@ export const Route = createFileRoute("/app/site/assistente")({
 
 const STEPS = [
   { id: "boasvindas", label: "Boas-vindas", icon: PartyPopper },
+  { id: "layout", label: "Estilo do site", icon: LayoutTemplate },
   { id: "logo", label: "Logo", icon: Upload },
   { id: "cores", label: "Cores", icon: Palette },
   { id: "titulo", label: "Título", icon: Type },
   { id: "sobre", label: "Sobre você", icon: BookText },
   { id: "contato", label: "Contato", icon: Phone },
   { id: "paginas", label: "Páginas", icon: FileStack },
+  { id: "secoes", label: "Seções", icon: LayoutGrid },
   { id: "tecnico", label: "SEO avançado", icon: Code2 },
 ] as const;
 
@@ -102,6 +118,19 @@ const EMPTY_FORM: FormData = {
   hotjar_id: "",
 };
 
+// tenant_site_settings tem várias colunas nullable no banco; sanitiza para
+// nunca deixar um `null` vazar para o estado tipado como string (causava
+// "Cannot read properties of null (reading 'trim')" em finish() quando o
+// tenant tinha algum campo — ex.: endereço — nunca preenchido).
+function sanitizeForm(raw: Record<string, unknown>): FormData {
+  const out = { ...EMPTY_FORM };
+  (Object.keys(EMPTY_FORM) as (keyof FormData)[]).forEach((k) => {
+    const v = raw[k];
+    if (typeof v === "string") out[k] = v;
+  });
+  return out;
+}
+
 function SiteWizard() {
   const { tenantId, profile, user } = useAuth();
   const navigate = useNavigate();
@@ -115,6 +144,8 @@ function SiteWizard() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [hasTechnical, setHasTechnical] = useState<boolean | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set());
+  const [layout, setLayout] = useState<LayoutKey>("classico");
+  const [secoes, setSecoes] = useState<SectionDbItem[]>(DEFAULT_SECOES);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -131,12 +162,15 @@ function SiteWizard() {
       const prefillNome = t?.nome || profile?.imobiliaria_nome || profile?.nome || "";
 
       if (cfg) {
-        setForm({ ...EMPTY_FORM, ...cfg, hero_titulo: cfg.hero_titulo || prefillNome });
+        const sanitized = sanitizeForm(cfg as unknown as Record<string, unknown>);
+        setForm({ ...sanitized, hero_titulo: sanitized.hero_titulo || prefillNome });
         setHasTechnical(
           Boolean(
             cfg.ga4_id || cfg.gtm_id || cfg.google_ads_id || cfg.fb_pixel_id || cfg.hotjar_id,
           ),
         );
+        setLayout((cfg.layout as LayoutKey) || "classico");
+        setSecoes((cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES);
       } else {
         setForm((f) => ({
           ...f,
@@ -148,6 +182,13 @@ function SiteWizard() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
+
+  function pickLayout(key: LayoutKey) {
+    setLayout(key);
+    // Só aplica a ordem sugerida do layout se o tenant ainda não customizou
+    // as seções (evita sobrescrever uma escolha manual já feita).
+    setSecoes((prev) => (secoesEqual(prev, DEFAULT_SECOES) ? LAYOUT_SUGGESTED_SECOES[key] : prev));
+  }
 
   function set<K extends keyof FormData>(k: K, v: FormData[K]) {
     setForm((p) => ({ ...p, [k]: v }));
@@ -186,63 +227,70 @@ function SiteWizard() {
     if (!tenantId) return;
     setSaving(true);
 
-    const payload = {
-      tenant_id: tenantId,
-      publicado: publicar,
-      hero_titulo: form.hero_titulo.trim(),
-      hero_subtitulo: form.hero_subtitulo.trim() || null,
-      hero_cta_label: form.hero_cta_label.trim() || "Ver imóveis",
-      sobre_html: form.sobre_html || null,
-      contato_telefone: form.contato_telefone.trim() || null,
-      contato_whatsapp: form.contato_whatsapp.trim() || null,
-      contato_email: form.contato_email.trim() || null,
-      endereco: form.endereco.trim() || null,
-      instagram_url: form.instagram_url.trim() || null,
-      facebook_url: form.facebook_url.trim() || null,
-      youtube_url: form.youtube_url.trim() || null,
-      linkedin_url: form.linkedin_url.trim() || null,
-      cor_destaque: form.cor_destaque || null,
-      meta_description: form.meta_description.trim() || null,
-      ga4_id: hasTechnical ? form.ga4_id.trim() || null : null,
-      gtm_id: hasTechnical ? form.gtm_id.trim() || null : null,
-      google_ads_id: hasTechnical ? form.google_ads_id.trim() || null : null,
-      fb_pixel_id: hasTechnical ? form.fb_pixel_id.trim() || null : null,
-      hotjar_id: hasTechnical ? form.hotjar_id.trim() || null : null,
-    };
+    try {
+      const payload = {
+        tenant_id: tenantId,
+        publicado: publicar,
+        hero_titulo: form.hero_titulo.trim(),
+        hero_subtitulo: form.hero_subtitulo.trim() || null,
+        hero_cta_label: form.hero_cta_label.trim() || "Ver imóveis",
+        sobre_html: form.sobre_html || null,
+        contato_telefone: form.contato_telefone.trim() || null,
+        contato_whatsapp: form.contato_whatsapp.trim() || null,
+        contato_email: form.contato_email.trim() || null,
+        endereco: form.endereco.trim() || null,
+        instagram_url: form.instagram_url.trim() || null,
+        facebook_url: form.facebook_url.trim() || null,
+        youtube_url: form.youtube_url.trim() || null,
+        linkedin_url: form.linkedin_url.trim() || null,
+        cor_destaque: form.cor_destaque || null,
+        meta_description: form.meta_description.trim() || null,
+        ga4_id: hasTechnical ? form.ga4_id.trim() || null : null,
+        gtm_id: hasTechnical ? form.gtm_id.trim() || null : null,
+        google_ads_id: hasTechnical ? form.google_ads_id.trim() || null : null,
+        fb_pixel_id: hasTechnical ? form.fb_pixel_id.trim() || null : null,
+        hotjar_id: hasTechnical ? form.hotjar_id.trim() || null : null,
+        layout,
+        secoes,
+      };
 
-    const [{ error: siteErr }, { data: tenantRow }] = await Promise.all([
-      supabase.from("tenant_site_settings").upsert(payload, { onConflict: "tenant_id" }),
-      supabase.from("tenants").select("tema").eq("id", tenantId).maybeSingle(),
-    ]);
+      const [{ error: siteErr }, { data: tenantRow }] = await Promise.all([
+        supabase.from("tenant_site_settings").upsert(payload, { onConflict: "tenant_id" }),
+        supabase.from("tenants").select("tema").eq("id", tenantId).maybeSingle(),
+      ]);
 
-    if (siteErr) {
+      if (siteErr) {
+        toast.error(siteErr.message);
+        return;
+      }
+
+      if (logoUrl) {
+        const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: logoUrl };
+        await supabase.from("tenants").update({ tema }).eq("id", tenantId);
+      }
+
+      if (selectedPages.size > 0) {
+        const rows = Array.from(selectedPages).map((titulo, i) => {
+          const sug = PAGE_SUGESTOES.find((p) => p.titulo === titulo);
+          return {
+            tenant_id: tenantId,
+            slug: slugify(titulo),
+            titulo,
+            conteudo_html: sug?.conteudo ?? "<p></p>",
+            ordem: i,
+            publicada: false,
+          };
+        });
+        await supabase.from("tenant_pages").upsert(rows, { onConflict: "tenant_id,slug" });
+      }
+
+      toast.success(publicar ? "Site publicado com sucesso!" : "Rascunho salvo");
+      navigate({ to: "/app/site" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro inesperado ao salvar o site.");
+    } finally {
       setSaving(false);
-      return toast.error(siteErr.message);
     }
-
-    if (logoUrl) {
-      const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: logoUrl };
-      await supabase.from("tenants").update({ tema }).eq("id", tenantId);
-    }
-
-    if (selectedPages.size > 0) {
-      const rows = Array.from(selectedPages).map((titulo, i) => {
-        const sug = PAGE_SUGESTOES.find((p) => p.titulo === titulo);
-        return {
-          tenant_id: tenantId,
-          slug: slugify(titulo),
-          titulo,
-          conteudo_html: sug?.conteudo ?? "<p></p>",
-          ordem: i,
-          publicada: false,
-        };
-      });
-      await supabase.from("tenant_pages").upsert(rows, { onConflict: "tenant_id,slug" });
-    }
-
-    setSaving(false);
-    toast.success(publicar ? "Site publicado com sucesso!" : "Rascunho salvo");
-    navigate({ to: "/app/site" });
   }
 
   if (loading) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
@@ -305,7 +353,7 @@ function SiteWizard() {
         </p>
         <h2 className="mb-6 text-xl font-bold">{current.label}</h2>
 
-        {step === 0 && (
+        {current.id === "boasvindas" && (
           <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
               Em poucos passos você monta a página pública da sua imobiliária — sem precisar
@@ -319,7 +367,49 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 1 && (
+        {current.id === "layout" && (
+          <div>
+            <p className="mb-4 text-xs text-muted-foreground">
+              Escolha o estilo do seu site — dá para trocar depois a qualquer momento, sem perder o
+              que você já preencheu.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(Object.keys(LAYOUT_INFO) as LayoutKey[]).map((key) => {
+                const info = LAYOUT_INFO[key];
+                const selected = layout === key;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => pickLayout(key)}
+                    className={`rounded-xl border p-4 text-left transition-colors ${
+                      selected
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40 hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className="mb-3 flex h-16 flex-col gap-1 overflow-hidden rounded-lg border border-border/60 bg-muted/30 p-1.5">
+                      <div className="h-2.5 w-full rounded-sm bg-muted-foreground/30" />
+                      <div className="h-1.5 w-2/3 rounded-sm bg-muted-foreground/20" />
+                      <div className="mt-auto flex gap-1">
+                        <div className="h-3 flex-1 rounded-sm bg-primary/30" />
+                        <div className="h-3 flex-1 rounded-sm bg-primary/20" />
+                        <div className="h-3 flex-1 rounded-sm bg-primary/20" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold">{info.label}</span>
+                      {selected && <Check className="h-3.5 w-3.5 text-primary" />}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">{info.desc}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {current.id === "logo" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
               Sua marca no topo do site. Pode pular esta etapa e adicionar depois.
@@ -346,7 +436,7 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 2 && (
+        {current.id === "cores" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
               A cor principal do seu site — usada em botões e destaques. Clique numa amostra ou
@@ -356,7 +446,7 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 3 && (
+        {current.id === "titulo" && (
           <div className="space-y-4">
             <Field label="Nome da imobiliária / seu nome, como corretor">
               <Input
@@ -385,7 +475,7 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 4 && (
+        {current.id === "sobre" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
               Conte sua história — há quanto tempo atua, o que te diferencia, sua região de atuação.
@@ -399,7 +489,7 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 5 && (
+        {current.id === "contato" && (
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Telefone">
@@ -468,7 +558,7 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 6 && (
+        {current.id === "paginas" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
               Quer já deixar mais páginas prontas para preencher depois? Marque as que fizerem
@@ -492,7 +582,49 @@ function SiteWizard() {
           </div>
         )}
 
-        {step === 7 && (
+        {current.id === "secoes" && (
+          <div>
+            <p className="mb-4 text-xs text-muted-foreground">
+              {layout === "amplo"
+                ? "Escolha em qual área (menu lateral, conteúdo central ou coluna de destaque) cada seção aparece, e a ordem dentro de cada área. O Hero (topo) é sempre fixo."
+                : "Escolha a ordem e quais seções aparecem na home do seu site. O Hero (topo) é sempre fixo."}
+            </p>
+            <SectionOrderEditor
+              pinnedLabel="Hero"
+              zonas={
+                layout === "amplo"
+                  ? (Object.keys(ZONA_LABELS) as Zona[]).map((key) => ({
+                      key,
+                      label: ZONA_LABELS[key],
+                    }))
+                  : undefined
+              }
+              items={secoes
+                .slice()
+                .sort((a, b) => a.ordem - b.ordem)
+                .map(
+                  (d): SectionItem => ({
+                    key: d.key,
+                    label: SECTION_LABELS[d.key] ?? d.key,
+                    visivel: d.visivel,
+                    zona: d.zona,
+                  }),
+                )}
+              onChange={(next) =>
+                setSecoes(
+                  next.map((item, i) => ({
+                    key: item.key as SectionDbItem["key"],
+                    visivel: item.visivel,
+                    ordem: i,
+                    zona: item.zona,
+                  })),
+                )
+              }
+            />
+          </div>
+        )}
+
+        {current.id === "tecnico" && (
           <div className="space-y-5">
             <p className="text-sm text-muted-foreground">
               Você (ou alguém da sua equipe) já usa ferramentas de marketing digital como Google

@@ -40,6 +40,7 @@ import {
   HeartHandshake,
   Upload,
   Receipt,
+  Eye,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -81,6 +82,7 @@ const tenantModules: Module[] = [
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/locacao", label: "Locação", icon: Home },
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
+      { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
@@ -127,13 +129,11 @@ const tenantModules: Module[] = [
     label: "Site",
     icon: Globe,
     items: [
+      { to: "/app/site/previa", label: "Prévia do Site", icon: Eye },
       { to: "/app/site", label: "Site da imobiliária", icon: Globe },
-      { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
+      { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
       { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
-      { to: "/app/configuracoes/imobiliaria", label: "Imobiliária", icon: Building2 },
-      { to: "/app/configuracoes/branding", label: "Marca & Domínio", icon: Sparkles },
-      { to: "/app/configuracoes/dominios", label: "Domínios", icon: Globe },
     ],
   },
   {
@@ -353,7 +353,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   return (
     <div className="flex min-h-screen flex-col bg-muted/20">
       {/* TOP MODULE BAR */}
-      <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm">
+      <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm print:hidden">
         <div className="flex h-15 items-center gap-6 px-5">
           <Link to="/" className="flex items-center transition-transform hover:scale-[1.02]">
             <Logo className="h-8.5 w-auto" variant="white" />
@@ -421,7 +421,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
 
       <div className="flex flex-1">
         {/* SUBMENU LATERAL DO MÓDULO ATIVO */}
-        <aside className="hidden w-62 shrink-0 flex-col border-r border-border/80 bg-card/65 backdrop-blur-sm md:flex transition-all duration-300">
+        <aside className="hidden w-62 shrink-0 flex-col border-r border-border/80 bg-card/65 backdrop-blur-sm md:flex transition-all duration-300 print:hidden">
           <div className="border-b border-border/70 px-5 py-4.5 bg-muted/10">
             <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground/90">
               <span className="p-1.5 rounded-lg bg-primary/10 text-primary">

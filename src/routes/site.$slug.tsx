@@ -1,32 +1,24 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useEffect, useState, useMemo, type FormEvent } from "react";
-import {
-  Bed,
-  Bath,
-  Maximize2,
-  MapPin,
-  Building2,
-  ShieldCheck,
-  Sparkles,
-  Send,
-  Phone,
-  Mail,
-  MessageCircle,
-} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState, useMemo } from "react";
+import { Building2, MapPin, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
 import { SiteWidgetsLayout, useSiteWidgets } from "@/components/site/SiteWidgets";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { formatBRL, FINALIDADE_LABEL } from "@/lib/format";
-import { toast } from "sonner";
+import { HeroSection } from "@/components/site/sections/HeroSection";
+import { ImoveisSection } from "@/components/site/sections/ImoveisSection";
+import { SobreSection } from "@/components/site/sections/SobreSection";
+import { BlogDestaqueSection } from "@/components/site/sections/BlogDestaqueSection";
+import { ContactSection } from "@/components/site/sections/ContactSection";
+import { DEFAULT_SECOES, type LayoutKey, type SectionDbItem, type Zona } from "@/lib/siteSections";
 
 export const Route = createFileRoute("/site/$slug")({
   component: TenantHome,
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => {
+    const preview = search.preview === "1" || search.preview === true;
+    return preview ? { preview: true } : {};
+  },
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug} — Imóveis` },
@@ -43,9 +35,13 @@ function photoUrl(path: string) {
 
 function TenantHome() {
   const { slug } = Route.useParams();
+  const { preview } = Route.useSearch();
+  const { tenantId: authTenantId } = useAuth();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [hero, setHero] = useState<any>({});
   const [sobre, setSobre] = useState<string>("");
+  const [layout, setLayout] = useState<LayoutKey>("classico");
+  const [secoes, setSecoes] = useState<SectionDbItem[]>(DEFAULT_SECOES);
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [fotosMap, setFotosMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -64,14 +60,20 @@ function TenantHome() {
         setLoading(false);
         return;
       }
+      // A prévia (usada em /app/site/previa) só ignora o filtro de publicado
+      // quando o próprio membro do tenant está olhando o seu site — a
+      // policy RLS `site_settings_members_read` já cobre esse acesso, então
+      // isso só controla a query no cliente, não abre nenhum acesso novo.
+      const isOwnTenantPreview = preview && authTenantId === tenant.id;
+      let settingsQuery = supabase
+        .from("tenant_site_settings")
+        .select("*")
+        .eq("tenant_id", tenant.id);
+      if (!isOwnTenantPreview) settingsQuery = settingsQuery.eq("publicado", true);
+
       const [{ data: cfg }, { data: pages }, { data: imv }, { count: blogCount }] =
         await Promise.all([
-          supabase
-            .from("tenant_site_settings")
-            .select("*")
-            .eq("tenant_id", tenant.id)
-            .eq("publicado", true)
-            .maybeSingle(),
+          settingsQuery.maybeSingle(),
           supabase
             .from("tenant_pages")
             .select("slug,titulo")
@@ -107,9 +109,12 @@ function TenantHome() {
         settings: cfg,
         pages: (pages ?? []) as any,
         hasBlog: (blogCount ?? 0) > 0,
+        hasSobre: !!cfg.sobre_html?.trim(),
       });
       setHero(cfg);
       setSobre(cfg.sobre_html ?? "");
+      setLayout((cfg.layout as LayoutKey) || "classico");
+      setSecoes((cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES);
       setImoveis(imv ?? []);
       if (imv && imv.length) {
         const { data: fotos } = await supabase
@@ -129,7 +134,7 @@ function TenantHome() {
       }
       setLoading(false);
     })();
-  }, [slug]);
+  }, [slug, preview, authTenantId]);
 
   const stats = useMemo(() => {
     const cidades = new Set(imoveis.map((i) => i.endereco_cidade).filter(Boolean));
@@ -147,6 +152,8 @@ function TenantHome() {
 
   const { esquerda, direita } = useSiteWidgets(ctx?.tenantId);
 
+  const orderedSections = useMemo(() => secoes.slice().sort((a, b) => a.ordem - b.ordem), [secoes]);
+
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -155,278 +162,137 @@ function TenantHome() {
     );
   if (notFoundState || !ctx) return <NotPublished />;
 
+  function renderBlock(s: SectionDbItem, compact: boolean) {
+    switch (s.key) {
+      case "imoveis":
+        return (
+          <ImoveisSection
+            variant={layout}
+            imoveis={imoveis}
+            fotosMap={fotosMap}
+            compact={compact}
+          />
+        );
+      case "sobre":
+        return sobre ? <SobreSection variant={layout} sobre={sobre} compact={compact} /> : null;
+      case "blog_destaque":
+        return (
+          <BlogDestaqueSection
+            variant={layout}
+            tenantId={ctx!.tenantId}
+            tenantSlug={ctx!.tenantSlug}
+            compact={compact}
+          />
+        );
+      case "contato":
+        return <ContactSection variant={layout} ctx={ctx!} compact={compact} />;
+      default:
+        return null;
+    }
+  }
+
+  if (layout === "amplo") {
+    const visible = orderedSections.filter((s) => s.visivel && renderBlock(s, true) !== null);
+    const byZona = (zona: Zona) => visible.filter((s) => (s.zona ?? "content") === zona);
+    const navbarItems = byZona("navbar");
+    const contentItems = byZona("content");
+    const metaItems = byZona("meta");
+    const hasNavbar = navbarItems.length > 0;
+    const hasMeta = metaItems.length > 0;
+    // Sem largura fixa forçada abaixo de lg — empilha em 1 coluna no mobile
+    // em vez de esconder navbar/meta (eram `hidden lg:block`, sumiam de vez
+    // no celular). A partir de lg, vira grid com as colunas laterais de
+    // 260px que existirem.
+    const gridColsClass =
+      hasNavbar && hasMeta
+        ? "lg:grid-cols-[260px_minmax(0,1fr)_260px]"
+        : hasNavbar
+          ? "lg:grid-cols-[260px_minmax(0,1fr)]"
+          : hasMeta
+            ? "lg:grid-cols-[minmax(0,1fr)_260px]"
+            : "";
+
+    return (
+      <TenantSiteLayout ctx={ctx}>
+        <TrackingPixels pixels={ctx.settings as any} />
+
+        <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
+
+        <div className={`mx-auto grid max-w-6xl gap-10 px-6 py-16 ${gridColsClass}`}>
+          {hasNavbar && (
+            <aside className="space-y-12">
+              {navbarItems.map((s) => (
+                <div key={s.key} id={s.key}>
+                  {renderBlock(s, true)}
+                </div>
+              ))}
+            </aside>
+          )}
+          <div className="min-w-0 space-y-16">
+            {contentItems.map((s) => (
+              <div key={s.key} id={s.key}>
+                {renderBlock(s, false)}
+              </div>
+            ))}
+          </div>
+          {hasMeta && (
+            <aside className="space-y-12">
+              {metaItems.map((s) => (
+                <div key={s.key} id={s.key}>
+                  {renderBlock(s, true)}
+                </div>
+              ))}
+            </aside>
+          )}
+        </div>
+      </TenantSiteLayout>
+    );
+  }
+
   return (
     <TenantSiteLayout ctx={ctx}>
       <TrackingPixels pixels={ctx.settings as any} />
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,_var(--primary)_22%,_transparent),_transparent_65%)]" />
-        <div className="absolute -right-24 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
-          <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Site oficial de {ctx.tenantNome}
-          </div>
-          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
-            {hero.hero_titulo || ctx.tenantNome}
-          </h1>
-          {hero.hero_subtitulo && (
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-              {hero.hero_subtitulo}
-            </p>
-          )}
-          <div className="mt-9">
-            <a href="#imoveis">
-              <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
-                {hero.hero_cta_label || "Ver imóveis"}
-              </Button>
-            </a>
-          </div>
+      <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
 
-          {stats.length > 0 && (
-            <div className="mx-auto mt-16 flex max-w-2xl flex-wrap items-center justify-center gap-x-10 gap-y-6 border-t border-border/60 pt-10">
-              {stats.map((s) => (
-                <div key={s.label} className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <s.icon className="h-5 w-5" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-xl font-bold leading-tight">{s.value}</div>
-                    <div className="text-xs text-muted-foreground">{s.label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ── Imóveis ──────────────────────────────────────────── */}
-      <section id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
-        <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Imóveis em destaque</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {imoveis.length > 0
-                  ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
-                  : "Em breve, novidades por aqui"}
-              </p>
-            </div>
-          </div>
-          {imoveis.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border py-16 text-center">
-              <Building2 className="mx-auto h-8 w-8 text-muted-foreground/50" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                Nenhum imóvel publicado no momento.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {imoveis.map((i) => (
-                <Link
-                  key={i.id}
-                  to="/imovel/$slug"
-                  params={{ slug: i.slug }}
-                  className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
-                >
-                  <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                    {fotosMap[i.id] ? (
-                      <img
-                        src={fotosMap[i.id]}
-                        alt={i.titulo}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        sem foto
-                      </div>
-                    )}
-                    <Badge className="absolute left-3 top-3 shadow-sm">
-                      {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
-                    </Badge>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="line-clamp-1 font-semibold">{i.titulo}</h3>
-                    <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />{" "}
-                      {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}
-                    </p>
-                    <div className="mt-3 space-y-1.5">
-                      <span className="block text-lg font-bold text-primary">
-                        {formatBRL(i.preco)}
-                      </span>
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        {i.quartos != null && (
-                          <span className="flex items-center gap-1">
-                            <Bed className="h-3 w-3" /> {i.quartos}
-                          </span>
-                        )}
-                        {i.banheiros != null && (
-                          <span className="flex items-center gap-1">
-                            <Bath className="h-3 w-3" /> {i.banheiros}
-                          </span>
-                        )}
-                        {i.area_util != null && (
-                          <span className="flex items-center gap-1">
-                            <Maximize2 className="h-3 w-3" /> {i.area_util}m²
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </SiteWidgetsLayout>
-      </section>
-
-      {/* ── Sobre nós ────────────────────────────────────────── */}
-      {sobre && (
-        <section id="sobre" className="border-t border-border bg-muted/30">
-          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 md:grid-cols-[1.3fr_1fr] md:items-center">
-            <div>
-              <h2 className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">Sobre nós</h2>
-              <article
-                className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-6"
-                dangerouslySetInnerHTML={{ __html: sobre }}
-              />
-            </div>
-            <div className="relative overflow-hidden rounded-2xl bg-primary p-10 text-primary-foreground">
-              <ShieldCheck className="absolute -bottom-6 -right-6 h-32 w-32 opacity-15" />
-              <p className="relative text-sm font-medium uppercase tracking-wider opacity-80">
-                Compromisso
-              </p>
-              <p className="relative mt-3 text-xl font-bold leading-snug">
-                Atendimento próximo, transparente e feito sob medida para você.
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <ContactSection ctx={ctx} />
+      {orderedSections.map((s) => {
+        if (!s.visivel) return null;
+        switch (s.key) {
+          case "imoveis":
+            return (
+              <section key={s.key} id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
+                <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
+                  <ImoveisSection variant={layout} imoveis={imoveis} fotosMap={fotosMap} />
+                </SiteWidgetsLayout>
+              </section>
+            );
+          case "sobre":
+            return sobre ? (
+              <div key={s.key} id="sobre">
+                <SobreSection variant={layout} sobre={sobre} />
+              </div>
+            ) : null;
+          case "blog_destaque":
+            return (
+              <section key={s.key} id="blog" className="mx-auto max-w-6xl px-6 py-20">
+                <BlogDestaqueSection
+                  variant={layout}
+                  tenantId={ctx.tenantId}
+                  tenantSlug={ctx.tenantSlug}
+                />
+              </section>
+            );
+          case "contato":
+            return (
+              <div key={s.key} id="contato">
+                <ContactSection variant={layout} ctx={ctx} />
+              </div>
+            );
+          default:
+            return null;
+        }
+      })}
     </TenantSiteLayout>
-  );
-}
-
-function ContactSection({ ctx }: { ctx: SiteCtx }) {
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", mensagem: "" });
-  const [sending, setSending] = useState(false);
-  const waHref = ctx.settings.contato_whatsapp
-    ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
-    : null;
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (form.nome.trim().length < 2) return toast.error("Informe seu nome");
-    setSending(true);
-    const { error } = await supabase.rpc("public_create_tenant_lead" as any, {
-      _tenant_slug: ctx.tenantSlug,
-      _nome: form.nome.trim(),
-      _email: form.email || "",
-      _telefone: form.telefone || "",
-      _mensagem: form.mensagem || "",
-    });
-    setSending(false);
-    if (error) {
-      toast.error("Não foi possível enviar agora. Tente o WhatsApp ou email do rodapé.");
-      return;
-    }
-    toast.success("Mensagem enviada! Em breve entraremos em contato.");
-    setForm({ nome: "", email: "", telefone: "", mensagem: "" });
-  }
-
-  return (
-    <section id="contato" className="border-t border-border">
-      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-20 md:grid-cols-[1fr_1.2fr]">
-        <div>
-          <h2 className="mb-3 text-2xl font-bold tracking-tight md:text-3xl">Fale com a gente</h2>
-          <p className="mb-8 text-sm leading-relaxed text-muted-foreground">
-            Tem alguma dúvida ou quer agendar uma visita? Preencha o formulário ou fale direto pelos
-            canais abaixo.
-          </p>
-          <div className="space-y-4">
-            {ctx.settings.contato_telefone && (
-              <div className="flex items-center gap-3 text-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Phone className="h-4 w-4" />
-                </span>
-                {ctx.settings.contato_telefone}
-              </div>
-            )}
-            {ctx.settings.contato_email && (
-              <div className="flex items-center gap-3 text-sm">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Mail className="h-4 w-4" />
-                </span>
-                {ctx.settings.contato_email}
-              </div>
-            )}
-            {waHref && (
-              <a href={waHref} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="mt-2 gap-2 rounded-full">
-                  <MessageCircle className="h-4 w-4" />
-                  Chamar no WhatsApp
-                </Button>
-              </a>
-            )}
-          </div>
-        </div>
-
-        <form
-          onSubmit={submit}
-          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Nome</Label>
-              <Input
-                value={form.nome}
-                onChange={(e) => setForm({ ...form, nome: e.target.value })}
-                maxLength={200}
-                required
-              />
-            </div>
-            <div>
-              <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">
-                Telefone
-              </Label>
-              <Input
-                value={form.telefone}
-                onChange={(e) => setForm({ ...form, telefone: e.target.value })}
-                maxLength={40}
-              />
-            </div>
-          </div>
-          <div>
-            <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Email</Label>
-            <Input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              maxLength={255}
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">Mensagem</Label>
-            <Textarea
-              rows={4}
-              value={form.mensagem}
-              onChange={(e) => setForm({ ...form, mensagem: e.target.value })}
-              maxLength={2000}
-            />
-          </div>
-          <Button type="submit" disabled={sending} className="w-full gap-2 rounded-full">
-            <Send className="h-4 w-4" />
-            {sending ? "Enviando…" : "Enviar mensagem"}
-          </Button>
-        </form>
-      </div>
-    </section>
   );
 }
 

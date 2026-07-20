@@ -72,6 +72,7 @@ function TenantPage() {
         settings: cfg,
         pages: (pages ?? []) as any,
         hasBlog: (blogCount ?? 0) > 0,
+        hasSobre: !!cfg.sobre_html?.trim(),
       });
       setPage(pg ?? null);
       setLoading(false);

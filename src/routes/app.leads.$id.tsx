@@ -31,6 +31,8 @@ import { LeadTarefas } from "@/components/leads/LeadTarefas";
 import { LeadTimeline } from "@/components/leads/LeadTimeline";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { maskCPF, isValidCPF } from "@/lib/format";
+import { gerarAnaliseRisco } from "@/lib/creditScore";
 
 export const Route = createFileRoute("/app/leads/$id")({
   component: LeadDetail,
@@ -70,32 +72,14 @@ function LeadDetail() {
       return;
     }
     const cleanCpf = tenantCpf.replace(/\D/g, "");
-    if (cleanCpf.length !== 11) {
-      toast.error("CPF inválido: deve conter 11 dígitos.");
+    if (!isValidCPF(cleanCpf)) {
+      toast.error("CPF inválido.");
       return;
     }
     setVerificandoCredito(true);
     await new Promise((resolve) => setTimeout(resolve, 1400));
 
-    // Core logical matching
-    const lastDigit = Number(cleanCpf[cleanCpf.length - 1]);
-    let score = 560;
-    let status = "Análise Manual Requerida";
-    let alerts = "1 restrição de crédito ativa no cadastro de inadimplentes.";
-
-    if (lastDigit % 3 === 0) {
-      score = 890;
-      status = "Crédito Excelente (Aprovado Instantâneo)";
-      alerts = "Nada Consta na base Serasa / Cadastro Positivo Ativo.";
-    } else if (lastDigit % 2 === 0) {
-      score = 720;
-      status = "Aprovado com Cartão-Fiança / Seguro Aluguel";
-      alerts = "Sem protestos de títulos. Histórico adimplente.";
-    } else {
-      score = 310;
-      status = "Crédito Recusado - Exige Caução de 3 meses ou Fiador Fiduciário";
-      alerts = "Pendência financeira ativa registrada por instituição bancária.";
-    }
+    const { score, status, pendencias: alerts } = gerarAnaliseRisco(cleanCpf);
 
     setSerasaScore(score);
     setSerasaStatus(status);
@@ -419,7 +403,7 @@ function LeadDetail() {
                   <Input
                     placeholder="000.000.000-00"
                     value={tenantCpf}
-                    onChange={(e) => setTenantCpf(e.target.value)}
+                    onChange={(e) => setTenantCpf(maskCPF(e.target.value))}
                     disabled={verificandoCredito}
                     className="max-w-[170px] text-xs h-8"
                   />

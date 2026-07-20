@@ -1,0 +1,11 @@
+-- Remove tenant_domains: feature de múltiplos domínios com "verificação"
+-- nunca teve verificação DNS real (nenhum cron/edge function/chamada
+-- Cloudflare a suporta) — era CRUD decorativo em
+-- app.configuracoes.dominios.tsx, removida junto com a consolidação da
+-- seção "Site" do app. Sem FKs apontando para tenant_domains (só a própria
+-- FK de tenant_domains -> tenants, removida junto com a tabela).
+--
+-- A coluna tenants.dominio_proprio é removida separadamente, na migration
+-- que acompanha a remoção de app.configuracoes.imobiliaria.tsx/branding.tsx
+-- (ambas ainda leem/gravam essa coluna até essa segunda etapa).
+drop table if exists public.tenant_domains;

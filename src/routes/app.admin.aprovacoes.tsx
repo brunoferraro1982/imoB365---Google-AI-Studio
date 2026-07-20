@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { listAdminUsers } from "@/lib/admin.functions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -12,33 +14,41 @@ export const Route = createFileRoute("/app/admin/aprovacoes")({
 
 interface PendingRegistration {
   id: string;
-  user_id: string;
-  email: string;
+  email: string | null;
   nome: string | null;
-  tipo_usuario: "corretor" | "imobiliaria";
+  tipo_usuario: string | null;
   creci: string | null;
   cnpj: string | null;
   imobiliaria_nome: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 function AdminAprovacoes() {
+  const listUsers = useServerFn(listAdminUsers);
   const [registrations, setRegistrations] = useState<PendingRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
 
   async function loadRegistrations() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("pending_registrations")
-      .select("*")
-      .is("reviewed_at", null)
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const { users } = await listUsers();
+      const pending = users
+        .filter((u) => !u.aprovado)
+        .map((u) => ({
+          id: u.id,
+          email: u.email,
+          nome: u.nome,
+          tipo_usuario: u.tipo_usuario,
+          creci: u.creci,
+          cnpj: u.cnpj,
+          imobiliaria_nome: u.imobiliaria_nome,
+          created_at: u.auth_created_at,
+        }))
+        .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
+      setRegistrations(pending);
+    } catch {
       toast.error("Erro ao carregar registros pendentes.");
-    } else {
-      setRegistrations((data as PendingRegistration[]) ?? []);
     }
     setLoading(false);
   }
@@ -50,15 +60,8 @@ function AdminAprovacoes() {
   async function handleApprove(reg: PendingRegistration) {
     setProcessing(reg.id);
     try {
-      await supabase
-        .from("profiles")
-        .update({ status: "active", aprovado: true } as any)
-        .eq("id", reg.user_id);
-
-      await supabase
-        .from("pending_registrations")
-        .update({ reviewed_at: new Date().toISOString() })
-        .eq("id", reg.id);
+      const { error } = await supabase.from("profiles").update({ aprovado: true }).eq("id", reg.id);
+      if (error) throw error;
 
       toast.success(`${reg.nome ?? reg.email} aprovado com sucesso.`);
       setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
@@ -69,32 +72,22 @@ function AdminAprovacoes() {
     }
   }
 
-  async function handleReject(reg: PendingRegistration) {
-    setProcessing(reg.id);
-    try {
-      await supabase
-        .from("profiles")
-        .update({ status: "rejected" } as any)
-        .eq("id", reg.user_id);
-
-      await supabase
-        .from("pending_registrations")
-        .update({ reviewed_at: new Date().toISOString() })
-        .eq("id", reg.id);
-
-      toast.success(`${reg.nome ?? reg.email} rejeitado.`);
-      setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
-    } catch {
-      toast.error("Erro ao rejeitar usuário.");
-    } finally {
-      setProcessing(null);
-    }
+  // Não existe estado "rejeitado" persistido em profiles (só o boolean
+  // `aprovado`) — rejeitar aqui só remove da lista de pendentes local; o
+  // cadastro continua com aprovado=false e pode reaparecer numa próxima
+  // atualização. Registrar decisão real de "rejeição" definitiva fica de
+  // backlog (precisa de uma coluna/estado novo, é decisão de produto).
+  function handleReject(reg: PendingRegistration) {
+    setRegistrations((prev) => prev.filter((r) => r.id !== reg.id));
+    toast.info(`${reg.nome ?? reg.email} removido da lista (não é uma rejeição definitiva).`);
   }
 
-  const formattedDate = (iso: string) =>
-    new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
-      new Date(iso),
-    );
+  const formattedDate = (iso: string | null) =>
+    iso
+      ? new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
+          new Date(iso),
+        )
+      : "—";
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
