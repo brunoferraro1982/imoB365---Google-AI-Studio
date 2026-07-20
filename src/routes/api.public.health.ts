@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/health")({
           timestamp: new Date().toISOString(),
           latency_ms: Date.now() - started,
           checks: { database: { status: db, error: dbError } },
-          version: "1.0.0",
+          version: "1.0.1",
         };
         return new Response(JSON.stringify(body), {
           status: db === "ok" ? 200 : 503,
