@@ -1,0 +1,127 @@
+name: Deploy — Produção (VPS Hostinger + Supabase self-hosted)
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # JOB 1: Build — valida o build ANTES de tocar na VPS
+  # ─────────────────────────────────────────────────────────────
+  build:
+    name: 🏗️ Build (node-server)
+    runs-on: ubuntu-latest
+    outputs:
+      new-migrations: ${{ steps.check-migrations.outputs.files }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2 # precisa do commit anterior pra detectar migrations novas
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check (mesmo gate do CI, redundância barata antes de produção)
+        run: npx tsc --noEmit
+
+      - name: Build (DEPLOY_TARGET=node)
+        env:
+          DEPLOY_TARGET: node
+          VITE_SUPABASE_URL: ${{ secrets.VPS_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VPS_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_URL: ${{ secrets.VPS_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VPS_SUPABASE_PUBLISHABLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.VPS_GEMINI_API_KEY }}
+          APP_URL: https://portal.imob365.com.br
+        run: npm run build
+
+      - name: Upload dist/ como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-node
+          path: dist/
+          retention-days: 3
+
+      - name: Detectar migrations novas (não aplica — só avisa)
+        id: check-migrations
+        run: |
+          NEW_FILES=$(git diff --name-only --diff-filter=A HEAD^ HEAD -- 'supabase/migrations/*.sql' || true)
+          if [ -n "$NEW_FILES" ]; then
+            echo "files<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$NEW_FILES" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+          fi
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 2: Deploy — rsync + restart + health check
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: 🚀 Deploy na VPS
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-node
+          path: dist/
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.VPS_SSH_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sincronizar dist/ com a VPS
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/deploy_key" \
+            dist/ root@${{ secrets.VPS_SSH_HOST }}:/opt/imob365/app/dist/
+
+      - name: Reiniciar o serviço
+        run: |
+          ssh -i ~/.ssh/deploy_key root@${{ secrets.VPS_SSH_HOST }} \
+            "systemctl restart imob365-app"
+
+      - name: Health check (com retry)
+        run: |
+          for i in 1 2 3 4 5; do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' https://portal.imob365.com.br/ || echo "000")
+            if [ "$CODE" = "200" ]; then
+              echo "✅ Health check OK ($CODE)"
+              exit 0
+            fi
+            echo "Tentativa $i: HTTP $CODE — aguardando..."
+            sleep 5
+          done
+          echo "::error::Health check falhou após o deploy — https://portal.imob365.com.br/ não respondeu 200"
+          exit 1
+
+      - name: Limpar chave SSH
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+  # ─────────────────────────────────────────────────────────────
+  # JOB 3: Aviso de migrations pendentes (não bloqueia, só sinaliza)
+  # ─────────────────────────────────────────────────────────────
+  notify-migrations:
+    name: 🗄️ Aviso — migrations pendentes
+    needs: [build, deploy]
+    if: needs.build.outputs.new-migrations != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Avisar sobre migrations não aplicadas
+        run: |
+          echo "::warning::Este deploy incluiu migrations novas que NÃO foram aplicadas automaticamente em produção (por design — aplicação de schema é manual). Aplique manualmente na VPS:"
+          echo "${{ needs.build.outputs.new-migrations }}"
