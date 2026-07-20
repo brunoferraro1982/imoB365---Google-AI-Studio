@@ -1574,6 +1574,7 @@ export type Database = {
           corretor_id: string | null;
           created_at: string;
           created_by: string | null;
+          custom_data: Json;
           data_pagamento: string | null;
           data_vencimento: string;
           descricao: string;
@@ -1594,6 +1595,7 @@ export type Database = {
           corretor_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          custom_data?: Json;
           data_pagamento?: string | null;
           data_vencimento?: string;
           descricao: string;
@@ -1614,6 +1616,7 @@ export type Database = {
           corretor_id?: string | null;
           created_at?: string;
           created_by?: string | null;
+          custom_data?: Json;
           data_pagamento?: string | null;
           data_vencimento?: string;
           descricao?: string;
@@ -3620,6 +3623,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      tenant_site_widgets: {
+        Row: {
+          ativo: boolean;
+          config: Json;
+          created_at: string;
+          id: string;
+          ordem: number;
+          posicao: string;
+          tenant_id: string;
+          tipo: string;
+          titulo: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          posicao?: string;
+          tenant_id: string;
+          tipo: string;
+          titulo?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          posicao?: string;
+          tenant_id?: string;
+          tipo?: string;
+          titulo?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_site_widgets_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_usage_snapshots: {
         Row: {
           contratos_ativos: number;
@@ -4111,6 +4161,10 @@ export type Database = {
       public_visita_nps: {
         Args: { _comentario: string; _score: number; _token: string };
         Returns: undefined;
+      };
+      provision_trial_business: {
+        Args: { p_imob_nome?: string | null; p_nome: string; p_tipo: string; p_user_id: string };
+        Returns: Json;
       };
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number };

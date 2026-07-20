@@ -33,15 +33,24 @@ const fetchPostBySlug = createServerFn({ method: "GET" })
 
 // ─── Route ──────────────────────────────────────────────────────────────────
 
+type Post = Awaited<ReturnType<typeof fetchPostBySlug>>;
+
 export const Route = createFileRoute("/blog_/$slug")({
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: loaderData?.seo_titulo ?? loaderData?.titulo ?? "Blog | imoB365" },
-      { name: "description", content: loaderData?.resumo ?? "" },
-      { property: "og:title", content: loaderData?.titulo ?? "" },
-      { property: "og:image", content: loaderData?.imagem_url ?? "" },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    // TanStack Router não infere corretamente o tipo de retorno do loader
+    // nesta combinação com createServerFn (loaderData cai pra `never`) —
+    // asserção manual, o errorComponent já garante que os dados existem
+    // aqui quando o componente chega a renderizar.
+    const post = loaderData as Post | undefined;
+    return {
+      meta: [
+        { title: post?.seo_titulo ?? post?.titulo ?? "Blog | imoB365" },
+        { name: "description", content: post?.resumo ?? "" },
+        { property: "og:title", content: post?.titulo ?? "" },
+        { property: "og:image", content: post?.imagem_url ?? "" },
+      ],
+    };
+  },
 
   loader: async ({ params }) => fetchPostBySlug({ data: params.slug }),
 
@@ -64,7 +73,9 @@ export const Route = createFileRoute("/blog_/$slug")({
 // ─── Component ──────────────────────────────────────────────────────────────
 
 function BlogPostPage() {
-  const post = Route.useLoaderData();
+  // Mesma asserção de `head` acima — Route.useLoaderData() infere `never`
+  // nesta rota; o errorComponent garante que o dado existe aqui.
+  const post = Route.useLoaderData() as Post;
 
   const formattedDate = post.publicado_em
     ? new Intl.DateTimeFormat("pt-BR", {

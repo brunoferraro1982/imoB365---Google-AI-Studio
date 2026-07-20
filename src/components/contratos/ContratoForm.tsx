@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -184,8 +185,8 @@ export function ContratoForm({ contratoId }: Props) {
     const payload = {
       tenant_id: tenantId,
       numero: form.numero || null,
-      tipo: form.tipo,
-      status: form.status,
+      tipo: form.tipo as Database["public"]["Enums"]["contrato_tipo"],
+      status: form.status as Database["public"]["Enums"]["contrato_status"],
       valor: Number(form.valor) || 0,
       comissao_percentual:
         form.comissao_percentual === "" ? null : Number(form.comissao_percentual),
