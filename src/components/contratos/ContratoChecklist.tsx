@@ -113,10 +113,7 @@ export function ContratoChecklist({ contratoId, tenantId }: Props) {
   }
 
   async function remove(id: string) {
-    const { error } = await supabase
-      .from("contrato_checklist")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("contrato_checklist").delete().eq("id", id);
     if (error) return toast.error(error.message);
     setItens((prev) => prev.filter((i) => i.id !== id));
   }
