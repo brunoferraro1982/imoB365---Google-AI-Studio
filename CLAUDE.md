@@ -50,7 +50,7 @@ No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
 - **AI**: Google Gemini via `@google/genai` (`src/lib/ai.functions.ts`)
 - **Styling**: Tailwind CSS v4 + shadcn/ui (Radix UI primitives in `src/components/ui/`)
 - **Maps**: Leaflet + react-leaflet (`src/components/MapaImoveis.tsx`)
-- **Deployment**: Cloudflare Workers (via `@cloudflare/vite-plugin`)
+- **Deployment**: não decidido — `wrangler.jsonc`/`@cloudflare/vite-plugin` existem no repo como scaffolding herdado, mas Cloudflare **não está no escopo** de hospedagem de produção (ver backlog)
 
 ### Route Segments
 
@@ -296,22 +296,33 @@ Custom domain components live in:
 
 ### 📋 Backlog (próximas versões)
 
-- Integração real com bureau de crédito (Serasa Experian ou similar) para a "Análise de Risco" (`/app/leads/analise-risco`, `src/lib/creditScore.ts`) — hoje o score/fatores/histórico são derivados deterministicamente do CPF (mock, sem chamada externa real, mesma lógica já usada no widget de `app.leads.$id.tsx` desde a Sprint 7); substituir por chamada real quando houver contrato/API key (`SERASA_API_KEY`, documentar em `.env.example`)
+Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
+
+#### Integrações externas pendentes (hoje mockadas ou parciais)
+
+- Bureau de crédito real (Serasa Experian ou similar) para a "Análise de Risco" (`/app/leads/analise-risco`, `src/lib/creditScore.ts`) — hoje o score/fatores/histórico são derivados deterministicamente do CPF (mock, sem chamada externa real, mesma lógica já usada no widget de `app.leads.$id.tsx` desde a Sprint 7); substituir por chamada real quando houver contrato/API key (`SERASA_API_KEY`, documentar em `.env.example`)
+- WhatsApp real via Evolution API: (1) substituir o deep-link `wa.me` atual em `whatsapp.ts` por integração real; (2) tornar o `WhatsAppFAB` do site público customizável por tenant (número/mensagem/posição próprios) — hoje é fixo com o número do imoB365
+- Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção
+- Integração CRECI via API nacional para validação de matrícula
+
+#### Produto — módulos e funcionalidades novas
+
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
 - API pública documentada (Swagger/OpenAPI) para integrações externas
-- SLA formal documentado nos Termos de Uso
 - Módulo de Atendimento ao Contratante (suporte in-app, tickets, chat)
+- Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
 - `mod-mkt-aut` — Cadências de automação (em desenvolvimento; bloqueado até QA)
-- Integração CRECI via API nacional para validação de matrícula
+- Loop de marketing para `/conta/favoritos`: notificar o lead por e-mail quando um imóvel favoritado mudar de preço ou sair do ar, e lembrete de retorno após X dias sem acessar — hoje a página só lista/organiza, não há nenhum gatilho automático de volta pro usuário
 - NPS in-app após 30 dias de uso ativo
 - Health score de tenant para CS (Customer Success)
-- WhatsApp via Evolution API (integração real — substituir deep-link atual em `whatsapp.ts`)
-- Deploy em produção (Cloudflare Workers)
+
+#### Infraestrutura, qualidade e operação
+
 - CI/CD com SAST/DAST (GitHub Actions)
-- WhatsApp flutuante customizável por tenant no site público (número/mensagem/posição próprios — hoje o `WhatsAppFAB` é fixo com o número do imoB365)
-- Widget de captura de leads em popup/banner no site público do tenant (ex-`conversion_widgets`, removido em 2026-07-03 por não ter renderização no portal — retomar só com o componente público de exibição já incluído no escopo)
-- Teste ponta-a-ponta real do checkout de assinatura do Mercado Pago (redirect + webhook + ativação do tenant) — não dá pra validar localmente porque `payer_email` precisa ser diferente do dono da conta MP (o token de acesso atual é da própria conta imoB365); validar com um pagador de teste real assim que for para produção em `portal.imob365.com.br`
 - Limpeza de lint/TypeScript pré-existente no CI: ~4219 erros de prettier/eslint e ~172 erros de `tsc --noEmit` espalhados por dezenas de arquivos não relacionados às sprints recentes (ex.: `onboarding.tsx`, `signup.tsx`, `imovel.$slug.tsx`, `workers/redirects.ts`) — os jobs `Lint & Format`/`TypeScript` do `ci.yml` continuam vermelhos por causa disso (não bloqueia o build real, só o gate de qualidade)
-- Reativar o pipeline de deploy Cloudflare Workers (`.github/workflows/cd.yml`, removido em 2026-07-15 por não estar em uso) quando for a hora de ir ao ar de verdade — guia de secrets em `GITHUB-SECRETS.md`; `wrangler.jsonc` já tem os blocos `env.staging`/`env.production` e o `main` corrigido para o build (`dist/server/server.js`), mas a config de `assets` (client estático) para servir `dist/client` ainda não foi validada com um deploy real
+- Deploy em produção — plataforma de hospedagem ainda **não decidida** (Cloudflare Workers não está no escopo; `.github/workflows/cd.yml` foi removido em 2026-07-15 e não há plano ativo de reativá-lo nesses moldes)
+
+#### Institucional
+
+- SLA formal documentado nos Termos de Uso
 - Considerar Proposta B3 do reposicionamento nacional (mapa estilizado do Brasil com pontos/rede de conexão) como evolução visual futura da seção `#nosso-padrao` em `/a-imob365`, hoje resolvida via B2 (reaproveito de layout, troca de texto) — não há nenhum elemento de mapa/visual de localização no site público ainda
-- Loop de marketing para `/conta/favoritos`: notificar o lead por e-mail quando um imóvel favoritado mudar de preço ou sair do ar, e lembrete de retorno após X dias sem acessar — hoje a página só lista/organiza, não há nenhum gatilho automático de volta pro usuário
