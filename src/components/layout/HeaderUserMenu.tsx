@@ -533,8 +533,8 @@ export function HeaderUserMenu() {
                   <div className="grid gap-4 md:grid-cols-12">
                     {/* LEFT PANEL: MAIN LINKS */}
                     <div className="md:col-span-7 space-y-2">
-                      <span className="text-3xs font-black uppercase text-muted-foreground tracking-widest block">
-                        Atalhos Operacionais
+                      <span className="bg-primary/10 text-primary text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded inline-block">
+                        Acesso Fácil
                       </span>
 
                       {/* PAINEL (APP / HOME) */}
@@ -673,7 +673,7 @@ export function HeaderUserMenu() {
                           className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-2xs font-extrabold flex items-center justify-center gap-1.5"
                         >
                           <LogOut className="h-3.5 w-3.5" />
-                          <span>Desconectar Conta</span>
+                          <span>Sair</span>
                         </Button>
                       </div>
                     </div>
