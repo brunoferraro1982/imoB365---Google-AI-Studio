@@ -3552,9 +3552,11 @@ export type Database = {
           hero_titulo: string | null;
           hotjar_id: string | null;
           instagram_url: string | null;
+          layout: string;
           linkedin_url: string | null;
           meta_description: string | null;
           publicado: boolean;
+          secoes: Json;
           sobre_html: string | null;
           tenant_id: string;
           updated_at: string;
@@ -3578,9 +3580,11 @@ export type Database = {
           hero_titulo?: string | null;
           hotjar_id?: string | null;
           instagram_url?: string | null;
+          layout?: string;
           linkedin_url?: string | null;
           meta_description?: string | null;
           publicado?: boolean;
+          secoes?: Json;
           sobre_html?: string | null;
           tenant_id: string;
           updated_at?: string;
@@ -3604,9 +3608,11 @@ export type Database = {
           hero_titulo?: string | null;
           hotjar_id?: string | null;
           instagram_url?: string | null;
+          layout?: string;
           linkedin_url?: string | null;
           meta_description?: string | null;
           publicado?: boolean;
+          secoes?: Json;
           sobre_html?: string | null;
           tenant_id?: string;
           updated_at?: string;

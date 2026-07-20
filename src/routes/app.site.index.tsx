@@ -24,6 +24,8 @@ import { ColorPickerField } from "@/components/ui/color-picker-field";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
+import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
+import { SECTION_LABELS, DEFAULT_SECOES, type SectionDbItem } from "@/lib/siteSections";
 
 export const Route = createFileRoute("/app/site/")({
   component: SitePage,
@@ -52,6 +54,7 @@ type Settings = {
   google_ads_id: string | null;
   hotjar_id: string | null;
   head_custom_html: string | null;
+  secoes: SectionDbItem[];
 };
 
 type Page = {
@@ -102,6 +105,7 @@ const EMPTY: Settings = {
   google_ads_id: "",
   hotjar_id: "",
   head_custom_html: "",
+  secoes: DEFAULT_SECOES,
 };
 
 function SitePage() {
@@ -153,7 +157,12 @@ function SitePage() {
       setPlanoSlug(t?.plano_slug ?? null);
       setTenantStatus(t?.status ?? null);
       setTema((t?.tema as Tema) ?? {});
-      if (cfg) setS({ ...EMPTY, ...cfg });
+      if (cfg)
+        setS({
+          ...EMPTY,
+          ...cfg,
+          secoes: (cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES,
+        });
       else setS({ ...EMPTY, tenant_id: tenantId });
       setPages((pg ?? []) as Page[]);
       setLoading(false);
@@ -633,6 +642,37 @@ function SitePage() {
               />
             </Field>
           </div>
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Seções da página inicial</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Escolha a ordem e quais seções aparecem na home do seu site. O Hero (topo) é sempre
+            fixo.
+          </p>
+          <SectionOrderEditor
+            pinnedLabel="Hero"
+            items={s.secoes
+              .slice()
+              .sort((a, b) => a.ordem - b.ordem)
+              .map(
+                (d): SectionItem => ({
+                  key: d.key,
+                  label: SECTION_LABELS[d.key] ?? d.key,
+                  visivel: d.visivel,
+                }),
+              )}
+            onChange={(next) =>
+              set(
+                "secoes",
+                next.map((item, i) => ({
+                  key: item.key as SectionDbItem["key"],
+                  visivel: item.visivel,
+                  ordem: i,
+                })),
+              )
+            }
+          />
         </section>
 
         <Collapsible className="rounded-xl border border-border bg-card">
