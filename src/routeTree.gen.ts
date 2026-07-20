@@ -100,6 +100,7 @@ import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.wi
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
+import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
 import { Route as AppImoveisImportarRouteImport } from './routes/app.imoveis.importar'
@@ -615,6 +616,11 @@ const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   path: '/leads/configuracao',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
+  id: '/leads/analise-risco',
+  path: '/leads/analise-risco',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeadsIdRoute = AppLeadsIdRouteImport.update({
   id: '/leads/$id',
   path: '/leads/$id',
@@ -1041,6 +1047,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
+  '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1187,6 +1194,7 @@ export interface FileRoutesByTo {
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
+  '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1339,6 +1347,7 @@ export interface FileRoutesById {
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
+  '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1492,6 +1501,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
+    | '/app/leads/analise-risco'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -1638,6 +1648,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
+    | '/app/leads/analise-risco'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -1789,6 +1800,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
     | '/app/leads/$id'
+    | '/app/leads/analise-risco'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -2536,6 +2548,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeadsConfiguracaoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leads/analise-risco': {
+      id: '/app/leads/analise-risco'
+      path: '/leads/analise-risco'
+      fullPath: '/app/leads/analise-risco'
+      preLoaderRoute: typeof AppLeadsAnaliseRiscoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/$id': {
       id: '/app/leads/$id'
       path: '/leads/$id'
@@ -3069,6 +3088,7 @@ interface AppRouteChildren {
   AppImoveisImportarRoute: typeof AppImoveisImportarRoute
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
+  AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
@@ -3116,6 +3136,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisImportarRoute: AppImoveisImportarRoute,
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
+  AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,

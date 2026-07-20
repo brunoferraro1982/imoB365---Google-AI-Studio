@@ -274,6 +274,16 @@ Custom domain components live in:
 | `src/routes/consultoria.tsx`      | Idem: head/meta e corpo sem menção a região                                                    |
 | `src/components/site-layout.tsx`  | Nav mega-menu/mobile: label "Por que o Litoral Sul"→"Nosso Padrão de Curadoria", anchor `litoral-sul`→`nosso-padrao` |
 
+### 🔧 Correções recentes (2026-07-16)
+
+| Arquivo                                   | Correção                                                                                      |
+| :----------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `src/lib/creditScore.ts`                   | Novo: `gerarAnaliseRisco()` — extrai/compartilha a lógica de score (antes só em `app.leads.$id.tsx`), acrescenta `fatores`, `historico` e `recomendacoes` para a nova página |
+| `src/lib/format.ts`                        | Novo: `maskCPF()` e `isValidCPF()` (dígito verificador real)                                   |
+| `src/routes/app.leads.$id.tsx`             | Refatorado para usar `gerarAnaliseRisco()`/`maskCPF()`/`isValidCPF()` — mesmo comportamento visual, sem duplicar lógica |
+| `src/routes/app.leads.analise-risco.tsx`   | Nova página "Análise de Risco" (`/app/leads/analise-risco`): consulta de CPF, gráficos (gauge, composição do score, tendência 6 meses via recharts) e conteúdo qualitativo para o corretor apresentar ao proprietário do imóvel; opção de vincular a um lead (grava nota na timeline) e de imprimir |
+| `src/components/layout/AppShell.tsx`       | Novo item de menu "Análise de Risco" no grupo Imobiliário; `print:hidden` no header/aside do app shell (suporta o botão Imprimir da nova página) |
+
 ### 🔧 Correções recentes (2026-07-20)
 
 | Arquivo                                      | Correção                                                                                      |
@@ -281,10 +291,12 @@ Custom domain components live in:
 | `supabase/migrations/20260720120000_favoritos_imovel_fk.sql` | Fix: `favoritos.imovel_id` nunca teve FK para `imoveis(id)` — `listarFavoritos()` (embed `imoveis:imovel_id(...)`) quebrava com "Could not find a relationship..." em `/conta/favoritos`; mesma causa já corrigida antes em `visitas` |
 | `src/lib/favoritos.functions.ts`             | Nova server function `atualizarFavoritoPasta` — reaproveita a coluna `pasta` (já existente, nunca usada pela UI) |
 | `src/routes/conta.favoritos.tsx`             | Organização por pasta (presets: "Para visitar" / "Comparar" / "Descartado"): filtro por chips + seletor por card; mantido (avaliado como PO/UX/marketing: não é redundante com o ranking agregado de favoritos do corretor em `/app/relatorios`, é a lista pessoal do usuário) |
-| `src/components/layout/HeaderUserMenu.tsx`   | Mega menu (área logada): "Nossos Planos Starter & Pro" → "Nossos Planos Standard & Pro" (não existe plano "Starter"; o nome correto é "Standard", `plan-stand`) |
+| `src/components/layout/HeaderUserMenu.tsx`   | Mega menu (área logada): "Nossos Planos Starter & Pro" → "Nossos Planos Standard & Pro" (não existe plano "Starter"; o nome correto é "Standard", `plan-stand`); "Atalhos Operacionais"→"Acesso Fácil" com o mesmo destaque visual de "Central Imob365"; "Desconectar Conta"→"Sair"; "Papéis do Consórcio"→"Função"; botão "Anunciar novo imóvel" movido pra fora da coluna estreita do card de perfil (texto estava truncando); nome do usuário sem `truncate` forçado (`break-words`+`line-clamp-2`, evita estourar quando cai no fallback pro e-mail) |
+| `src/routes/index.tsx`, `src/components/site-layout.tsx` | Remove auto-logout de 5min forçado na home (`supabase.auth.signOut()` sem base em atividade real do usuário — resquício de debug, não documentado como política de segurança) |
 
 ### 📋 Backlog (próximas versões)
 
+- Integração real com bureau de crédito (Serasa Experian ou similar) para a "Análise de Risco" (`/app/leads/analise-risco`, `src/lib/creditScore.ts`) — hoje o score/fatores/histórico são derivados deterministicamente do CPF (mock, sem chamada externa real, mesma lógica já usada no widget de `app.leads.$id.tsx` desde a Sprint 7); substituir por chamada real quando houver contrato/API key (`SERASA_API_KEY`, documentar em `.env.example`)
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
 - API pública documentada (Swagger/OpenAPI) para integrações externas
 - SLA formal documentado nos Termos de Uso
