@@ -21,13 +21,17 @@ export function ImoveisSection({
   variant,
   imoveis,
   fotosMap,
+  compact,
 }: {
   variant: LayoutKey;
   imoveis: ImovelCard[];
   fotosMap: Record<string, string>;
+  /** Renderização em 1 coluna, para quando o bloco está numa área lateral estreita (layout 'amplo'). */
+  compact?: boolean;
 }) {
-  const gridCols =
-    variant === "boutique"
+  const gridCols = compact
+    ? ""
+    : variant === "boutique"
       ? "sm:grid-cols-2"
       : variant === "vitrine"
         ? "sm:grid-cols-2 lg:grid-cols-3"
@@ -42,12 +46,22 @@ export function ImoveisSection({
     <div>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Imóveis em destaque</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {imoveis.length > 0
-              ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
-              : "Em breve, novidades por aqui"}
-          </p>
+          <h2
+            className={
+              compact
+                ? "text-lg font-bold tracking-tight"
+                : "text-2xl font-bold tracking-tight md:text-3xl"
+            }
+          >
+            Imóveis em destaque
+          </h2>
+          {!compact && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {imoveis.length > 0
+                ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
+                : "Em breve, novidades por aqui"}
+            </p>
+          )}
         </div>
       </div>
       {imoveis.length === 0 ? (
@@ -57,8 +71,8 @@ export function ImoveisSection({
         </div>
       ) : (
         <div className={`grid gap-6 ${gridCols}`}>
-          {imoveis.map((i, idx) => {
-            const featured = variant === "vitrine" && idx < 2;
+          {(compact ? imoveis.slice(0, 4) : imoveis).map((i, idx) => {
+            const featured = !compact && variant === "vitrine" && idx < 2;
             return (
               <Link
                 key={i.id}
@@ -97,23 +111,25 @@ export function ImoveisSection({
                     <span className="block text-lg font-bold text-primary">
                       {formatBRL(i.preco)}
                     </span>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      {i.quartos != null && (
-                        <span className="flex items-center gap-1">
-                          <Bed className="h-3 w-3" /> {i.quartos}
-                        </span>
-                      )}
-                      {i.banheiros != null && (
-                        <span className="flex items-center gap-1">
-                          <Bath className="h-3 w-3" /> {i.banheiros}
-                        </span>
-                      )}
-                      {i.area_util != null && (
-                        <span className="flex items-center gap-1">
-                          <Maximize2 className="h-3 w-3" /> {i.area_util}m²
-                        </span>
-                      )}
-                    </div>
+                    {!compact && (
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                        {i.quartos != null && (
+                          <span className="flex items-center gap-1">
+                            <Bed className="h-3 w-3" /> {i.quartos}
+                          </span>
+                        )}
+                        {i.banheiros != null && (
+                          <span className="flex items-center gap-1">
+                            <Bath className="h-3 w-3" /> {i.banheiros}
+                          </span>
+                        )}
+                        {i.area_util != null && (
+                          <span className="flex items-center gap-1">
+                            <Maximize2 className="h-3 w-3" /> {i.area_util}m²
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </Link>

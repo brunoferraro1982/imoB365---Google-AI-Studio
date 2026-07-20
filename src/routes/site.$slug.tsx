@@ -11,7 +11,7 @@ import { ImoveisSection } from "@/components/site/sections/ImoveisSection";
 import { SobreSection } from "@/components/site/sections/SobreSection";
 import { BlogDestaqueSection } from "@/components/site/sections/BlogDestaqueSection";
 import { ContactSection } from "@/components/site/sections/ContactSection";
-import { DEFAULT_SECOES, type LayoutKey, type SectionDbItem } from "@/lib/siteSections";
+import { DEFAULT_SECOES, type LayoutKey, type SectionDbItem, type Zona } from "@/lib/siteSections";
 
 export const Route = createFileRoute("/site/$slug")({
   component: TenantHome,
@@ -161,6 +161,93 @@ function TenantHome() {
       </div>
     );
   if (notFoundState || !ctx) return <NotPublished />;
+
+  function renderBlock(s: SectionDbItem, compact: boolean) {
+    switch (s.key) {
+      case "imoveis":
+        return (
+          <ImoveisSection
+            variant={layout}
+            imoveis={imoveis}
+            fotosMap={fotosMap}
+            compact={compact}
+          />
+        );
+      case "sobre":
+        return sobre ? <SobreSection variant={layout} sobre={sobre} compact={compact} /> : null;
+      case "blog_destaque":
+        return (
+          <BlogDestaqueSection
+            variant={layout}
+            tenantId={ctx!.tenantId}
+            tenantSlug={ctx!.tenantSlug}
+            compact={compact}
+          />
+        );
+      case "contato":
+        return <ContactSection variant={layout} ctx={ctx!} compact={compact} />;
+      default:
+        return null;
+    }
+  }
+
+  if (layout === "amplo") {
+    const visible = orderedSections.filter((s) => s.visivel && renderBlock(s, true) !== null);
+    const byZona = (zona: Zona) => visible.filter((s) => (s.zona ?? "content") === zona);
+    const navbarItems = byZona("navbar");
+    const contentItems = byZona("content");
+    const metaItems = byZona("meta");
+    const hasNavbar = navbarItems.length > 0;
+    const hasMeta = metaItems.length > 0;
+    // Sem largura fixa forçada abaixo de lg — empilha em 1 coluna no mobile
+    // em vez de esconder navbar/meta (eram `hidden lg:block`, sumiam de vez
+    // no celular). A partir de lg, vira grid com as colunas laterais de
+    // 260px que existirem.
+    const gridColsClass =
+      hasNavbar && hasMeta
+        ? "lg:grid-cols-[260px_minmax(0,1fr)_260px]"
+        : hasNavbar
+          ? "lg:grid-cols-[260px_minmax(0,1fr)]"
+          : hasMeta
+            ? "lg:grid-cols-[minmax(0,1fr)_260px]"
+            : "";
+
+    return (
+      <TenantSiteLayout ctx={ctx}>
+        <TrackingPixels pixels={ctx.settings as any} />
+
+        <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
+
+        <div className={`mx-auto grid max-w-6xl gap-10 px-6 py-16 ${gridColsClass}`}>
+          {hasNavbar && (
+            <aside className="space-y-12">
+              {navbarItems.map((s) => (
+                <div key={s.key} id={s.key}>
+                  {renderBlock(s, true)}
+                </div>
+              ))}
+            </aside>
+          )}
+          <div className="min-w-0 space-y-16">
+            {contentItems.map((s) => (
+              <div key={s.key} id={s.key}>
+                {renderBlock(s, false)}
+              </div>
+            ))}
+          </div>
+          {hasMeta && (
+            <aside className="space-y-12">
+              {metaItems.map((s) => (
+                <div key={s.key} id={s.key}>
+                  {renderBlock(s, true)}
+                </div>
+              ))}
+            </aside>
+          )}
+        </div>
+      </TenantSiteLayout>
+    );
+  }
 
   return (
     <TenantSiteLayout ctx={ctx}>

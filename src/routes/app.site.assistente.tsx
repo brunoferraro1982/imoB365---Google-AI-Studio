@@ -30,9 +30,11 @@ import {
   DEFAULT_SECOES,
   LAYOUT_INFO,
   LAYOUT_SUGGESTED_SECOES,
+  ZONA_LABELS,
   secoesEqual,
   type SectionDbItem,
   type LayoutKey,
+  type Zona,
 } from "@/lib/siteSections";
 import { slugify } from "@/lib/format";
 import { toast } from "sonner";
@@ -583,11 +585,20 @@ function SiteWizard() {
         {current.id === "secoes" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
-              Escolha a ordem e quais seções aparecem na home do seu site. O Hero (topo) é sempre
-              fixo.
+              {layout === "amplo"
+                ? "Escolha em qual área (menu lateral, conteúdo central ou coluna de destaque) cada seção aparece, e a ordem dentro de cada área. O Hero (topo) é sempre fixo."
+                : "Escolha a ordem e quais seções aparecem na home do seu site. O Hero (topo) é sempre fixo."}
             </p>
             <SectionOrderEditor
               pinnedLabel="Hero"
+              zonas={
+                layout === "amplo"
+                  ? (Object.keys(ZONA_LABELS) as Zona[]).map((key) => ({
+                      key,
+                      label: ZONA_LABELS[key],
+                    }))
+                  : undefined
+              }
               items={secoes
                 .slice()
                 .sort((a, b) => a.ordem - b.ordem)
@@ -596,6 +607,7 @@ function SiteWizard() {
                     key: d.key,
                     label: SECTION_LABELS[d.key] ?? d.key,
                     visivel: d.visivel,
+                    zona: d.zona,
                   }),
                 )}
               onChange={(next) =>
@@ -604,6 +616,7 @@ function SiteWizard() {
                     key: item.key as SectionDbItem["key"],
                     visivel: item.visivel,
                     ordem: i,
+                    zona: item.zona,
                   })),
                 )
               }

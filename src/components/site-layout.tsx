@@ -1,6 +1,5 @@
 import { InstitutionalNav } from "@/components/site/InstitutionalNav";
-// site-layout.tsx — Componentes compartilhados de layout público
-// Auto-extraído de index.tsx durante refatoração da home page
+// site-layout.tsx — SiteHeader/SiteFooter compartilhados do site público corporativo
 
 import { Link } from "@tanstack/react-router";
 import {

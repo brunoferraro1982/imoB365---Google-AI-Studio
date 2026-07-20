@@ -1,7 +1,28 @@
 import { ShieldCheck } from "lucide-react";
 import type { LayoutKey } from "@/lib/siteSections";
 
-export function SobreSection({ variant, sobre }: { variant: LayoutKey; sobre: string }) {
+export function SobreSection({
+  variant,
+  sobre,
+  compact,
+}: {
+  variant: LayoutKey;
+  sobre: string;
+  /** Renderização estreita, para quando o bloco está numa área lateral (layout 'amplo'). */
+  compact?: boolean;
+}) {
+  if (compact) {
+    return (
+      <div>
+        <h2 className="mb-3 text-lg font-bold tracking-tight">Sobre nós</h2>
+        <article
+          className="prose prose-sm max-w-none text-sm [&_h2]:mt-4 [&_h2]:text-base [&_h2]:font-semibold [&_p]:mb-2 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5"
+          dangerouslySetInnerHTML={{ __html: sobre }}
+        />
+      </div>
+    );
+  }
+
   if (variant === "editorial") {
     return (
       <section className="border-t border-border">
