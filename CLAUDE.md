@@ -274,6 +274,15 @@ Custom domain components live in:
 | `src/routes/consultoria.tsx`      | Idem: head/meta e corpo sem menção a região                                                    |
 | `src/components/site-layout.tsx`  | Nav mega-menu/mobile: label "Por que o Litoral Sul"→"Nosso Padrão de Curadoria", anchor `litoral-sul`→`nosso-padrao` |
 
+### 🔧 Correções recentes (2026-07-20)
+
+| Arquivo                                      | Correção                                                                                      |
+| :-------------------------------------------- | :--------------------------------------------------------------------------------------------- |
+| `supabase/migrations/20260720120000_favoritos_imovel_fk.sql` | Fix: `favoritos.imovel_id` nunca teve FK para `imoveis(id)` — `listarFavoritos()` (embed `imoveis:imovel_id(...)`) quebrava com "Could not find a relationship..." em `/conta/favoritos`; mesma causa já corrigida antes em `visitas` |
+| `src/lib/favoritos.functions.ts`             | Nova server function `atualizarFavoritoPasta` — reaproveita a coluna `pasta` (já existente, nunca usada pela UI) |
+| `src/routes/conta.favoritos.tsx`             | Organização por pasta (presets: "Para visitar" / "Comparar" / "Descartado"): filtro por chips + seletor por card; mantido (avaliado como PO/UX/marketing: não é redundante com o ranking agregado de favoritos do corretor em `/app/relatorios`, é a lista pessoal do usuário) |
+| `src/components/layout/HeaderUserMenu.tsx`   | Mega menu (área logada): "Nossos Planos Starter & Pro" → "Nossos Planos Standard & Pro" (não existe plano "Starter"; o nome correto é "Standard", `plan-stand`) |
+
 ### 📋 Backlog (próximas versões)
 
 - Módulo de BI / Relatórios avançados (avaliar Metabase, Superset ou nativo)
@@ -293,3 +302,4 @@ Custom domain components live in:
 - Limpeza de lint/TypeScript pré-existente no CI: ~4219 erros de prettier/eslint e ~172 erros de `tsc --noEmit` espalhados por dezenas de arquivos não relacionados às sprints recentes (ex.: `onboarding.tsx`, `signup.tsx`, `imovel.$slug.tsx`, `workers/redirects.ts`) — os jobs `Lint & Format`/`TypeScript` do `ci.yml` continuam vermelhos por causa disso (não bloqueia o build real, só o gate de qualidade)
 - Reativar o pipeline de deploy Cloudflare Workers (`.github/workflows/cd.yml`, removido em 2026-07-15 por não estar em uso) quando for a hora de ir ao ar de verdade — guia de secrets em `GITHUB-SECRETS.md`; `wrangler.jsonc` já tem os blocos `env.staging`/`env.production` e o `main` corrigido para o build (`dist/server/server.js`), mas a config de `assets` (client estático) para servir `dist/client` ainda não foi validada com um deploy real
 - Considerar Proposta B3 do reposicionamento nacional (mapa estilizado do Brasil com pontos/rede de conexão) como evolução visual futura da seção `#nosso-padrao` em `/a-imob365`, hoje resolvida via B2 (reaproveito de layout, troca de texto) — não há nenhum elemento de mapa/visual de localização no site público ainda
+- Loop de marketing para `/conta/favoritos`: notificar o lead por e-mail quando um imóvel favoritado mudar de preço ou sair do ar, e lembrete de retorno após X dias sem acessar — hoje a página só lista/organiza, não há nenhum gatilho automático de volta pro usuário
