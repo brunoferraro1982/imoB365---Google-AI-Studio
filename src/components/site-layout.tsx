@@ -186,33 +186,6 @@ function Landing() {
     })();
   }, []);
 
-  // Auto-logout: mantém o usuário logado por apenas 5 minutos na home
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    const schedule = () => {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(
-        async () => {
-          await supabase.auth.signOut();
-        },
-        5 * 60 * 1000,
-      );
-    };
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) schedule();
-    });
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, s) => {
-      if (s) schedule();
-      else if (timer) clearTimeout(timer);
-    });
-    return () => {
-      if (timer) clearTimeout(timer);
-      subscription.unsubscribe();
-    };
-  }, []);
-
   function publicUrl(path: string | null) {
     if (!path) return null;
     return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;

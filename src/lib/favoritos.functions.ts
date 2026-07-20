@@ -59,3 +59,19 @@ export const removerFavorito = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const atualizarFavoritoPasta = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i) =>
+    z.object({ imovel_id: z.string().uuid(), pasta: z.string().max(60).nullable() }).parse(i),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("favoritos")
+      .update({ pasta: data.pasta })
+      .eq("user_id", userId)
+      .eq("imovel_id", data.imovel_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
