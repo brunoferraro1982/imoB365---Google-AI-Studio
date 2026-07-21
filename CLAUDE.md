@@ -369,6 +369,12 @@ Auditoria completa da configuração do repositório no GitHub, motivada pela ex
 
 **Fora de escopo, por decisão explícita**: renomear o repositório (`imoB365---Google-AI-Studio` — nome fica como está, evita quebrar remotes/worktrees em uso); pin de Actions por SHA em vez de tag (fica no backlog abaixo).
 
+### 🔧 Correções recentes (2026-07-21)
+
+| Arquivo | Correção |
+| :--- | :--- |
+| `/app/comissoes` — sem editar/apagar, sem vínculo com contratos | Relato de produção. Causa raiz confirmada com dados reais: as 3 comissões existentes tinham `contrato_id` NULL (100% órfãs) — só existia criação automática via trigger do contrato, sem formulário manual, então qualquer registro fora desse fluxo só podia vir de insert direto no banco. Achado extra: o botão "Gerar comissão" em `app.contratos.$id.tsx` gravava direto em `lancamentos_financeiros`, nunca em `comissoes` — duas fontes de comissão desconectadas. Corrigido: novo `src/components/financeiro/ComissaoForm.tsx` (padrão de `LancamentoForm.tsx`, contrato+corretor obrigatórios via select real) com rotas `app.comissoes.novo.tsx`/`app.comissoes.$id.tsx`; `app.comissoes.index.tsx` ganhou Editar/Apagar em toda linha (antes só Pagar/Cancelar, só pra status `a_pagar`); o botão do contrato agora navega pro formulário novo em vez de gravar direto em `lancamentos_financeiros` — `comissoes` passa a ser a fonte única. Migration `20260721142228_comissoes_unique_contrato.sql` adiciona índice único parcial `comissoes(contrato_id)`, espelhando o que já existia em `lancamentos_financeiros`. Validado em navegador real (dev local): criar/editar/apagar, auto-preenchimento a partir do contrato, tudo funcionando. **Pendente**: aplicar a migration manualmente no Postgres de dev (Supabase Cloud) e no self-hosted de produção (nenhum dos dois recebe migration automaticamente, ver fluxo no topo do arquivo); revisar manualmente as 3 comissões órfãs de produção na nova tela de edição |
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
