@@ -42,6 +42,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
@@ -152,6 +153,7 @@ function Landing() {
   const [imoveis, setImoveis] = useState<ImovelCard[]>([]);
   const [empreendimentos, setEmpreendimentos] = useState<EmpreendCard[]>([]);
   const [tenants, setTenants] = useState<TenantCard[]>([]);
+  const [tenantsLoaded, setTenantsLoaded] = useState(false);
   const [busca, setBusca] = useState("");
   const [finalidade, setFinalidade] = useState<"venda" | "aluguel">("venda");
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -189,6 +191,10 @@ function Landing() {
         .from("tenants")
         .select("id,slug,nome")
         .in("status", ["active", "trial"])
+        // imoB365 (Tenant 0) é a fornecedora da plataforma, não uma cliente —
+        // não pode aparecer na vitrine de "Imobiliárias parceiras" ao lado
+        // dos próprios clientes que usam o SaaS.
+        .neq("slug", CORPORATE_TENANT_SLUG)
         .limit(12);
       const ids = (ts ?? []).map((t: any) => t.id);
       const counts: Record<string, number> = {};
@@ -210,6 +216,7 @@ function Landing() {
           total: counts[t.id] ?? 0,
         })),
       );
+      setTenantsLoaded(true);
 
       const { data: empData } = await (supabase as any)
         .from("empreendimentos")
@@ -678,7 +685,7 @@ function Landing() {
             </div>
           </div>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {tenants.length === 0 &&
+            {!tenantsLoaded &&
               Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
