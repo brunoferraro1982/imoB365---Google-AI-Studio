@@ -339,6 +339,19 @@ Infraestrutura provisionada, migrada e validada de ponta a ponta contra a VPS re
 - SMTP: ainda usando placeholder (`fake_mail_user`) — sem isso, e-mails de confirmação/recuperação de senha do GoTrue não são enviados de verdade
 - A migration `20260521134506_..._f9f2cc82...sql` (seed do papel `super_admin` do usuário real) não foi aplicada durante os testes de schema — não é mais necessária, pois o dump real já trouxe `user_roles` populado
 
+### ⚙️ Pipeline de CI/CD dev→develop→main→deploy automático (2026-07-20)
+
+Formaliza o fluxo documentado no topo deste arquivo. Até então todo deploy era manual (build local + rsync + restart via SSH).
+
+| Item | O que foi feito |
+| :--- | :--- |
+| `main` | Estava 43 commits atrasada desde a remoção do pipeline Cloudflare (2026-07-15) — sincronizada com `develop`, agora é o gate real de promoção pra produção |
+| `.github/workflows/deploy.yml` (novo) | Disparado em push pra `main`: build (`DEPLOY_TARGET=node`) → upload do artifact → rsync pra VPS via chave SSH dedicada (`VPS_SSH_KEY`, não a pessoal) → `systemctl restart imob365-app` → health check com retry em `https://portal.imob365.com.br/`. Se o PR trouxe migrations novas em `supabase/migrations/`, só avisa (`::warning::`) — nunca aplica automaticamente (ver regra de migrations no topo do arquivo) |
+| Secrets novos | `VPS_SSH_HOST`, `VPS_SSH_KEY`, `VPS_SUPABASE_URL`, `VPS_SUPABASE_PUBLISHABLE_KEY`, `VPS_GEMINI_API_KEY` — substituem os antigos `PROD_SUPABASE_*`/`STAGING_SUPABASE_*`/`CLOUDFLARE_*` (removidos, apontavam pra Supabase Cloud e Cloudflare, hoje obsoletos) |
+| Build OOM no runner do Actions | O build `DEPLOY_TARGET=node` empacota libs pesadas (google-genai, jspdf, recharts, html2canvas, leaflet) em chunks self-contained — memória suficiente pra estourar o heap padrão do V8 e crashar (`JavaScript heap out of memory`, exit 134) no runner padrão do GitHub (7GB RAM). Aconteceu de forma não-determinística (o primeiro deploy real passou, o deploy seguinte, com o comando idêntico, crashou). Corrigido com `NODE_OPTIONS=--max-old-space-size=6144` no step de build do `deploy.yml`, dando margem real de heap |
+| Limpeza de branches | Removidas 14 branches remotas antigas de backlog (sprints 1-9 já documentados como concluídos, `fix/qa-security-and-bugs`, e branches já mescladas) — só sobraram `develop` e `main` |
+| Validação end-to-end | Testado o fluxo completo de verdade: mudança pequena (`/api/public/health` version bump) → dev → PR `develop` → merge → PR `develop→main` → merge → confirmado em produção via `curl`, sem nenhum passo manual |
+
 ### 🔒 Hardening de segurança do GitHub (2026-07-21)
 
 Auditoria completa da configuração do repositório no GitHub, motivada pela existência de produção real (dados de usuários, infraestrutura de deploy, schema de banco todos versionados no repo).
@@ -355,6 +368,12 @@ Auditoria completa da configuração do repositório no GitHub, motivada pela ex
 | Descrição do repositório (GitHub) | "plataforma imob365 - ai studio" → descrição real, sem menção a AI Studio |
 
 **Fora de escopo, por decisão explícita**: renomear o repositório (`imoB365---Google-AI-Studio` — nome fica como está, evita quebrar remotes/worktrees em uso); pin de Actions por SHA em vez de tag (fica no backlog abaixo).
+
+### 🔧 Correções recentes (2026-07-21)
+
+| Arquivo | Correção |
+| :--- | :--- |
+| `/app/comissoes` — sem editar/apagar, sem vínculo com contratos | Relato de produção. Causa raiz confirmada com dados reais: as 3 comissões existentes tinham `contrato_id` NULL (100% órfãs) — só existia criação automática via trigger do contrato, sem formulário manual, então qualquer registro fora desse fluxo só podia vir de insert direto no banco. Achado extra: o botão "Gerar comissão" em `app.contratos.$id.tsx` gravava direto em `lancamentos_financeiros`, nunca em `comissoes` — duas fontes de comissão desconectadas. Corrigido: novo `src/components/financeiro/ComissaoForm.tsx` (padrão de `LancamentoForm.tsx`, contrato+corretor obrigatórios via select real) com rotas `app.comissoes.novo.tsx`/`app.comissoes.$id.tsx`; `app.comissoes.index.tsx` ganhou Editar/Apagar em toda linha (antes só Pagar/Cancelar, só pra status `a_pagar`); o botão do contrato agora navega pro formulário novo em vez de gravar direto em `lancamentos_financeiros` — `comissoes` passa a ser a fonte única. Migration `20260721142228_comissoes_unique_contrato.sql` adiciona índice único parcial `comissoes(contrato_id)`, espelhando o que já existia em `lancamentos_financeiros`. Validado em navegador real (dev local): criar/editar/apagar, auto-preenchimento a partir do contrato, tudo funcionando. **Pendente**: aplicar a migration manualmente no Postgres de dev (Supabase Cloud) e no self-hosted de produção (nenhum dos dois recebe migration automaticamente, ver fluxo no topo do arquivo); revisar manualmente as 3 comissões órfãs de produção na nova tela de edição |
 
 ### 📋 Backlog (próximas versões)
 
