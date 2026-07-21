@@ -134,6 +134,8 @@ import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.c
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
+import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
+import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
@@ -794,6 +796,16 @@ const AppConfiguracoesApiRoute = AppConfiguracoesApiRouteImport.update({
   path: '/api',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppComissoesNovoRoute = AppComissoesNovoRouteImport.update({
+  id: '/comissoes/novo',
+  path: '/comissoes/novo',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppComissoesIdRoute = AppComissoesIdRouteImport.update({
+  id: '/comissoes/$id',
+  path: '/comissoes/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppChatIdRoute = AppChatIdRouteImport.update({
   id: '/chat/$id',
   path: '/chat/$id',
@@ -997,6 +1009,8 @@ export interface FileRoutesByFullPath {
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
+  '/app/comissoes/$id': typeof AppComissoesIdRoute
+  '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -1142,6 +1156,8 @@ export interface FileRoutesByTo {
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
+  '/app/comissoes/$id': typeof AppComissoesIdRoute
+  '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -1293,6 +1309,8 @@ export interface FileRoutesById {
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
+  '/app/comissoes/$id': typeof AppComissoesIdRoute
+  '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
@@ -1445,6 +1463,8 @@ export interface FileRouteTypes {
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
+    | '/app/comissoes/$id'
+    | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -1590,6 +1610,8 @@ export interface FileRouteTypes {
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
+    | '/app/comissoes/$id'
+    | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -1740,6 +1762,8 @@ export interface FileRouteTypes {
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
+    | '/app/comissoes/$id'
+    | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
@@ -2759,6 +2783,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesApiRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/comissoes/novo': {
+      id: '/app/comissoes/novo'
+      path: '/comissoes/novo'
+      fullPath: '/app/comissoes/novo'
+      preLoaderRoute: typeof AppComissoesNovoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/comissoes/$id': {
+      id: '/app/comissoes/$id'
+      path: '/comissoes/$id'
+      fullPath: '/app/comissoes/$id'
+      preLoaderRoute: typeof AppComissoesIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/chat/$id': {
       id: '/app/chat/$id'
       path: '/chat/$id'
@@ -3025,6 +3063,8 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
   AppChatIdRoute: typeof AppChatIdRoute
+  AppComissoesIdRoute: typeof AppComissoesIdRoute
+  AppComissoesNovoRoute: typeof AppComissoesNovoRoute
   AppContratosIdRoute: typeof AppContratosIdRoute
   AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
@@ -3073,6 +3113,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
   AppChatIdRoute: AppChatIdRoute,
+  AppComissoesIdRoute: AppComissoesIdRoute,
+  AppComissoesNovoRoute: AppComissoesNovoRoute,
   AppContratosIdRoute: AppContratosIdRoute,
   AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
