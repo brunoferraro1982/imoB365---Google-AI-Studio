@@ -1,66 +1,28 @@
 import * as React from "react";
-
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Text,
-} from "@react-email/components";
+import { Button, Preview, Text } from "@react-email/components";
+import { EmailShell, button, footer, h1, text } from "./_shared";
 
 interface RecoveryEmailProps {
   siteName: string;
   confirmationUrl: string;
 }
 
-export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
-  <Html lang="en" dir="ltr">
-    <Head />
-    <Preview>Reset your password for {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Reset your password</Heading>
-        <Text style={text}>
-          We received a request to reset your password for {siteName}. Click the button below to
-          choose a new password.
-        </Text>
-        <Button style={button} href={confirmationUrl}>
-          Reset Password
-        </Button>
-        <Text style={footer}>
-          If you didn't request a password reset, you can safely ignore this email. Your password
-          will not be changed.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
+export const RecoveryEmail = ({ confirmationUrl }: RecoveryEmailProps) => (
+  <EmailShell>
+    <Preview>Redefina sua senha na imoB365</Preview>
+    <Text style={h1}>Redefinir sua senha</Text>
+    <Text style={text}>
+      Recebemos uma solicitação para redefinir a senha da sua conta na <strong>imoB365</strong>.
+      Clique no botão abaixo para escolher uma nova senha. Por segurança, este link expira em breve.
+    </Text>
+    <Button style={button} href={confirmationUrl}>
+      Redefinir senha
+    </Button>
+    <Text style={footer}>
+      Se você não solicitou a redefinição de senha, ignore este e-mail — sua senha atual continua
+      válida.
+    </Text>
+  </EmailShell>
 );
 
 export default RecoveryEmail;
-
-const main = { backgroundColor: "#ffffff", fontFamily: "Arial, sans-serif" };
-const container = { padding: "20px 25px" };
-const h1 = {
-  fontSize: "22px",
-  fontWeight: "bold" as const,
-  color: "#000000",
-  margin: "0 0 20px",
-};
-const text = {
-  fontSize: "14px",
-  color: "#55575d",
-  lineHeight: "1.5",
-  margin: "0 0 25px",
-};
-const button = {
-  backgroundColor: "#000000",
-  color: "#ffffff",
-  fontSize: "14px",
-  borderRadius: "8px",
-  padding: "12px 20px",
-  textDecoration: "none",
-};
-const footer = { fontSize: "12px", color: "#999999", margin: "30px 0 0" };
