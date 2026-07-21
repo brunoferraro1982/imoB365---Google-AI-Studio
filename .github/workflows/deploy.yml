@@ -73,6 +73,12 @@ jobs:
     name: 🚀 Deploy na VPS
     needs: build
     runs-on: ubuntu-latest
+    # Dá rastro/histórico de deploy na aba "Environments" do GitHub. A regra de
+    # required-reviewer que existia aqui foi removida automaticamente quando o
+    # repo virou privado (protection rules em Environments exigem GitHub Pro em
+    # repo privado de conta pessoal) — mesma limitação de plano da branch
+    # protection (ver CLAUDE.md). Reavaliar se/quando fizer upgrade de plano.
+    environment: production
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
