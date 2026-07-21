@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Plus, Pencil, Save, X, Infinity as InfinityIcon, ArrowRight } from "lucide-react";
+import { Plus, Pencil, Save, X, Infinity as InfinityIcon, ArrowRight, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatBRL, formatQuota } from "@/lib/format";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/admin/planos")({
   component: AdminPlanos,
@@ -26,11 +27,17 @@ type Plan = {
 
 type ModuleRow = { slug: string; nome: string; core: boolean };
 
+// Slugs seed com dependências hardcoded em funções SECURITY DEFINER
+// (provision_trial_business, cron_expire_trials) — nunca oferecer exclusão via UI,
+// independente de quantos tenants estão nesse plano hoje.
+const CORE_PLAN_SLUGS = new Set(["free", "basic", "standard", "pro", "business"]);
+
 function AdminPlanos() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [modules, setModules] = useState<ModuleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [form, setForm] = useState<{ nome: string; preco: string; precoAnual: string }>({
     nome: "",
     preco: "",
@@ -51,8 +58,12 @@ function AdminPlanos() {
       supabase.from("plans").select("*").order("preco_mensal"),
       supabase.from("modules").select("slug,nome,core").order("nome"),
     ]);
-    setPlans((data as unknown as Plan[]) ?? []);
+    const rows = (data as unknown as Plan[]) ?? [];
+    setPlans(rows);
     setModules((mods as ModuleRow[]) ?? []);
+    // Edge case: outra aba/admin excluiu o plano que está em edição aqui — sem isso,
+    // "Salvar" viraria um update().eq("id", id) sem linha nenhuma pra atualizar (no-op silencioso).
+    setEditing((current) => (current && !rows.some((p) => p.id === current) ? null : current));
     setLoading(false);
   }
   useEffect(() => {
@@ -116,6 +127,40 @@ function AdminPlanos() {
   async function toggleAtivo(p: Plan) {
     const { error } = await supabase.from("plans").update({ ativo: !p.ativo }).eq("id", p.id);
     if (error) return toast.error(error.message);
+    load();
+  }
+
+  // Planos seed (CORE_PLAN_SLUGS) nunca chegam aqui — o botão já vem desabilitado pra
+  // eles. Pra qualquer outro plano, tenants.plano_slug tem ON DELETE SET NULL (não
+  // bloqueia a exclusão sozinho, só órfã o tenant em silêncio), então essa é a única
+  // FK que precisa de pré-checagem client-side com mensagem amigável — as demais FKs
+  // pra plans (assinaturas.plan_id, tenants.downgrade_to/plan_code) já são RESTRICT/NO
+  // ACTION no Postgres e bloqueiam a exclusão sozinhas, surfaced pelo catch de erro abaixo.
+  async function deletePlan(p: Plan) {
+    if (CORE_PLAN_SLUGS.has(p.slug)) return;
+
+    setLoading(true);
+    const { count, error: checkError } = await supabase
+      .from("tenants")
+      .select("id", { count: "exact", head: true })
+      .eq("plano_slug", p.slug);
+    setLoading(false);
+
+    if (checkError) return toast.error(checkError.message);
+    if ((count ?? 0) > 0) {
+      return toast.error(
+        `Não é possível excluir: ${count} imobiliária${count === 1 ? "" : "s"} ainda vinculada${count === 1 ? "" : "s"} a este plano.`,
+      );
+    }
+
+    if (!(await confirmDialog(`Excluir o plano "${p.nome}"? Esta ação não pode ser desfeita.`)))
+      return;
+
+    setLoading(true);
+    const { error } = await supabase.from("plans").delete().eq("id", p.id);
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Plano excluído.");
     load();
   }
 
@@ -305,6 +350,20 @@ function AdminPlanos() {
                         Limites <ArrowRight className="ml-1 h-3.5 w-3.5" />
                       </Link>
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+                      disabled={CORE_PLAN_SLUGS.has(p.slug)}
+                      title={
+                        CORE_PLAN_SLUGS.has(p.slug)
+                          ? "Planos padrão do sistema não podem ser excluídos"
+                          : "Excluir plano"
+                      }
+                      onClick={() => deletePlan(p)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </>
               )}
@@ -312,6 +371,7 @@ function AdminPlanos() {
           ))}
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }
