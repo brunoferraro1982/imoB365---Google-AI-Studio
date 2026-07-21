@@ -19,8 +19,11 @@ Existem exatamente **2 ambientes** — não há staging separado:
 4. Quando pronto para liberar, abrir PR `develop` → `main`. Mergear esse PR **dispara o deploy automático** via `.github/workflows/deploy.yml`: build (`DEPLOY_TARGET=node`) → rsync para a VPS → restart do `imob365-app.service` → health check em `https://portal.imob365.com.br/`.
 5. **Migrations de schema (`supabase/migrations/*.sql`) nunca são aplicadas automaticamente em produção** — o workflow de deploy só *avisa* (warning) se o PR trouxe migrations novas; aplicá-las no Postgres self-hosted da VPS é sempre um passo manual e confirmado à parte. Motivo: já foi encontrado drift real entre o histórico de migrations local e o schema de produção (objetos criados manualmente via Supabase Studio sem migration correspondente — ver changelog "Deploy em produção" abaixo) — não automatizar até esse processo estar mais maduro/confiável.
 6. **Nunca aplicar mudança de schema direto em produção via SQL Editor/Studio manual** — sempre criar uma migration versionada no repo primeiro, mesmo que seja aplicada manualmente depois. É exatamente esse hábito que causou o drift acima.
+7. **Repositório é privado** desde 2026-07-20, com limite de **2.000 minutos/mês de GitHub Actions** (plano free, conta pessoal — repos privados não têm minutos ilimitados como os públicos). Antes de disparar ações que consomem esse limite de forma não-trivial (ex.: rodar o pipeline completo várias vezes seguidas pra depurar algo, workflows adicionais, etc.), checar o consumo/saldo (`gh api users/brunoferraro1982/settings/billing/actions` — requer escopo OAuth `user` no token, rodar `gh auth refresh -h github.com -s user` uma vez se o comando retornar 404 por falta de permissão) e avisar o usuário do saldo antes de prosseguir, em vez de simplesmente executar.
 
 Secrets do GitHub Actions relevantes: `VPS_SSH_HOST`, `VPS_SSH_KEY` (chave dedicada só de deploy, não a pessoal), `VPS_SUPABASE_URL`, `VPS_SUPABASE_PUBLISHABLE_KEY`, `VPS_GEMINI_API_KEY`. Os secrets antigos `PROD_SUPABASE_*`/`STAGING_SUPABASE_*`/`CLOUDFLARE_*` são de antes da migração para self-hosted e estão obsoletos.
+
+**Branch protection em `main`/`develop` e as protection rules do Environment `production` não estão disponíveis** — GitHub Free só oferece isso em repos privados de conta pessoal com upgrade pro GitHub Pro (ou em repos públicos). Decisão: manter privado (prioridade de confidencialidade) e aceitar essa lacuna por ora; reavaliar se/quando houver upgrade de plano.
 
 ## Project Context
 
@@ -336,6 +339,23 @@ Infraestrutura provisionada, migrada e validada de ponta a ponta contra a VPS re
 - SMTP: ainda usando placeholder (`fake_mail_user`) — sem isso, e-mails de confirmação/recuperação de senha do GoTrue não são enviados de verdade
 - A migration `20260521134506_..._f9f2cc82...sql` (seed do papel `super_admin` do usuário real) não foi aplicada durante os testes de schema — não é mais necessária, pois o dump real já trouxe `user_roles` populado
 
+### 🔒 Hardening de segurança do GitHub (2026-07-21)
+
+Auditoria completa da configuração do repositório no GitHub, motivada pela existência de produção real (dados de usuários, infraestrutura de deploy, schema de banco todos versionados no repo).
+
+| Item | O que foi feito |
+| :--- | :--- |
+| **Repositório era público** | Achado mais grave — qualquer um via todo o código, as 98 migrations (schema completo do banco) e os workflows (caminhos exatos da VPS). Tornado **privado**. Contrapartida aceita: repo privado de conta pessoal no plano free tem limite de 2.000 min/mês de Actions (público é ilimitado) — ver instrução no topo do arquivo sobre acompanhar esse saldo |
+| Fork | `allow_forking` não pôde ser forçado via API (restrição do GitHub: só configurável em repo privado de organização, não de conta pessoal) — mas com o repo privado e único colaborador sendo o próprio dono, fork por terceiros já não é possível na prática |
+| Branch protection em `main`/`develop` | **Não aplicada** — GitHub Free só permite em repo privado de conta pessoal com upgrade pro GitHub Pro, ou em repo público. Decisão: manter privado e aceitar a lacuna por ora (ver nota no topo do arquivo) |
+| GitHub Environments | Existiam `production` (regra de required-reviewer, mas nunca referenciada em nenhum workflow — proteção inerte) e `staging` (vazio, sem uso real). A regra do `production` foi **removida automaticamente pelo próprio GitHub** ao tornar o repo privado (mesma restrição de plano da branch protection). `staging` foi **deletado** (não corresponde a nenhum ambiente real — só existem dev local e produção). `environment: production` foi adicionado ao job de deploy em `deploy.yml` mesmo assim, pelo rastro/histórico de deploy que a aba Environments continua dando de graça |
+| Actions permissions | Estava `allowed_actions: all` (qualquer Action pública podia rodar). Restrito pra `selected`, com as 7 actions realmente em uso: `actions/checkout`, `actions/setup-node`, `actions/upload-artifact`, `actions/download-artifact`, `gitleaks/gitleaks-action`, `softprops/action-gh-release`, `supabase/setup-cli` |
+| `README.md` | Era 100% o boilerplate original do Google AI Studio (banner, link `ai.studio/apps/<id>` expondo um ID de projeto interno, instruções incompletas). Reescrito com descrição real do projeto e instruções corretas |
+| `.env.example` | Também estava incompleto (só listava `GEMINI_API_KEY`/`APP_URL`, faltavam as 6 variáveis do Supabase e Mercado Pago já documentadas na seção de Environment Variables deste arquivo) — corrigido |
+| Descrição do repositório (GitHub) | "plataforma imob365 - ai studio" → descrição real, sem menção a AI Studio |
+
+**Fora de escopo, por decisão explícita**: renomear o repositório (`imoB365---Google-AI-Studio` — nome fica como está, evita quebrar remotes/worktrees em uso); pin de Actions por SHA em vez de tag (fica no backlog abaixo).
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
@@ -363,6 +383,8 @@ Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudfla
 - CI/CD com SAST/DAST (GitHub Actions)
 - Limpeza de lint/prettier pré-existente no CI: ~4219 erros de prettier/eslint espalhados por dezenas de arquivos não relacionados às sprints recentes — o job `Lint & Format` do `ci.yml` continua vermelho por causa disso (não bloqueia o build real, só o gate de qualidade). Os ~172 erros de `tsc --noEmit` já foram corrigidos em 2026-07-20 (ver changelog acima)
 - Deploy em produção — **no ar desde 2026-07-20**: VPS Hostinger + Supabase self-hosted, `https://portal.imob365.com.br`, dados reais migrados (ver changelog "Deploy em produção" acima para detalhes completos). Pendente: reconfigurar Google OAuth pro self-host (redirect URI novo), configurar SMTP real (hoje placeholder — e-mails de auth não são enviados), documentar rotina de backup/monitoramento do Postgres self-hosted (deixa de ser responsabilidade da Supabase Cloud), reconciliar o drift descoberto entre as migrations locais e o schema real de produção (6 objetos não rastreados: ver changelog)
+- Avaliar upgrade pro GitHub Pro — desbloquearia branch protection em `main`/`develop` e as protection rules do Environment `production` (required-reviewer antes de deploy), hoje indisponíveis por ser repo privado de conta pessoal no plano free (ver changelog "Hardening de segurança do GitHub")
+- Pin de Actions por SHA em vez de tag (`actions/checkout@v4` → `@<sha>`, etc.) — hardening de supply-chain de baixa prioridade, registrado na auditoria de segurança de 2026-07-21
 
 #### Institucional
 

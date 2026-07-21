@@ -1,19 +1,42 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# imoB365
 
-# Run and deploy your AI Studio app
+Plataforma SaaS multi-tenant para o mercado imobiliário brasileiro. A imobiliária imoB365 é o Tenant 0 — o caso de validação principal, antes de ir a mercado para outras imobiliárias e corretores.
 
-This contains everything you need to run your app locally.
+Cinco pilares: Vendas (imóveis, leads, pipeline CRM), Financeiro (comissões, cobrança), Marketing (campanhas, WhatsApp), Jurídico (contratos, assinatura digital) e E-Learning (treinamento de corretores).
 
-View your app in AI Studio: https://ai.studio/apps/563e8ee7-a489-45b9-a00a-387d35d8c491
+Stack: TanStack Start (SSR) + React 19, Supabase (Postgres + Auth + Realtime + RLS), Tailwind CSS v4 + shadcn/ui, Google Gemini para geração de conteúdo por IA.
 
-## Run Locally
+> Arquitetura completa, convenções e fluxo de deploy: ver [`CLAUDE.md`](./CLAUDE.md).
 
-**Prerequisites:** Node.js
+## Ambientes
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+| Ambiente | Onde roda | Banco/Auth/Storage |
+| :--- | :--- | :--- |
+| Dev | `localhost` | Supabase Cloud |
+| Produção | VPS própria (`portal.imob365.com.br`) | Supabase self-hosted |
+
+O fluxo de deploy (dev → `develop` → `main` → deploy automático) está documentado no topo do `CLAUDE.md`.
+
+## Rodar localmente
+
+**Pré-requisitos:** Node.js 22+
+
+1. Instalar dependências:
+   ```
+   npm install
+   ```
+2. Copiar `.env.example` para `.env` e preencher as credenciais do Supabase Cloud de desenvolvimento e a `GEMINI_API_KEY`.
+3. Rodar o app:
+   ```
+   npm run dev
+   ```
+
+## Outros comandos
+
+```bash
+npm run build        # Build de produção
+npm run lint          # ESLint
+npm run format         # Prettier (write)
+```
+
+Sem suíte de testes automatizada — validação manual via `CADERNO_DE_TESTES.md`.
