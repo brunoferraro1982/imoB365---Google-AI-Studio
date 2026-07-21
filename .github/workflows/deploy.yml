@@ -41,6 +41,12 @@ jobs:
       - name: Build (DEPLOY_TARGET=node)
         env:
           DEPLOY_TARGET: node
+          # The node-server build bundles everything into self-contained chunks
+          # (google-genai, jspdf, recharts, html2canvas, leaflet, etc. all get
+          # inlined) — memory-intensive enough to hit V8's default old-space
+          # limit and OOM-crash on the standard GitHub-hosted runner (7GB RAM
+          # total). Raising the heap ceiling explicitly gives it real headroom.
+          NODE_OPTIONS: --max-old-space-size=6144
           VITE_SUPABASE_URL: ${{ secrets.VPS_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VPS_SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_URL: ${{ secrets.VPS_SUPABASE_URL }}
