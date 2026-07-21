@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Printer,
@@ -27,19 +27,18 @@ type AssinaturaStatus = "rascunho" | "enviado" | "assinado_parcial" | "assinado_
 
 function EditarContrato() {
   const { id } = Route.useParams();
-  const { tenantId, user } = useAuth();
-  const [gerando, setGerando] = useState(false);
+  const { tenantId } = useAuth();
+  const navigate = useNavigate();
   const [comissaoGerada, setComissaoGerada] = useState(false);
 
-  // Carrega se já existe lançamento de comissão para este contrato — no
-  // máximo um por contrato (trava também aplicada no banco).
+  // Carrega se já existe comissão para este contrato — no máximo uma por
+  // contrato (trava também aplicada no banco, ver comissoes_unique_contrato).
   useEffect(() => {
     if (!id) return;
     supabase
-      .from("lancamentos_financeiros")
+      .from("comissoes")
       .select("id")
       .eq("contrato_id", id)
-      .eq("categoria", "comissao")
       .maybeSingle()
       .then(({ data }) => setComissaoGerada(!!data));
   }, [id]);
@@ -115,66 +114,14 @@ function EditarContrato() {
     }
   }
 
-  async function gerarComissao() {
-    if (!tenantId) return;
+  function gerarComissao() {
     if (comissaoGerada) return toast.error("Comissão já gerada para este contrato");
-    setGerando(true);
-
-    // Revalida no servidor (não só no estado local) — evita duplicar em
-    // caso de duas abas abertas ou clique duplo antes do estado atualizar.
-    const { data: existente } = await supabase
-      .from("lancamentos_financeiros")
-      .select("id")
-      .eq("contrato_id", id)
-      .eq("categoria", "comissao")
-      .maybeSingle();
-    if (existente) {
-      setComissaoGerada(true);
-      setGerando(false);
-      return toast.error("Comissão já gerada para este contrato");
-    }
-
-    const { data: c, error } = await supabase
-      .from("contratos")
-      .select("id,valor,comissao_valor,comissao_percentual,corretor_id,imovel_id,numero")
-      .eq("id", id)
-      .maybeSingle();
-    if (error || !c) {
-      setGerando(false);
-      return toast.error(error?.message ?? "Contrato não encontrado");
-    }
-    const valor =
-      c.comissao_valor ??
-      (c.comissao_percentual ? (Number(c.valor) * Number(c.comissao_percentual)) / 100 : 0);
-    if (!valor || valor <= 0) {
-      setGerando(false);
-      return toast.error("Defina comissão (% ou R$) antes de gerar");
-    }
-    const { error: insErr } = await supabase.from("lancamentos_financeiros").insert({
-      tenant_id: tenantId,
-      tipo: "despesa",
-      categoria: "comissao",
-      descricao: `Comissão — contrato ${c.numero ?? `#${c.id.slice(0, 8)}`}`,
-      valor,
-      data_vencimento: new Date().toISOString().slice(0, 10),
-      status: "pendente",
-      contrato_id: c.id,
-      imovel_id: c.imovel_id,
-      corretor_id: c.corretor_id,
-      created_by: user?.id,
-    });
-    setGerando(false);
-    if (insErr) {
-      // 23505 = violação do índice único (trava no banco) — outra aba/clique
-      // já gerou a comissão entre a checagem acima e este insert.
-      if (insErr.code === "23505") {
-        setComissaoGerada(true);
-        return toast.error("Comissão já gerada para este contrato");
-      }
-      return toast.error(insErr.message);
-    }
-    setComissaoGerada(true);
-    toast.success("Lançamento de comissão criado");
+    // Encaminha pro formulário de comissões (fonte única — ver ComissaoForm),
+    // já pré-preenchido com o contrato e os valores sugeridos por ele. Antes
+    // este botão inseria direto em lancamentos_financeiros, criando uma
+    // segunda fonte de comissão desconectada da tabela `comissoes` (que
+    // alimenta /app/comissoes) — corrigido pra sempre passar por lá.
+    navigate({ to: "/app/comissoes/novo", search: { contrato_id: id } });
   }
 
   return (
@@ -193,17 +140,15 @@ function EditarContrato() {
             variant="outline"
             size="sm"
             onClick={gerarComissao}
-            disabled={gerando || comissaoGerada}
-            title={
-              comissaoGerada ? "Já existe um lançamento de comissão para este contrato" : undefined
-            }
+            disabled={comissaoGerada}
+            title={comissaoGerada ? "Já existe uma comissão para este contrato" : undefined}
           >
             {comissaoGerada ? (
               <BadgeCheck className="mr-2 h-4 w-4" />
             ) : (
               <Banknote className="mr-2 h-4 w-4" />
             )}
-            {gerando ? "Gerando…" : comissaoGerada ? "Comissão já gerada" : "Gerar comissão"}
+            {comissaoGerada ? "Comissão já gerada" : "Gerar comissão"}
           </Button>
           <Link to="/app/contratos/$id/imprimir" params={{ id }}>
             <Button variant="outline" size="sm">

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Wallet, Check, X } from "lucide-react";
+import { Wallet, Check, X, Plus, Pencil, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,18 @@ function ComissoesList() {
     load();
   }
 
+  async function remove(id: string) {
+    if (!(await confirmDialog("Apagar esta comissão? Essa ação não pode ser desfeita."))) return;
+    const { error } = await supabase
+      .from("comissoes")
+      .delete()
+      .eq("id", id)
+      .eq("tenant_id", tenantId ?? "");
+    if (error) return toast.error(error.message);
+    toast.success("Comissão apagada");
+    load();
+  }
+
   const filtered = items.filter((c) => {
     if (filter !== "todos" && c.status !== filter) return false;
     if (!search.trim()) return true;
@@ -101,9 +113,14 @@ function ComissoesList() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Comissões</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Geradas automaticamente quando o contrato fica ativo.
+            Geradas automaticamente quando o contrato fica ativo, ou cadastradas manualmente.
           </p>
         </div>
+        <Link to="/app/comissoes/novo">
+          <Button size="sm">
+            <Plus className="mr-2 h-4 w-4" /> Nova comissão
+          </Button>
+        </Link>
       </header>
 
       <div className="mb-6 grid gap-4 md:grid-cols-3">
@@ -138,7 +155,8 @@ function ComissoesList() {
         <div className="rounded-xl border border-dashed border-border p-12 text-center">
           <Wallet className="mx-auto h-10 w-10 text-muted-foreground/60" />
           <p className="mt-3 text-sm text-muted-foreground">
-            Nenhuma comissão ainda. Ative um contrato para gerar.
+            Nenhuma comissão ainda. Ative um contrato pra gerar automaticamente, ou cadastre uma
+            manualmente.
           </p>
         </div>
       ) : (
@@ -181,7 +199,7 @@ function ComissoesList() {
                     ) : null}
                   </td>
                   <td className="px-4 py-3 text-right font-medium">{formatBRL(c.valor)}</td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right whitespace-nowrap">
                     {c.status === "a_pagar" && (
                       <>
                         <Button variant="ghost" size="sm" onClick={() => marcarPaga(c.id)}>
@@ -192,6 +210,14 @@ function ComissoesList() {
                         </Button>
                       </>
                     )}
+                    <Link to="/app/comissoes/$id" params={{ id: c.id }}>
+                      <Button variant="ghost" size="sm" title="Editar">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button variant="ghost" size="sm" title="Apagar" onClick={() => remove(c.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </td>
                 </tr>
               ))}
