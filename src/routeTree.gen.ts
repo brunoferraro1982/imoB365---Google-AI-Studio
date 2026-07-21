@@ -150,6 +150,7 @@ import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.p
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
+import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
@@ -880,6 +881,12 @@ const ApiPublicV1ImoveisRoute = ApiPublicV1ImoveisRouteImport.update({
   path: '/api/public/v1/imoveis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEmailTemplatesTypeRoute =
+  ApiPublicEmailTemplatesTypeRouteImport.update({
+    id: '/api/public/email-templates/$type',
+    path: '/api/public/email-templates/$type',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronVisitasNotificacoesRoute =
   ApiPublicCronVisitasNotificacoesRouteImport.update({
     id: '/api/public/cron/visitas-notificacoes',
@@ -1069,6 +1076,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
+  '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1216,6 +1224,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
+  '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1369,6 +1378,7 @@ export interface FileRoutesById {
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
+  '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1523,6 +1533,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
+    | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1670,6 +1681,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
+    | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1822,6 +1834,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
+    | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1892,6 +1905,7 @@ export interface RootRouteChildren {
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
+  ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
@@ -2895,6 +2909,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1ImoveisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/email-templates/$type': {
+      id: '/api/public/email-templates/$type'
+      path: '/api/public/email-templates/$type'
+      fullPath: '/api/public/email-templates/$type'
+      preLoaderRoute: typeof ApiPublicEmailTemplatesTypeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/visitas-notificacoes': {
       id: '/api/public/cron/visitas-notificacoes'
       path: '/api/public/cron/visitas-notificacoes'
@@ -3237,6 +3258,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
+  ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
