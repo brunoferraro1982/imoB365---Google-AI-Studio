@@ -9,11 +9,11 @@ import { SiteHeader, SiteFooter } from "@/components/site-layout";
 export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
-      { title: "Blog | imoB365 — Mercado Imobiliário do Litoral Sul" },
+      { title: "Blog | imoB365 — Notícias do Mercado Imobiliário" },
       {
         name: "description",
         content:
-          "Análises, tendências e guias de investimento imobiliário em Praia Grande, Santos e São Vicente.",
+          "Tenha as principais notícias do mercado imobiliário, análises, tendências e guias de investimento.",
       },
     ],
   }),
@@ -97,10 +97,10 @@ export default function BlogPage() {
               Blog
             </span>
             <h1 className="text-2xl font-black tracking-tight">
-              Mercado Imobiliário do Litoral Sul
+              Tenha as principais notícias do mercado imobiliário
             </h1>
             <p className="text-sm text-muted-foreground">
-              Análises, tendências e guias de investimento em Santos, Praia Grande e São Vicente.
+              Análises, tendências e guias de investimento imobiliário.
             </p>
           </div>
         </section>
@@ -195,7 +195,7 @@ export default function BlogPage() {
               Receba lançamentos em primeira mão
             </h3>
             <p className="text-xs text-muted-foreground">
-              Novidades sobre pré-vendas e valorização do Litoral Sul direto no seu e-mail.
+              Novidades sobre pré-vendas e valorização imobiliária direto no seu e-mail.
             </p>
             <NewsletterCapture source="blog" className="justify-center" />
           </div>
