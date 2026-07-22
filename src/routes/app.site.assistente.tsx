@@ -37,6 +37,7 @@ import {
   type Zona,
 } from "@/lib/siteSections";
 import { slugify } from "@/lib/format";
+import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/site/assistente")({
@@ -134,6 +135,7 @@ function sanitizeForm(raw: Record<string, unknown>): FormData {
 function SiteWizard() {
   const { tenantId, profile, user } = useAuth();
   const navigate = useNavigate();
+  const isCorretor = profile?.tipo_usuario === "corretor";
 
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -197,21 +199,16 @@ function SiteWizard() {
   async function uploadLogo(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !tenantId) return;
-    if (file.size > 2 * 1024 * 1024) return toast.error("Logo deve ter no máximo 2MB");
     setUploadingLogo(true);
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
-    const path = `${tenantId}/logo-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage
-      .from("tenant-branding")
-      .upload(path, file, { upsert: true });
-    if (error) {
+    try {
+      const url = await uploadTenantBrandingImage(tenantId, file);
+      setLogoUrl(url);
+      toast.success(isCorretor ? "Foto enviada" : "Logo enviada");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
       setUploadingLogo(false);
-      return toast.error(error.message);
     }
-    const { data: pub } = supabase.storage.from("tenant-branding").getPublicUrl(path);
-    setLogoUrl(pub.publicUrl);
-    setUploadingLogo(false);
-    toast.success("Logo enviada");
   }
 
   function togglePage(titulo: string) {
@@ -298,6 +295,10 @@ function SiteWizard() {
   const isLast = step === STEPS.length - 1;
   const isFirst = step === 0;
   const current = STEPS[step];
+  // Etapa "logo" é a única com rótulo/conteúdo condicionado ao tipo de perfil.
+  function stepLabel(s: { id: string; label: string }) {
+    return s.id === "logo" ? (isCorretor ? "Foto" : "Logo") : s.label;
+  }
 
   return (
     <div className="mx-auto max-w-3xl p-8">
@@ -329,7 +330,7 @@ function SiteWizard() {
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                title={s.label}
+                title={stepLabel(s)}
               >
                 {state === "done" ? (
                   <Check className="h-3.5 w-3.5" />
@@ -351,7 +352,7 @@ function SiteWizard() {
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">
           Etapa {step + 1} de {STEPS.length}
         </p>
-        <h2 className="mb-6 text-xl font-bold">{current.label}</h2>
+        <h2 className="mb-6 text-xl font-bold">{stepLabel(current)}</h2>
 
         {current.id === "boasvindas" && (
           <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">
@@ -412,19 +413,27 @@ function SiteWizard() {
         {current.id === "logo" && (
           <div>
             <p className="mb-4 text-xs text-muted-foreground">
-              Sua marca no topo do site. Pode pular esta etapa e adicionar depois.
+              {isCorretor
+                ? "Sua foto, exibida no topo do site e na home do portal. Pode pular esta etapa e adicionar depois."
+                : "Sua marca no topo do site. Pode pular esta etapa e adicionar depois."}
             </p>
             <div className="flex items-center gap-6">
               <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="max-h-20 max-w-36 object-contain" />
+                  <img
+                    src={logoUrl}
+                    alt={isCorretor ? "Foto" : "Logo"}
+                    className="max-h-20 max-w-36 object-contain"
+                  />
                 ) : (
-                  <span className="text-xs text-muted-foreground">Sem logo</span>
+                  <span className="text-xs text-muted-foreground">
+                    {isCorretor ? "Sem foto" : "Sem logo"}
+                  </span>
                 )}
               </div>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted">
                 <Upload className="h-4 w-4" />
-                {uploadingLogo ? "Enviando…" : "Enviar logo"}
+                {uploadingLogo ? "Enviando…" : isCorretor ? "Enviar foto" : "Enviar logo"}
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/svg+xml,image/webp"

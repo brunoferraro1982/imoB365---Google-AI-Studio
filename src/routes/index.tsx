@@ -90,6 +90,7 @@ type TenantCard = {
   slug: string;
   nome: string;
   total: number;
+  logoUrl: string | null;
 };
 
 type EmpreendCard = {
@@ -189,7 +190,7 @@ function Landing() {
 
       const { data: ts } = await supabase
         .from("tenants")
-        .select("id,slug,nome")
+        .select("id,slug,nome,tema")
         .in("status", ["active", "trial"])
         // imoB365 (Tenant 0) é a fornecedora da plataforma, não uma cliente —
         // não pode aparecer na vitrine de "Imobiliárias parceiras" ao lado
@@ -214,6 +215,7 @@ function Landing() {
           slug: t.slug,
           nome: t.nome,
           total: counts[t.id] ?? 0,
+          logoUrl: (t.tema as { logo_url?: string } | null)?.logo_url ?? null,
         })),
       );
       setTenantsLoaded(true);
@@ -700,7 +702,15 @@ function Landing() {
                 className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
               >
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <Building className="h-6 w-6" />
+                  {t.logoUrl ? (
+                    <img
+                      src={t.logoUrl}
+                      alt={t.nome}
+                      className="h-14 w-14 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <Building className="h-6 w-6" />
+                  )}
                 </div>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold group-hover:text-primary">
