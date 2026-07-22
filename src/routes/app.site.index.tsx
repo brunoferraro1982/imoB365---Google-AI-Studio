@@ -23,6 +23,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { ColorPickerField } from "@/components/ui/color-picker-field";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
+import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
 import { useConfirm } from "@/hooks/useConfirm";
 import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
 import { SECTION_LABELS, DEFAULT_SECOES, type SectionDbItem } from "@/lib/siteSections";
@@ -109,7 +110,8 @@ const EMPTY: Settings = {
 };
 
 function SitePage() {
-  const { tenantId } = useAuth();
+  const { tenantId, profile } = useAuth();
+  const isCorretor = profile?.tipo_usuario === "corretor";
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [tenantSlug, setTenantSlug] = useState<string>("");
   const [tenantNome, setTenantNome] = useState<string>("");
@@ -196,21 +198,16 @@ function SitePage() {
   async function uploadLogo(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !tenantId) return;
-    if (file.size > 2 * 1024 * 1024) return toast.error("Logo deve ter no máximo 2MB");
     setUploadingLogo(true);
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "png";
-    const path = `${tenantId}/logo-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage
-      .from("tenant-branding")
-      .upload(path, file, { upsert: true });
-    if (error) {
+    try {
+      const url = await uploadTenantBrandingImage(tenantId, file);
+      setTema((t) => ({ ...t, logo_url: url }));
+      toast.success(isCorretor ? "Foto enviada" : "Logo enviada");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
       setUploadingLogo(false);
-      return toast.error(error.message);
     }
-    const { data: pub } = supabase.storage.from("tenant-branding").getPublicUrl(path);
-    setTema((t) => ({ ...t, logo_url: pub.publicUrl }));
-    setUploadingLogo(false);
-    toast.success("Logo enviada");
   }
 
   async function saveMarca(e: FormEvent) {
@@ -408,22 +405,30 @@ function SitePage() {
 
       <form onSubmit={saveMarca} className="mb-6 max-w-4xl space-y-6">
         <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-base font-semibold">Marca</h2>
+          <h2 className="mb-1 text-base font-semibold">{isCorretor ? "Sua foto" : "Marca"}</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Logotipo e cores da sua marca. Aparecem no site público e em e-mails.
+            {isCorretor
+              ? "Sua foto. Aparece no site público, na home do portal e em e-mails."
+              : "Logotipo e cores da sua marca. Aparecem no site público e em e-mails."}
           </p>
           <div className="flex items-center gap-6">
             <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
               {tema.logo_url ? (
-                <img src={tema.logo_url} alt="Logo" className="max-h-20 max-w-36 object-contain" />
+                <img
+                  src={tema.logo_url}
+                  alt={isCorretor ? "Foto" : "Logo"}
+                  className="max-h-20 max-w-36 object-contain"
+                />
               ) : (
-                <span className="text-xs text-muted-foreground">Sem logo</span>
+                <span className="text-xs text-muted-foreground">
+                  {isCorretor ? "Sem foto" : "Sem logo"}
+                </span>
               )}
             </div>
             <div>
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted">
                 <Upload className="h-4 w-4" />
-                {uploadingLogo ? "Enviando…" : "Enviar logo"}
+                {uploadingLogo ? "Enviando…" : isCorretor ? "Enviar foto" : "Enviar logo"}
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/svg+xml,image/webp"

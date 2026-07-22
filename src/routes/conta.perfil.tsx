@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
-import { User as UserIcon, Save } from "lucide-react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { User as UserIcon, Save, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,13 +15,65 @@ export const Route = createFileRoute("/conta/perfil")({
 });
 
 function PerfilPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, tenantId } = useAuth();
+  const isCorretor = profile?.tipo_usuario === "corretor";
   const [nome, setNome] = useState("");
   const [saving, setSaving] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState("");
+  const [uploadingFoto, setUploadingFoto] = useState(false);
 
   useEffect(() => {
     setNome(profile?.nome ?? "");
   }, [profile?.nome]);
+
+  useEffect(() => {
+    if (!tenantId || !isCorretor) return;
+    supabase
+      .from("tenants")
+      .select("tema")
+      .eq("id", tenantId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setFotoUrl((data?.tema as { logo_url?: string } | null)?.logo_url ?? "");
+      });
+  }, [tenantId, isCorretor]);
+
+  async function uploadFoto(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !tenantId) return;
+    setUploadingFoto(true);
+    try {
+      const url = await uploadTenantBrandingImage(tenantId, file);
+      const { data: tenantRow } = await supabase
+        .from("tenants")
+        .select("tema")
+        .eq("id", tenantId)
+        .maybeSingle();
+      const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: url };
+      const { error } = await supabase.from("tenants").update({ tema }).eq("id", tenantId);
+      if (error) throw error;
+      setFotoUrl(url);
+      toast.success("Foto atualizada");
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setUploadingFoto(false);
+    }
+  }
+
+  async function removerFoto() {
+    if (!tenantId) return;
+    const { data: tenantRow } = await supabase
+      .from("tenants")
+      .select("tema")
+      .eq("id", tenantId)
+      .maybeSingle();
+    const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: undefined };
+    const { error } = await supabase.from("tenants").update({ tema }).eq("id", tenantId);
+    if (error) return toast.error(error.message);
+    setFotoUrl("");
+    toast.success("Foto removida");
+  }
 
   async function salvar(e: FormEvent) {
     e.preventDefault();
@@ -73,6 +126,47 @@ function PerfilPage() {
           {saving ? "Salvando…" : "Salvar alterações"}
         </Button>
       </form>
+
+      {isCorretor && (
+        <div className="mt-6 max-w-lg rounded-xl border border-border bg-card p-6">
+          <h2 className="text-sm font-semibold">Sua foto</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Aparece no seu site público e na home do portal.
+          </p>
+          <div className="mt-4 flex items-center gap-6">
+            <div className="flex h-24 w-40 items-center justify-center rounded-lg border border-dashed border-border bg-muted/30">
+              {fotoUrl ? (
+                <img src={fotoUrl} alt="Foto" className="max-h-20 max-w-36 object-contain" />
+              ) : (
+                <span className="text-xs text-muted-foreground">Sem foto</span>
+              )}
+            </div>
+            <div>
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted">
+                <Upload className="h-4 w-4" />
+                {uploadingFoto ? "Enviando…" : "Enviar foto"}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={uploadFoto}
+                />
+              </label>
+              {fotoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2"
+                  onClick={removerFoto}
+                >
+                  Remover
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 max-w-lg rounded-xl border border-border bg-card p-6">
         <h2 className="text-sm font-semibold">Senha</h2>
