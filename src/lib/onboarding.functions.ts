@@ -11,6 +11,8 @@ const onboardingInput = z.object({
   cnpj: z.string().optional(),
   imobiliariaNome: z.string().optional(),
   modulosInteresse: z.array(z.string()).min(1),
+  cidadesAtuacao: z.array(z.string().trim().min(1).max(80)).max(3).optional(),
+  regiaoAtuacao: z.string().trim().max(120).optional(),
 });
 
 export const completeOnboarding = createServerFn({ method: "POST" })
@@ -65,6 +67,21 @@ export const completeOnboarding = createServerFn({ method: "POST" })
     });
 
     if (rpcError) throw new Error("Erro ao provisionar trial: " + rpcError.message);
+
+    const tenantId = (result as { tenant_id?: string } | null)?.tenant_id;
+    if (tenantId && (data.cidadesAtuacao?.length || data.regiaoAtuacao)) {
+      // Não derruba o onboarding em caso de erro — tenant/role/módulos já
+      // foram provisionados com sucesso; área de atuação é enriquecimento
+      // opcional, editável depois no assistente de site.
+      const { error: areaError } = await supabaseAdmin
+        .from("tenants")
+        .update({
+          cidades_atuacao: data.cidadesAtuacao?.length ? data.cidadesAtuacao : null,
+          regiao_atuacao: data.regiaoAtuacao || null,
+        })
+        .eq("id", tenantId);
+      if (areaError) console.error("Erro ao salvar área de atuação:", areaError.message);
+    }
 
     return { success: true, trial: result };
   });
