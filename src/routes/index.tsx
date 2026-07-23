@@ -41,7 +41,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
@@ -238,7 +238,7 @@ function Landing() {
 
   function publicUrl(path: string | null) {
     if (!path) return null;
-    return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
+    return imovelFotoUrl(path);
   }
 
   return (

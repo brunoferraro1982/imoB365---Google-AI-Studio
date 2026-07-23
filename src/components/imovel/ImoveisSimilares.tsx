@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bed, Bath, Car, Maximize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL } from "@/lib/format";
+import { formatBRL, imovelFotoUrl } from "@/lib/format";
 
 type Similar = {
   id: string;
@@ -64,9 +64,7 @@ export function ImoveisSimilares({
 
   if (!items || items.length === 0) return null;
 
-  function publicUrl(path: string) {
-    return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
-  }
+  const publicUrl = imovelFotoUrl;
 
   return (
     <section className="mt-10">

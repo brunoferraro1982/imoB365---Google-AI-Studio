@@ -20,7 +20,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import {
   MapPin,
   Bed,
@@ -218,7 +218,7 @@ function Buscar() {
 
   function publicUrl(path: string | null) {
     if (!path) return null;
-    return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
+    return imovelFotoUrl(path);
   }
 
   const filtered = items.filter((i) => {

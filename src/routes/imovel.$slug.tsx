@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Bed, Bath, Car, Maximize2, MapPin, Home, MessageCircle, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import { waLink, imovelMessage } from "@/lib/whatsapp";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +19,7 @@ import { SimuladorFinanciamento } from "@/components/imovel/SimuladorFinanciamen
 import { HistoricoPreco } from "@/components/imovel/HistoricoPreco";
 import { ImoveisSimilares } from "@/components/imovel/ImoveisSimilares";
 import { AgendarVisita } from "@/components/imovel/AgendarVisita";
+import { GaleriaFotos } from "@/components/imovel/GaleriaFotos";
 
 type Imovel = {
   id: string;
@@ -104,7 +105,9 @@ function ImovelDetail() {
   // Mesma asserção de `head` acima — Route.useLoaderData() infere `never`
   // nesta rota; o errorComponent garante que o dado existe aqui.
   const imovel = Route.useLoaderData() as Imovel;
-  const [fotos, setFotos] = useState<{ storage_path: string; capa: boolean }[]>([]);
+  const [fotos, setFotos] = useState<
+    { id: string; storage_path: string; capa: boolean; legenda: string | null; ordem: number }[]
+  >([]);
   const [tenantNome, setTenantNome] = useState<string>("");
   const [pixels, setPixels] = useState<any>(null);
   const [corretor, setCorretor] = useState<{
@@ -118,7 +121,7 @@ function ImovelDetail() {
       const results = await Promise.allSettled([
         supabase
           .from("imovel_fotos")
-          .select("storage_path,capa")
+          .select("id,storage_path,capa,legenda,ordem")
           .eq("imovel_id", imovel.id)
           .order("capa", { ascending: false })
           .order("ordem"),
@@ -144,10 +147,6 @@ function ImovelDetail() {
       setPixels(val(results[3])?.data ?? null);
     })();
   }, [imovel.id, imovel.tenant_id, imovel.corretor_responsavel_id]);
-
-  function publicUrl(path: string) {
-    return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
-  }
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -206,23 +205,13 @@ function ImovelDetail() {
       <TrackingPixels pixels={pixels} />
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {fotos.length > 0 && (
-          <div className="mb-8 grid gap-2 overflow-hidden rounded-xl md:grid-cols-4 md:grid-rows-2">
-            <img
-              src={publicUrl(fotos[0].storage_path)}
-              alt=""
-              className="h-72 w-full object-cover md:col-span-2 md:row-span-2 md:h-full"
-            />
-            {fotos.slice(1, 5).map((f, i) => (
-              <img
-                key={i}
-                src={publicUrl(f.storage_path)}
-                alt=""
-                className="h-36 w-full object-cover"
-              />
-            ))}
-          </div>
-        )}
+        <GaleriaFotos
+          fotos={fotos.map((f) => ({
+            url: imovelFotoUrl(f.storage_path),
+            alt: f.legenda || imovel.titulo,
+          }))}
+          tituloAlt={imovel.titulo}
+        />
 
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
           <div>
