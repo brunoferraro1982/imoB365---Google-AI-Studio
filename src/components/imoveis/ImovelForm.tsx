@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
+import { NumberInput } from "@/components/ui/number-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -80,12 +81,6 @@ export const emptyImovel: ImovelFormData = {
   corretor_responsavel_id: null,
   custom_data: {},
 };
-
-function num(v: string): number | null {
-  if (!v.trim()) return null;
-  const n = Number(v.replace(",", "."));
-  return isNaN(n) ? null : n;
-}
 
 export function ImovelForm({
   initial,
@@ -235,73 +230,31 @@ export function ImovelForm({
       <Section title="Valores e medidas">
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Preço (R$) *">
-            <Input
-              type="number"
-              step="0.01"
-              required
-              value={data.preco}
-              onChange={(e) => update("preco", Number(e.target.value))}
-            />
+            <NumberInput required value={data.preco} onChange={(v) => update("preco", v ?? 0)} />
           </Field>
           <Field label="Condomínio (R$)">
-            <Input
-              type="number"
-              step="0.01"
-              value={data.condominio ?? ""}
-              onChange={(e) => update("condominio", num(e.target.value))}
-            />
+            <NumberInput value={data.condominio} onChange={(v) => update("condominio", v)} />
           </Field>
           <Field label="IPTU (R$)">
-            <Input
-              type="number"
-              step="0.01"
-              value={data.iptu ?? ""}
-              onChange={(e) => update("iptu", num(e.target.value))}
-            />
+            <NumberInput value={data.iptu} onChange={(v) => update("iptu", v)} />
           </Field>
           <Field label="Área total (m²)">
-            <Input
-              type="number"
-              step="0.01"
-              value={data.area_total ?? ""}
-              onChange={(e) => update("area_total", num(e.target.value))}
-            />
+            <NumberInput value={data.area_total} onChange={(v) => update("area_total", v)} />
           </Field>
           <Field label="Área útil (m²)">
-            <Input
-              type="number"
-              step="0.01"
-              value={data.area_util ?? ""}
-              onChange={(e) => update("area_util", num(e.target.value))}
-            />
+            <NumberInput value={data.area_util} onChange={(v) => update("area_util", v)} />
           </Field>
           <Field label="Quartos">
-            <Input
-              type="number"
-              value={data.quartos ?? ""}
-              onChange={(e) => update("quartos", num(e.target.value))}
-            />
+            <NumberInput value={data.quartos} onChange={(v) => update("quartos", v)} />
           </Field>
           <Field label="Suítes">
-            <Input
-              type="number"
-              value={data.suites ?? ""}
-              onChange={(e) => update("suites", num(e.target.value))}
-            />
+            <NumberInput value={data.suites} onChange={(v) => update("suites", v)} />
           </Field>
           <Field label="Banheiros">
-            <Input
-              type="number"
-              value={data.banheiros ?? ""}
-              onChange={(e) => update("banheiros", num(e.target.value))}
-            />
+            <NumberInput value={data.banheiros} onChange={(v) => update("banheiros", v)} />
           </Field>
           <Field label="Vagas">
-            <Input
-              type="number"
-              value={data.vagas ?? ""}
-              onChange={(e) => update("vagas", num(e.target.value))}
-            />
+            <NumberInput value={data.vagas} onChange={(v) => update("vagas", v)} />
           </Field>
         </div>
       </Section>

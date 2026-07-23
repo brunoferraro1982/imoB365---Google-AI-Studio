@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Sparkles, Loader2, Copy, Wand2, Megaphone, Type, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,13 +63,29 @@ export function AiImovelPanel({
   const gPost = useServerFn(gerarPostRedesImovel);
   const gSeo = useServerFn(gerarMetatagsSEO);
 
+  // Sempre reflete o valor mais atual de descrição — necessário porque
+  // `run()` fecha sobre o `data` do momento do clique, não do momento em
+  // que a resposta da IA chega. Usado pra não sobrescrever silenciosamente
+  // uma edição manual feita enquanto a geração estava em andamento.
+  const latestDescricaoRef = useRef(data.descricao);
+  useEffect(() => {
+    latestDescricaoRef.current = data.descricao;
+  }, [data.descricao]);
+
   async function run(kind: "desc" | "title" | "post" | "seo") {
     setBusy(kind);
     try {
       if (kind === "desc") {
+        const snapshot = data.descricao;
         const r = await gDesc(brief(data, extra, tom));
-        onApplyDescricao(r.descricao);
-        toast.success("Descrição gerada");
+        if (latestDescricaoRef.current === snapshot) {
+          onApplyDescricao(r.descricao);
+          toast.success("Descrição gerada");
+        } else {
+          toast.info(
+            "Você editou a descrição enquanto a IA gerava o texto — a sugestão não foi aplicada, para não perder sua edição.",
+          );
+        }
       } else if (kind === "title") {
         const r = await gTit(brief(data, extra, tom));
         setTitulos(r.titulos);

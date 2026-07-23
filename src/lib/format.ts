@@ -1,3 +1,9 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export function imovelFotoUrl(path: string): string {
+  return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
+}
+
 export function slugify(input: string): string {
   return input
     .toLowerCase()
