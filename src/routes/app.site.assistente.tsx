@@ -38,6 +38,7 @@ import {
 } from "@/lib/siteSections";
 import { slugify } from "@/lib/format";
 import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
+import { CityChipsInput } from "@/components/CityChipsInput";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/site/assistente")({
@@ -144,6 +145,8 @@ function SiteWizard() {
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [cidadesAtuacao, setCidadesAtuacao] = useState<string[]>([]);
+  const [regiaoAtuacao, setRegiaoAtuacao] = useState("");
   const [hasTechnical, setHasTechnical] = useState<boolean | null>(null);
   const [selectedPages, setSelectedPages] = useState<Set<string>>(new Set());
   const [layout, setLayout] = useState<LayoutKey>("classico");
@@ -154,11 +157,17 @@ function SiteWizard() {
     (async () => {
       setLoading(true);
       const [{ data: t }, { data: cfg }] = await Promise.all([
-        supabase.from("tenants").select("slug,nome,tema").eq("id", tenantId).maybeSingle(),
+        supabase
+          .from("tenants")
+          .select("slug,nome,tema,cidades_atuacao,regiao_atuacao")
+          .eq("id", tenantId)
+          .maybeSingle(),
         supabase.from("tenant_site_settings").select("*").eq("tenant_id", tenantId).maybeSingle(),
       ]);
       setTenantSlug(t?.slug ?? "");
       setLogoUrl((t?.tema as { logo_url?: string } | null)?.logo_url ?? "");
+      setCidadesAtuacao(t?.cidades_atuacao ?? []);
+      setRegiaoAtuacao(t?.regiao_atuacao ?? "");
 
       // Coleta o essencial já respondido no onboarding, sem pedir de novo.
       const prefillNome = t?.nome || profile?.imobiliaria_nome || profile?.nome || "";
@@ -261,10 +270,16 @@ function SiteWizard() {
         return;
       }
 
-      if (logoUrl) {
-        const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: logoUrl };
-        await supabase.from("tenants").update({ tema }).eq("id", tenantId);
-      }
+      await supabase
+        .from("tenants")
+        .update({
+          cidades_atuacao: cidadesAtuacao.length ? cidadesAtuacao : null,
+          regiao_atuacao: regiaoAtuacao.trim() || null,
+          ...(logoUrl
+            ? { tema: { ...((tenantRow?.tema as object) ?? {}), logo_url: logoUrl } }
+            : {}),
+        })
+        .eq("id", tenantId);
 
       if (selectedPages.size > 0) {
         const rows = Array.from(selectedPages).map((titulo, i) => {
@@ -479,6 +494,21 @@ function SiteWizard() {
                 value={form.hero_cta_label}
                 onChange={(e) => set("hero_cta_label", e.target.value)}
                 maxLength={40}
+              />
+            </Field>
+            <Field label="Cidades de atuação" hint="Até 3 cidades onde você atende.">
+              <CityChipsInput
+                value={cidadesAtuacao}
+                onChange={setCidadesAtuacao}
+                placeholder="Ex: Santos"
+              />
+            </Field>
+            <Field label="Região de atuação">
+              <Input
+                value={regiaoAtuacao}
+                onChange={(e) => setRegiaoAtuacao(e.target.value)}
+                maxLength={120}
+                placeholder="Ex: Litoral Sul de SP"
               />
             </Field>
           </div>

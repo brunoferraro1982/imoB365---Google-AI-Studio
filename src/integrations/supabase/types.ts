@@ -3764,6 +3764,7 @@ export type Database = {
       tenants: {
         Row: {
           cancelled_at: string | null;
+          cidades_atuacao: string[] | null;
           cnpj: string | null;
           created_at: string;
           creci_juridico: string | null;
@@ -3776,6 +3777,7 @@ export type Database = {
           plan_cycle: string | null;
           plan_expires_at: string | null;
           plano_slug: string | null;
+          regiao_atuacao: string | null;
           slug: string;
           status: Database["public"]["Enums"]["tenant_status"];
           tema: Json;
@@ -3786,6 +3788,7 @@ export type Database = {
         };
         Insert: {
           cancelled_at?: string | null;
+          cidades_atuacao?: string[] | null;
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
@@ -3798,6 +3801,7 @@ export type Database = {
           plan_cycle?: string | null;
           plan_expires_at?: string | null;
           plano_slug?: string | null;
+          regiao_atuacao?: string | null;
           slug: string;
           status?: Database["public"]["Enums"]["tenant_status"];
           tema?: Json;
@@ -3808,6 +3812,7 @@ export type Database = {
         };
         Update: {
           cancelled_at?: string | null;
+          cidades_atuacao?: string[] | null;
           cnpj?: string | null;
           created_at?: string;
           creci_juridico?: string | null;
@@ -3820,6 +3825,7 @@ export type Database = {
           plan_cycle?: string | null;
           plan_expires_at?: string | null;
           plano_slug?: string | null;
+          regiao_atuacao?: string | null;
           slug?: string;
           status?: Database["public"]["Enums"]["tenant_status"];
           tema?: Json;

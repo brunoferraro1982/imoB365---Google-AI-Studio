@@ -91,6 +91,8 @@ type TenantCard = {
   nome: string;
   total: number;
   logoUrl: string | null;
+  cidadesAtuacao: string[] | null;
+  regiaoAtuacao: string | null;
 };
 
 type EmpreendCard = {
@@ -190,7 +192,7 @@ function Landing() {
 
       const { data: ts } = await supabase
         .from("tenants")
-        .select("id,slug,nome,tema")
+        .select("id,slug,nome,tema,cidades_atuacao,regiao_atuacao")
         .in("status", ["active", "trial"])
         // imoB365 (Tenant 0) é a fornecedora da plataforma, não uma cliente —
         // não pode aparecer na vitrine de "Imobiliárias parceiras" ao lado
@@ -216,6 +218,8 @@ function Landing() {
           nome: t.nome,
           total: counts[t.id] ?? 0,
           logoUrl: (t.tema as { logo_url?: string } | null)?.logo_url ?? null,
+          cidadesAtuacao: t.cidades_atuacao ?? null,
+          regiaoAtuacao: t.regiao_atuacao ?? null,
         })),
       );
       setTenantsLoaded(true);
@@ -717,6 +721,17 @@ function Landing() {
                     {t.nome}
                   </div>
                   <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
+                  {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
+                    <p
+                      className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
+                      title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    >
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
