@@ -5,6 +5,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { GaleriaFotos } from "@/components/imovel/GaleriaFotos";
 
 type Unidade = {
   id: string;
@@ -197,18 +198,13 @@ function EmpreendimentoDetail() {
         </Link>
 
         {/* GALERIA */}
-        {emp.fotos_urls && emp.fotos_urls.length > 0 && (
-          <div className="mb-8 grid gap-2 overflow-hidden rounded-xl md:grid-cols-3">
-            {emp.fotos_urls.slice(0, 6).map((url: string, i: number) => (
-              <img
-                key={i}
-                src={url}
-                alt={`${emp.nome} foto ${i + 1}`}
-                className={`w-full object-cover ${i === 0 ? "md:col-span-2 md:row-span-2 aspect-[16/9] md:aspect-auto md:h-full" : "aspect-[16/9]"}`}
-              />
-            ))}
-          </div>
-        )}
+        <GaleriaFotos
+          fotos={(emp.fotos_urls ?? []).map((url, i) => ({
+            url,
+            alt: `${emp.nome} foto ${i + 1}`,
+          }))}
+          tituloAlt={emp.nome}
+        />
 
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
           {/* CONTEÚDO PRINCIPAL */}

@@ -11,14 +11,13 @@ import { CSS } from "@dnd-kit/utilities";
 import { Star, Trash2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { imovelFotoUrl } from "@/lib/format";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 
 export type Foto = { id: string; storage_path: string; capa: boolean; ordem: number };
 
-function publicUrl(path: string) {
-  return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
-}
+const publicUrl = imovelFotoUrl;
 
 function SortableItem({
   foto,
