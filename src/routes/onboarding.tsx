@@ -5,6 +5,7 @@ import { completeOnboarding } from "@/lib/onboarding.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CityChipsInput } from "@/components/CityChipsInput";
 import { toast } from "sonner";
 import {
   Building2,
@@ -66,6 +67,8 @@ function Onboarding() {
   const [creci, setCreci] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [imobiliariaNome, setImobiliariaNome] = useState("");
+  const [cidadesAtuacao, setCidadesAtuacao] = useState<string[]>([]);
+  const [regiaoAtuacao, setRegiaoAtuacao] = useState("");
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set(["mod-imob"]));
   const [loading, setLoading] = useState(false);
 
@@ -118,6 +121,8 @@ function Onboarding() {
           cnpj: tipo === "imobiliaria" ? cnpj.trim() || undefined : undefined,
           imobiliariaNome: tipo === "imobiliaria" ? imobiliariaNome || undefined : undefined,
           modulosInteresse: Array.from(selectedModules),
+          cidadesAtuacao: cidadesAtuacao.length ? cidadesAtuacao : undefined,
+          regiaoAtuacao: regiaoAtuacao.trim() || undefined,
         },
       });
 
@@ -297,6 +302,44 @@ function Onboarding() {
                   </div>
                 </>
               )}
+
+              <div className="space-y-1">
+                <Label
+                  htmlFor="onb-cidades"
+                  className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                >
+                  Cidades de atuação{" "}
+                  <span className="normal-case font-normal text-muted-foreground/60">
+                    (opcional)
+                  </span>
+                </Label>
+                <CityChipsInput
+                  id="onb-cidades"
+                  value={cidadesAtuacao}
+                  onChange={setCidadesAtuacao}
+                  placeholder="Ex: Santos"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label
+                  htmlFor="onb-regiao"
+                  className="text-xs font-bold uppercase text-muted-foreground tracking-wider"
+                >
+                  Região de atuação{" "}
+                  <span className="normal-case font-normal text-muted-foreground/60">
+                    (opcional)
+                  </span>
+                </Label>
+                <Input
+                  id="onb-regiao"
+                  placeholder="Ex: Litoral Sul de SP"
+                  value={regiaoAtuacao}
+                  onChange={(e) => setRegiaoAtuacao(e.target.value)}
+                  maxLength={120}
+                  className="h-9"
+                />
+              </div>
             </div>
 
             <Button
