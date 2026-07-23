@@ -679,7 +679,7 @@ function Landing() {
           <div className="flex items-end justify-between">
             <div>
               <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Imobiliárias parceiras
+                Corretores e Imobiliárias parceiras
               </h2>
               <p className="mt-2 text-muted-foreground">
                 Trabalhamos lado a lado com quem entende do mercado local.
@@ -723,13 +723,15 @@ function Landing() {
           </div>
           <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
             <div>
-              <h3 className="text-lg font-semibold">Sua imobiliária ainda não está aqui?</h3>
+              <h3 className="text-lg font-semibold">
+                Você ou sua imobiliária ainda não estão aqui?
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
               </p>
             </div>
             <Link to="/signup" className="mt-4 inline-block md:mt-0">
-              <Button>Quero cadastrar minha imobiliária</Button>
+              <Button>Quero efetuar o cadastro agora!</Button>
             </Link>
           </div>
         </div>
