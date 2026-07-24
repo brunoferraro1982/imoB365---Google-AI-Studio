@@ -3775,6 +3775,7 @@ export type Database = {
           created_at: string;
           creci_juridico: string | null;
           downgrade_to: string | null;
+          exibir_na_home: boolean;
           id: string;
           mercadopago_payment_id: string | null;
           mercadopago_preapproval_id: string | null;
@@ -3799,6 +3800,7 @@ export type Database = {
           created_at?: string;
           creci_juridico?: string | null;
           downgrade_to?: string | null;
+          exibir_na_home?: boolean;
           id?: string;
           mercadopago_payment_id?: string | null;
           mercadopago_preapproval_id?: string | null;
@@ -3823,6 +3825,7 @@ export type Database = {
           created_at?: string;
           creci_juridico?: string | null;
           downgrade_to?: string | null;
+          exibir_na_home?: boolean;
           id?: string;
           mercadopago_payment_id?: string | null;
           mercadopago_preapproval_id?: string | null;
