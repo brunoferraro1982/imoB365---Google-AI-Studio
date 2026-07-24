@@ -712,7 +712,9 @@ function Buscar() {
       </main>
 
       {/* Botão Flutuante e Painel de Busca Conversacional por IA (Sprint 6) */}
-      <div className="fixed bottom-6 right-6 z-40 select-none">
+      {/* bottom-24 (não bottom-6) — evita sobrepor o WhatsAppFAB, que ocupa
+          o mesmo canto bottom-6/right-6 em toda página pública */}
+      <div className="fixed bottom-24 right-6 z-40 select-none">
         {conversationalOpen ? (
           <div className="w-[340px] rounded-2xl border border-primary/20 bg-card p-4 shadow-2xl space-y-3 transition-all duration-300">
             <div className="flex items-center justify-between border-b border-border pb-2">

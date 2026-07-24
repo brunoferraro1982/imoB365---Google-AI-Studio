@@ -3,13 +3,23 @@
  * autenticada), diferente do WhatsAppFAB que só aparece no portal público.
  * O acesso Pro/Business ilimitado só faz sentido logado, então esconder
  * em /app quebraria o próprio requisito do produto.
+ *
+ * Oculto em /buscar: a página já tem seu próprio widget "Conversar com IA"
+ * (busca conversacional por filtros, Sprint 6) no mesmo canto — dois botões
+ * de IA sobrepostos ali confundem mais do que ajudam.
  */
 import { useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { Sparkles, X } from "lucide-react";
 import { AssistenteChat } from "@/components/ai/AssistenteChat";
 
 export function AssistenteIAFAB() {
   const [aberto, setAberto] = useState(false);
+  const location = useLocation();
+
+  if (location.pathname.startsWith("/buscar")) {
+    return null;
+  }
 
   return (
     <>
