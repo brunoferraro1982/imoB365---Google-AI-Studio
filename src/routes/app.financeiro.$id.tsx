@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { LancamentoForm } from "@/components/financeiro/LancamentoForm";
+import { moduleGuard } from "@/lib/routeGuard";
 
 export const Route = createFileRoute("/app/financeiro/$id")({
+  beforeLoad: moduleGuard("financeiro"),
   component: EditarLancamento,
 });
 
