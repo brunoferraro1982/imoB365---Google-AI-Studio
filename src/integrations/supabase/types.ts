@@ -190,6 +190,135 @@ export type Database = {
         };
         Relationships: [];
       };
+      captacao_configs: {
+        Row: {
+          ativo: boolean;
+          bairro: string | null;
+          cidade: string;
+          created_at: string;
+          created_by: string | null;
+          finalidade: string;
+          id: string;
+          intervalo_horas: number;
+          nome: string;
+          preco_max: number | null;
+          preco_min: number | null;
+          tenant_id: string;
+          tipo: string;
+          uf: string;
+          ultima_execucao: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          bairro?: string | null;
+          cidade: string;
+          created_at?: string;
+          created_by?: string | null;
+          finalidade?: string;
+          id?: string;
+          intervalo_horas?: number;
+          nome: string;
+          preco_max?: number | null;
+          preco_min?: number | null;
+          tenant_id: string;
+          tipo?: string;
+          uf: string;
+          ultima_execucao?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          ativo?: boolean;
+          bairro?: string | null;
+          cidade?: string;
+          created_at?: string;
+          created_by?: string | null;
+          finalidade?: string;
+          id?: string;
+          intervalo_horas?: number;
+          nome?: string;
+          preco_max?: number | null;
+          preco_min?: number | null;
+          tenant_id?: string;
+          tipo?: string;
+          uf?: string;
+          ultima_execucao?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "captacao_configs_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      captacao_listings: {
+        Row: {
+          config_id: string;
+          dados_brutos: Json;
+          external_id: string;
+          fonte: string;
+          id: string;
+          indisponivel_desde: string | null;
+          lead_id: string | null;
+          primeira_vez_visto_em: string;
+          tenant_id: string;
+          ultima_vez_visto_em: string;
+          url: string;
+        };
+        Insert: {
+          config_id: string;
+          dados_brutos?: Json;
+          external_id: string;
+          fonte?: string;
+          id?: string;
+          indisponivel_desde?: string | null;
+          lead_id?: string | null;
+          primeira_vez_visto_em?: string;
+          tenant_id: string;
+          ultima_vez_visto_em?: string;
+          url: string;
+        };
+        Update: {
+          config_id?: string;
+          dados_brutos?: Json;
+          external_id?: string;
+          fonte?: string;
+          id?: string;
+          indisponivel_desde?: string | null;
+          lead_id?: string | null;
+          primeira_vez_visto_em?: string;
+          tenant_id?: string;
+          ultima_vez_visto_em?: string;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "captacao_listings_config_id_fkey";
+            columns: ["config_id"];
+            isOneToOne: false;
+            referencedRelation: "captacao_configs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "captacao_listings_lead_id_fkey";
+            columns: ["lead_id"];
+            isOneToOne: false;
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "captacao_listings_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       cartorio_registros: {
         Row: {
           arquivo_url: string | null;
@@ -4242,7 +4371,15 @@ export type Database = {
         | "visita"
         | "mudanca_etapa"
         | "atribuicao";
-      lead_origem: "site" | "whatsapp" | "portal" | "indicacao" | "manual" | "outro" | "api";
+      lead_origem:
+        | "site"
+        | "whatsapp"
+        | "portal"
+        | "indicacao"
+        | "manual"
+        | "outro"
+        | "api"
+        | "captacao_automatica";
       lead_status: "novo" | "contato" | "visita" | "proposta" | "ganho" | "perdido";
       parte_papel:
         | "comprador"
@@ -4422,7 +4559,16 @@ export const Constants = {
         "mudanca_etapa",
         "atribuicao",
       ],
-      lead_origem: ["site", "whatsapp", "portal", "indicacao", "manual", "outro", "api"],
+      lead_origem: [
+        "site",
+        "whatsapp",
+        "portal",
+        "indicacao",
+        "manual",
+        "outro",
+        "api",
+        "captacao_automatica",
+      ],
       lead_status: ["novo", "contato", "visita", "proposta", "ganho", "perdido"],
       parte_papel: [
         "comprador",

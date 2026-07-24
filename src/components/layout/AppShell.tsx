@@ -42,6 +42,7 @@ import {
   Upload,
   Receipt,
   Eye,
+  Radar,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -84,6 +85,7 @@ const tenantModules: Module[] = [
       { to: "/app/locacao", label: "Locação", icon: Home },
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
+      { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },

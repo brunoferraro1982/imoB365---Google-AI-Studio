@@ -101,6 +101,7 @@ import { Route as AppSitePreviaRouteImport } from './routes/app.site.previa'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
+import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -155,6 +156,7 @@ import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/a
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
+import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -622,6 +624,11 @@ const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   path: '/leads/configuracao',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeadsCaptacaoRoute = AppLeadsCaptacaoRouteImport.update({
+  id: '/leads/captacao',
+  path: '/leads/captacao',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
   id: '/leads/analise-risco',
   path: '/leads/analise-risco',
@@ -910,6 +917,11 @@ const ApiPublicCronContratosSlaRoute =
     path: '/api/public/cron/contratos-sla',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronCaptacaoRoute = ApiPublicCronCaptacaoRouteImport.update({
+  id: '/api/public/cron/captacao',
+  path: '/api/public/cron/captacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronBuscasAlertasRoute =
   ApiPublicCronBuscasAlertasRouteImport.update({
     id: '/api/public/cron/buscas-alertas',
@@ -1051,6 +1063,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1072,6 +1085,7 @@ export interface FileRoutesByFullPath {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1199,6 +1213,7 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1220,6 +1235,7 @@ export interface FileRoutesByTo {
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1353,6 +1369,7 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1374,6 +1391,7 @@ export interface FileRoutesById {
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1508,6 +1526,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -1529,6 +1548,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
@@ -1656,6 +1676,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -1677,6 +1698,7 @@ export interface FileRouteTypes {
     | '/app/site'
     | '/conta/chat'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
@@ -1809,6 +1831,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -1830,6 +1853,7 @@ export interface FileRouteTypes {
     | '/app/site/'
     | '/conta/chat/'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/snapshot'
@@ -1901,6 +1925,7 @@ export interface RootRouteChildren {
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
+  ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
@@ -2566,6 +2591,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeadsConfiguracaoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leads/captacao': {
+      id: '/app/leads/captacao'
+      path: '/leads/captacao'
+      fullPath: '/app/leads/captacao'
+      preLoaderRoute: typeof AppLeadsCaptacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/analise-risco': {
       id: '/app/leads/analise-risco'
       path: '/leads/analise-risco'
@@ -2944,6 +2976,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronContratosSlaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/captacao': {
+      id: '/api/public/cron/captacao'
+      path: '/api/public/cron/captacao'
+      fullPath: '/api/public/cron/captacao'
+      preLoaderRoute: typeof ApiPublicCronCaptacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/buscas-alertas': {
       id: '/api/public/cron/buscas-alertas'
       path: '/api/public/cron/buscas-alertas'
@@ -3105,6 +3144,7 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
+  AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
@@ -3155,6 +3195,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
+  AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
@@ -3254,6 +3295,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
+  ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
