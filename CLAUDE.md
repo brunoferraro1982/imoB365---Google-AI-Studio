@@ -426,6 +426,44 @@ Auditoria completa da configuração do repositório no GitHub, motivada pela ex
 | Feeds/API pública sem rate limit — risco de scraping (baixo) | Feeds de portal (`api.public.feeds.$tenantSlug.olx.xml`/`vrsync.xml`), sitemap (`api.public.sitemap.$tenantSlug.sitemap.xml`) e a API pública v1 (`api.public.v1.imoveis`/`$slug`/`leads`) não tinham nenhuma proteção contra scraping/abuso — os 3 últimos já exigem `x-api-key` por tenant, mas sem limite de taxa uma chave vazada ou uma integração mal comportada podia martelar sem limite. Corrigido com `src/lib/rateLimit.ts` (novo, limiter simples em memória por chave): feeds/sitemap limitados por IP real (30 req/min), API v1 limitada por `tenant_id` (60 req/min leitura, 30 req/min no POST de leads, mais restritivo por ser escrita) |
 | 13 vulnerabilidades de dependências via `npm audit` (baixo) | Majoritariamente `@cloudflare/vite-plugin`/`wrangler`/`miniflare` e suas transitivas (`undici`, `ws`, `engine.io`, `socket.io-adapter`, `sharp`, `protobufjs`, `js-yaml`, `fast-uri`, `brace-expansion`) — tooling de build não usado em produção (`DEPLOY_TARGET=node`, ver nota no topo deste arquivo sobre Cloudflare ser só scaffolding herdado). `npm audit fix` (sem `--force`, sem bump de major version) resolveu as 13 — 0 vulnerabilidades restantes. Validado: `tsc --noEmit` limpo, build padrão e build `DEPLOY_TARGET=node` completos sem erro |
 | `assinaturas`/`impulsionamentos` com RLS habilitado mas zero policies — investigado, não alterado (baixo) | Confirmado via `psql` em produção: são tabelas órfãs — nunca referenciadas em nenhum código do repo (`assinaturas` parece um modelo de assinatura anterior à integração real do Mercado Pago, que hoje usa `tenants.plano_slug`/`payment_events`; `impulsionamentos` parece uma feature de "destaque pago" de imóvel nunca construída), sem migration própria (mesmo padrão de drift já documentado várias vezes aqui). RLS habilitado sem nenhuma policy já é **deny-all — seguro por padrão**, diferente do bug dos achados Críticos (RLS desabilitado). Decisão deliberada de não criar policies: inventar regras de acesso pra uma feature que não existe em nenhum código seria mais arriscado que deixar como está. Fica registrado como schema morto — decisão de produto pendente (construir a feature de verdade ou apagar as tabelas), não item de segurança |
+| Curadoria de "Corretores e Imobiliárias parceiras" na home — exibição agora depende de liberação do super_admin | A vitrine de parceiros na home pública (`src/routes/index.tsx`) mostrava qualquer tenant com `status IN (active,trial)`, sem nenhuma curadoria — não era estratégico pra uma vitrine de parceiros "premium". Nova coluna `tenants.exibir_na_home` (migration `20260724172916_add_tenants_exibir_na_home.sql`, default `false`) passa a controlar isso; a query da home ganhou `.eq("exibir_na_home", true)`. Ação em `/admin/tenants`: item de dropdown "Exibir na Home"/"Remover da Home" (`updateTenantField`, mesmo padrão já usado em Suspender/Reativar) + badge "★ Na Home" ao lado do status. Protegido por trigger (`protect_tenants_exibir_na_home`, mesmo padrão de `protect_profile_privileged_cols`): mesmo um `admin` do próprio tenant (que já tem UPDATE liberado na linha inteira via `tenants_admin_update`) não consegue alterar essa coluna — só quem tem `is_super_admin_safe()` verdadeiro, garantindo que a aprovação seja mesmo exclusiva do super_admin. Validado em dev: chamada com service-role key bloqueada pela trigger (`Alteracao de exibir_na_home restrita a super_admin`); sessão real de super_admin conseguiu alternar sem erro; testado ao vivo em `/admin/tenants` (toggle real, toast de sucesso, badge aparecendo/sumindo) e confirmado refletindo em `/` (tenant aparece/some da vitrine ao ligar/desligar o flag) |
+
+### 🔍 Auditoria de segurança de 2026-07-24 — resumo consolidado
+
+Auditoria completa (RLS/multi-tenant, IAM, infraestrutura, aplicação — 4 vistorias paralelas, só leitura), pedida pelo usuário logo após as correções de login/OAuth do mesmo dia. Todos os achados de Crítico a Baixo foram corrigidos, testados e promovidos pra produção no mesmo dia (detalhe completo de cada um nas tabelas de changelog acima). Este bloco é só o resumo consolidado — status final e pendências reais.
+
+**Críticos (2/2 corrigidos)**
+- `plan_features`/`plan_modules`/`profile_permissions`/`user_profiles` sem RLS, escrita liberada pra anônimos — corrigido, migration `20260724133229_enable_rls_rbac_catalog_tables.sql`
+- XSS armazenado em conteúdo HTML de tenant (site institucional, blog, widgets) sem sanitização — corrigido, `isomorphic-dompurify` + `src/lib/sanitizeHtml.ts` + 4 server functions novas
+
+**Altos (3/3 corrigidos)**
+- Financeiro sem controle de acesso por role + `tenants_admin_update` liberando `broker` — corrigido, `moduleGuard("financeiro")` + policy restrita a admin/financeiro
+- Backup do Postgres de produção inexistente — corrigido (local, na VPS); destino externo (S3-compatível) fica pendente, ver backlog
+- (achados Alto e Crítico foram os únicos com teste negativo real de bloqueio confirmado em pelo menos um caso — os demais tiveram o padrão de policy validado por analogia com casos já comprovados)
+
+**Médios (9/9 corrigidos)**
+- Headers de segurança HTTP ausentes no nginx (HSTS, nosniff, Referrer-Policy, X-Frame-Options)
+- MFA implementado mas nunca exigido na sessão — corrigido com gate real em `AppShell.tsx`
+- Rate limiting de login (GoTrue) — configurado, mas **não funciona de fato** (ver Pendências abaixo)
+- Rate limit da busca por IA usava `_ip` burlável (e na prática nunca preenchido — bucket global compartilhado)
+- Dependabot desabilitado; fail2ban ausente no SSH — ambos habilitados/instalados
+- Defesa em profundidade de `tenant_id` em queries client-side de `/app` — não iniciado, ver Pendências
+- Buckets `corretor-fotos`/`site-widgets` sem policy de escrita — corrigido, mesmo padrão de `imovel-fotos`
+
+**Baixos (4/4 resolvidos)**
+- `geocodeAddress` sem validação Zod real — corrigido
+- Feeds/sitemap/API v1 sem rate limit — corrigido, `src/lib/rateLimit.ts`
+- 13 vulnerabilidades de dependências (`npm audit`) — corrigido, 0 restantes
+- `assinaturas`/`impulsionamentos` com RLS sem policies — investigado e **deliberadamente não alterado** (schema morto, deny-all já seguro por padrão, não é risco de segurança)
+
+**Confirmado OK na auditoria original** (sem regressão desde então): UFW, portas Docker restritas a `127.0.0.1`, SSH só-por-chave, TLS/Let's Encrypt, permissões do GitHub Actions, isolamento de tenant via RLS nas tabelas principais, `requireSupabaseAuth` nos server functions de mutação, e as demais 11 áreas revisadas pela auditoria original.
+
+**Pendências reais (não resolvidas, não são regressão — ficam pro backlog abaixo com mais detalhe):**
+- Rate limiting de login no GoTrue não funciona apesar de configurado — causa raiz desconhecida
+- Backup do Postgres sem destino externo (só local na VPS)
+- Defesa em profundidade de `tenant_id` nas queries client-side de `/app`
+- `profiles.mfa_required` existe mas sem nenhum enforcement (decisão de produto)
+- `assinaturas`/`impulsionamentos`: decisão de produto (construir a feature ou apagar as tabelas)
 
 ### 📋 Backlog (próximas versões)
 
