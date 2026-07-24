@@ -1,5 +1,3 @@
-import DOMPurify from "isomorphic-dompurify";
-
 // Assistente de IA (RAG + Llama local via Ollama). Motivo do RAG ser
 // obrigatório, não opcional: testado manualmente contra o modelo real
 // (llama3.2:3b) sem contexto, a pergunta "o que é ITBI" gerou uma resposta
@@ -16,8 +14,27 @@ export interface AiAssistantSupabaseClient {
   from: (table: string) => any;
 }
 
+// Extração de texto puro (não sanitização de segurança — esse texto vai só
+// pro prompt do LLM, nunca é renderizado como HTML de volta). Regex simples
+// em vez de isomorphic-dompurify/jsdom deliberadamente: o pacote real de
+// sanitização (src/lib/sanitizeHtml.ts) continua usando DOMPurify de verdade
+// pra conteúdo que É renderizado no navegador — aqui, puxar jsdom (que arrasta
+// css-tree, cujo require dinâmico de data/patch.json não é copiado pro bundle
+// SSR do Nitro) quebrava a renderização de TODA rota em produção, não só
+// desta, incidente real corrigido em 2026-07-24.
 function stripHtml(html: string): string {
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS: [] }).replace(/\s+/g, " ").trim();
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 // plainto_tsquery/websearch_to_tsquery exigem que TODAS as palavras da
