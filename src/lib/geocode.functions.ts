@@ -1,9 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const GeocodeInput = z.object({
+  query: z.string().min(1).max(300),
+});
 
 export const geocodeAddress = createServerFn({ method: "POST" })
-  .inputValidator((d: { query: string }) => d)
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => GeocodeInput.parse(d))
   .handler(async ({ data }) => {
-    const q = (data.query || "").trim();
+    const q = data.query.trim();
     if (q.length < 5) return { ok: false as const, error: "Endereço muito curto" };
     const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(q)}`;
     const res = await fetch(url, { headers: { "User-Agent": "imob365/1.0 (geocode)" } });
