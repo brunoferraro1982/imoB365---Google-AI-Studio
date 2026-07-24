@@ -1,5 +1,6 @@
 import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { getPendingMfaFactorId } from "@/lib/mfaGate";
 import { ChatBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
@@ -189,6 +190,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const showForbidden = searchParams.forbidden === "1";
   const navigate = useNavigate();
   const router = useRouterState();
+  const [mfaGate, setMfaGate] = useState<"checking" | "ok" | "pending">("checking");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -208,7 +210,32 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     }
   }, [loading, user, profile, isSuperAdmin, navigate]);
 
-  if (loading || !user) {
+  // Achado de segurança de 2026-07-24: MFA era exigido só na tela de login,
+  // não na sessão em si — uma sessão aal1 (senha, sem o desafio TOTP) já
+  // liberava acesso direto a qualquer rota de /app ou /admin. Este é o
+  // gate real: qualquer entrada na área autenticada checa a sessão atual,
+  // não só o formulário de login que a originou.
+  useEffect(() => {
+    if (loading || !user) {
+      setMfaGate("checking");
+      return;
+    }
+    let cancelled = false;
+    getPendingMfaFactorId().then((factorId) => {
+      if (cancelled) return;
+      if (factorId) {
+        setMfaGate("pending");
+        navigate({ to: "/login" });
+      } else {
+        setMfaGate("ok");
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [loading, user, navigate]);
+
+  if (loading || !user || mfaGate !== "ok") {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
         Carregando...
