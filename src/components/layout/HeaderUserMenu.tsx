@@ -493,6 +493,27 @@ export function HeaderUserMenu() {
                           </div>
                         </Link>
 
+                        {/* ASSISTENTE DE IA */}
+                        <Link
+                          to="/"
+                          hash="assistente-ia"
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
+                        >
+                          <Sparkles className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <span className="flex items-center gap-1.5 font-bold">
+                              Assistente de IA
+                              <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-primary">
+                                Novo
+                              </span>
+                            </span>
+                            <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                              Pergunte sobre financiamento, ITBI e mercado imobiliário.
+                            </span>
+                          </div>
+                        </Link>
+
                         {/* MEUS FAVORITOS */}
                         <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/65">
                           <Link

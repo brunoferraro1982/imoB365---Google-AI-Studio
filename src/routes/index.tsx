@@ -43,6 +43,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
+import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
@@ -481,6 +482,8 @@ function Landing() {
           </div>
         </div>
       </section>
+
+      <AssistenteIASection />
 
       {/* IMÓVEIS EM DESTAQUE */}
       <section className="mx-auto max-w-6xl px-6 py-20">
