@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
+import { moduleGuard } from "@/lib/routeGuard";
 
 export const Route = createFileRoute("/app/financeiro/")({
+  beforeLoad: moduleGuard("financeiro"),
   component: FinanceiroList,
 });
 
