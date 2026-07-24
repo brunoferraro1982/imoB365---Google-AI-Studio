@@ -223,15 +223,26 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       return;
     }
     let cancelled = false;
-    getPendingMfaFactorId().then((factorId) => {
-      if (cancelled) return;
-      if (factorId) {
-        setMfaGate("pending");
-        navigate({ to: "/login" });
-      } else {
-        setMfaGate("ok");
-      }
-    });
+    getPendingMfaFactorId()
+      .then((factorId) => {
+        if (cancelled) return;
+        if (factorId) {
+          setMfaGate("pending");
+          navigate({ to: "/login" });
+        } else {
+          setMfaGate("ok");
+        }
+      })
+      .catch((err) => {
+        // Acha real de 2026-07-25: sem catch aqui, uma falha nessa checagem
+        // (rede, RLS, o que for) deixava a página travada em "Carregando..."
+        // pra sempre — bloqueando TODO usuário, não só quem tem MFA. O gate
+        // de MFA é uma camada extra de segurança, não a principal (RLS
+        // continua sendo); numa falha inesperada, libera o acesso em vez de
+        // travar o app inteiro.
+        console.error("[AppShell] Falha ao checar MFA pendente, liberando acesso:", err);
+        if (!cancelled) setMfaGate("ok");
+      });
     return () => {
       cancelled = true;
     };
