@@ -87,11 +87,14 @@ CREATE POLICY "captacao_listings_super_admin_all" ON public.captacao_listings
 -- ultima_execucao) — o mesmo padrão de watermark já usado em
 -- buscas_salvas.ultimo_envio — em vez de reagendar o cron dinamicamente
 -- (que exigiria privilégio elevado de cron.schedule() a partir do app).
--- apikey abaixo é a publishable key de DEV (Supabase Cloud) — segue o
--- mesmo padrão já usado nos outros cron.schedule() deste repo (a chave
--- de produção diverge por já ter sido re-rotacionada lá, ver changelog
--- de 2026-07-21 "apikey no formato antigo" — aplicar com a chave real
--- de cada ambiente ao rodar esta migration, não só copiar o valor daqui).
+-- IMPORTANTE: <ANON_OR_PUBLISHABLE_KEY> abaixo é placeholder de propósito
+-- (não é segredo, é a chave pública/anon do projeto — mas colar o valor
+-- real aqui disparava o Gitleaks do CI como "generic-api-key" de alta
+-- entropia, mesmo sendo uma string pensada pra ser pública). Ao aplicar
+-- esta migration em cada ambiente (dev via Studio, produção via psql),
+-- substituir pelo valor real daquele ambiente antes de rodar — dev e
+-- produção têm chaves diferentes (produção já foi re-rotacionada, ver
+-- changelog de 2026-07-21 "apikey no formato antigo").
 SELECT cron.schedule(
   'captacao-automatica-horaria',
   '0 * * * *',
@@ -100,7 +103,7 @@ SELECT cron.schedule(
     url := 'https://portal.imob365.com.br/api/public/cron/captacao',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'apikey', 'sb_publishable_G_p9ez_FoDl9h89x2_gGTA_F0hws2Uw'
+      'apikey', '<ANON_OR_PUBLISHABLE_KEY>'
     ),
     body := '{}'::jsonb
   );
