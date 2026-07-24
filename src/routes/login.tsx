@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
+import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
@@ -124,6 +125,19 @@ function LoginPage() {
           >
             {loading ? "Entrando..." : "Entrar"}
           </Button>
+
+          {/* SOCIAL LOGINS */}
+          <div className="pt-2">
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Ou entre via rede social</span>
+              </div>
+            </div>
+            <SocialLoginButtons />
+          </div>
         </form>
 
         <p className="mt-6 text-center text-sm text-muted-foreground font-sans">
@@ -132,8 +146,6 @@ function LoginPage() {
             Criar conta
           </Link>
         </p>
-
-        {/* Nota: autenticação social (Google, Apple) será implementada via Supabase OAuth em release futura. */}
       </div>
     </div>
   );
