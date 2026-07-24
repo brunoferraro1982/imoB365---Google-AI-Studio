@@ -27,6 +27,7 @@ import {
   PlusCircle,
   Truck,
   Landmark,
+  Sparkles,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
@@ -231,6 +232,18 @@ function buildCorporateNavConfig(user: unknown): MegaNavConfig {
                 iconClassName: "text-sky-700",
                 badge: "Novo",
                 static: true,
+              },
+              {
+                key: "assistente-ia",
+                to: "/",
+                hash: "assistente-ia",
+                label: "Assistente de IA",
+                desc: "Pergunte sobre financiamento, ITBI, mudança e mercado imobiliário.",
+                icon: Sparkles,
+                iconClassName: "text-primary",
+                badge: "Novo",
+                mobileChipClassName:
+                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
             ],
           },
