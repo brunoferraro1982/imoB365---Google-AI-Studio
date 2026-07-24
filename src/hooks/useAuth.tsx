@@ -45,17 +45,29 @@ export function useAuth() {
       }
     });
 
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        // FIX [QA-04]: Aguarda roles E profile antes de liberar loading.
-        // Evita race condition onde setLoading(false) ocorria antes de loadRoles()
-        // e ejetava super_admin para /app por roles=[].
-        await Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
-      }
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session: s } }) => {
+        setSession(s);
+        setUser(s?.user ?? null);
+        if (s?.user) {
+          // FIX [QA-04]: Aguarda roles E profile antes de liberar loading.
+          // Evita race condition onde setLoading(false) ocorria antes de loadRoles()
+          // e ejetava super_admin para /app por roles=[].
+          await Promise.all([loadRoles(s.user.id), loadProfile(s.user.id, s.user)]);
+        }
+      })
+      .catch((err) => {
+        // Achado real de produção em 2026-07-25: sem catch aqui, qualquer
+        // falha transiente em getSession()/loadRoles()/loadProfile() (rede,
+        // RLS, etc.) deixava `loading` travado em `true` pra sempre — AppShell
+        // mostra "Carregando..." indefinidamente pra QUALQUER usuário. Loga o
+        // erro mas sempre libera o loading no finally abaixo.
+        console.error("[useAuth] Falha ao carregar sessão/perfil:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     return () => subscription.unsubscribe();
   }, []);
