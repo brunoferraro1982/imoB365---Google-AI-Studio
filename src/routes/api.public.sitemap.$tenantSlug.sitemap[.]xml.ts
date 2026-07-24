@@ -1,10 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { checkRateLimit, getClientIpFromRequest } from "@/lib/rateLimit";
 
 export const Route = createFileRoute("/api/public/sitemap/$tenantSlug/sitemap.xml")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {
+        const rl = checkRateLimit(`sitemap:${getClientIpFromRequest(request)}`, {
+          max: 30,
+          windowMs: 60_000,
+        });
+        if (!rl.allowed) {
+          return new Response("Too Many Requests", {
+            status: 429,
+            headers: { "Retry-After": String(rl.retryAfterSeconds) },
+          });
+        }
+
         const { tenantSlug } = params;
         const { data: tenant } = await supabaseAdmin
           .from("tenants")
