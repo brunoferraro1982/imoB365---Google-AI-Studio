@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type ChangeEvent } from "react";
 import {
   ArrowLeft,
@@ -38,6 +39,7 @@ import {
 } from "@/lib/siteSections";
 import { slugify } from "@/lib/format";
 import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
+import { saveTenantSiteSettings, saveTenantPage } from "@/lib/siteContent.functions";
 import { CityChipsInput } from "@/components/CityChipsInput";
 import { toast } from "sonner";
 
@@ -137,6 +139,8 @@ function SiteWizard() {
   const { tenantId, profile, user } = useAuth();
   const navigate = useNavigate();
   const isCorretor = profile?.tipo_usuario === "corretor";
+  const saveSiteSettings = useServerFn(saveTenantSiteSettings);
+  const savePageFn = useServerFn(saveTenantPage);
 
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -260,15 +264,10 @@ function SiteWizard() {
         secoes,
       };
 
-      const [{ error: siteErr }, { data: tenantRow }] = await Promise.all([
-        supabase.from("tenant_site_settings").upsert(payload, { onConflict: "tenant_id" }),
+      const [, { data: tenantRow }] = await Promise.all([
+        saveSiteSettings({ data: payload }),
         supabase.from("tenants").select("tema").eq("id", tenantId).maybeSingle(),
       ]);
-
-      if (siteErr) {
-        toast.error(siteErr.message);
-        return;
-      }
 
       await supabase
         .from("tenants")
@@ -293,7 +292,7 @@ function SiteWizard() {
             publicada: false,
           };
         });
-        await supabase.from("tenant_pages").upsert(rows, { onConflict: "tenant_id,slug" });
+        await Promise.all(rows.map((row) => savePageFn({ data: row })));
       }
 
       toast.success(publicar ? "Site publicado com sucesso!" : "Rascunho salvo");

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type ChangeEvent } from "react";
 import {
   ArrowLeft,
@@ -24,6 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { useConfirm } from "@/hooks/useConfirm";
+import { saveTenantWidget } from "@/lib/siteContent.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/site/widgets-conteudo")({
@@ -79,6 +81,7 @@ const EMPTY_WIDGET: Omit<Widget, "id"> = {
 function WidgetsConteudoPage() {
   const { tenantId } = useAuth();
   const { confirmDialog, ConfirmDialog } = useConfirm();
+  const saveWidget = useServerFn(saveTenantWidget);
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,16 +118,23 @@ function WidgetsConteudoPage() {
   async function save() {
     if (!editing || !tenantId) return;
     setSaving(true);
-    const payload = { ...editing, tenant_id: tenantId };
-    const { error } =
-      "id" in editing
-        ? await supabase.from("tenant_site_widgets").update(payload).eq("id", editing.id)
-        : await supabase.from("tenant_site_widgets").insert(payload);
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("id" in editing ? "Widget atualizado" : "Widget adicionado");
-    setEditing(null);
-    load();
+    const isNew = !("id" in editing);
+    try {
+      await saveWidget({
+        data: {
+          ...editing,
+          id: "id" in editing ? editing.id : undefined,
+          tenant_id: tenantId,
+        },
+      });
+      toast.success(isNew ? "Widget adicionado" : "Widget atualizado");
+      setEditing(null);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar widget");
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function remove(id: string) {
