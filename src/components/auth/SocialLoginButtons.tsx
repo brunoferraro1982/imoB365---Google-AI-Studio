@@ -1,17 +1,10 @@
 import { useState } from "react";
-import { Apple, Instagram, Linkedin } from "lucide-react";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-type Provider = "google" | "apple" | "linkedin_oidc" | "facebook";
-
-const PROVIDER_LABEL: Record<Provider, string> = {
-  google: "Google",
-  apple: "Apple",
-  linkedin_oidc: "LinkedIn",
-  facebook: "Instagram",
-};
+type Provider = "google" | "linkedin_oidc" | "facebook";
 
 function GoogleIcon() {
   return (
@@ -36,44 +29,64 @@ function GoogleIcon() {
   );
 }
 
-const PROVIDERS: { provider: Provider; icon: React.ReactNode }[] = [
-  { provider: "google", icon: <GoogleIcon /> },
-  { provider: "apple", icon: <Apple className="h-4 w-4" /> },
-  { provider: "linkedin_oidc", icon: <Linkedin className="h-4 w-4 text-[#0A66C2]" /> },
-  { provider: "facebook", icon: <Instagram className="h-4 w-4 text-[#E1306C]" /> },
+type ButtonConfig = { key: string; provider: Provider; label: string; icon: React.ReactNode };
+
+// Facebook e Instagram apontam pro mesmo provider OAuth ("facebook") — a
+// Meta não tem um provider nativo de "Instagram Login" separado, é sempre
+// Facebook Login por baixo. Mesmo app/credenciais da Meta já configurados,
+// só exibidos como duas opções pra quem procura especificamente por uma
+// ou outra marca.
+const BUTTONS: ButtonConfig[] = [
+  { key: "google", provider: "google", label: "Google", icon: <GoogleIcon /> },
+  {
+    key: "facebook",
+    provider: "facebook",
+    label: "Facebook",
+    icon: <Facebook className="h-4 w-4 text-[#1877F2]" />,
+  },
+  {
+    key: "linkedin",
+    provider: "linkedin_oidc",
+    label: "LinkedIn",
+    icon: <Linkedin className="h-4 w-4 text-[#0A66C2]" />,
+  },
+  {
+    key: "instagram",
+    provider: "facebook",
+    label: "Instagram",
+    icon: <Instagram className="h-4 w-4 text-[#E1306C]" />,
+  },
 ];
 
-// Design único compartilhado entre o mega menu (HeaderUserMenu) e o /signup —
-// login via Instagram é sempre, por baixo, OAuth do Facebook (Meta), não
-// existe provider nativo de "Instagram Login" no Supabase/GoTrue.
+// Design único compartilhado entre o mega menu (HeaderUserMenu) e o /signup.
 export function SocialLoginButtons({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false);
 
-  async function handleOAuthLogin(provider: Provider) {
+  async function handleOAuthLogin(cfg: ButtonConfig) {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
-      provider,
+      provider: cfg.provider,
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
     setLoading(false);
     if (error) {
-      toast.error(`Erro ao conectar com ${PROVIDER_LABEL[provider]}: ${error.message}`);
+      toast.error(`Erro ao conectar com ${cfg.label}: ${error.message}`);
     }
   }
 
   return (
     <div className={cn("grid grid-cols-4 gap-1.5", className)}>
-      {PROVIDERS.map(({ provider, icon }) => (
+      {BUTTONS.map((cfg) => (
         <button
-          key={provider}
+          key={cfg.key}
           type="button"
-          onClick={() => handleOAuthLogin(provider)}
+          onClick={() => handleOAuthLogin(cfg)}
           disabled={loading}
           className="flex flex-col items-center gap-1 rounded-lg border border-border/60 p-2 transition-all hover:border-primary/30 hover:bg-muted/40 disabled:opacity-50 group"
         >
-          {icon}
+          {cfg.icon}
           <span className="text-[8px] font-bold text-muted-foreground group-hover:text-foreground">
-            {PROVIDER_LABEL[provider]}
+            {cfg.label}
           </span>
         </button>
       ))}
