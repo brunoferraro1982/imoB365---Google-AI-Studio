@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 async function sha256Hex(s: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
@@ -42,6 +43,17 @@ export const Route = createFileRoute("/api/public/v1/imoveis")({
           return new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json", ...CORS },
+          });
+
+        const rl = checkRateLimit(`v1-api:${auth.tenant_id}`, { max: 60, windowMs: 60_000 });
+        if (!rl.allowed)
+          return new Response(JSON.stringify({ error: "Too Many Requests" }), {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": String(rl.retryAfterSeconds),
+              ...CORS,
+            },
           });
 
         const url = new URL(request.url);
