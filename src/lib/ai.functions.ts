@@ -1,7 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+// IP real da requisição via headers do proxy nginx (X-Real-IP/X-Forwarded-For) —
+// achado de segurança de 2026-07-24: o rate limit por IP usava um campo `_ip`
+// enviado pelo próprio cliente, trivialmente burlável.
+function getClientIp(): string {
+  const request = getRequest();
+  const realIp = request?.headers.get("x-real-ip");
+  if (realIp) return realIp.trim().slice(0, 64);
+  const forwardedFor = request?.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim().slice(0, 64);
+  return "unknown";
+}
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -196,15 +209,14 @@ function checkAiRateLimit(ip: string): { allowed: boolean; retryAfterMs: number 
 
 const InterpretadorInput = z.object({
   mensagem: z.string().min(3).max(400), // limite reduzido de 800 → 400 chars para reduzir custo
-  _ip: z.string().optional(), // IP passado pelo cliente (best-effort, sem autenticação)
 });
 
 export const interpretarBuscaConversacional = createServerFn({ method: "POST" })
   .inputValidator((d) => InterpretadorInput.parse(d))
   .handler(async ({ data }) => {
-    // Rate limiting por IP — o IP é passado opcionalmente pelo cliente como _ip.
-    // Em produção, usar Cloudflare Workers KV para rate limiting multi-instância.
-    const ip = (data._ip ?? "unknown").slice(0, 64); // limita tamanho do campo _ip
+    // Rate limiting por IP real da requisição (não mais um campo enviado
+    // pelo cliente, que era trivialmente burlável).
+    const ip = getClientIp();
     const rl = checkAiRateLimit(ip);
     if (!rl.allowed) {
       throw new Error(
