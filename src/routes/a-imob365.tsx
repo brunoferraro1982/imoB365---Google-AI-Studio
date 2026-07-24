@@ -118,7 +118,7 @@ const PILARES = [
   {
     icon: Building2,
     titulo: "Tecnologia e Transparência",
-    desc: "Utilizamos as ferramentas mais modernas do mercado para facilitar a jornada de compra e gestão com segurança jurídica total.",
+    desc: "Utilizamos as ferramentas mais modernas do mercado — incluindo um assistente de IA próprio pra tirar dúvidas sobre financiamento, ITBI e mercado imobiliário — pra facilitar a jornada de compra e gestão com segurança jurídica total.",
     color: "bg-emerald-100/70 text-emerald-800",
   },
 ];

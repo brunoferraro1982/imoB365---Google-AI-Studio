@@ -1,4 +1,5 @@
 import { WhatsAppFAB } from "@/components/layout/WhatsAppFAB";
+import { AssistenteIAFAB } from "@/components/layout/AssistenteIAFAB";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -187,6 +188,7 @@ function RootComponent() {
       <ThemeProvider>
         <Outlet />
         <WhatsAppFAB />
+        <AssistenteIAFAB />
         <Toaster richColors position="top-right" />
       </ThemeProvider>
     </QueryClientProvider>

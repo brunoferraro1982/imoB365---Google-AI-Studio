@@ -123,6 +123,10 @@ const MODULE_MATRIX: { label: string; values: [string, string, string, string, s
     values: ["✓", "✓", "✓", "✓", "✓"],
   },
   { label: "Suporte", values: ["E-mail", "E-mail", "Prioritário", "Prioritário", "Dedicado+SLA"] },
+  {
+    label: "Assistente de IA",
+    values: ["2/2h", "2/2h", "2/2h", "Ilimitado", "Ilimitado"],
+  },
 ];
 
 function fmtBRL(n: number) {

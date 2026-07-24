@@ -140,6 +140,7 @@ import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
+import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
 import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -829,6 +830,11 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
+  id: '/api/ai/assistente',
+  path: '/api/ai/assistente',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SiteSlugPPageSlugRoute = SiteSlugPPageSlugRouteImport.update({
   id: '/site/$slug_/p/$pageSlug',
   path: '/site/$slug/p/$pageSlug',
@@ -1025,6 +1031,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
@@ -1175,6 +1182,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
+  '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
@@ -1331,6 +1339,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
@@ -1488,6 +1497,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/api/ai/assistente'
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
@@ -1638,6 +1648,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/conta'
+    | '/api/ai/assistente'
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
@@ -1793,6 +1804,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/api/ai/assistente'
     | '/api/public/health'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
@@ -1922,6 +1934,7 @@ export interface RootRouteChildren {
   QueroAnunciarTenantSlugRoute: typeof QueroAnunciarTenantSlugRoute
   SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
+  ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
@@ -2864,6 +2877,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/assistente': {
+      id: '/api/ai/assistente'
+      path: '/api/ai/assistente'
+      fullPath: '/api/ai/assistente'
+      preLoaderRoute: typeof ApiAiAssistenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/site/$slug_/p/$pageSlug': {
       id: '/site/$slug_/p/$pageSlug'
       path: '/site/$slug/p/$pageSlug'
@@ -3292,6 +3312,7 @@ const rootRouteChildren: RootRouteChildren = {
   QueroAnunciarTenantSlugRoute: QueroAnunciarTenantSlugRoute,
   SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
+  ApiAiAssistenteRoute: ApiAiAssistenteRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
