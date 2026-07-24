@@ -44,6 +44,8 @@ import {
   Tag,
   User,
   Crown,
+  Star,
+  StarOff,
 } from "lucide-react";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -59,6 +61,7 @@ type Tenant = {
   plano_slug: string | null;
   status: string;
   created_at: string;
+  exibir_na_home: boolean;
 };
 
 type Plan = {
@@ -214,7 +217,7 @@ function AdminTenants() {
 
   // ── Actions ──
 
-  async function updateTenantField(id: string, field: string, value: string) {
+  async function updateTenantField(id: string, field: string, value: string | boolean) {
     const { error } = await supabase
       .from("tenants")
       .update({ [field]: value } as never)
@@ -612,6 +615,12 @@ function AdminTenants() {
                       >
                         {statusLabel[t.status] ?? t.status}
                       </span>
+                      {t.exibir_na_home && (
+                        <span className="inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[9px] font-bold text-violet-600 bg-violet-500/10">
+                          <Star className="h-2.5 w-2.5" />
+                          Na Home
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
                       <span className="font-mono">{t.slug}</span>
@@ -688,6 +697,21 @@ function AdminTenants() {
                           >
                             <UserCheck className="h-3.5 w-3.5 mr-2" />
                             Reativar
+                          </DropdownMenuItem>
+                        )}
+                        {!t.exibir_na_home ? (
+                          <DropdownMenuItem
+                            onClick={() => updateTenantField(t.id, "exibir_na_home", true)}
+                          >
+                            <Star className="h-3.5 w-3.5 mr-2" />
+                            Exibir na Home
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => updateTenantField(t.id, "exibir_na_home", false)}
+                          >
+                            <StarOff className="h-3.5 w-3.5 mr-2" />
+                            Remover da Home
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />

@@ -198,6 +198,9 @@ function Landing() {
         // não pode aparecer na vitrine de "Imobiliárias parceiras" ao lado
         // dos próprios clientes que usam o SaaS.
         .neq("slug", CORPORATE_TENANT_SLUG)
+        // Vitrine de parceiros "premium" — só aparece quem o super_admin
+        // liberou explicitamente em /admin/tenants ("Exibir na Home").
+        .eq("exibir_na_home", true)
         .limit(12);
       const ids = (ts ?? []).map((t: any) => t.id);
       const counts: Record<string, number> = {};
