@@ -10,6 +10,7 @@ import {
   Plug,
   ShieldCheck,
   MessageSquare,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
@@ -63,6 +64,11 @@ const PILARES = [
 ];
 
 const E_TEM_MAIS = [
+  {
+    icon: Sparkles,
+    title: "Assistente de IA especializado em imóveis",
+    desc: "Pergunte sobre financiamento, ITBI, documentação e mercado imobiliário e receba resposta na hora, rodando em infraestrutura própria — sem depender de API paga de terceiro. Acesso ilimitado nos planos Pro e Business.",
+  },
   {
     icon: Rocket,
     title: "Onboarding em minutos",
@@ -131,7 +137,7 @@ function PlataformaPage() {
           <p className="mt-3 max-w-2xl text-muted-foreground">
             Recursos que sustentam a operação e a confiança em tudo o que você faz na plataforma.
           </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {E_TEM_MAIS.map((m) => (
               <div key={m.title} className="rounded-xl border border-border bg-card p-5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
