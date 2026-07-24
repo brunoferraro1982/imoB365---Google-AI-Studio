@@ -3071,6 +3071,8 @@ export type Database = {
           created_at: string;
           id: string;
           imobiliaria_nome: string | null;
+          mfa_exempt: boolean;
+          mfa_required: boolean;
           nome: string | null;
           pagamento_metodo: string | null;
           pagamento_validado: boolean | null;
@@ -3087,6 +3089,8 @@ export type Database = {
           created_at?: string;
           id: string;
           imobiliaria_nome?: string | null;
+          mfa_exempt?: boolean;
+          mfa_required?: boolean;
           nome?: string | null;
           pagamento_metodo?: string | null;
           pagamento_validado?: boolean | null;
@@ -3103,6 +3107,8 @@ export type Database = {
           created_at?: string;
           id?: string;
           imobiliaria_nome?: string | null;
+          mfa_exempt?: boolean;
+          mfa_required?: boolean;
           nome?: string | null;
           pagamento_metodo?: string | null;
           pagamento_validado?: boolean | null;
