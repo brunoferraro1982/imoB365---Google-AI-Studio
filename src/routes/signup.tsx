@@ -5,12 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
+import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { toast } from "sonner";
 import {
-  Apple,
-  Instagram,
-  Chrome,
-  Linkedin,
   ShieldCheck,
   Fingerprint,
   LockKeyhole,
@@ -103,49 +100,6 @@ function SignupPage() {
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
-
-  // Social Authentication simulation modal
-  const [socialModal, setSocialModal] = useState<{ isOpen: boolean; provider: string } | null>(
-    null,
-  );
-  const [socialEmail, setSocialEmail] = useState("");
-
-  async function handleSocialSignup() {
-    if (!socialEmail || !socialEmail.includes("@")) {
-      toast.error("Por favor, informe um e-mail válido.");
-      return;
-    }
-    setLoading(true);
-    setSocialModal(null);
-
-    // Simulate auth sign up
-    const randomPassword = Math.random().toString(36).slice(-10) + "Aa1!";
-    const displayName = socialEmail.split("@")[0];
-    const { error } = await supabase.auth.signUp({
-      email: socialEmail,
-      password: randomPassword,
-      options: {
-        data: {
-          nome: displayName,
-          tipo_usuario: tipoUsuario,
-          plano_pretendido: planoPretendido,
-          imobiliaria_nome: tipoUsuario === "corretor" ? agenciaInformada : displayName,
-          aprovado: false,
-          pagamento_validado: false,
-          pagamento_metodo: "SocialAuth",
-        },
-      },
-    });
-
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    toast.success(`Cadastro via ${socialModal?.provider} iniciado com sucesso! Aguarde aprovação.`);
-    navigate({ to: "/login" });
-  }
 
   // Indicador de força de senha
   function passwordStrength(pwd: string): { score: number; label: string; color: string } {
@@ -371,55 +325,7 @@ function SignupPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="p-2 h-10 w-full"
-                    onClick={() => {
-                      void supabase.auth
-                        .signInWithOAuth({
-                          provider: "google",
-                          options: { redirectTo: `${window.location.origin}/auth/callback` },
-                        })
-                        .then(({ error }) => {
-                          if (error) toast.error(`Erro ao conectar com Google: ${error.message}`);
-                        });
-                    }}
-                  >
-                    <Chrome className="h-4 w-4 text-red-500" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="p-2 h-10 w-full"
-                    onClick={() => {
-                      toast("Login via Instagram chega em breve.");
-                    }}
-                  >
-                    <Instagram className="h-4 w-4 text-pink-600" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="p-2 h-10 w-full"
-                    onClick={() => {
-                      toast("Login via LinkedIn chega em breve.");
-                    }}
-                  >
-                    <Linkedin className="h-4 w-4 text-blue-700" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="p-2 h-10 w-full"
-                    onClick={() => {
-                      toast("Login via Apple chega em breve.");
-                    }}
-                  >
-                    <Apple className="h-4 w-4 text-foreground" />
-                  </Button>
-                </div>
+                <SocialLoginButtons />
               </div>
 
               <Button
@@ -815,46 +721,6 @@ function SignupPage() {
           </Link>
         </p>
       </div>
-
-      {/* SOCIALAUTH DIALOG SIMULATOR */}
-      {socialModal?.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
-          <div className="bg-card border border-border w-full max-w-sm rounded-2xl p-6 shadow-xl relative animate-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold tracking-tight mb-2">
-              Continuar com {socialModal.provider}
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Insira seu e-mail para conectar sua conta social via credencial simulada do{" "}
-              {socialModal.provider}:
-            </p>
-
-            <div className="space-y-3.5 text-left">
-              <div>
-                <Label htmlFor="socialEmail" className="text-xs font-medium mb-1 block">
-                  Seu E-mail
-                </Label>
-                <Input
-                  id="socialEmail"
-                  type="email"
-                  value={socialEmail}
-                  onChange={(e) => setSocialEmail(e.target.value)}
-                  placeholder="nome@social.com"
-                  required
-                />
-              </div>
-
-              <div className="flex gap-2 pt-2">
-                <Button variant="outline" className="flex-1" onClick={() => setSocialModal(null)}>
-                  Cancelar
-                </Button>
-                <Button type="button" className="flex-1" onClick={handleSocialSignup}>
-                  Sim, conectar
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
