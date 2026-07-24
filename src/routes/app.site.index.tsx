@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import {
   ExternalLink,
@@ -27,6 +28,7 @@ import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
 import { useConfirm } from "@/hooks/useConfirm";
 import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
 import { SECTION_LABELS, DEFAULT_SECOES, type SectionDbItem } from "@/lib/siteSections";
+import { saveTenantSiteSettings, saveTenantPage } from "@/lib/siteContent.functions";
 
 export const Route = createFileRoute("/app/site/")({
   component: SitePage,
@@ -113,6 +115,8 @@ function SitePage() {
   const { tenantId, profile } = useAuth();
   const isCorretor = profile?.tipo_usuario === "corretor";
   const { confirmDialog, ConfirmDialog } = useConfirm();
+  const saveSiteSettings = useServerFn(saveTenantSiteSettings);
+  const savePageFn = useServerFn(saveTenantPage);
   const [tenantSlug, setTenantSlug] = useState<string>("");
   const [tenantNome, setTenantNome] = useState<string>("");
   const [s, setS] = useState<Settings>(EMPTY);
@@ -227,13 +231,14 @@ function SitePage() {
     e.preventDefault();
     if (!tenantId) return;
     setSaving(true);
-    const payload = { ...s, tenant_id: tenantId };
-    const { error } = await supabase
-      .from("tenant_site_settings")
-      .upsert(payload, { onConflict: "tenant_id" });
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    toast.success("Site atualizado");
+    try {
+      await saveSiteSettings({ data: { ...s, tenant_id: tenantId } });
+      toast.success("Site atualizado");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function novaPagina() {
@@ -254,33 +259,25 @@ function SitePage() {
     const slug = editing.slug.trim() || slugify(editing.titulo);
     if (!slug || editing.titulo.trim().length < 2) return toast.error("Informe título e slug");
     setSavingPage(true);
-    if (editing.id) {
-      const { error } = await supabase
-        .from("tenant_pages")
-        .update({
+    const isNew = !editing.id;
+    try {
+      await savePageFn({
+        data: {
+          tenant_id: tenantId,
           slug,
           titulo: editing.titulo.trim(),
           conteudo_html: editing.conteudo_html,
           ordem: editing.ordem,
           publicada: editing.publicada,
-        })
-        .eq("id", editing.id);
-      setSavingPage(false);
-      if (error) return toast.error(error.message);
-      toast.success("Página atualizada");
-    } else {
-      const { error } = await supabase.from("tenant_pages").insert({
-        tenant_id: tenantId,
-        slug,
-        titulo: editing.titulo.trim(),
-        conteudo_html: editing.conteudo_html,
-        ordem: editing.ordem,
-        publicada: editing.publicada,
+        },
       });
+      toast.success(isNew ? "Página criada" : "Página atualizada");
+    } catch (err) {
       setSavingPage(false);
-      if (error) return toast.error(error.message);
-      toast.success("Página criada");
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar página");
+      return;
     }
+    setSavingPage(false);
     setEditing(null);
     const { data: pg } = await supabase
       .from("tenant_pages")

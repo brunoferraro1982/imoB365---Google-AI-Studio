@@ -1,3 +1,4 @@
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import {
   ChevronLeft,
@@ -24,6 +25,7 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { toast } from "sonner";
 import { slugify } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
+import { saveBlogPost } from "@/lib/siteContent.functions";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 // Colunas reais da tabela blog_posts (tenant_id NOT NULL — cada linha
@@ -80,6 +82,7 @@ export function BlogManager({
 }: Props) {
   const { user } = useAuth();
   const { confirmDialog, ConfirmDialog } = useConfirm();
+  const savePost = useServerFn(saveBlogPost);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -169,20 +172,8 @@ export function BlogManager({
     };
 
     try {
-      if (!isNew) {
-        const { error } = await supabase
-          .from("blog_posts")
-          .update(payload)
-          // isNew = !currentPost.id já garante id definido neste branch —
-          // TS não propaga o narrow através da variável derivada.
-          .eq("id", currentPost.id!);
-        if (error) throw error;
-        toast.success("Artigo atualizado com sucesso!");
-      } else {
-        const { error } = await supabase.from("blog_posts").insert(payload);
-        if (error) throw error;
-        toast.success("Artigo publicado com sucesso!");
-      }
+      await savePost({ data: { ...payload, id: isNew ? undefined : currentPost.id } });
+      toast.success(isNew ? "Artigo publicado com sucesso!" : "Artigo atualizado com sucesso!");
       setIsEditing(false);
       setCurrentPost(EMPTY_POST);
       loadPosts();
