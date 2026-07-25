@@ -7,7 +7,9 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  ArrowLeft,
 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { MegaNavHeader, type MegaNavConfig } from "@/components/site/MegaNav";
 
@@ -16,6 +18,10 @@ export type SiteCtx = {
   tenantSlug: string;
   tenantNome: string;
   logoUrl?: string | null;
+  /** 'corretor' | 'imobiliaria' | null — quando 'corretor', a mesma imagem
+   * de tema.logo_url é tratada como foto pessoal (retrato na hero), não
+   * como logo de empresa (não aparece como ícone no header/rodapé). */
+  tipoTenant?: string | null;
   settings: {
     contato_telefone?: string | null;
     contato_whatsapp?: string | null;
@@ -36,12 +42,14 @@ function buildTenantNavConfig(ctx: SiteCtx): MegaNavConfig {
   const waHref = ctx.settings.contato_whatsapp
     ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
     : null;
+  const isCorretor = ctx.tipoTenant === "corretor";
   return {
-    logo: ctx.logoUrl ? (
-      <img src={ctx.logoUrl} alt={ctx.tenantNome} className="h-9 max-w-[170px] object-contain" />
-    ) : (
-      <span className="text-lg font-bold tracking-tight">{ctx.tenantNome}</span>
-    ),
+    logo:
+      ctx.logoUrl && !isCorretor ? (
+        <img src={ctx.logoUrl} alt={ctx.tenantNome} className="h-9 max-w-[170px] object-contain" />
+      ) : (
+        <span className="text-lg font-bold tracking-tight">{ctx.tenantNome}</span>
+      ),
     logoTo: `/site/${ctx.tenantSlug}`,
     groups: [
       { key: "inicio", label: "Início", to: `/site/${ctx.tenantSlug}` },
@@ -83,6 +91,14 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
       className="min-h-screen bg-background text-foreground"
       style={cor ? ({ "--site-accent": cor, "--primary": cor } as React.CSSProperties) : undefined}
     >
+      <div className="border-b border-border/60 bg-muted/30 px-6 py-1.5 text-center text-[11px] text-muted-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 transition-colors hover:text-primary"
+        >
+          <ArrowLeft className="h-3 w-3" /> Voltar ao portal imoB365
+        </Link>
+      </div>
       <MegaNavHeader config={buildTenantNavConfig(ctx)} />
 
       <main>{children}</main>
@@ -112,7 +128,7 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
           <div>
             <div className="flex items-center gap-2 text-base font-bold text-white">
-              {ctx.logoUrl ? (
+              {ctx.logoUrl && ctx.tipoTenant !== "corretor" ? (
                 <img
                   src={ctx.logoUrl}
                   alt={ctx.tenantNome}
@@ -211,7 +227,9 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
         </div>
         <div className="border-t border-white/10 py-5 text-center text-xs text-zinc-500">
           © {new Date().getFullYear()} {ctx.tenantNome} — site criado com{" "}
-          <span className="font-semibold text-zinc-400">imoB365</span>
+          <Link to="/" className="font-semibold text-zinc-400 hover:text-white">
+            imoB365
+          </Link>
         </div>
       </footer>
     </div>

@@ -344,6 +344,7 @@ function AdminTenants() {
             slug,
             status: "active",
             plano_slug: planSlug,
+            tipo_tenant: user.tipo_usuario,
           } as never)
           .select()
           .maybeSingle();
