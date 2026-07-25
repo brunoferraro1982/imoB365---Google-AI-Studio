@@ -52,7 +52,7 @@ function TenantHome() {
       setLoading(true);
       const { data: tenant } = await supabase
         .from("tenants")
-        .select("id,slug,nome,tema")
+        .select("id,slug,nome,tema,tipo_tenant")
         .eq("slug", slug)
         .maybeSingle();
       if (!tenant) {
@@ -106,6 +106,7 @@ function TenantHome() {
         tenantSlug: tenant.slug,
         tenantNome: tenant.nome,
         logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
+        tipoTenant: (tenant as { tipo_tenant?: string | null }).tipo_tenant,
         settings: cfg,
         pages: (pages ?? []) as any,
         hasBlog: (blogCount ?? 0) > 0,

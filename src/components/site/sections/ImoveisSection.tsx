@@ -29,13 +29,17 @@ export function ImoveisSection({
   /** Renderização em 1 coluna, para quando o bloco está numa área lateral estreita (layout 'amplo'). */
   compact?: boolean;
 }) {
+  // Container query (@sm/@lg), não breakpoint de viewport (sm/lg) — a
+  // seção pode ser renderizada dentro de uma coluna estreita quando há
+  // widgets de conteúdo nos dois lados (SiteWidgetsLayout), e nesse caso
+  // o breakpoint de viewport ativava 3 colunas mesmo com pouco espaço
+  // real disponível, espremendo os cards. Com @container, o grid responde
+  // à largura de verdade do espaço que tem, não à largura da janela.
   const gridCols = compact
     ? ""
     : variant === "boutique"
-      ? "sm:grid-cols-2"
-      : variant === "vitrine"
-        ? "sm:grid-cols-2 lg:grid-cols-3"
-        : "sm:grid-cols-2 lg:grid-cols-3";
+      ? "@sm:grid-cols-2"
+      : "@sm:grid-cols-2 @lg:grid-cols-3";
 
   const cardShadow =
     variant === "boutique"
@@ -43,7 +47,7 @@ export function ImoveisSection({
       : "border border-border shadow-sm hover:shadow-xl hover:shadow-primary/10";
 
   return (
-    <div>
+    <div className="@container">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2
@@ -70,7 +74,7 @@ export function ImoveisSection({
           <p className="mt-3 text-sm text-muted-foreground">Nenhum imóvel publicado no momento.</p>
         </div>
       ) : (
-        <div className={`grid gap-6 ${gridCols}`}>
+        <div className={`grid gap-8 ${gridCols}`}>
           {(compact ? imoveis.slice(0, 4) : imoveis).map((i, idx) => {
             const featured = !compact && variant === "vitrine" && idx < 2;
             return (
@@ -79,7 +83,7 @@ export function ImoveisSection({
                 to="/imovel/$slug"
                 params={{ slug: i.slug }}
                 className={`group overflow-hidden rounded-2xl bg-card transition-all duration-300 hover:-translate-y-1 ${cardShadow} ${
-                  featured ? "sm:col-span-2 lg:col-span-1" : ""
+                  featured ? "@sm:col-span-2 @lg:col-span-1" : ""
                 }`}
               >
                 <div
@@ -102,7 +106,7 @@ export function ImoveisSection({
                   </Badge>
                 </div>
                 <div className="p-4">
-                  <h3 className="line-clamp-1 font-semibold">{i.titulo}</h3>
+                  <h3 className="line-clamp-2 font-semibold leading-snug">{i.titulo}</h3>
                   <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />{" "}
                     {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}

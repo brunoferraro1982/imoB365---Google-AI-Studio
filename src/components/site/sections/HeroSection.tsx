@@ -5,6 +5,28 @@ import type { SiteCtx } from "@/components/site/TenantSiteLayout";
 
 type Stat = { icon: typeof Building2; label: string; value: string };
 
+// Retrato pessoal do corretor autônomo — só aparece quando o tenant é do
+// tipo 'corretor' (ctx.tipoTenant), dando à mesma imagem de tema.logo_url
+// o tratamento de foto de perfil (grande, circular, com selo de profissão)
+// em vez de logo apertado no header. Imobiliárias continuam sem isso.
+function CorretorRetrato({ ctx, align = "center" }: { ctx: SiteCtx; align?: "center" | "left" }) {
+  if (ctx.tipoTenant !== "corretor" || !ctx.logoUrl) return null;
+  return (
+    <div className={`mb-6 flex ${align === "center" ? "justify-center" : "justify-start"}`}>
+      <div className="relative">
+        <img
+          src={ctx.logoUrl}
+          alt={ctx.tenantNome}
+          className="h-24 w-24 rounded-full border-4 border-background object-cover shadow-lg ring-2 ring-primary/25 md:h-28 md:w-28"
+        />
+        <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
+          Corretor de Imóveis
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function HeroSection({
   variant,
   ctx,
@@ -24,6 +46,7 @@ export function HeroSection({
     return (
       <section className="relative overflow-hidden border-b border-border bg-primary text-primary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-16 text-center md:py-20">
+          <CorretorRetrato ctx={ctx} />
           <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold">
             <ShieldCheck className="h-3.5 w-3.5" />
             Site oficial de {ctx.tenantNome}
@@ -67,6 +90,7 @@ export function HeroSection({
     return (
       <section className="border-b border-border">
         <div className="mx-auto max-w-2xl px-6 py-24 text-center md:py-32">
+          <CorretorRetrato ctx={ctx} />
           <div className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" />
             {ctx.tenantNome}
@@ -95,6 +119,7 @@ export function HeroSection({
     return (
       <section className="border-b border-border bg-muted/30">
         <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
+          <CorretorRetrato ctx={ctx} align="left" />
           <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {ctx.tenantNome}
           </div>
@@ -123,6 +148,7 @@ export function HeroSection({
       <section className="relative overflow-hidden border-b border-border">
         <div className="h-1.5 w-full bg-primary" />
         <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <CorretorRetrato ctx={ctx} align="left" />
           <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
             <ShieldCheck className="h-3.5 w-3.5" />
             Site oficial de {ctx.tenantNome}
@@ -164,6 +190,7 @@ export function HeroSection({
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,_var(--primary)_22%,_transparent),_transparent_65%)]" />
       <div className="absolute -right-24 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
       <div className="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
+        <CorretorRetrato ctx={ctx} />
         <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
           <ShieldCheck className="h-3.5 w-3.5" />
           Site oficial de {ctx.tenantNome}
