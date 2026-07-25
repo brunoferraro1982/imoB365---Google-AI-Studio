@@ -264,7 +264,14 @@ function Landing() {
               <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
               imobiliárias, corretores e clientes
             </span>
-            <h1 className="mt-8 max-w-4xl text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
+            {/* max-w removido em desktop (md:) — com max-w-4xl, as frases mais
+                longas do texto rotativo abaixo estouravam pra uma 3ª linha e
+                deslocavam o conteúdo seguinte da página. O container pai (
+                max-w-6xl) já comporta a frase mais longa numa única linha
+                (medido: ~1014px de texto em ~1104px disponíveis), então só
+                era um limite artificial mais estreito que o espaço real —
+                não precisou alargar nada além do que já existia. */}
+            <h1 className="mt-8 max-w-4xl md:max-w-none text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
