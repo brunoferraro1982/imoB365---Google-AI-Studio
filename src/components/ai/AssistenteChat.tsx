@@ -2,20 +2,32 @@ import { useState } from "react";
 import { Sparkles, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
 const PLANOS_ILIMITADOS = ["pro", "business"];
 
-const EXEMPLOS = [
+const EXEMPLOS_MERCADO = [
   "O que é ITBI?",
   "Como funciona o financiamento SAC?",
   "Quais documentos preciso pra financiar um imóvel?",
 ];
 
+// Exemplos trocam pra "como usar o backend" quando o assistente é aberto
+// dentro do /app — reforça visualmente que ele também ajuda com a própria
+// ferramenta, não só com dúvidas de mercado imobiliário.
+const EXEMPLOS_BACKEND = [
+  "Como cadastro um imóvel?",
+  "Como funciona o funil de leads?",
+  "Como lanço uma comissão?",
+];
+
 export function AssistenteChat({ compact = false }: { compact?: boolean }) {
   const { session, user, tenantId } = useAuth();
+  const location = useLocation();
+  const emBackend = location.pathname.startsWith("/app");
+  const EXEMPLOS = emBackend ? EXEMPLOS_BACKEND : EXEMPLOS_MERCADO;
   const [pergunta, setPergunta] = useState("");
   const [resposta, setResposta] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -50,7 +62,7 @@ export function AssistenteChat({ compact = false }: { compact?: boolean }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ pergunta: q }),
+        body: JSON.stringify({ pergunta: q, pagina: location.pathname }),
       });
       if (!res.ok) {
         const msg = await res.text();

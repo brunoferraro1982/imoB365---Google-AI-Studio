@@ -51,6 +51,7 @@ export const Route = createFileRoute("/api/ai/assistente")({
         if (pergunta.length < 3 || pergunta.length > 500) {
           return new Response("Pergunta deve ter entre 3 e 500 caracteres.", { status: 400 });
         }
+        const pagina = typeof body?.pagina === "string" ? body.pagina.slice(0, 200) : undefined;
 
         const { data: profile } = await supabase
           .from("profiles")
@@ -84,9 +85,14 @@ export const Route = createFileRoute("/api/ai/assistente")({
           async start(controller) {
             const encoder = new TextEncoder();
             try {
-              await perguntarAssistente(pergunta, supabase, (chunk) => {
-                controller.enqueue(encoder.encode(chunk));
-              });
+              await perguntarAssistente(
+                pergunta,
+                supabase,
+                (chunk) => {
+                  controller.enqueue(encoder.encode(chunk));
+                },
+                pagina,
+              );
             } catch (err: any) {
               controller.enqueue(
                 encoder.encode(
