@@ -154,7 +154,7 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
 
       <div className="grid gap-6 lg:grid-cols-12">
         {/* Parâmetros do Financiamento */}
-        <div className="space-y-5 lg:col-span-7">
+        <div className="space-y-5 lg:col-span-7 xl:col-span-6">
           <div className="space-y-2">
             <div className="flex justify-between">
               <Label className="text-xs font-medium">Valor da Entrada (BRL)</Label>
@@ -279,7 +279,7 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
         </div>
 
         {/* Quadro de Resultados */}
-        <div className="rounded-xl bg-muted/40 p-5 lg:col-span-12 xl:col-span-5 flex flex-col justify-between border border-border/60">
+        <div className="rounded-xl bg-muted/40 p-5 lg:col-span-12 xl:col-span-6 flex flex-col justify-between border border-border/60">
           <div className="space-y-4">
             <div className="text-center sm:text-left">
               <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
@@ -329,28 +329,35 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
                 </div>
               </div>
 
-              {/* Legenda Resumida */}
-              <div className="flex-1 space-y-2 w-full text-xs">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1.5 font-medium">
-                    <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-                    <span>Crédito Principal:</span>
+              {/* Legenda Resumida — label em cima, valor embaixo (evita
+                  o valor estourar a caixa quando o número é grande) */}
+              <div className="flex-1 min-w-0 space-y-2.5 w-full text-xs">
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-primary" />
+                    <span>Crédito Principal</span>
                   </div>
-                  <span className="font-semibold font-mono">{formatBRL(totalFinanciado)}</span>
+                  <div className="text-right text-sm font-semibold tabular-nums">
+                    {formatBRL(totalFinanciado)}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1.5 font-medium">
-                    <span className="h-2.5 w-2.5 rounded-full bg-chart-2" />
-                    <span>Juros Acumulados:</span>
+                <div className="min-w-0 space-y-0.5">
+                  <div className="flex items-center gap-1.5 font-medium text-muted-foreground">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-chart-2" />
+                    <span>Juros Acumulados</span>
                   </div>
-                  <span className="font-semibold font-mono">{formatBRL(totalJuros)}</span>
+                  <div className="text-right text-sm font-semibold tabular-nums">
+                    {formatBRL(totalJuros)}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-sm font-bold pt-1 border-t border-border/40">
-                  <div className="flex items-center gap-1.5">
-                    <Landmark className="h-3.5 w-3.5 text-primary" />
-                    <span>Custo Total de Quitação:</span>
+                <div className="min-w-0 space-y-0.5 pt-1.5 border-t border-border/40">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <Landmark className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    <span>Custo Total de Quitação</span>
                   </div>
-                  <span className="font-sans text-primary">{formatBRL(totalGeral)}</span>
+                  <div className="text-right text-base font-bold text-primary tabular-nums">
+                    {formatBRL(totalGeral)}
+                  </div>
                 </div>
               </div>
             </div>

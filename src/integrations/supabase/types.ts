@@ -3917,6 +3917,7 @@ export type Database = {
           slug: string;
           status: Database["public"]["Enums"]["tenant_status"];
           tema: Json;
+          tipo_tenant: string | null;
           trial_ends_at: string | null;
           trial_grace_ends_at: string | null;
           updated_at: string;
@@ -3942,6 +3943,7 @@ export type Database = {
           slug: string;
           status?: Database["public"]["Enums"]["tenant_status"];
           tema?: Json;
+          tipo_tenant?: string | null;
           trial_ends_at?: string | null;
           trial_grace_ends_at?: string | null;
           updated_at?: string;
@@ -3967,6 +3969,7 @@ export type Database = {
           slug?: string;
           status?: Database["public"]["Enums"]["tenant_status"];
           tema?: Json;
+          tipo_tenant?: string | null;
           trial_ends_at?: string | null;
           trial_grace_ends_at?: string | null;
           updated_at?: string;

@@ -296,15 +296,23 @@ export function SiteWidgetsLayout({
 
   if (!hasLeft && !hasRight) return <>{children}</>;
 
+  // Grid de 3 colunas só a partir de xl: (antes ficava sempre reservado via
+  // style inline, mesmo com os asides visualmente `hidden` entre lg/xl —
+  // deixava uma faixa vazia no meio do layout nessa faixa de largura).
+  // Colunas mais estreitas (240px, era 260px) e activam só em xl: (era lg:)
+  // pra dar mais respiro real ao conteúdo principal — a mesma seção de
+  // imóveis em destaque não deve ficar espremida numa coluna estreita.
+  const gridColsClass =
+    hasLeft && hasRight
+      ? "grid-cols-1 xl:grid-cols-[240px_minmax(0,1fr)_240px]"
+      : hasLeft
+        ? "grid-cols-1 xl:grid-cols-[240px_minmax(0,1fr)]"
+        : "grid-cols-1 xl:grid-cols-[minmax(0,1fr)_240px]";
+
   return (
-    <div
-      className="mx-auto grid max-w-6xl gap-10 px-6"
-      style={{
-        gridTemplateColumns: `${hasLeft ? "260px " : ""}minmax(0,1fr)${hasRight ? " 260px" : ""}`,
-      }}
-    >
+    <div className={`mx-auto grid max-w-6xl gap-10 px-6 ${gridColsClass}`}>
       {hasLeft && (
-        <aside className="hidden space-y-6 lg:block">
+        <aside className="hidden space-y-6 xl:block">
           {esquerda.map((w) => (
             <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
           ))}
@@ -312,7 +320,7 @@ export function SiteWidgetsLayout({
       )}
       <div className="min-w-0">{children}</div>
       {hasRight && (
-        <aside className="hidden space-y-6 lg:block">
+        <aside className="hidden space-y-6 xl:block">
           {direita.map((w) => (
             <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
           ))}
