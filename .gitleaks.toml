@@ -8,10 +8,15 @@ useDefault = true
 [allowlist]
 description = "Falsos positivos confirmados"
 commits = [
-  # src/lib/signupIntent.ts:6 — `const KEY = "imob365_signup_intent"` era só o
-  # nome do item no localStorage, não um segredo; disparava a regra
-  # generic-api-key pelo nome da variável. Renomeado em 2cbc1e6, mas o
-  # commit original permanece no histórico da PR e o scan disparado pelo
-  # evento pull_request re-escaneia o range inteiro de commits.
+  # src/lib/signupIntent.ts:6 — constante local com o nome de um item de
+  # localStorage, não um segredo; disparava a regra generic-api-key pelo
+  # nome curto da variável original. Renomeada em 2cbc1e6, mas o commit
+  # original permanece no histórico da PR e o scan disparado pelo evento
+  # pull_request re-escaneia o range inteiro de commits.
   "05c7b9f9df04154f0b5ae5776bd932033a33ef30",
+  # CLAUDE.md:504 (na época) — mesmo falso positivo acima, reproduzido
+  # literalmente na prosa do changelog explicando o achado (corrigido
+  # depois pra descrever sem citar o trecho verbatim, ver nota no próprio
+  # changelog "para quem editar este arquivo no futuro").
+  "75161f384f66bdd14badb998eed99e7a6435abd9",
 ]
