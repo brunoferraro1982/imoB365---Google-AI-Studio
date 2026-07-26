@@ -120,6 +120,7 @@ const tenantModules: Module[] = [
     label: "Financeiro",
     icon: Banknote,
     items: [
+      { to: "/app/financeiro/dashboard", label: "Dashboard executivo", icon: BarChart3 },
       { to: "/app/financeiro", label: "Contas a pagar e receber", icon: Banknote },
       { to: "/app/comissoes", label: "Comissões", icon: Wallet },
       { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
