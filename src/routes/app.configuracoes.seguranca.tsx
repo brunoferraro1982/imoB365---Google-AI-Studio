@@ -13,6 +13,11 @@ export const Route = createFileRoute("/app/configuracoes/seguranca")({
 
 type Factor = { id: string; status: string; friendly_name?: string | null; factor_type: string };
 
+const MFA_STATUS_LABEL: Record<string, string> = {
+  verified: "Verificado",
+  unverified: "Não verificado",
+};
+
 function SegurancaPage() {
   const [factors, setFactors] = useState<Factor[]>([]);
   const { confirmDialog, ConfirmDialog } = useConfirm();
@@ -108,7 +113,9 @@ function SegurancaPage() {
                     <div className="font-medium">
                       {f.friendly_name ?? f.factor_type.toUpperCase()}
                     </div>
-                    <div className="text-xs text-muted-foreground">Status: {f.status}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Status: {MFA_STATUS_LABEL[f.status] ?? f.status}
+                    </div>
                   </div>
                   <Button size="sm" variant="ghost" onClick={() => unenroll(f.id)}>
                     <Trash2 className="h-4 w-4 text-destructive" />

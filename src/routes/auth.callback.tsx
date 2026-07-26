@@ -1,6 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { registerAsClient } from "@/lib/onboarding.functions";
+import { consumeProfessionalSignupIntent } from "@/lib/signupIntent";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/callback")({
@@ -9,6 +12,7 @@ export const Route = createFileRoute("/auth/callback")({
 
 function AuthCallback() {
   const navigate = useNavigate();
+  const registerAsClientFn = useServerFn(registerAsClient);
 
   useEffect(() => {
     void (async () => {
@@ -30,7 +34,7 @@ function AuthCallback() {
 
         const { data: profile, error: profileErr } = await supabase
           .from("profiles")
-          .select("tipo_usuario, aprovado")
+          .select("nome, tipo_usuario, aprovado")
           .eq("id", user.id)
           .maybeSingle();
 
@@ -40,7 +44,27 @@ function AuthCallback() {
         if (profileErr) throw profileErr;
 
         if (!profile?.tipo_usuario) {
-          void navigate({ to: "/onboarding", replace: true });
+          // Sinal de intenção profissional só existe quando o usuário veio do
+          // branch "corretor/imobiliária" do /signup (marcado em localStorage
+          // antes do redirect OAuth, já que o roundtrip perde estado React).
+          // Sem esse sinal, todo cadastro novo vira cliente por padrão — mesmo
+          // padrão das plataformas de referência (Zillow, Redfin, QuintoAndar,
+          // VivaReal): virar profissional é sempre opt-in e posterior.
+          if (consumeProfessionalSignupIntent()) {
+            void navigate({ to: "/onboarding", replace: true });
+            return;
+          }
+
+          const nome =
+            profile?.nome ||
+            (user.user_metadata?.nome as string | undefined) ||
+            (user.user_metadata?.full_name as string | undefined) ||
+            (user.user_metadata?.name as string | undefined) ||
+            user.email?.split("@")[0] ||
+            "Cliente";
+
+          await registerAsClientFn({ data: { nome } });
+          void navigate({ to: "/conta", replace: true });
           return;
         }
 
@@ -57,6 +81,7 @@ function AuthCallback() {
         void navigate({ to: "/login", replace: true });
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- roda uma única vez no mount; registerAsClientFn não deve reiniciar o efeito
   }, [navigate]);
 
   return (

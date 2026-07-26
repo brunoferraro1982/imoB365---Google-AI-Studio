@@ -9,6 +9,13 @@ export const Route = createFileRoute("/admin/emails")({
   component: EmailCenter,
 });
 
+const STATUS_LABEL: Record<string, string> = {
+  sent: "Enviado",
+  failed: "Falhou",
+  pending: "Pendente",
+  dlq: "Descartado (DLQ)",
+};
+
 type Log = {
   id: string;
   created_at: string;
@@ -128,7 +135,7 @@ function EmailCenter() {
                     <td className="px-4 py-2">{r.template_name}</td>
                     <td className="px-4 py-2 font-mono text-xs">{r.recipient_email}</td>
                     <td className="px-4 py-2">
-                      <Badge variant="outline">{r.status}</Badge>
+                      <Badge variant="outline">{STATUS_LABEL[r.status] ?? r.status}</Badge>
                     </td>
                     <td className="px-4 py-2 text-xs text-muted-foreground">
                       {r.error_message ?? "—"}
