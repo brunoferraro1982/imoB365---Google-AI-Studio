@@ -412,7 +412,10 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       {/* TOP MODULE BAR */}
       <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm print:hidden">
         <div className="flex h-15 items-center gap-6 px-5">
-          <Link to="/" className="flex items-center transition-transform hover:scale-[1.02]">
+          <Link
+            to="/"
+            className="flex shrink-0 items-center transition-transform hover:scale-[1.02]"
+          >
             <Logo className="h-8.5 w-auto" variant="white" />
           </Link>
           <nav className="flex flex-1 items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
