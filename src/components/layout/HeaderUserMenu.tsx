@@ -24,6 +24,7 @@ import {
   MenuSquare,
 } from "lucide-react";
 import { useAuth, AppRole } from "@/hooks/useAuth";
+import { ROLE_LABEL } from "@/lib/roles";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -567,7 +568,7 @@ export function HeaderUserMenu() {
                                   variant="outline"
                                   className="text-[9px] font-bold px-1.5 py-0 uppercase bg-blue-50/5 text-primary border-primary/20"
                                 >
-                                  {r}
+                                  {ROLE_LABEL[r] ?? r}
                                 </Badge>
                               ))
                             ) : (
