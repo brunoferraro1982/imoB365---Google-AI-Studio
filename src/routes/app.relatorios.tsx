@@ -295,6 +295,73 @@ function RelatoriosPage() {
             </div>
           </div>
 
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <h2 className="text-sm font-semibold">Financeiro por centro de custo</h2>
+              <p className="text-xs text-muted-foreground">Entradas vs saídas, últimos 6 meses</p>
+              <div className="mt-4 space-y-3">
+                {data.financeiro_por_centro_custo.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhum lançamento no período.</p>
+                )}
+                {data.financeiro_por_centro_custo.map((c) => {
+                  const max = Math.max(
+                    ...data.financeiro_por_centro_custo.map((x) => x.entradas + x.saidas),
+                    1,
+                  );
+                  const pctEntradas = Math.round((c.entradas / max) * 100);
+                  const pctSaidas = Math.round((c.saidas / max) * 100);
+                  return (
+                    <div key={c.centro_custo}>
+                      <div className="flex justify-between gap-2 text-xs">
+                        <span className="truncate">{c.centro_custo}</span>
+                        <span className="shrink-0 text-muted-foreground">
+                          {formatBRL(c.entradas)} · {formatBRL(c.saidas)}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex h-2 gap-0.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full bg-emerald-500"
+                          style={{ width: `${pctEntradas}%` }}
+                        />
+                        <div className="h-full bg-rose-500" style={{ width: `${pctSaidas}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <h2 className="text-sm font-semibold">Financeiro por plano de contas</h2>
+              <p className="text-xs text-muted-foreground">
+                Total por classificação, últimos 6 meses
+              </p>
+              <div className="mt-4 space-y-3">
+                {data.financeiro_por_plano_conta.length === 0 && (
+                  <p className="text-sm text-muted-foreground">Nenhum lançamento no período.</p>
+                )}
+                {data.financeiro_por_plano_conta.map((p) => {
+                  const max = Math.max(...data.financeiro_por_plano_conta.map((x) => x.total), 1);
+                  const pct = Math.round((p.total / max) * 100);
+                  return (
+                    <div key={p.plano_conta}>
+                      <div className="flex justify-between gap-2 text-xs">
+                        <span className="truncate">{p.plano_conta}</span>
+                        <span className="shrink-0 text-muted-foreground">{formatBRL(p.total)}</span>
+                      </div>
+                      <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`h-full ${p.tipo === "receita" ? "bg-emerald-500" : "bg-rose-500"}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
           <div className="mt-8 grid gap-4 lg:grid-cols-3">
             <div className="rounded-xl border border-border bg-card p-5">
               <h2 className="text-sm font-semibold">Funil de leads</h2>
