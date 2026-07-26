@@ -1,9 +1,13 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { Calculator, ChevronRight, Landmark, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { formatBRL } from "@/lib/format";
 import { toast } from "sonner";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Sistema = "price" | "sac";
 
@@ -49,13 +53,26 @@ function calcular(
   return { primeira, ultima, total, juros: totalJuros, principal };
 }
 
-export function SimuladorFinanciamento({ preco }: { preco: number }) {
+export function SimuladorFinanciamento({
+  preco,
+  imovelId,
+  titulo,
+}: {
+  preco: number;
+  imovelId: string;
+  titulo: string;
+}) {
   const [entrada, setEntrada] = useState(Math.round(preco * 0.2));
   const [prazo, setPrazo] = useState(360);
   const [juros, setJuros] = useState(9.5);
   const [sistema, setSistema] = useState<Sistema>("sac");
   const [bancoSelecionado, setBancoSelecionado] = useState<string>("Caixa Econômica");
-  const [loadingConsent, setLoadingConsent] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
 
   const resultado = useMemo(
     () => calcular(preco, entrada, prazo, juros, sistema),
@@ -84,14 +101,34 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
   const dashoffsetPrincipal = strokeDash - (strokeDash * percentPrincipal) / 100;
 
   const handleRequestCreditAnalysis = () => {
-    setLoadingConsent(true);
-    setTimeout(() => {
-      setLoadingConsent(false);
-      toast.success(
-        "Solicitação recebida! Um especialista em crédito imobiliário entrará em contato em breve.",
-      );
-    }, 1200);
+    setShowForm(true);
   };
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    if (nome.trim().length < 2) return toast.error("Informe seu nome");
+    if (!email.trim() && !telefone.trim()) return toast.error("Informe e-mail ou telefone");
+    if (email.trim() && !EMAIL_RE.test(email.trim())) return toast.error("E-mail inválido");
+    setSending(true);
+    const mensagem =
+      `Solicitação de análise de crédito (simulador). Imóvel: "${titulo}". ` +
+      `Valor: ${formatBRL(preco)}. Entrada: ${formatBRL(entrada)} (${Math.round(percentualEntrada)}%). ` +
+      `Prazo: ${prazo} meses. Sistema: ${sistema.toUpperCase()}. Banco de referência: ${bancoSelecionado}. ` +
+      `Parcela estimada: ${formatBRL(resultado.primeira)}.`;
+    const { error } = await supabase.rpc("public_create_lead", {
+      _imovel_id: imovelId,
+      _nome: nome.trim().slice(0, 200),
+      _email: email.trim().slice(0, 255),
+      _telefone: telefone.trim().slice(0, 40),
+      _mensagem: mensagem.slice(0, 2000),
+    });
+    setSending(false);
+    if (error) return toast.error("Não foi possível enviar sua solicitação: " + error.message);
+    setSent(true);
+    toast.success(
+      "Solicitação recebida! Um especialista em crédito imobiliário entrará em contato em breve.",
+    );
+  }
 
   return (
     <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
@@ -364,18 +401,72 @@ export function SimuladorFinanciamento({ preco }: { preco: number }) {
           </div>
 
           <div className="mt-5 space-y-2">
-            <button
-              onClick={handleRequestCreditAnalysis}
-              disabled={loadingConsent}
-              className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground shadow-sm hover:bg-opacity-95 transition-all text-center"
-            >
-              🚀 {loadingConsent ? "Aguarde..." : "Aprovar Meu Crédito Grátis"}
-              <ChevronRight className="h-4 w-4" />
-            </button>
-            <p className="text-[10px] text-center text-muted-foreground leading-normal">
-              Análise instantânea de crédito com inteligência artificial parceira de todos os bancos
-              listados sem compromisso.
-            </p>
+            {sent ? (
+              <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-center text-xs font-medium text-emerald-900 dark:text-emerald-200">
+                Solicitação enviada! Um especialista em crédito imobiliário entrará em contato em
+                breve.
+              </div>
+            ) : showForm ? (
+              <form onSubmit={submit} className="space-y-2.5 rounded-lg border border-border p-3.5">
+                <div>
+                  <Label className="text-xs">Seu nome *</Label>
+                  <Input
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    required
+                    maxLength={200}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">E-mail</Label>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={255}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Telefone / WhatsApp</Label>
+                  <Input
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    maxLength={40}
+                    placeholder="(11) 99999-9999"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowForm(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" size="sm" disabled={sending} className="flex-1">
+                    {sending ? "Enviando…" : "Confirmar solicitação"}
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <button
+                  onClick={handleRequestCreditAnalysis}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary py-3 text-sm font-bold text-primary-foreground shadow-sm hover:bg-opacity-95 transition-all text-center"
+                >
+                  🚀 Aprovar Meu Crédito Grátis
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <p className="text-[10px] text-center text-muted-foreground leading-normal">
+                  Análise instantânea de crédito com inteligência artificial parceira de todos os
+                  bancos listados sem compromisso.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
