@@ -100,6 +100,7 @@ import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.wi
 import { Route as AppSitePreviaRouteImport } from './routes/app.site.previa'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
+import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
@@ -624,6 +625,12 @@ const AppSiteAssistenteRoute = AppSiteAssistenteRouteImport.update({
   path: '/assistente',
   getParentRoute: () => AppSiteRoute,
 } as any)
+const AppLocacaoPrestacaoContasRoute =
+  AppLocacaoPrestacaoContasRouteImport.update({
+    id: '/locacao/prestacao-contas',
+    path: '/locacao/prestacao-contas',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   id: '/leads/configuracao',
   path: '/leads/configuracao',
@@ -1098,6 +1105,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1253,6 +1261,7 @@ export interface FileRoutesByTo {
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1414,6 +1423,7 @@ export interface FileRoutesById {
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1576,6 +1586,7 @@ export interface FileRouteTypes {
     | '/app/leads/analise-risco'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/locacao/prestacao-contas'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -1731,6 +1742,7 @@ export interface FileRouteTypes {
     | '/app/leads/analise-risco'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/locacao/prestacao-contas'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -1891,6 +1903,7 @@ export interface FileRouteTypes {
     | '/app/leads/analise-risco'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/locacao/prestacao-contas'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -2649,6 +2662,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteAssistenteRouteImport
       parentRoute: typeof AppSiteRoute
     }
+    '/app/locacao/prestacao-contas': {
+      id: '/app/locacao/prestacao-contas'
+      path: '/locacao/prestacao-contas'
+      fullPath: '/app/locacao/prestacao-contas'
+      preLoaderRoute: typeof AppLocacaoPrestacaoContasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/configuracao': {
       id: '/app/leads/configuracao'
       path: '/leads/configuracao'
@@ -3246,6 +3266,7 @@ interface AppRouteChildren {
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
+  AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
   AppContratosIndexRoute: typeof AppContratosIndexRoute
@@ -3299,6 +3320,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
+  AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
   AppContratosIndexRoute: AppContratosIndexRoute,
