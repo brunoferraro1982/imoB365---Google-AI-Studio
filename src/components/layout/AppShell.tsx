@@ -123,6 +123,7 @@ const tenantModules: Module[] = [
       { to: "/app/financeiro", label: "Contas a pagar e receber", icon: Banknote },
       { to: "/app/comissoes", label: "Comissões", icon: Wallet },
       { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
+      { to: "/app/locacao/prestacao-contas", label: "Prestação de contas", icon: FileText },
       { to: "/app/financeiro/plano-contas", label: "Plano de contas", icon: FileText },
       { to: "/app/financeiro/centros-custo", label: "Centros de custo", icon: Building },
     ],

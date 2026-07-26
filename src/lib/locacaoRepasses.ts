@@ -31,18 +31,20 @@ export async function gerarRepassesDoMes(
     .eq("status", "ativo")
     .limit(500);
   if (opts?.tenantId) query = query.eq("tenant_id", opts.tenantId);
-  const { data: contratos } = await query;
+  const { data: contratos, error: contratosError } = await query;
+  if (contratosError) throw contratosError;
 
   let criados = 0;
   let jaExistiam = 0;
 
   for (const c of contratos ?? []) {
-    const { data: existente } = await client
+    const { data: existente, error: existenteError } = await client
       .from("locacao_repasses")
       .select("id")
       .eq("contrato_id", c.id)
       .eq("mes_referencia", mesReferencia)
       .limit(1);
+    if (existenteError) throw existenteError;
     if (existente && existente.length > 0) {
       jaExistiam++;
       continue;
@@ -65,7 +67,8 @@ export async function gerarRepassesDoMes(
       valor_repasse: valorAluguel,
       status: "pendente",
     });
-    if (!error) criados++;
+    if (error) console.error("[gerarRepassesDoMes] falha ao criar repasse", c.id, error);
+    else criados++;
   }
 
   return { criados, jaExistiam };
