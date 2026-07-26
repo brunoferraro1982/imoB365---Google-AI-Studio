@@ -270,7 +270,13 @@ function ImovelDetail() {
               </div>
             )}
 
-            {imovel.finalidade === "venda" && <SimuladorFinanciamento preco={imovel.preco} />}
+            {imovel.finalidade === "venda" && (
+              <SimuladorFinanciamento
+                preco={imovel.preco}
+                imovelId={imovel.id}
+                titulo={imovel.titulo}
+              />
+            )}
             <HistoricoPreco imovelId={imovel.id} precoAtual={imovel.preco} />
           </div>
 
