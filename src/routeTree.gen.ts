@@ -157,6 +157,7 @@ import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.i
 import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
+import { Route as ApiPublicCronInadimplenciaRouteImport } from './routes/api.public.cron.inadimplencia'
 import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.public.cron.gerar-repasses'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
@@ -924,6 +925,12 @@ const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
   path: '/api/public/cron/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronInadimplenciaRoute =
+  ApiPublicCronInadimplenciaRouteImport.update({
+    id: '/api/public/cron/inadimplencia',
+    path: '/api/public/cron/inadimplencia',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronGerarRepassesRoute =
   ApiPublicCronGerarRepassesRouteImport.update({
     id: '/api/public/cron/gerar-repasses',
@@ -1115,6 +1122,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1269,6 +1277,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1429,6 +1438,7 @@ export interface FileRoutesById {
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
+  '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1590,6 +1600,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-repasses'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1744,6 +1755,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-repasses'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1903,6 +1915,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-repasses'
+    | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1979,6 +1992,7 @@ export interface RootRouteChildren {
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronGerarRepassesRoute: typeof ApiPublicCronGerarRepassesRoute
+  ApiPublicCronInadimplenciaRoute: typeof ApiPublicCronInadimplenciaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
@@ -3034,6 +3048,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronSnapshotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/inadimplencia': {
+      id: '/api/public/cron/inadimplencia'
+      path: '/api/public/cron/inadimplencia'
+      fullPath: '/api/public/cron/inadimplencia'
+      preLoaderRoute: typeof ApiPublicCronInadimplenciaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/gerar-repasses': {
       id: '/api/public/cron/gerar-repasses'
       path: '/api/public/cron/gerar-repasses'
@@ -3383,6 +3404,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronGerarRepassesRoute: ApiPublicCronGerarRepassesRoute,
+  ApiPublicCronInadimplenciaRoute: ApiPublicCronInadimplenciaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
