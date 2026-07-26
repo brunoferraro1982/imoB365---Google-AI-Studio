@@ -23,6 +23,8 @@ export type RelatoriosData = {
   funil: { status: string; count: number }[];
   leads_por_dia: { data: string; novos: number }[];
   financeiro_por_mes: { mes: string; entradas: number; saidas: number }[];
+  financeiro_por_centro_custo: { centro_custo: string; entradas: number; saidas: number }[];
+  financeiro_por_plano_conta: { plano_conta: string; tipo: string; total: number }[];
   ranking_corretores: { corretor: string; leads: number; ganhos: number }[];
   ranking_imoveis: {
     id: string;
@@ -85,7 +87,15 @@ export const getRelatorios = createServerFn({ method: "POST" })
     const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    const [imoveisRes, leadsRes, contratosRes, lancRes, corretoresRes] = await Promise.all([
+    const [
+      imoveisRes,
+      leadsRes,
+      contratosRes,
+      lancRes,
+      corretoresRes,
+      planoContasRes,
+      centrosCustoRes,
+    ] = await Promise.all([
       supabase
         .from("imoveis")
         .select("id,titulo,endereco_bairro,status,publicado,preco,tipo,created_at")
@@ -101,10 +111,14 @@ export const getRelatorios = createServerFn({ method: "POST" })
         .eq("tenant_id", tenantId),
       supabase
         .from("lancamentos_financeiros")
-        .select("id,tipo,valor,status,data_vencimento,data_pagamento")
+        .select(
+          "id,tipo,valor,status,data_vencimento,data_pagamento,plano_conta_id,centro_custo_id",
+        )
         .eq("tenant_id", tenantId)
         .gte("data_vencimento", isoDay(sixMonthsAgo)),
       supabase.from("corretores").select("id,nome,ativo").eq("tenant_id", tenantId),
+      supabase.from("plano_contas").select("id,codigo,nome,tipo").eq("tenant_id", tenantId),
+      supabase.from("centros_custo").select("id,codigo,nome").eq("tenant_id", tenantId),
     ]);
 
     const imoveis = imoveisRes.data ?? [];
@@ -112,6 +126,8 @@ export const getRelatorios = createServerFn({ method: "POST" })
     const contratos = contratosRes.data ?? [];
     const lanc = lancRes.data ?? [];
     const corretores = corretoresRes.data ?? [];
+    const planoContas = planoContasRes.data ?? [];
+    const centrosCusto = centrosCustoRes.data ?? [];
 
     // KPIs imóveis
     const imoveis_ativos = imoveis.filter((i) => i.status === "ativo").length;
@@ -227,6 +243,44 @@ export const getRelatorios = createServerFn({ method: "POST" })
       saidas: v.saidas,
     }));
 
+    // Financeiro por centro de custo (mesmo período de 6 meses de financeiro_por_mes)
+    const NAO_CLASSIFICADO = "Não classificado";
+    const centroCustoNome = new Map(centrosCusto.map((c) => [c.id, `${c.codigo} — ${c.nome}`]));
+    const centroCustoMap = new Map<string, { entradas: number; saidas: number }>();
+    for (const l of lanc) {
+      const key = l.centro_custo_id
+        ? (centroCustoNome.get(l.centro_custo_id) ?? "—")
+        : NAO_CLASSIFICADO;
+      const b = centroCustoMap.get(key) ?? { entradas: 0, saidas: 0 };
+      if (l.tipo === "receita") b.entradas += Number(l.valor ?? 0);
+      else if (l.tipo === "despesa") b.saidas += Number(l.valor ?? 0);
+      centroCustoMap.set(key, b);
+    }
+    const financeiro_por_centro_custo = Array.from(centroCustoMap.entries())
+      .map(([centro_custo, v]) => ({ centro_custo, entradas: v.entradas, saidas: v.saidas }))
+      .sort((a, b) => b.entradas + b.saidas - (a.entradas + a.saidas))
+      .slice(0, 8);
+
+    // Financeiro por plano de contas — cada plano de conta já tem um tipo
+    // fixo (receita/despesa), então o total nunca mistura os dois; o que não
+    // tem plano_conta_id vinculado vira um bucket "Não classificado" por tipo.
+    const planoContaInfo = new Map(
+      planoContas.map((p) => [p.id, { label: `${p.codigo} — ${p.nome}`, tipo: p.tipo as string }]),
+    );
+    const planoContaMap = new Map<string, { tipo: string; total: number }>();
+    for (const l of lanc) {
+      const pc = l.plano_conta_id ? planoContaInfo.get(l.plano_conta_id) : undefined;
+      const tipo = pc?.tipo ?? (l.tipo as string);
+      const key = pc ? pc.label : `${NAO_CLASSIFICADO} (${tipo})`;
+      const b = planoContaMap.get(key) ?? { tipo, total: 0 };
+      b.total += Number(l.valor ?? 0);
+      planoContaMap.set(key, b);
+    }
+    const financeiro_por_plano_conta = Array.from(planoContaMap.entries())
+      .map(([plano_conta, v]) => ({ plano_conta, tipo: v.tipo, total: v.total }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 8);
+
     // Ranking corretores
     const corretorNome = new Map(corretores.map((c) => [c.id, c.nome]));
     const corretorLeads = new Map<string, { leads: number; ganhos: number }>();
@@ -298,6 +352,8 @@ export const getRelatorios = createServerFn({ method: "POST" })
       funil,
       leads_por_dia,
       financeiro_por_mes,
+      financeiro_por_centro_custo,
+      financeiro_por_plano_conta,
       ranking_corretores,
       ranking_imoveis,
       imoveis_por_tipo,
