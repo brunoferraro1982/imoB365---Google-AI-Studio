@@ -83,6 +83,7 @@ const tenantModules: Module[] = [
       { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/locacao", label: "Locação", icon: Home },
+      { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },

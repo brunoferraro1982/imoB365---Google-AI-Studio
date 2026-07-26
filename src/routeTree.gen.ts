@@ -141,11 +141,13 @@ import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
+import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
 import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.repasses.$id'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
@@ -155,6 +157,7 @@ import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.i
 import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
+import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.public.cron.gerar-repasses'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
@@ -835,6 +838,11 @@ const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
   path: '/api/ai/assistente',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppLocacaoRepassesIndexRoute = AppLocacaoRepassesIndexRouteImport.update({
+  id: '/locacao/repasses/',
+  path: '/locacao/repasses/',
+  getParentRoute: () => AppRoute,
+} as any)
 const SiteSlugPPageSlugRoute = SiteSlugPPageSlugRouteImport.update({
   id: '/site/$slug_/p/$pageSlug',
   path: '/site/$slug/p/$pageSlug',
@@ -860,6 +868,11 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppLocacaoRepassesIdRoute = AppLocacaoRepassesIdRouteImport.update({
+  id: '/locacao/repasses/$id',
+  path: '/locacao/repasses/$id',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppContratosModelosBibliotecaRoute =
   AppContratosModelosBibliotecaRouteImport.update({
@@ -911,6 +924,12 @@ const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
   path: '/api/public/cron/snapshot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronGerarRepassesRoute =
+  ApiPublicCronGerarRepassesRouteImport.update({
+    id: '/api/public/cron/gerar-repasses',
+    path: '/api/public/cron/gerar-repasses',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronExpireTrialsRoute =
   ApiPublicCronExpireTrialsRouteImport.update({
     id: '/api/public/cron/expire-trials',
@@ -1095,6 +1114,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1104,11 +1124,13 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1246,6 +1268,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1255,11 +1278,13 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1403,6 +1428,7 @@ export interface FileRoutesById {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
@@ -1412,11 +1438,13 @@ export interface FileRoutesById {
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug_/blog_/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1561,6 +1589,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1570,11 +1599,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
+    | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
+    | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -1712,6 +1743,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1721,11 +1753,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
+    | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
+    | '/app/locacao/repasses'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -1868,6 +1902,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/snapshot'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
@@ -1877,11 +1912,13 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
+    | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/site/$slug_/blog_/$postSlug'
     | '/site/$slug_/p/$pageSlug'
+    | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -1941,6 +1978,7 @@ export interface RootRouteChildren {
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
+  ApiPublicCronGerarRepassesRoute: typeof ApiPublicCronGerarRepassesRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
@@ -2884,6 +2922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiAssistenteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/locacao/repasses/': {
+      id: '/app/locacao/repasses/'
+      path: '/locacao/repasses'
+      fullPath: '/app/locacao/repasses/'
+      preLoaderRoute: typeof AppLocacaoRepassesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/site/$slug_/p/$pageSlug': {
       id: '/site/$slug_/p/$pageSlug'
       path: '/site/$slug/p/$pageSlug'
@@ -2918,6 +2963,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/lovable/email/auth/preview'
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/app/locacao/repasses/$id': {
+      id: '/app/locacao/repasses/$id'
+      path: '/locacao/repasses/$id'
+      fullPath: '/app/locacao/repasses/$id'
+      preLoaderRoute: typeof AppLocacaoRepassesIdRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/contratos/modelos_/biblioteca': {
       id: '/app/contratos/modelos_/biblioteca'
@@ -2980,6 +3032,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/snapshot'
       fullPath: '/api/public/cron/snapshot'
       preLoaderRoute: typeof ApiPublicCronSnapshotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/gerar-repasses': {
+      id: '/api/public/cron/gerar-repasses'
+      path: '/api/public/cron/gerar-repasses'
+      fullPath: '/api/public/cron/gerar-repasses'
+      preLoaderRoute: typeof ApiPublicCronGerarRepassesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/expire-trials': {
@@ -3178,6 +3237,8 @@ interface AppRouteChildren {
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
   AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
   AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
+  AppLocacaoRepassesIdRoute: typeof AppLocacaoRepassesIdRoute
+  AppLocacaoRepassesIndexRoute: typeof AppLocacaoRepassesIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -3229,6 +3290,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
   AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
   AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
+  AppLocacaoRepassesIdRoute: AppLocacaoRepassesIdRoute,
+  AppLocacaoRepassesIndexRoute: AppLocacaoRepassesIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -3319,6 +3382,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
+  ApiPublicCronGerarRepassesRoute: ApiPublicCronGerarRepassesRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
