@@ -262,7 +262,7 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4 relative">
         <Link
           to={config.logoTo ?? "/"}
-          className="flex items-center transition-transform hover:scale-[1.015]"
+          className="flex shrink-0 items-center transition-transform hover:scale-[1.015]"
         >
           {config.logo}
         </Link>
@@ -373,7 +373,7 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
               >
                 <SheetHeader className="px-6 py-5 border-b border-border/50">
                   <SheetTitle className="text-left font-bold tracking-tight text-foreground flex items-center justify-between">
-                    {config.logo}
+                    <span className="shrink-0">{config.logo}</span>
                   </SheetTitle>
                 </SheetHeader>
 
