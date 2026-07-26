@@ -9,7 +9,7 @@ export function LogoIcon({ className = "h-8 w-8" }: { className?: string }) {
   // flex-basis "auto" de um <img> só com altura definida resolve pra 0.
   // shrink-0: garante que a logo nunca seja espremida pelo flex-shrink padrão.
   return (
-    <img src={logoIconImg} alt="" width={264} height={283} className={`${className} shrink-0`} />
+    <img src={logoIconImg} alt="" width={268} height={285} className={`${className} shrink-0`} />
   );
 }
 
