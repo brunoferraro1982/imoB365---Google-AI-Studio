@@ -111,6 +111,7 @@ import { Route as AppImoveisCompararRouteImport } from './routes/app.imoveis.com
 import { Route as AppImoveisIdRouteImport } from './routes/app.imoveis.$id'
 import { Route as AppFinanceiroPlanoContasRouteImport } from './routes/app.financeiro.plano-contas'
 import { Route as AppFinanceiroNovoRouteImport } from './routes/app.financeiro.novo'
+import { Route as AppFinanceiroDashboardRouteImport } from './routes/app.financeiro.dashboard'
 import { Route as AppFinanceiroCentrosCustoRouteImport } from './routes/app.financeiro.centros-custo'
 import { Route as AppFinanceiroIdRouteImport } from './routes/app.financeiro.$id'
 import { Route as AppEmpreendimentosIdRouteImport } from './routes/app.empreendimentos.$id'
@@ -682,6 +683,11 @@ const AppFinanceiroNovoRoute = AppFinanceiroNovoRouteImport.update({
   path: '/financeiro/novo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFinanceiroDashboardRoute = AppFinanceiroDashboardRouteImport.update({
+  id: '/financeiro/dashboard',
+  path: '/financeiro/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFinanceiroCentrosCustoRoute =
   AppFinanceiroCentrosCustoRouteImport.update({
     id: '/financeiro/centros-custo',
@@ -1095,6 +1101,7 @@ export interface FileRoutesByFullPath {
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
+  '/app/financeiro/dashboard': typeof AppFinanceiroDashboardRoute
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
@@ -1251,6 +1258,7 @@ export interface FileRoutesByTo {
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
+  '/app/financeiro/dashboard': typeof AppFinanceiroDashboardRoute
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
@@ -1413,6 +1421,7 @@ export interface FileRoutesById {
   '/app/empreendimentos/$id': typeof AppEmpreendimentosIdRoute
   '/app/financeiro/$id': typeof AppFinanceiroIdRoute
   '/app/financeiro/centros-custo': typeof AppFinanceiroCentrosCustoRoute
+  '/app/financeiro/dashboard': typeof AppFinanceiroDashboardRoute
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
@@ -1576,6 +1585,7 @@ export interface FileRouteTypes {
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
+    | '/app/financeiro/dashboard'
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
@@ -1732,6 +1742,7 @@ export interface FileRouteTypes {
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
+    | '/app/financeiro/dashboard'
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
@@ -1893,6 +1904,7 @@ export interface FileRouteTypes {
     | '/app/empreendimentos/$id'
     | '/app/financeiro/$id'
     | '/app/financeiro/centros-custo'
+    | '/app/financeiro/dashboard'
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
@@ -2739,6 +2751,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFinanceiroNovoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/financeiro/dashboard': {
+      id: '/app/financeiro/dashboard'
+      path: '/financeiro/dashboard'
+      fullPath: '/app/financeiro/dashboard'
+      preLoaderRoute: typeof AppFinanceiroDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/financeiro/centros-custo': {
       id: '/app/financeiro/centros-custo'
       path: '/financeiro/centros-custo'
@@ -3256,6 +3275,7 @@ interface AppRouteChildren {
   AppEmpreendimentosIdRoute: typeof AppEmpreendimentosIdRoute
   AppFinanceiroIdRoute: typeof AppFinanceiroIdRoute
   AppFinanceiroCentrosCustoRoute: typeof AppFinanceiroCentrosCustoRoute
+  AppFinanceiroDashboardRoute: typeof AppFinanceiroDashboardRoute
   AppFinanceiroNovoRoute: typeof AppFinanceiroNovoRoute
   AppFinanceiroPlanoContasRoute: typeof AppFinanceiroPlanoContasRoute
   AppImoveisIdRoute: typeof AppImoveisIdRoute
@@ -3310,6 +3330,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppEmpreendimentosIdRoute: AppEmpreendimentosIdRoute,
   AppFinanceiroIdRoute: AppFinanceiroIdRoute,
   AppFinanceiroCentrosCustoRoute: AppFinanceiroCentrosCustoRoute,
+  AppFinanceiroDashboardRoute: AppFinanceiroDashboardRoute,
   AppFinanceiroNovoRoute: AppFinanceiroNovoRoute,
   AppFinanceiroPlanoContasRoute: AppFinanceiroPlanoContasRoute,
   AppImoveisIdRoute: AppImoveisIdRoute,
