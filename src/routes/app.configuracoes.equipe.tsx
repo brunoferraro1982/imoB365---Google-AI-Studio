@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 import { formatQuota } from "@/lib/format";
+import { ROLE_LABEL } from "@/lib/roles";
 
 export const Route = createFileRoute("/app/configuracoes/equipe")({
   component: Equipe,
@@ -275,7 +276,7 @@ function Equipe() {
                             className="text-[10px]"
                           >
                             {r === "super_admin" && <Shield className="mr-1 h-3 w-3" />}
-                            {r}
+                            {ROLE_LABEL[r] ?? r}
                           </Badge>
                         ))}
                       </div>

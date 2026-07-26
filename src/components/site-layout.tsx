@@ -83,8 +83,11 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
 ];
 
-function buildCorporateNavConfig(user: unknown): MegaNavConfig {
-  const anunciarTo = user ? "/app/imoveis/novo" : "/signup";
+function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNavConfig {
+  // Cliente final (comprador/locatário) está logado mas nunca tem tenant —
+  // "Anunciar Imóvel" precisa levar pro onboarding profissional (vira
+  // corretor/imobiliária), não pra /app/imoveis/novo, que quebraria sem tenant.
+  const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
     logo: <Logo className="h-9 w-auto" />,
     logoTo: "/",
@@ -331,8 +334,8 @@ function buildCorporateNavConfig(user: unknown): MegaNavConfig {
 }
 
 function SiteHeaderImpl() {
-  const { user } = useAuth();
-  const config = buildCorporateNavConfig(user);
+  const { user, tenantId } = useAuth();
+  const config = buildCorporateNavConfig(user, tenantId);
   return <MegaNavHeader config={config} />;
 }
 

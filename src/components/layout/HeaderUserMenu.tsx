@@ -24,6 +24,7 @@ import {
   MenuSquare,
 } from "lucide-react";
 import { useAuth, AppRole } from "@/hooks/useAuth";
+import { ROLE_LABEL } from "@/lib/roles";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,7 +43,7 @@ function initials(nome: string | null | undefined, email: string | null | undefi
 }
 
 export function HeaderUserMenu() {
-  const { user, profile, roles, loading } = useAuth();
+  const { user, profile, roles, tenantId, loading } = useAuth();
   const navigate = useNavigate();
 
   // Menu visibility states
@@ -567,7 +568,7 @@ export function HeaderUserMenu() {
                                   variant="outline"
                                   className="text-[9px] font-bold px-1.5 py-0 uppercase bg-blue-50/5 text-primary border-primary/20"
                                 >
-                                  {r}
+                                  {ROLE_LABEL[r] ?? r}
                                 </Badge>
                               ))
                             ) : (
@@ -586,7 +587,10 @@ export function HeaderUserMenu() {
                     {/* FULL-WIDTH ACTIONS — fora da coluna estreita pra não truncar "Anunciar novo imóvel" */}
                     <div className="space-y-2 border-t border-border/80 pt-3">
                       <Link
-                        to="/app/imoveis/novo"
+                        // Cliente final (comprador/locatário) nunca tem tenant — reaproveita
+                        // este CTA como entrada pro onboarding profissional em vez de deixar
+                        // cair em /app/imoveis/novo, que quebraria sem tenant.
+                        to={tenantId ? "/app/imoveis/novo" : "/onboarding"}
                         onClick={() => setIsOpen(false)}
                         className="block"
                       >

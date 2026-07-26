@@ -1,0 +1,17 @@
+title = "imoB365 gitleaks config"
+
+[extend]
+useDefault = true
+
+# Falsos positivos confirmados manualmente — não desativa nenhuma regra,
+# só ignora achados específicos já revisados.
+[allowlist]
+description = "Falsos positivos confirmados"
+commits = [
+  # src/lib/signupIntent.ts:6 — `const KEY = "imob365_signup_intent"` era só o
+  # nome do item no localStorage, não um segredo; disparava a regra
+  # generic-api-key pelo nome da variável. Renomeado em 2cbc1e6, mas o
+  # commit original permanece no histórico da PR e o scan disparado pelo
+  # evento pull_request re-escaneia o range inteiro de commits.
+  "05c7b9f9df04154f0b5ae5776bd932033a33ef30",
+]

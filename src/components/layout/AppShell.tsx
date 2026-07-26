@@ -186,7 +186,7 @@ const adminNav: Item[] = [
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
-  const { user, loading, isSuperAdmin, profile, roles, enabledModules = [] } = useAuth();
+  const { user, loading, isSuperAdmin, profile, roles, tenantId, enabledModules = [] } = useAuth();
   // Detectar redirect de acesso negado
   const searchParams = useSearch({ strict: false }) as { forbidden?: string };
   const showForbidden = searchParams.forbidden === "1";
@@ -211,6 +211,23 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       navigate({ to: "/onboarding", replace: true });
     }
   }, [loading, user, profile, isSuperAdmin, navigate]);
+
+  // Cliente final (comprador/locatário) nunca tem tenant — deixá-lo cair em
+  // /app quebraria silenciosamente em queries que assumem tenantId. A área
+  // dele é /conta; virar profissional é opt-in via "Anunciar Imóvel" →
+  // /onboarding, não uma variação de /app.
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      profile &&
+      !isSuperAdmin &&
+      profile.tipo_usuario === "cliente" &&
+      !tenantId
+    ) {
+      navigate({ to: "/conta", replace: true });
+    }
+  }, [loading, user, profile, isSuperAdmin, tenantId, navigate]);
 
   // Achado de segurança de 2026-07-24: MFA era exigido só na tela de login,
   // não na sessão em si — uma sessão aal1 (senha, sem o desafio TOTP) já

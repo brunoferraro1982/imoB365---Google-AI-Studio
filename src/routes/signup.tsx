@@ -1,11 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/Logo";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
+import { registerAsClient } from "@/lib/onboarding.functions";
+import { markProfessionalSignupIntent, consumeProfessionalSignupIntent } from "@/lib/signupIntent";
 import { toast } from "sonner";
 import {
   ShieldCheck,
@@ -20,6 +23,8 @@ import {
   UserCheck,
   ArrowRight,
   ArrowLeft,
+  Home,
+  Briefcase,
 } from "lucide-react";
 
 type SearchParams = {
@@ -35,6 +40,7 @@ export const Route = createFileRoute("/signup")({
 });
 
 type Step = 1 | 2 | 3 | 4;
+type Mode = "cliente" | "profissional" | null;
 
 const PLANS = [
   { id: "free", name: "Free", value: "Free", price: 0, desc: "Essencial para começar" },
@@ -73,6 +79,10 @@ function planoFromSlug(slug: string | undefined): string {
 function SignupPage() {
   const navigate = useNavigate();
   const { plano } = Route.useSearch();
+  // Vindo de /planos (?plano=...) já expressa intenção profissional — pula a
+  // tela de escolha. Fora isso, a tela de escolha decide o modo.
+  const [mode, setMode] = useState<Mode>(plano ? "profissional" : null);
+  const registerAsClientFn = useServerFn(registerAsClient);
   const [step, setStep] = useState<Step>(1);
   const [loading, setLoading] = useState(false);
 
@@ -187,540 +197,772 @@ function SignupPage() {
 
   const selectedPlanObj = PLANS.find((p) => p.value === planoPretendido) || PLANS[0];
 
+  // Cadastro de cliente final (comprador/locatário) — sem etapas, sem CRECI/CNPJ,
+  // sem aprovação manual. registerAsClient() de fato só roda em /auth/callback
+  // (sessão nova após confirmar o e-mail); aqui só cobre o caso raro de
+  // autoconfirm já devolver sessão ativa (ex: alguns projetos de dev).
+  async function onSubmitCliente(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!nome || !email || !password) {
+      toast.error("Por favor, preencha todos os campos.");
+      return;
+    }
+    if (password.length < 8) {
+      toast.error("A senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("As senhas não conferem.");
+      return;
+    }
+
+    setLoading(true);
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: redirectUrl, data: { nome } },
+    });
+
+    if (error) {
+      setLoading(false);
+      toast.error(error.message);
+      return;
+    }
+
+    if (signUpData?.session) {
+      try {
+        await registerAsClientFn({ data: { nome } });
+      } catch (err) {
+        console.error("Erro ao concluir cadastro de cliente:", err);
+      }
+      setLoading(false);
+      navigate({ to: "/conta" });
+      return;
+    }
+
+    setLoading(false);
+    toast.success("Cadastro realizado! Verifique seu e-mail para confirmar sua conta.");
+    navigate({ to: "/login" });
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/40 px-4 py-12 relative font-sans">
-      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm">
-        <div className="text-center mb-6">
+      {/* ESCOLHA INICIAL: cliente (comprador/locatário) vs. profissional (corretor/imobiliária) */}
+      {mode === null && (
+        <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm text-center">
           <Link to="/" className="inline-block">
             <Logo className="h-7 w-auto" />
           </Link>
-          <div className="flex items-center justify-center gap-1.5 mt-4">
-            {[1, 2, 3, 4].map((s) => (
-              <span
-                key={s}
-                className={`h-1.5 rounded-full transition-all duration-300 ${step === s ? "w-8 bg-primary" : "w-1.5 bg-muted"}`}
-              />
-            ))}
-          </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight">
-            {step === 1 && "Criar sua conta"}
-            {step === 2 && "Configure seu perfil"}
-            {step === 3 && "Selecione seu plano"}
-            {step === 4 && "Validação de Pagamento"}
-          </h1>
+          <h1 className="mt-6 text-2xl font-bold tracking-tight">Como você quer usar o imoB365?</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {step === 1 && "Preencha seus dados de acesso iniciais."}
-            {step === 2 && "Insira as credenciais profissionais de atuação."}
-            {step === 3 && "Escolha quanto sua operação precisa crescer."}
-            {step === 4 && `Demonstração do pagamento de R$ ${selectedPlanObj.price}/mês`}
+            Escolha a opção que combina com você agora — dá pra mudar depois.
+          </p>
+
+          <div className="mt-6 grid gap-3 text-left">
+            <button
+              type="button"
+              onClick={() => {
+                consumeProfessionalSignupIntent();
+                setMode("cliente");
+              }}
+              className="flex items-start gap-3 rounded-xl border-2 border-border p-4 text-left transition hover:border-primary/40 hover:bg-muted/30"
+            >
+              <Home className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <span>
+                <span className="block text-sm font-semibold">
+                  Quero comprar ou alugar um imóvel
+                </span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Cadastro rápido: favorite imóveis, salve buscas e converse com corretores.
+                </span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode("profissional")}
+              className="flex items-start gap-3 rounded-xl border-2 border-border p-4 text-left transition hover:border-primary/40 hover:bg-muted/30"
+            >
+              <Briefcase className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <span>
+                <span className="block text-sm font-semibold">
+                  Sou corretor ou imobiliária, quero anunciar
+                </span>
+                <span className="block text-xs text-muted-foreground mt-0.5">
+                  Cadastre imóveis, gerencie leads e monte sua equipe.
+                </span>
+              </span>
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-muted-foreground font-sans">
+            Já tem conta?{" "}
+            <Link to="/login" className="text-primary hover:underline font-semibold">
+              Entrar
+            </Link>
           </p>
         </div>
+      )}
 
-        <form onSubmit={onSubmit} className="space-y-5">
-          {/* STEP 1: LOGIN DETAILS */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 p-1 rounded-xl bg-muted/60">
-                <button
-                  type="button"
-                  onClick={() => setTipoUsuario("imobiliaria")}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-semibold transition border border-transparent ${tipoUsuario === "imobiliaria" ? "bg-card shadow-sm border-border text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <Building2 className="h-4 w-4 mb-1" />
-                  Imobiliária
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTipoUsuario("corretor")}
-                  className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-semibold transition border border-transparent ${tipoUsuario === "corretor" ? "bg-card shadow-sm border-border text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <UserCheck className="h-4 w-4 mb-1" />
-                  Corretor
-                </button>
+      {/* CADASTRO DE CLIENTE FINAL — simples, sem etapas, sem aprovação manual */}
+      {mode === "cliente" && (
+        <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setMode(null)}
+            className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3 w-3" /> Voltar
+          </button>
+
+          <div className="text-center mb-6">
+            <Link to="/" className="inline-block">
+              <Logo className="h-7 w-auto" />
+            </Link>
+            <h1 className="mt-4 text-2xl font-bold tracking-tight">Criar sua conta</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Só o essencial pra favoritar imóveis e salvar buscas.
+            </p>
+          </div>
+
+          <form onSubmit={onSubmitCliente} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="clienteNome">Nome Completo</Label>
+              <Input
+                id="clienteNome"
+                required
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Seu nome"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="clienteEmail">E-mail</Label>
+              <Input
+                id="clienteEmail"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="nome@exemplo.com"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="clientePassword">Senha</Label>
+              <Input
+                id="clientePassword"
+                type="password"
+                required
+                minLength={8}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="clienteConfirmPassword">Confirmar Senha</Label>
+              <Input
+                id="clienteConfirmPassword"
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repita a senha"
+                className={
+                  confirmPassword && password !== confirmPassword
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : ""
+                }
+              />
+              {confirmPassword && password !== confirmPassword && (
+                <p className="text-xs text-red-500">As senhas não conferem</p>
+              )}
+            </div>
+
+            <div className="pt-2">
+              <div className="relative mb-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Ou cadastre-se via rede social
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="nome">Nome Completo</Label>
-                <Input
-                  id="nome"
-                  required
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Seu nome"
-                />
-              </div>
+              <SocialLoginButtons />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail de Trabalho</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nome@exemplo.com"
-                />
-              </div>
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4"
+            >
+              {loading ? "Criando conta..." : "Criar conta"}{" "}
+              <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Button>
+          </form>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha de Acesso</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 8 caracteres"
+          <p className="mt-6 text-center text-sm text-muted-foreground font-sans">
+            Já tem conta?{" "}
+            <Link to="/login" className="text-primary hover:underline font-semibold">
+              Entrar
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {/* CADASTRO PROFISSIONAL — wizard de 4 etapas existente, sem nenhuma alteração de lógica */}
+      {mode === "profissional" && (
+        <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm">
+          {!plano && (
+            <button
+              type="button"
+              onClick={() => setMode(null)}
+              className="mb-4 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-3 w-3" /> Voltar
+            </button>
+          )}
+          <div className="text-center mb-6">
+            <Link to="/" className="inline-block">
+              <Logo className="h-7 w-auto" />
+            </Link>
+            <div className="flex items-center justify-center gap-1.5 mt-4">
+              {[1, 2, 3, 4].map((s) => (
+                <span
+                  key={s}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${step === s ? "w-8 bg-primary" : "w-1.5 bg-muted"}`}
                 />
-                {password.length > 0 &&
-                  (() => {
-                    const s = passwordStrength(password);
-                    return (
-                      <div className="space-y-1">
-                        <div className="flex gap-1">
-                          {[0, 1, 2, 3].map((i) => (
-                            <div
-                              key={i}
-                              className={`h-1 flex-1 rounded-full transition-colors ${i < s.score ? s.color : "bg-muted"}`}
-                            />
-                          ))}
+              ))}
+            </div>
+            <h1 className="mt-4 text-2xl font-bold tracking-tight">
+              {step === 1 && "Criar sua conta"}
+              {step === 2 && "Configure seu perfil"}
+              {step === 3 && "Selecione seu plano"}
+              {step === 4 && "Validação de Pagamento"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {step === 1 && "Preencha seus dados de acesso iniciais."}
+              {step === 2 && "Insira as credenciais profissionais de atuação."}
+              {step === 3 && "Escolha quanto sua operação precisa crescer."}
+              {step === 4 && `Demonstração do pagamento de R$ ${selectedPlanObj.price}/mês`}
+            </p>
+          </div>
+
+          <form onSubmit={onSubmit} className="space-y-5">
+            {/* STEP 1: LOGIN DETAILS */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 p-1 rounded-xl bg-muted/60">
+                  <button
+                    type="button"
+                    onClick={() => setTipoUsuario("imobiliaria")}
+                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-semibold transition border border-transparent ${tipoUsuario === "imobiliaria" ? "bg-card shadow-sm border-border text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <Building2 className="h-4 w-4 mb-1" />
+                    Imobiliária
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTipoUsuario("corretor")}
+                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-lg text-sm font-semibold transition border border-transparent ${tipoUsuario === "corretor" ? "bg-card shadow-sm border-border text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    <UserCheck className="h-4 w-4 mb-1" />
+                    Corretor
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome Completo</Label>
+                  <Input
+                    id="nome"
+                    required
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    placeholder="Seu nome"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">E-mail de Trabalho</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nome@exemplo.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Senha de Acesso</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mínimo 8 caracteres"
+                  />
+                  {password.length > 0 &&
+                    (() => {
+                      const s = passwordStrength(password);
+                      return (
+                        <div className="space-y-1">
+                          <div className="flex gap-1">
+                            {[0, 1, 2, 3].map((i) => (
+                              <div
+                                key={i}
+                                className={`h-1 flex-1 rounded-full transition-colors ${i < s.score ? s.color : "bg-muted"}`}
+                              />
+                            ))}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{s.label}</p>
                         </div>
-                        <p className="text-xs text-muted-foreground">{s.label}</p>
+                      );
+                    })()}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repita a senha"
+                    className={
+                      confirmPassword && password !== confirmPassword
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    }
+                  />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-xs text-red-500">As senhas não conferem</p>
+                  )}
+                </div>
+
+                {/* SOCIAL LOGINS */}
+                <div className="pt-2">
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-border" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">
+                        Ou cadastre-se via rede social
+                      </span>
+                    </div>
+                  </div>
+
+                  <SocialLoginButtons onBeforeRedirect={markProfessionalSignupIntent} />
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (!nome || !email || !password) {
+                      toast.error("Por favor, preencha todos os campos.");
+                      return;
+                    }
+                    if (password.length < 8) {
+                      toast.error("A senha deve ter pelo menos 8 caracteres.");
+                      return;
+                    }
+                    if (password !== confirmPassword) {
+                      toast.error("As senhas não conferem.");
+                      return;
+                    }
+                    setStep(2);
+                  }}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4"
+                >
+                  Próximo passo <ArrowRight className="h-4 w-4 ml-1.5" />
+                </Button>
+              </div>
+            )}
+
+            {/* STEP 2: PROFESSIONAL ATTRIBUTES */}
+            {step === 2 && (
+              <div className="space-y-4">
+                {tipoUsuario === "imobiliaria" ? (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="imobiliariaNome">Nome Fantasia da Imobiliária</Label>
+                      <Input
+                        id="imobiliariaNome"
+                        required
+                        value={imobiliariaNome}
+                        onChange={(e) => setImobiliariaNome(e.target.value)}
+                        placeholder="Ex: Imobiliária Alvorada"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cnpj">CNPJ da Empresa</Label>
+                      <Input
+                        id="cnpj"
+                        required
+                        value={cnpj}
+                        onChange={(e) => setCnpj(e.target.value)}
+                        placeholder="00.000.000/0001-00"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="creciJuridico">CRECI Jurídico (PJ)</Label>
+                      <Input
+                        id="creciJuridico"
+                        required
+                        value={creciJuridico}
+                        onChange={(e) => setCreciJuridico(e.target.value)}
+                        placeholder="CRECI 12345-J"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="creci">Seu CRECI (PF)</Label>
+                      <Input
+                        id="creci"
+                        required
+                        value={creci}
+                        onChange={(e) => setCreci(e.target.value)}
+                        placeholder="Ex: CRECI 67890-F"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="telefone">WhatsApp / Celular</Label>
+                      <Input
+                        id="telefone"
+                        required
+                        value={telefone}
+                        onChange={(e) => setTelefone(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                      />
+                    </div>
+                    <div className="space-y-2 border border-border/80 rounded-xl p-4 bg-muted/20">
+                      <Label
+                        htmlFor="agenciaInformada"
+                        className="text-primary font-semibold block mb-1"
+                      >
+                        Qual é a sua imobiliária de atuação?
+                      </Label>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Por determinação da LGPD, digite o nome da imobiliária onde você atua
+                        diretamente para que o Super-admin faça a vinculação interna segura.
+                      </p>
+                      <Input
+                        id="agenciaInformada"
+                        value={agenciaInformada}
+                        onChange={(e) => setAgenciaInformada(e.target.value)}
+                        placeholder="Pesquisar/escrever nome da imobiliária..."
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                    className="flex-1"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        tipoUsuario === "imobiliaria" &&
+                        (!imobiliariaNome || !cnpj || !creciJuridico)
+                      ) {
+                        toast.error("Por favor, preencha as informações profissionais.");
+                        return;
+                      }
+                      if (tipoUsuario === "corretor" && (!creci || !telefone)) {
+                        toast.error("Por favor, preencha Creci e WhatsApp.");
+                        return;
+                      }
+                      setStep(3);
+                    }}
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Planos <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: PLAY SELECTION */}
+            {step === 3 && (
+              <div className="space-y-4">
+                <div className="grid gap-3.5 max-h-[360px] overflow-y-auto pr-1">
+                  {PLANS.map((p) => {
+                    const check = planoPretendido === p.value;
+                    return (
+                      <div
+                        key={p.id}
+                        onClick={() => setPlanoPretendido(p.value)}
+                        className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${check ? "border-primary bg-primary/5 ring-1 ring-primary/25" : "border-border hover:border-muted-foreground/30 bg-card"}`}
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm">{p.name}</span>
+                            {p.price > 0 && (
+                              <span className="inline-flex items-center rounded-full bg-accent/80 px-1.5 py-0.5 text-3xs font-medium text-accent-foreground font-mono">
+                                Mensal
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{p.desc}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-extrabold text-sm">
+                            {p.price === 0 ? "Grátis" : `R$ ${p.price}/mês`}
+                          </div>
+                          {check && <Check className="h-4 w-4 text-primary ml-auto mt-1" />}
+                        </div>
                       </div>
                     );
-                  })()}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repita a senha"
-                  className={
-                    confirmPassword && password !== confirmPassword
-                      ? "border-red-500 focus-visible:ring-red-500"
-                      : ""
-                  }
-                />
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-xs text-red-500">As senhas não conferem</p>
-                )}
-              </div>
-
-              {/* SOCIAL LOGINS */}
-              <div className="pt-2">
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">
-                      Ou cadastre-se via rede social
-                    </span>
-                  </div>
+                  })}
                 </div>
 
-                <SocialLoginButtons />
-              </div>
-
-              <Button
-                type="button"
-                onClick={() => {
-                  if (!nome || !email || !password) {
-                    toast.error("Por favor, preencha todos os campos.");
-                    return;
-                  }
-                  if (password.length < 8) {
-                    toast.error("A senha deve ter pelo menos 8 caracteres.");
-                    return;
-                  }
-                  if (password !== confirmPassword) {
-                    toast.error("As senhas não conferem.");
-                    return;
-                  }
-                  setStep(2);
-                }}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4"
-              >
-                Próximo passo <ArrowRight className="h-4 w-4 ml-1.5" />
-              </Button>
-            </div>
-          )}
-
-          {/* STEP 2: PROFESSIONAL ATTRIBUTES */}
-          {step === 2 && (
-            <div className="space-y-4">
-              {tipoUsuario === "imobiliaria" ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="imobiliariaNome">Nome Fantasia da Imobiliária</Label>
-                    <Input
-                      id="imobiliariaNome"
-                      required
-                      value={imobiliariaNome}
-                      onChange={(e) => setImobiliariaNome(e.target.value)}
-                      placeholder="Ex: Imobiliária Alvorada"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cnpj">CNPJ da Empresa</Label>
-                    <Input
-                      id="cnpj"
-                      required
-                      value={cnpj}
-                      onChange={(e) => setCnpj(e.target.value)}
-                      placeholder="00.000.000/0001-00"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="creciJuridico">CRECI Jurídico (PJ)</Label>
-                    <Input
-                      id="creciJuridico"
-                      required
-                      value={creciJuridico}
-                      onChange={(e) => setCreciJuridico(e.target.value)}
-                      placeholder="CRECI 12345-J"
-                    />
-                  </div>
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    className="flex-1"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (planoPretendido === "Free") {
+                        // Skip payment step and register directly
+                        setLoading(true);
+                        onSubmit(new Event("submit") as any);
+                      } else {
+                        setStep(4);
+                      }
+                    }}
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {planoPretendido === "Free" ? "Concluir Cadastro" : "Ir para o Pagamento"}{" "}
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Button>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="creci">Seu CRECI (PF)</Label>
-                    <Input
-                      id="creci"
-                      required
-                      value={creci}
-                      onChange={(e) => setCreci(e.target.value)}
-                      placeholder="Ex: CRECI 67890-F"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="telefone">WhatsApp / Celular</Label>
-                    <Input
-                      id="telefone"
-                      required
-                      value={telefone}
-                      onChange={(e) => setTelefone(e.target.value)}
-                      placeholder="(11) 99999-9999"
-                    />
-                  </div>
-                  <div className="space-y-2 border border-border/80 rounded-xl p-4 bg-muted/20">
-                    <Label
-                      htmlFor="agenciaInformada"
-                      className="text-primary font-semibold block mb-1"
-                    >
-                      Qual é a sua imobiliária de atuação?
-                    </Label>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Por determinação da LGPD, digite o nome da imobiliária onde você atua
-                      diretamente para que o Super-admin faça a vinculação interna segura.
+              </div>
+            )}
+
+            {/* STEP 4: PAYMENT VALIDATOR DEMO */}
+            {step === 4 && (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-border p-4 bg-muted/15 flex flex-col items-center justify-center text-center">
+                  <Sparkles className="h-5 w-5 text-yellow-500 mb-1" />
+                  <span className="text-xs uppercase text-muted-foreground font-semibold">
+                    Valor Recorrente
+                  </span>
+                  <span className="text-xl font-bold font-mono">
+                    R$ {selectedPlanObj.price},00 / mês
+                  </span>
+                  <span className="text-xs text-primary mt-1">
+                    Plano Pretendido: Plano {selectedPlanObj.name}
+                  </span>
+                </div>
+
+                {/* PAYMENT METHOD SELECTOR */}
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPagamentoMetodo("Pix")}
+                    className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Pix" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    <QrCode className="h-4 w-4 mb-1" />
+                    PIX Instantâneo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPagamentoMetodo("Boleto")}
+                    className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Boleto" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    <FileText className="h-4 w-4 mb-1" />
+                    Boleto Bancário
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPagamentoMetodo("Cartao")}
+                    className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Cartao" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
+                  >
+                    <CreditCard className="h-4 w-4 mb-1" />
+                    Cartão de Crédito
+                  </button>
+                </div>
+
+                {/* PIX VIEW */}
+                {pagamentoMetodo === "Pix" && (
+                  <div className="flex flex-col items-center border border-border rounded-xl p-4 bg-muted/10">
+                    <div className="w-32 h-32 bg-card border-2 border-primary rounded-xl flex items-center justify-center p-2 mb-3">
+                      <QrCode className="h-28 w-28 text-foreground" />
+                    </div>
+                    <p className="text-2xs text-muted-foreground text-center">
+                      Escaneie o QR Code acima pelo app do seu banco ou use a chave Copia e Cola
+                      abaixo para preencher o pagamento:
                     </p>
-                    <Input
-                      id="agenciaInformada"
-                      value={agenciaInformada}
-                      onChange={(e) => setAgenciaInformada(e.target.value)}
-                      placeholder="Pesquisar/escrever nome da imobiliária..."
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex gap-3 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(1)}
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (
-                      tipoUsuario === "imobiliaria" &&
-                      (!imobiliariaNome || !cnpj || !creciJuridico)
-                    ) {
-                      toast.error("Por favor, preencha as informações profissionais.");
-                      return;
-                    }
-                    if (tipoUsuario === "corretor" && (!creci || !telefone)) {
-                      toast.error("Por favor, preencha Creci e WhatsApp.");
-                      return;
-                    }
-                    setStep(3);
-                  }}
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  Planos <ArrowRight className="h-4 w-4 ml-1.5" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: PLAY SELECTION */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <div className="grid gap-3.5 max-h-[360px] overflow-y-auto pr-1">
-                {PLANS.map((p) => {
-                  const check = planoPretendido === p.value;
-                  return (
-                    <div
-                      key={p.id}
-                      onClick={() => setPlanoPretendido(p.value)}
-                      className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${check ? "border-primary bg-primary/5 ring-1 ring-primary/25" : "border-border hover:border-muted-foreground/30 bg-card"}`}
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm">{p.name}</span>
-                          {p.price > 0 && (
-                            <span className="inline-flex items-center rounded-full bg-accent/80 px-1.5 py-0.5 text-3xs font-medium text-accent-foreground font-mono">
-                              Mensal
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{p.desc}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-extrabold text-sm">
-                          {p.price === 0 ? "Grátis" : `R$ ${p.price}/mês`}
-                        </div>
-                        {check && <Check className="h-4 w-4 text-primary ml-auto mt-1" />}
-                      </div>
+                    <div className="flex w-full mt-3 gap-1.5">
+                      <Input
+                        readOnly
+                        value="00020101021226870014br.gov.bcb.pix2565imob365-cadastro-validation"
+                        className="font-mono text-3xs h-8 bg-card"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8"
+                        onClick={() => toast.success("Código Pix copiado!")}
+                      >
+                        Copiar
+                      </Button>
                     </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(2)}
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (planoPretendido === "Free") {
-                      // Skip payment step and register directly
-                      setLoading(true);
-                      onSubmit(new Event("submit") as any);
-                    } else {
-                      setStep(4);
-                    }
-                  }}
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {planoPretendido === "Free" ? "Concluir Cadastro" : "Ir para o Pagamento"}{" "}
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: PAYMENT VALIDATOR DEMO */}
-          {step === 4 && (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-border p-4 bg-muted/15 flex flex-col items-center justify-center text-center">
-                <Sparkles className="h-5 w-5 text-yellow-500 mb-1" />
-                <span className="text-xs uppercase text-muted-foreground font-semibold">
-                  Valor Recorrente
-                </span>
-                <span className="text-xl font-bold font-mono">
-                  R$ {selectedPlanObj.price},00 / mês
-                </span>
-                <span className="text-xs text-primary mt-1">
-                  Plano Pretendido: Plano {selectedPlanObj.name}
-                </span>
-              </div>
-
-              {/* PAYMENT METHOD SELECTOR */}
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPagamentoMetodo("Pix")}
-                  className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Pix" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
-                >
-                  <QrCode className="h-4 w-4 mb-1" />
-                  PIX Instantâneo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPagamentoMetodo("Boleto")}
-                  className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Boleto" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
-                >
-                  <FileText className="h-4 w-4 mb-1" />
-                  Boleto Bancário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPagamentoMetodo("Cartao")}
-                  className={`flex flex-col items-center py-2 px-1 border-2 rounded-xl text-xs font-semibold whitespace-nowrap transition ${pagamentoMetodo === "Cartao" ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground"}`}
-                >
-                  <CreditCard className="h-4 w-4 mb-1" />
-                  Cartão de Crédito
-                </button>
-              </div>
-
-              {/* PIX VIEW */}
-              {pagamentoMetodo === "Pix" && (
-                <div className="flex flex-col items-center border border-border rounded-xl p-4 bg-muted/10">
-                  <div className="w-32 h-32 bg-card border-2 border-primary rounded-xl flex items-center justify-center p-2 mb-3">
-                    <QrCode className="h-28 w-28 text-foreground" />
                   </div>
-                  <p className="text-2xs text-muted-foreground text-center">
-                    Escaneie o QR Code acima pelo app do seu banco ou use a chave Copia e Cola
-                    abaixo para preencher o pagamento:
-                  </p>
-                  <div className="flex w-full mt-3 gap-1.5">
-                    <Input
-                      readOnly
-                      value="00020101021226870014br.gov.bcb.pix2565imob365-cadastro-validation"
-                      className="font-mono text-3xs h-8 bg-card"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => toast.success("Código Pix copiado!")}
-                    >
-                      Copiar
-                    </Button>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* BOLETO VIEW */}
-              {pagamentoMetodo === "Boleto" && (
-                <div className="flex flex-col items-center border border-border rounded-xl p-4 bg-muted/10">
-                  <FileText className="h-10 w-10 text-muted-foreground mb-1" />
-                  <p className="text-2xs text-muted-foreground text-center font-semibold text-primary">
-                    Boleto Bancário Gerado com Sucesso
-                  </p>
-                  <p className="text-3xs text-muted-foreground text-center mt-1">
-                    O boleto possui validade de 3 dias úteis para pagamento.
-                  </p>
-                  <div className="flex w-full mt-3 gap-1.5">
-                    <Input
-                      readOnly
-                      value="34191.79001 01043.513184 91020.150008 7 98200000019900"
-                      className="font-mono text-3xs h-8 bg-card"
-                    />
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => toast.success("Código de Barras copiado!")}
-                    >
-                      Copiar
-                    </Button>
+                {/* BOLETO VIEW */}
+                {pagamentoMetodo === "Boleto" && (
+                  <div className="flex flex-col items-center border border-border rounded-xl p-4 bg-muted/10">
+                    <FileText className="h-10 w-10 text-muted-foreground mb-1" />
+                    <p className="text-2xs text-muted-foreground text-center font-semibold text-primary">
+                      Boleto Bancário Gerado com Sucesso
+                    </p>
+                    <p className="text-3xs text-muted-foreground text-center mt-1">
+                      O boleto possui validade de 3 dias úteis para pagamento.
+                    </p>
+                    <div className="flex w-full mt-3 gap-1.5">
+                      <Input
+                        readOnly
+                        value="34191.79001 01043.513184 91020.150008 7 98200000019900"
+                        className="font-mono text-3xs h-8 bg-card"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="h-8"
+                        onClick={() => toast.success("Código de Barras copiado!")}
+                      >
+                        Copiar
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* CREDIT CARD VIEW */}
-              {pagamentoMetodo === "Cartao" && (
-                <div className="space-y-2.5 border border-border rounded-xl p-4 bg-muted/10 text-left">
-                  <div className="space-y-1">
-                    <Label htmlFor="cardNome" className="text-3xs font-semibold uppercase">
-                      Nome do Titular (Como no cartão)
-                    </Label>
-                    <Input
-                      id="cardNome"
-                      required
-                      value={cardNome}
-                      onChange={(e) => setCardNome(e.target.value)}
-                      placeholder="JOÃO S SILVA"
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="cardNumber" className="text-3xs font-semibold uppercase">
-                      Número do Cartão
-                    </Label>
-                    <Input
-                      id="cardNumber"
-                      required
-                      value={cardNumber}
-                      onChange={(e) => setCardNumber(e.target.value)}
-                      placeholder="0000 0000 0000 0000"
-                      className="h-8 text-xs font-mono"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
+                {/* CREDIT CARD VIEW */}
+                {pagamentoMetodo === "Cartao" && (
+                  <div className="space-y-2.5 border border-border rounded-xl p-4 bg-muted/10 text-left">
                     <div className="space-y-1">
-                      <Label htmlFor="cardExpiry" className="text-3xs font-semibold uppercase">
-                        Validade
+                      <Label htmlFor="cardNome" className="text-3xs font-semibold uppercase">
+                        Nome do Titular (Como no cartão)
                       </Label>
                       <Input
-                        id="cardExpiry"
+                        id="cardNome"
                         required
-                        value={cardExpiry}
-                        onChange={(e) => setCardExpiry(e.target.value)}
-                        placeholder="MM/AA"
+                        value={cardNome}
+                        onChange={(e) => setCardNome(e.target.value)}
+                        placeholder="JOÃO S SILVA"
                         className="h-8 text-xs font-mono"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="cardCvv" className="text-3xs font-semibold uppercase">
-                        CVV
+                      <Label htmlFor="cardNumber" className="text-3xs font-semibold uppercase">
+                        Número do Cartão
                       </Label>
                       <Input
-                        id="cardCvv"
+                        id="cardNumber"
                         required
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
-                        placeholder="000"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        placeholder="0000 0000 0000 0000"
                         className="h-8 text-xs font-mono"
                       />
                     </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label htmlFor="cardExpiry" className="text-3xs font-semibold uppercase">
+                          Validade
+                        </Label>
+                        <Input
+                          id="cardExpiry"
+                          required
+                          value={cardExpiry}
+                          onChange={(e) => setCardExpiry(e.target.value)}
+                          placeholder="MM/AA"
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="cardCvv" className="text-3xs font-semibold uppercase">
+                          CVV
+                        </Label>
+                        <Input
+                          id="cardCvv"
+                          required
+                          value={cardCvv}
+                          onChange={(e) => setCardCvv(e.target.value)}
+                          placeholder="000"
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
                   </div>
+                )}
+
+                <div className="text-3xs bg-primary/10 border border-primary/20 text-primary p-2.5 rounded-lg flex items-center justify-center gap-1.5 text-center font-semibold">
+                  <ShieldCheck className="h-4 w-4 flex-shrink-0 text-primary" />
+                  DADOS DE SEÇÃO INTEGRADA AMBIENTE DE DEMONSTRAÇÃO E SEGURO.
                 </div>
-              )}
 
-              <div className="text-3xs bg-primary/10 border border-primary/20 text-primary p-2.5 rounded-lg flex items-center justify-center gap-1.5 text-center font-semibold">
-                <ShieldCheck className="h-4 w-4 flex-shrink-0 text-primary" />
-                DADOS DE SEÇÃO INTEGRADA AMBIENTE DE DEMONSTRAÇÃO E SEGURO.
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(3)}
+                    className="flex-1"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    {loading ? "Concluindo..." : "Concluir Cadastro"}{" "}
+                    <ArrowRight className="h-4 w-4 ml-1.5" />
+                  </Button>
+                </div>
               </div>
+            )}
+          </form>
 
-              <div className="flex gap-3 mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setStep(3)}
-                  className="flex-1"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1.5" /> Voltar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {loading ? "Concluindo..." : "Concluir Cadastro"}{" "}
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
-                </Button>
-              </div>
-            </div>
-          )}
-        </form>
-
-        <p className="mt-6 text-center text-sm text-muted-foreground font-sans">
-          Já tem conta?{" "}
-          <Link to="/login" className="text-primary hover:underline font-semibold">
-            Entrar
-          </Link>
-        </p>
-      </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground font-sans">
+            Já tem conta?{" "}
+            <Link to="/login" className="text-primary hover:underline font-semibold">
+              Entrar
+            </Link>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
