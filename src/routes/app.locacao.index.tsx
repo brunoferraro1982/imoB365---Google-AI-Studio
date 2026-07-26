@@ -2,10 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Home, Plus, Trash2 } from "lucide-react";
+import { Home, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/locacao/")({
   component: LocacaoIndex,
@@ -14,24 +12,17 @@ export const Route = createFileRoute("/app/locacao/")({
 function LocacaoIndex() {
   const { tenantId } = useAuth();
   const [contratos, setContratos] = useState<any[]>([]);
-  const [repasses, setRepasses] = useState<any[]>([]);
   const [os, setOs] = useState<any[]>([]);
 
   async function load() {
     if (!tenantId) return;
-    const [{ data: c }, { data: r }, { data: o }] = await Promise.all([
+    const [{ data: c }, { data: o }] = await Promise.all([
       (supabase as any)
         .from("contratos")
         .select("id,numero,valor,status,data_inicio,data_fim,imovel:imoveis(titulo)")
         .eq("tenant_id", tenantId)
         .eq("tipo", "locacao")
         .order("created_at", { ascending: false }),
-      (supabase as any)
-        .from("locacao_repasses")
-        .select("*,contrato:contratos(numero)")
-        .eq("tenant_id", tenantId)
-        .order("mes_referencia", { ascending: false })
-        .limit(50),
       (supabase as any)
         .from("locacao_ordens_servico")
         .select("*,contrato:contratos(numero)")
@@ -41,26 +32,11 @@ function LocacaoIndex() {
         .limit(20),
     ]);
     setContratos(c ?? []);
-    setRepasses(r ?? []);
     setOs(o ?? []);
   }
   useEffect(() => {
     load();
   }, [tenantId]);
-
-  async function gerarRepasse(contrato: any) {
-    const mes = new Date();
-    mes.setDate(1);
-    const { error } = await (supabase as any).from("locacao_repasses").insert({
-      tenant_id: tenantId,
-      contrato_id: contrato.id,
-      mes_referencia: mes.toISOString().slice(0, 10),
-      valor_aluguel: contrato.valor,
-      valor_repasse: contrato.valor,
-    });
-    if (error) return toast.error(error.message);
-    load();
-  }
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-8">
@@ -92,9 +68,6 @@ function LocacaoIndex() {
                     {c.status}
                   </div>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => gerarRepasse(c)}>
-                  <Plus className="mr-1 h-4 w-4" /> Repasse do mês
-                </Button>
               </li>
             ))}
           </ul>
@@ -102,42 +75,20 @@ function LocacaoIndex() {
       </section>
 
       <section className="rounded-xl border bg-card p-6">
-        <h2 className="mb-3 text-sm font-semibold">Repasses recentes</h2>
-        {repasses.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhum repasse registrado.</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="text-xs text-muted-foreground">
-              <tr>
-                <th className="text-left">Contrato</th>
-                <th>Mês</th>
-                <th>Aluguel</th>
-                <th>Repasse</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {repasses.map((r) => (
-                <tr key={r.id} className="border-t">
-                  <td>{r.contrato?.numero ?? "—"}</td>
-                  <td className="text-center">
-                    {new Date(r.mes_referencia).toLocaleDateString("pt-BR", {
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </td>
-                  <td className="text-center">
-                    R$ {Number(r.valor_aluguel).toLocaleString("pt-BR")}
-                  </td>
-                  <td className="text-center">
-                    R$ {Number(r.valor_repasse).toLocaleString("pt-BR")}
-                  </td>
-                  <td className="text-center">{r.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold">Repasses ao proprietário</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Geração mensal, cálculo de taxa de administração e controle de status ficam em
+              Financeiro.
+            </p>
+          </div>
+          <Link to="/app/locacao/repasses">
+            <Button size="sm" variant="outline">
+              <Landmark className="mr-1 h-4 w-4" /> Ver repasses
+            </Button>
+          </Link>
+        </div>
       </section>
 
       <section className="rounded-xl border bg-card p-6">

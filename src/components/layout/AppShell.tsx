@@ -83,7 +83,6 @@ const tenantModules: Module[] = [
       { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/locacao", label: "Locação", icon: Home },
-      { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
       { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
@@ -123,6 +122,7 @@ const tenantModules: Module[] = [
     items: [
       { to: "/app/financeiro", label: "Contas a pagar e receber", icon: Banknote },
       { to: "/app/comissoes", label: "Comissões", icon: Wallet },
+      { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
       { to: "/app/financeiro/plano-contas", label: "Plano de contas", icon: FileText },
       { to: "/app/financeiro/centros-custo", label: "Centros de custo", icon: Building },
     ],
@@ -399,14 +399,25 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     return roleOk && planOk;
   });
 
-  const activeModule =
-    tenantModules.find((m) =>
-      m.items.some((it) =>
+  // Escolhe o módulo pelo item de maior prefixo (mais específico) entre TODOS
+  // os grupos, não o primeiro grupo (em ordem de array) que contenha algum
+  // match — dois itens de grupos diferentes podem ter `to` um prefixo do
+  // outro (ex.: /app/locacao no Imobiliário vs. /app/locacao/repasses no
+  // Financeiro), e o mais específico é sempre o que deve vencer.
+  let activeModule = tenantModules[0];
+  let bestMatchLength = -1;
+  for (const m of tenantModules) {
+    for (const it of m.items) {
+      const matches =
         it.to === "/app"
           ? current === "/app"
-          : current === it.to || current.startsWith(it.to + "/"),
-      ),
-    ) ?? tenantModules[0];
+          : current === it.to || current.startsWith(it.to + "/");
+      if (matches && it.to.length > bestMatchLength) {
+        activeModule = m;
+        bestMatchLength = it.to.length;
+      }
+    }
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-muted/20">
