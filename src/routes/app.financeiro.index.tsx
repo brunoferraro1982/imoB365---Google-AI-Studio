@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Banknote, Pencil, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { Plus, Banknote, Pencil, Trash2, TrendingUp, TrendingDown, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
 import { moduleGuard } from "@/lib/routeGuard";
+import { verificarInadimplenciaAgora } from "@/lib/inadimplencia.functions";
 
 export const Route = createFileRoute("/app/financeiro/")({
   beforeLoad: moduleGuard("financeiro"),
@@ -36,6 +38,8 @@ function FinanceiroList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"todos" | "receita" | "despesa">("todos");
+  const verificarInadimplencia = useServerFn(verificarInadimplenciaAgora);
+  const [verificando, setVerificando] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -55,6 +59,23 @@ function FinanceiroList() {
   useEffect(() => {
     if (tenantId) load();
   }, [tenantId]);
+
+  async function verificar() {
+    setVerificando(true);
+    try {
+      const resultado = await verificarInadimplencia();
+      toast.success(
+        resultado.marcados > 0
+          ? `${resultado.marcados} lançamento(s) marcado(s) como atrasado.`
+          : "Nenhum lançamento vencido pendente.",
+      );
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível verificar inadimplência");
+    } finally {
+      setVerificando(false);
+    }
+  }
 
   async function remove(id: string) {
     if (!(await confirmDialog("Excluir este lançamento?"))) return;
@@ -97,11 +118,17 @@ function FinanceiroList() {
           <h1 className="text-3xl font-bold tracking-tight">Financeiro</h1>
           <p className="mt-1 text-sm text-muted-foreground">Receitas, despesas e fluxo de caixa.</p>
         </div>
-        <Link to="/app/financeiro/novo">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Novo lançamento
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={verificar} disabled={verificando}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${verificando ? "animate-spin" : ""}`} />
+            {verificando ? "Verificando…" : "Verificar inadimplência"}
           </Button>
-        </Link>
+          <Link to="/app/financeiro/novo">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Novo lançamento
+            </Button>
+          </Link>
+        </div>
       </header>
 
       <div className="mb-6 grid gap-4 md:grid-cols-4">
