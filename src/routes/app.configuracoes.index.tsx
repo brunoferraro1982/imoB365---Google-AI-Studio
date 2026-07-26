@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { formatQuota } from "@/lib/format";
+import { ROLE_LABEL } from "@/lib/roles";
 
 export const Route = createFileRoute("/app/configuracoes/")({
   component: ConfiguracoesIndex,
@@ -15,15 +16,6 @@ type ModuleRow = {
   nome: string;
   descricao: string | null;
   core: boolean;
-};
-
-const ROLE_LABEL: Record<string, string> = {
-  super_admin: "Super-admin",
-  admin: "Administrador",
-  broker: "Corretor",
-  atendente: "Atendente",
-  juridico: "Jurídico",
-  financeiro: "Financeiro",
 };
 
 function ConfiguracoesIndex() {

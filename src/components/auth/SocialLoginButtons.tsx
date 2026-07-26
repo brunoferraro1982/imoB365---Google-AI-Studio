@@ -58,11 +58,21 @@ const BUTTONS: ButtonConfig[] = [
   },
 ];
 
-// Design único compartilhado entre o mega menu (HeaderUserMenu) e o /signup.
-export function SocialLoginButtons({ className }: { className?: string }) {
+// Design único compartilhado entre o mega menu (HeaderUserMenu), /signup e /login.
+export function SocialLoginButtons({
+  className,
+  onBeforeRedirect,
+}: {
+  className?: string;
+  /** Chamado logo antes do redirect OAuth — usado pelo branch profissional
+   * do /signup pra marcar a intenção em localStorage, já que o roundtrip
+   * OAuth sai do domínio e volta sem preservar nenhum estado React. */
+  onBeforeRedirect?: () => void;
+}) {
   const [loading, setLoading] = useState(false);
 
   async function handleOAuthLogin(cfg: ButtonConfig) {
+    onBeforeRedirect?.();
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: cfg.provider,

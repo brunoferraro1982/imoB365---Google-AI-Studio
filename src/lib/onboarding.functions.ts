@@ -85,3 +85,47 @@ export const completeOnboarding = createServerFn({ method: "POST" })
 
     return { success: true, trial: result };
   });
+
+const clientSignupInput = z.object({
+  nome: z.string().min(1),
+});
+
+// Cadastro de cliente final (comprador/locatário) — deliberadamente sem
+// nenhum dos passos de completeOnboarding acima: não pede CRECI/CNPJ, não
+// chama provision_trial_business (não cria tenant nem user_roles). Mesmo
+// padrão de mercado das plataformas de referência (Zillow, Redfin,
+// QuintoAndar, VivaReal): virar "profissional" é sempre um fluxo separado
+// e posterior (aqui, completeOnboarding em si, acessível depois via
+// "Anunciar Imóvel"), nunca uma etapa obrigatória do cadastro básico.
+export const registerAsClient = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(clientSignupInput)
+  .handler(async ({ context, data }) => {
+    const { userId } = context;
+
+    const { data: existing } = await supabaseAdmin
+      .from("profiles")
+      .select("tipo_usuario, aprovado")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (existing?.tipo_usuario) {
+      // Já tem tipo definido (cliente, corretor ou imobiliária) — idempotente,
+      // não sobrescreve um perfil profissional existente.
+      return { success: true, already: true };
+    }
+
+    const { error } = await supabaseAdmin.from("profiles").upsert(
+      {
+        id: userId,
+        nome: data.nome,
+        tipo_usuario: "cliente",
+        aprovado: true,
+      },
+      { onConflict: "id" },
+    );
+
+    if (error) throw new Error("Erro ao concluir cadastro: " + error.message);
+
+    return { success: true };
+  });
