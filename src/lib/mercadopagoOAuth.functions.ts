@@ -116,6 +116,8 @@ export type MercadoPagoConnectionStatus = {
   connectedAt: string | null;
   expiresAt: string | null;
   liveMode: boolean | null;
+  cobrancaAutomaticaAtiva: boolean;
+  cobrancaAutomaticaDiasAntes: number;
 };
 
 export const getMercadoPagoConnectionStatus = createServerFn({ method: "POST" })
@@ -126,7 +128,9 @@ export const getMercadoPagoConnectionStatus = createServerFn({ method: "POST" })
 
     const { data } = await (supabaseAdmin as any)
       .from("tenant_mercadopago_accounts")
-      .select("connected_at,expires_at,live_mode")
+      .select(
+        "connected_at,expires_at,live_mode,cobranca_automatica_ativa,cobranca_automatica_dias_antes",
+      )
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
@@ -135,6 +139,8 @@ export const getMercadoPagoConnectionStatus = createServerFn({ method: "POST" })
       connectedAt: data?.connected_at ?? null,
       expiresAt: data?.expires_at ?? null,
       liveMode: data?.live_mode ?? null,
+      cobrancaAutomaticaAtiva: data?.cobranca_automatica_ativa ?? false,
+      cobrancaAutomaticaDiasAntes: data?.cobranca_automatica_dias_antes ?? 3,
     };
   });
 

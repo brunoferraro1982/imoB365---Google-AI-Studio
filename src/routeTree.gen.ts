@@ -154,6 +154,7 @@ import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.r
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
 import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
+import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
@@ -163,6 +164,7 @@ import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/a
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronInadimplenciaRouteImport } from './routes/api.public.cron.inadimplencia'
 import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.public.cron.gerar-repasses'
+import { Route as ApiPublicCronGerarCobrancasMercadopagoRouteImport } from './routes/api.public.cron.gerar-cobrancas-mercadopago'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
@@ -914,6 +916,12 @@ const AppConfiguracoesIntegracoesBancariasMercadopagoRoute =
     path: '/integracoes-bancarias/mercadopago',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const ApiPublicWebhooksMercadopagoMarketplaceRoute =
+  ApiPublicWebhooksMercadopagoMarketplaceRouteImport.update({
+    id: '/api/public/webhooks/mercadopago-marketplace',
+    path: '/api/public/webhooks/mercadopago-marketplace',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksMercadopagoRoute =
   ApiPublicWebhooksMercadopagoRouteImport.update({
     id: '/api/public/webhooks/mercadopago',
@@ -963,6 +971,12 @@ const ApiPublicCronGerarRepassesRoute =
   ApiPublicCronGerarRepassesRouteImport.update({
     id: '/api/public/cron/gerar-repasses',
     path: '/api/public/cron/gerar-repasses',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronGerarCobrancasMercadopagoRoute =
+  ApiPublicCronGerarCobrancasMercadopagoRouteImport.update({
+    id: '/api/public/cron/gerar-cobrancas-mercadopago',
+    path: '/api/public/cron/gerar-cobrancas-mercadopago',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicCronExpireTrialsRoute =
@@ -1157,6 +1171,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1166,6 +1181,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1317,6 +1333,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1326,6 +1343,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1483,6 +1501,7 @@ export interface FileRoutesById {
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
+  '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
@@ -1492,6 +1511,7 @@ export interface FileRoutesById {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1650,6 +1670,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-cobrancas-mercadopago'
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
@@ -1659,6 +1680,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
@@ -1810,6 +1832,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-cobrancas-mercadopago'
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
@@ -1819,6 +1842,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
@@ -1975,6 +1999,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
+    | '/api/public/cron/gerar-cobrancas-mercadopago'
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
@@ -1984,6 +2009,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
@@ -2055,6 +2081,7 @@ export interface RootRouteChildren {
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
+  ApiPublicCronGerarCobrancasMercadopagoRoute: typeof ApiPublicCronGerarCobrancasMercadopagoRoute
   ApiPublicCronGerarRepassesRoute: typeof ApiPublicCronGerarRepassesRoute
   ApiPublicCronInadimplenciaRoute: typeof ApiPublicCronInadimplenciaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
@@ -2064,6 +2091,7 @@ export interface RootRouteChildren {
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
+  ApiPublicWebhooksMercadopagoMarketplaceRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -3092,6 +3120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/api/public/webhooks/mercadopago-marketplace': {
+      id: '/api/public/webhooks/mercadopago-marketplace'
+      path: '/api/public/webhooks/mercadopago-marketplace'
+      fullPath: '/api/public/webhooks/mercadopago-marketplace'
+      preLoaderRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/mercadopago': {
       id: '/api/public/webhooks/mercadopago'
       path: '/api/public/webhooks/mercadopago'
@@ -3153,6 +3188,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/gerar-repasses'
       fullPath: '/api/public/cron/gerar-repasses'
       preLoaderRoute: typeof ApiPublicCronGerarRepassesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/gerar-cobrancas-mercadopago': {
+      id: '/api/public/cron/gerar-cobrancas-mercadopago'
+      path: '/api/public/cron/gerar-cobrancas-mercadopago'
+      fullPath: '/api/public/cron/gerar-cobrancas-mercadopago'
+      preLoaderRoute: typeof ApiPublicCronGerarCobrancasMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/expire-trials': {
@@ -3513,6 +3555,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
+  ApiPublicCronGerarCobrancasMercadopagoRoute:
+    ApiPublicCronGerarCobrancasMercadopagoRoute,
   ApiPublicCronGerarRepassesRoute: ApiPublicCronGerarRepassesRoute,
   ApiPublicCronInadimplenciaRoute: ApiPublicCronInadimplenciaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
@@ -3522,6 +3566,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
+  ApiPublicWebhooksMercadopagoMarketplaceRoute:
+    ApiPublicWebhooksMercadopagoMarketplaceRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
