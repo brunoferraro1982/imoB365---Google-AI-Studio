@@ -1,8 +1,8 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
+import { ArrowLeft, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -10,7 +10,6 @@ import {
   getMercadoPagoAuthorizeUrl,
   disconnectMercadoPago,
 } from "@/lib/mercadopagoOAuth.functions";
-import { moduleGuard } from "@/lib/routeGuard";
 
 const MP_ERROR_LABEL: Record<string, string> = {
   parametros_ausentes: "O Mercado Pago não retornou os parâmetros esperados.",
@@ -21,8 +20,7 @@ const MP_ERROR_LABEL: Record<string, string> = {
   erro_inesperado: "Erro inesperado ao conectar. Tente novamente.",
 };
 
-export const Route = createFileRoute("/app/configuracoes/mercadopago")({
-  beforeLoad: moduleGuard("financeiro"),
+export const Route = createFileRoute("/app/configuracoes/integracoes-bancarias/mercadopago")({
   head: () => ({ meta: [{ title: "Mercado Pago — imob365" }] }),
   component: MercadoPagoSettingsPage,
 });
@@ -31,7 +29,9 @@ export const Route = createFileRoute("/app/configuracoes/mercadopago")({
 // módulo Financeiro) — permite que a imobiliária receba PIX/boleto/cartão
 // do próprio cliente final (inquilino/comprador) usando a conta MP dela,
 // não a da plataforma. A criação da cobrança em si é uma etapa futura;
-// esta tela só cobre conectar/desconectar a conta.
+// esta tela só cobre conectar/desconectar a conta. Vive em "Integrações
+// bancárias" (Configurações), não dentro do módulo Financeiro — é uma
+// integração de conta, não uma feature exclusiva de quem tem o módulo.
 function MercadoPagoSettingsPage() {
   const search = useSearch({ strict: false }) as { mp_connected?: string; mp_error?: string };
   const [connecting, setConnecting] = useState(false);
@@ -82,6 +82,13 @@ function MercadoPagoSettingsPage() {
 
   return (
     <div className="p-8">
+      <Link
+        to="/app/configuracoes/integracoes-bancarias"
+        className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Voltar
+      </Link>
+
       <header className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Mercado Pago</h1>
         <p className="mt-1 text-sm text-muted-foreground">

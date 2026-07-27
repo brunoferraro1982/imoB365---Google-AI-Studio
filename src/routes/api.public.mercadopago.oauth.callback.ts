@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/public/mercadopago/oauth/callback")({
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
         const appUrl = process.env.APP_URL ?? url.origin;
-        const settingsUrl = `${appUrl}/app/configuracoes/mercadopago`;
+        const settingsUrl = `${appUrl}/app/configuracoes/integracoes-bancarias/mercadopago`;
 
         if (!code || !state) {
           return Response.redirect(`${settingsUrl}?mp_error=parametros_ausentes`, 302);
