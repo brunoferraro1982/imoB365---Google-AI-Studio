@@ -129,6 +129,7 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
+import { Route as AppConfiguracoesMercadopagoRouteImport } from './routes/app.configuracoes.mercadopago'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
@@ -167,6 +168,7 @@ import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.c
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
+import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/api.public.mercadopago.oauth.callback'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
 
@@ -779,6 +781,12 @@ const AppConfiguracoesNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesMercadopagoRoute =
+  AppConfiguracoesMercadopagoRouteImport.update({
+    id: '/mercadopago',
+    path: '/mercadopago',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesGoliveRoute = AppConfiguracoesGoliveRouteImport.update({
   id: '/golive',
   path: '/golive',
@@ -984,6 +992,12 @@ const ApiPublicSitemapTenantSlugSitemapDotxmlRoute =
     path: '/api/public/sitemap/$tenantSlug/sitemap.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMercadopagoOauthCallbackRoute =
+  ApiPublicMercadopagoOauthCallbackRouteImport.update({
+    id: '/api/public/mercadopago/oauth/callback',
+    path: '/api/public/mercadopago/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicFeedsTenantSlugVrsyncDotxmlRoute =
   ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport.update({
     id: '/api/public/feeds/$tenantSlug/vrsync.xml',
@@ -1084,6 +1098,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1156,6 +1171,7 @@ export interface FileRoutesByFullPath {
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
@@ -1241,6 +1257,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1313,6 +1330,7 @@ export interface FileRoutesByTo {
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
@@ -1404,6 +1422,7 @@ export interface FileRoutesById {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1476,6 +1495,7 @@ export interface FileRoutesById {
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
 }
@@ -1568,6 +1588,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1640,6 +1661,7 @@ export interface FileRouteTypes {
     | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -1725,6 +1747,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1797,6 +1820,7 @@ export interface FileRouteTypes {
     | '/app/locacao/repasses'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
   id:
@@ -1887,6 +1911,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1959,6 +1984,7 @@ export interface FileRouteTypes {
     | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
   fileRoutesById: FileRoutesById
@@ -2032,6 +2058,7 @@ export interface RootRouteChildren {
   SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  ApiPublicMercadopagoOauthCallbackRoute: typeof ApiPublicMercadopagoOauthCallbackRoute
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
 }
 
@@ -2877,6 +2904,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/mercadopago': {
+      id: '/app/configuracoes/mercadopago'
+      path: '/mercadopago'
+      fullPath: '/app/configuracoes/mercadopago'
+      preLoaderRoute: typeof AppConfiguracoesMercadopagoRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/golive': {
       id: '/app/configuracoes/golive'
       path: '/golive'
@@ -3143,6 +3177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/mercadopago/oauth/callback': {
+      id: '/api/public/mercadopago/oauth/callback'
+      path: '/api/public/mercadopago/oauth/callback'
+      fullPath: '/api/public/mercadopago/oauth/callback'
+      preLoaderRoute: typeof ApiPublicMercadopagoOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/feeds/$tenantSlug/vrsync.xml': {
       id: '/api/public/feeds/$tenantSlug/vrsync.xml'
       path: '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -3199,6 +3240,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
+  AppConfiguracoesMercadopagoRoute: typeof AppConfiguracoesMercadopagoRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -3217,6 +3259,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
+  AppConfiguracoesMercadopagoRoute: AppConfiguracoesMercadopagoRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
@@ -3464,6 +3507,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicFeedsTenantSlugOlxDotxmlRoute,
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute:
     ApiPublicFeedsTenantSlugVrsyncDotxmlRoute,
+  ApiPublicMercadopagoOauthCallbackRoute:
+    ApiPublicMercadopagoOauthCallbackRoute,
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute:
     ApiPublicSitemapTenantSlugSitemapDotxmlRoute,
 }
