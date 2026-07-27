@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ContratoForm } from "@/components/contratos/ContratoForm";
 import { PartesSection } from "@/components/contratos/PartesSection";
+import { ParcelasSection } from "@/components/contratos/ParcelasSection";
 import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
 
 export const Route = createFileRoute("/app/contratos/$id")({
@@ -161,6 +162,7 @@ function EditarContrato() {
       <div className="max-w-4xl space-y-6">
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
+        <ParcelasSection contratoId={id} />
 
         {tenantId && statusLoaded && (
           <div className="grid gap-6 md:grid-cols-2">
