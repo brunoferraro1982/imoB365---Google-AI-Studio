@@ -129,9 +129,11 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
+import { Route as AppConfiguracoesIntegracoesErpRouteImport } from './routes/app.configuracoes.integracoes-erp'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
+import { Route as AppConfiguracoesConciliacaoBancariaRouteImport } from './routes/app.configuracoes.conciliacao-bancaria'
 import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.configuracoes.checklist'
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
@@ -784,6 +786,12 @@ const AppConfiguracoesNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesIntegracoesErpRoute =
+  AppConfiguracoesIntegracoesErpRouteImport.update({
+    id: '/integracoes-erp',
+    path: '/integracoes-erp',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesGoliveRoute = AppConfiguracoesGoliveRouteImport.update({
   id: '/golive',
   path: '/golive',
@@ -799,6 +807,12 @@ const AppConfiguracoesEquipeRoute = AppConfiguracoesEquipeRouteImport.update({
   path: '/equipe',
   getParentRoute: () => AppConfiguracoesRoute,
 } as any)
+const AppConfiguracoesConciliacaoBancariaRoute =
+  AppConfiguracoesConciliacaoBancariaRouteImport.update({
+    id: '/conciliacao-bancaria',
+    path: '/conciliacao-bancaria',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesChecklistRoute =
   AppConfiguracoesChecklistRouteImport.update({
     id: '/checklist',
@@ -1116,9 +1130,11 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
+  '/app/configuracoes/conciliacao-bancaria': typeof AppConfiguracoesConciliacaoBancariaRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/integracoes-erp': typeof AppConfiguracoesIntegracoesErpRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1278,9 +1294,11 @@ export interface FileRoutesByTo {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
+  '/app/configuracoes/conciliacao-bancaria': typeof AppConfiguracoesConciliacaoBancariaRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/integracoes-erp': typeof AppConfiguracoesIntegracoesErpRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1446,9 +1464,11 @@ export interface FileRoutesById {
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
   '/app/configuracoes/checklist': typeof AppConfiguracoesChecklistRoute
+  '/app/configuracoes/conciliacao-bancaria': typeof AppConfiguracoesConciliacaoBancariaRoute
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/integracoes-erp': typeof AppConfiguracoesIntegracoesErpRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1615,9 +1635,11 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
+    | '/app/configuracoes/conciliacao-bancaria'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/integracoes-erp'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1777,9 +1799,11 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
+    | '/app/configuracoes/conciliacao-bancaria'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/integracoes-erp'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1944,9 +1968,11 @@ export interface FileRouteTypes {
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
     | '/app/configuracoes/checklist'
+    | '/app/configuracoes/conciliacao-bancaria'
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/integracoes-erp'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -2945,6 +2971,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/integracoes-erp': {
+      id: '/app/configuracoes/integracoes-erp'
+      path: '/integracoes-erp'
+      fullPath: '/app/configuracoes/integracoes-erp'
+      preLoaderRoute: typeof AppConfiguracoesIntegracoesErpRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/golive': {
       id: '/app/configuracoes/golive'
       path: '/golive'
@@ -2964,6 +2997,13 @@ declare module '@tanstack/react-router' {
       path: '/equipe'
       fullPath: '/app/configuracoes/equipe'
       preLoaderRoute: typeof AppConfiguracoesEquipeRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/conciliacao-bancaria': {
+      id: '/app/configuracoes/conciliacao-bancaria'
+      path: '/conciliacao-bancaria'
+      fullPath: '/app/configuracoes/conciliacao-bancaria'
+      preLoaderRoute: typeof AppConfiguracoesConciliacaoBancariaRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/configuracoes/checklist': {
@@ -3299,9 +3339,11 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
   AppConfiguracoesChecklistRoute: typeof AppConfiguracoesChecklistRoute
+  AppConfiguracoesConciliacaoBancariaRoute: typeof AppConfiguracoesConciliacaoBancariaRoute
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
+  AppConfiguracoesIntegracoesErpRoute: typeof AppConfiguracoesIntegracoesErpRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -3319,9 +3361,12 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
   AppConfiguracoesChecklistRoute: AppConfiguracoesChecklistRoute,
+  AppConfiguracoesConciliacaoBancariaRoute:
+    AppConfiguracoesConciliacaoBancariaRoute,
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
+  AppConfiguracoesIntegracoesErpRoute: AppConfiguracoesIntegracoesErpRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
