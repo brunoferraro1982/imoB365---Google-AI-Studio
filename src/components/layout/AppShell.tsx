@@ -43,6 +43,7 @@ import {
   Receipt,
   Eye,
   Radar,
+  CreditCard,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -126,6 +127,7 @@ const tenantModules: Module[] = [
       { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
       { to: "/app/locacao/prestacao-contas", label: "Prestação de contas", icon: FileText },
       { to: "/app/financeiro/plano-contas", label: "Plano de contas", icon: FileText },
+      { to: "/app/configuracoes/mercadopago", label: "Mercado Pago", icon: CreditCard },
       { to: "/app/financeiro/centros-custo", label: "Centros de custo", icon: Building },
     ],
   },
