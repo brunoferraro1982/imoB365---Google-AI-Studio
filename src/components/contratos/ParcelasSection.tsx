@@ -9,6 +9,7 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { toast } from "sonner";
 import { Plus, Check } from "lucide-react";
 import { formatBRL } from "@/lib/format";
+import { CobrarMercadoPagoButton } from "@/components/financeiro/CobrarMercadoPagoButton";
 
 const TIPOS_PARCELA = [
   { value: "sinal", label: "Sinal" },
@@ -164,9 +165,12 @@ export function ParcelasSection({ contratoId }: { contratoId: string }) {
               <div className="flex shrink-0 items-center gap-3">
                 <span className="font-medium">{formatBRL(p.valor)}</span>
                 {p.status === "pendente" || p.status === "atrasado" ? (
-                  <Button variant="ghost" size="sm" onClick={() => marcarPago(p.id)}>
-                    <Check className="mr-1 h-4 w-4" /> Marcar pago
-                  </Button>
+                  <>
+                    <CobrarMercadoPagoButton origemTipo="parcela" origemId={p.id} />
+                    <Button variant="ghost" size="sm" onClick={() => marcarPago(p.id)}>
+                      <Check className="mr-1 h-4 w-4" /> Marcar pago
+                    </Button>
+                  </>
                 ) : null}
               </div>
             </div>

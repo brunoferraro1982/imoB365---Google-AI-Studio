@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { CobrarMercadoPagoButton } from "@/components/financeiro/CobrarMercadoPagoButton";
 
 type Props = { lancamentoId?: string };
 
@@ -255,6 +256,14 @@ export function LancamentoForm({ lancamentoId }: Props) {
             />
           </Field>
         </div>
+        {lancamentoId &&
+          form.tipo === "receita" &&
+          form.contrato_id &&
+          (form.status === "pendente" || form.status === "atrasado") && (
+            <div className="mt-4 border-t border-border pt-4">
+              <CobrarMercadoPagoButton origemTipo="lancamento" origemId={lancamentoId} />
+            </div>
+          )}
       </section>
 
       <section className="rounded-xl border border-border bg-card p-6">
