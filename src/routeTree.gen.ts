@@ -129,7 +129,6 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
-import { Route as AppConfiguracoesMercadopagoRouteImport } from './routes/app.configuracoes.mercadopago'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
@@ -145,6 +144,7 @@ import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprov
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
+import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
 import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -153,6 +153,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.repasses.$id'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
+import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
@@ -781,12 +782,6 @@ const AppConfiguracoesNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
-const AppConfiguracoesMercadopagoRoute =
-  AppConfiguracoesMercadopagoRouteImport.update({
-    id: '/mercadopago',
-    path: '/mercadopago',
-    getParentRoute: () => AppConfiguracoesRoute,
-  } as any)
 const AppConfiguracoesGoliveRoute = AppConfiguracoesGoliveRouteImport.update({
   id: '/golive',
   path: '/golive',
@@ -865,6 +860,12 @@ const AppLocacaoRepassesIndexRoute = AppLocacaoRepassesIndexRouteImport.update({
   path: '/locacao/repasses/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesIntegracoesBancariasIndexRoute =
+  AppConfiguracoesIntegracoesBancariasIndexRouteImport.update({
+    id: '/integracoes-bancarias/',
+    path: '/integracoes-bancarias/',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const SiteSlugPPageSlugRoute = SiteSlugPPageSlugRouteImport.update({
   id: '/site/$slug_/p/$pageSlug',
   path: '/site/$slug/p/$pageSlug',
@@ -907,6 +908,12 @@ const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
   path: '/contratos/$id/imprimir',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesIntegracoesBancariasMercadopagoRoute =
+  AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport.update({
+    id: '/integracoes-bancarias/mercadopago',
+    path: '/integracoes-bancarias/mercadopago',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const ApiPublicWebhooksMercadopagoRoute =
   ApiPublicWebhooksMercadopagoRouteImport.update({
     id: '/api/public/webhooks/mercadopago',
@@ -1098,7 +1105,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1160,6 +1166,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
@@ -1168,6 +1175,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1257,7 +1265,6 @@ export interface FileRoutesByTo {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1319,6 +1326,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
@@ -1327,6 +1335,7 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1422,7 +1431,6 @@ export interface FileRoutesById {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
-  '/app/configuracoes/mercadopago': typeof AppConfiguracoesMercadopagoRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1484,6 +1492,7 @@ export interface FileRoutesById {
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
+  '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
@@ -1492,6 +1501,7 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/site/$slug_/blog_/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
+  '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1588,7 +1598,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1650,6 +1659,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
     | '/app/locacao/repasses/$id'
@@ -1658,6 +1668,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
+    | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -1747,7 +1758,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1809,6 +1819,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
     | '/app/locacao/repasses/$id'
@@ -1817,6 +1828,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
+    | '/app/configuracoes/integracoes-bancarias'
     | '/app/locacao/repasses'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -1911,7 +1923,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
-    | '/app/configuracoes/mercadopago'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -1973,6 +1984,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/mercadopago'
+    | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
     | '/app/locacao/repasses/$id'
@@ -1981,6 +1993,7 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/site/$slug_/blog_/$postSlug'
     | '/site/$slug_/p/$pageSlug'
+    | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2904,13 +2917,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
-    '/app/configuracoes/mercadopago': {
-      id: '/app/configuracoes/mercadopago'
-      path: '/mercadopago'
-      fullPath: '/app/configuracoes/mercadopago'
-      preLoaderRoute: typeof AppConfiguracoesMercadopagoRouteImport
-      parentRoute: typeof AppConfiguracoesRoute
-    }
     '/app/configuracoes/golive': {
       id: '/app/configuracoes/golive'
       path: '/golive'
@@ -3016,6 +3022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLocacaoRepassesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/configuracoes/integracoes-bancarias/': {
+      id: '/app/configuracoes/integracoes-bancarias/'
+      path: '/integracoes-bancarias'
+      fullPath: '/app/configuracoes/integracoes-bancarias/'
+      preLoaderRoute: typeof AppConfiguracoesIntegracoesBancariasIndexRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/site/$slug_/p/$pageSlug': {
       id: '/site/$slug_/p/$pageSlug'
       path: '/site/$slug/p/$pageSlug'
@@ -3071,6 +3084,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/contratos/$id/imprimir'
       preLoaderRoute: typeof AppContratosIdImprimirRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/configuracoes/integracoes-bancarias/mercadopago': {
+      id: '/app/configuracoes/integracoes-bancarias/mercadopago'
+      path: '/integracoes-bancarias/mercadopago'
+      fullPath: '/app/configuracoes/integracoes-bancarias/mercadopago'
+      preLoaderRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
     }
     '/api/public/webhooks/mercadopago': {
       id: '/api/public/webhooks/mercadopago'
@@ -3240,7 +3260,6 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
-  AppConfiguracoesMercadopagoRoute: typeof AppConfiguracoesMercadopagoRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -3248,6 +3267,8 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesSegurancaRoute: typeof AppConfiguracoesSegurancaRoute
   AppConfiguracoesWebhooksRoute: typeof AppConfiguracoesWebhooksRoute
   AppConfiguracoesIndexRoute: typeof AppConfiguracoesIndexRoute
+  AppConfiguracoesIntegracoesBancariasMercadopagoRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
+  AppConfiguracoesIntegracoesBancariasIndexRoute: typeof AppConfiguracoesIntegracoesBancariasIndexRoute
 }
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
@@ -3259,7 +3280,6 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
-  AppConfiguracoesMercadopagoRoute: AppConfiguracoesMercadopagoRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
@@ -3267,6 +3287,10 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesSegurancaRoute: AppConfiguracoesSegurancaRoute,
   AppConfiguracoesWebhooksRoute: AppConfiguracoesWebhooksRoute,
   AppConfiguracoesIndexRoute: AppConfiguracoesIndexRoute,
+  AppConfiguracoesIntegracoesBancariasMercadopagoRoute:
+    AppConfiguracoesIntegracoesBancariasMercadopagoRoute,
+  AppConfiguracoesIntegracoesBancariasIndexRoute:
+    AppConfiguracoesIntegracoesBancariasIndexRoute,
 }
 
 const AppConfiguracoesRouteWithChildren =
