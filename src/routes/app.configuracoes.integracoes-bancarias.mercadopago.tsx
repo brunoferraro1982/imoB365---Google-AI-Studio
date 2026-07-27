@@ -4,12 +4,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CreditCard, CheckCircle2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
   getMercadoPagoConnectionStatus,
   getMercadoPagoAuthorizeUrl,
   disconnectMercadoPago,
 } from "@/lib/mercadopagoOAuth.functions";
+import { atualizarConfigCobrancaAutomatica } from "@/lib/cobrancaMercadoPago.functions";
 
 const MP_ERROR_LABEL: Record<string, string> = {
   parametros_ausentes: "O Mercado Pago não retornou os parâmetros esperados.",
@@ -36,15 +40,25 @@ function MercadoPagoSettingsPage() {
   const search = useSearch({ strict: false }) as { mp_connected?: string; mp_error?: string };
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [cobrancaAtiva, setCobrancaAtiva] = useState(false);
+  const [diasAntes, setDiasAntes] = useState(3);
+  const [savingConfig, setSavingConfig] = useState(false);
 
   const fetchStatus = useServerFn(getMercadoPagoConnectionStatus);
   const fetchAuthorizeUrl = useServerFn(getMercadoPagoAuthorizeUrl);
   const disconnect = useServerFn(disconnectMercadoPago);
+  const salvarConfigFn = useServerFn(atualizarConfigCobrancaAutomatica);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["mercadopago-connection-status"],
     queryFn: () => fetchStatus(),
   });
+
+  useEffect(() => {
+    if (!data) return;
+    setCobrancaAtiva(data.cobrancaAutomaticaAtiva);
+    setDiasAntes(data.cobrancaAutomaticaDiasAntes);
+  }, [data]);
 
   useEffect(() => {
     if (search.mp_connected) {
@@ -80,6 +94,19 @@ function MercadoPagoSettingsPage() {
     }
   }
 
+  async function salvarConfigCobranca() {
+    setSavingConfig(true);
+    try {
+      await salvarConfigFn({ data: { ativa: cobrancaAtiva, diasAntes } });
+      toast.success("Configuração de cobrança automática salva");
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível salvar a configuração");
+    } finally {
+      setSavingConfig(false);
+    }
+  }
+
   return (
     <div className="p-8">
       <Link
@@ -97,7 +124,7 @@ function MercadoPagoSettingsPage() {
         </p>
       </header>
 
-      <div className="max-w-xl">
+      <div className="max-w-xl space-y-6">
         <section className="rounded-xl border border-border bg-card p-6">
           {isLoading ? (
             <div className="text-sm text-muted-foreground">Carregando…</div>
@@ -137,6 +164,43 @@ function MercadoPagoSettingsPage() {
             </div>
           )}
         </section>
+
+        {data?.connected && (
+          <section className="rounded-xl border border-border bg-card p-6">
+            <h2 className="mb-1 text-base font-semibold">Cobrança automática</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Quando ligada, o sistema gera sozinho o link de cobrança das parcelas de venda e
+              lançamentos de locação antes do vencimento — sem precisar clicar em "Cobrar via
+              Mercado Pago" manualmente.
+            </p>
+            <div className="flex items-center justify-between rounded-lg border border-input bg-background px-4 py-3">
+              <Label htmlFor="cobranca-automatica" className="text-sm">
+                Gerar cobranças automaticamente
+              </Label>
+              <Switch
+                id="cobranca-automatica"
+                checked={cobrancaAtiva}
+                onCheckedChange={setCobrancaAtiva}
+              />
+            </div>
+            <div className="mt-4 max-w-xs">
+              <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">
+                Dias antes do vencimento
+              </Label>
+              <Input
+                type="number"
+                min={1}
+                max={30}
+                value={diasAntes}
+                onChange={(e) => setDiasAntes(Number(e.target.value) || 1)}
+                disabled={!cobrancaAtiva}
+              />
+            </div>
+            <Button className="mt-4" onClick={salvarConfigCobranca} disabled={savingConfig}>
+              {savingConfig ? "Salvando…" : "Salvar configuração"}
+            </Button>
+          </section>
+        )}
       </div>
     </div>
   );
