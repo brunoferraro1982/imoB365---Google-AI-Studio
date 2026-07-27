@@ -9,11 +9,12 @@ export const Route = createFileRoute("/app/configuracoes/integracoes-bancarias/"
   component: IntegracoesBancariasPage,
 });
 
-// Hub de integrações bancárias/gateways de pagamento — cada banco/gateway
-// vira uma sub-página própria (ver .../mercadopago), listada aqui como um
-// card. Hoje só o Mercado Pago está implementado; a lista abaixo é o ponto
-// de extensão pra quando entrarem outros (Nubank PJ, Banco do Brasil, Itaú,
-// Bradesco, Asaas etc. — ver backlog do módulo Financeiro).
+// Hub de integrações bancárias/gateways de pagamento com OAuth de verdade —
+// cada banco/gateway vira uma sub-página própria (ver .../mercadopago),
+// listada aqui como um card. Hoje só o Mercado Pago está implementado.
+// Conciliação bancária e ERP (Fase 4) vivem em páginas próprias no menu de
+// Configurações (não aqui), já que são cadastro administrativo genérico,
+// não integrações OAuth por conta.
 function IntegracoesBancariasPage() {
   const fetchMpStatus = useServerFn(getMercadoPagoConnectionStatus);
   const { data: mpStatus } = useQuery({
@@ -33,8 +34,6 @@ function IntegracoesBancariasPage() {
         </p>
       </header>
 
-      {/* Cada banco/gateway novo vira uma entrada aqui + uma sub-página própria
-          (mesmo padrão de .../mercadopago) — hoje só o Mercado Pago existe. */}
       <div className="max-w-xl space-y-3">
         <Link
           to="/app/configuracoes/integracoes-bancarias/mercadopago"
