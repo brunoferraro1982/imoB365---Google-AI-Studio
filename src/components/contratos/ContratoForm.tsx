@@ -48,6 +48,10 @@ export function ContratoForm({ contratoId }: Props) {
     lead_id: string;
     corretor_id: string;
     template_id: string;
+    valor_sinal: number | string;
+    valor_entrada: number | string;
+    numero_parcelas: number | string;
+    data_primeira_parcela: string;
   }>({
     numero: "",
     tipo: "venda",
@@ -62,6 +66,10 @@ export function ContratoForm({ contratoId }: Props) {
     lead_id: "",
     corretor_id: "",
     template_id: "",
+    valor_sinal: "",
+    valor_entrada: "",
+    numero_parcelas: "",
+    data_primeira_parcela: "",
   });
 
   const [imoveis, setImoveis] = useState<
@@ -103,7 +111,7 @@ export function ContratoForm({ contratoId }: Props) {
   useEffect(() => {
     if (!contratoId) return;
     (async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("contratos")
         .select("*")
         .eq("id", contratoId)
@@ -123,6 +131,10 @@ export function ContratoForm({ contratoId }: Props) {
           lead_id: data.lead_id ?? "",
           corretor_id: data.corretor_id ?? "",
           template_id: "",
+          valor_sinal: data.valor_sinal ?? "",
+          valor_entrada: data.valor_entrada ?? "",
+          numero_parcelas: data.numero_parcelas ?? "",
+          data_primeira_parcela: data.data_primeira_parcela ?? "",
         });
       }
       setLoading(false);
@@ -197,15 +209,22 @@ export function ContratoForm({ contratoId }: Props) {
       imovel_id: form.imovel_id || null,
       lead_id: form.lead_id || null,
       corretor_id: form.corretor_id || null,
+      valor_sinal: form.valor_sinal === "" ? null : Number(form.valor_sinal),
+      valor_entrada: form.valor_entrada === "" ? null : Number(form.valor_entrada),
+      numero_parcelas: form.numero_parcelas === "" ? null : Number(form.numero_parcelas),
+      data_primeira_parcela: form.data_primeira_parcela || null,
     };
 
     if (contratoId) {
-      const { error } = await supabase.from("contratos").update(payload).eq("id", contratoId);
+      const { error } = await (supabase as any)
+        .from("contratos")
+        .update(payload)
+        .eq("id", contratoId);
       setSaving(false);
       if (error) return toast.error(error.message);
       toast.success("Contrato atualizado");
     } else {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("contratos")
         .insert({ ...payload, created_by: user?.id })
         .select("id")
@@ -308,6 +327,49 @@ export function ContratoForm({ contratoId }: Props) {
           </Field>
         </div>
       </section>
+
+      {/* Negociação de venda — sinal/entrada/parcelas */}
+      {form.tipo === "venda" && (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Negociação (sinal, entrada e parcelas)</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Ao ativar o contrato, o cronograma de pagamento é gerado automaticamente: sinal e
+            entrada vencem no início, o restante do valor é dividido em parcelas mensais iguais.
+            Deixe em branco o que não se aplicar.
+          </p>
+          <div className="grid gap-4 md:grid-cols-4">
+            <Field label="Sinal (R$)">
+              <CurrencyInput
+                value={form.valor_sinal}
+                onValueChange={(v) => set("valor_sinal", v)}
+              />
+            </Field>
+            <Field label="Entrada (R$)">
+              <CurrencyInput
+                value={form.valor_entrada}
+                onValueChange={(v) => set("valor_entrada", v)}
+              />
+            </Field>
+            <Field label="Número de parcelas">
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                value={form.numero_parcelas}
+                onChange={(e) => set("numero_parcelas", e.target.value)}
+                placeholder="Ex.: 12"
+              />
+            </Field>
+            <Field label="Vencimento da 1ª parcela">
+              <Input
+                type="date"
+                value={form.data_primeira_parcela}
+                onChange={(e) => set("data_primeira_parcela", e.target.value)}
+              />
+            </Field>
+          </div>
+        </section>
+      )}
 
       {/* Vínculos */}
       <section className="rounded-xl border border-border bg-card p-6">
