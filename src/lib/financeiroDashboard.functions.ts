@@ -12,6 +12,12 @@ export type FinanceiroDashboardData = {
     liquido: number;
   }[];
   fluxo_caixa_projetado: { mes: string; entradas: number; saidas: number }[];
+  // Fase 5: projeção estatística simples (média dos últimos meses com
+  // lançamento realizado) — null quando não há histórico suficiente.
+  // Deliberadamente NÃO é IA/ML: a base ainda não tem 6-12 meses de
+  // histórico real pra sustentar previsão de verdade.
+  media_historica_entradas: number | null;
+  media_historica_saidas: number | null;
 };
 
 function ymKey(d: Date) {
@@ -42,7 +48,11 @@ export const getFinanceiroDashboard = createServerFn({ method: "POST" })
     const inicioMesAtual = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
     const fimJanela = new Date(now.getFullYear(), now.getMonth() + 6, 0).toISOString().slice(0, 10);
 
-    const [lancRes, comissoesRes, corretoresRes, contratosRes] = await Promise.all([
+    const inicioHistorico = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+      .toISOString()
+      .slice(0, 10);
+
+    const [lancRes, comissoesRes, corretoresRes, contratosRes, historicoRes] = await Promise.all([
       supabase
         .from("lancamentos_financeiros")
         .select("tipo,valor,status,data_vencimento,imovel_id")
@@ -57,12 +67,19 @@ export const getFinanceiroDashboard = createServerFn({ method: "POST" })
         .eq("tipo", "locacao")
         .eq("status", "ativo")
         .not("imovel_id", "is", null),
+      supabase
+        .from("lancamentos_financeiros")
+        .select("tipo,valor,data_pagamento")
+        .eq("tenant_id", tenantId)
+        .eq("status", "pago")
+        .gte("data_pagamento", inicioHistorico),
     ]);
 
     const lanc = lancRes.data ?? [];
     const comissoes = comissoesRes.data ?? [];
     const corretores = corretoresRes.data ?? [];
     const contratos = contratosRes.data ?? [];
+    const historico = historicoRes.data ?? [];
 
     // Inadimplência
     const atrasados = lanc.filter((l) => l.status === "atrasado");
@@ -162,11 +179,32 @@ export const getFinanceiroDashboard = createServerFn({ method: "POST" })
       saidas: v.saidas,
     }));
 
+    // Fase 5: média histórica simples (últimos meses com lançamento
+    // realizado) — divide pelo número de meses que de fato têm dado, não
+    // por 6 fixo, pra não diluir a média num tenant novo com pouco
+    // histórico. Sem dado nenhum, devolve null (UI omite a referência).
+    const mesesComHistorico = new Set<string>();
+    let totalEntradasHistorico = 0;
+    let totalSaidasHistorico = 0;
+    for (const l of historico) {
+      if (!l.data_pagamento) continue;
+      mesesComHistorico.add(ymKey(new Date(`${l.data_pagamento}T12:00:00`)));
+      if (l.tipo === "receita") totalEntradasHistorico += Number(l.valor ?? 0);
+      else if (l.tipo === "despesa") totalSaidasHistorico += Number(l.valor ?? 0);
+    }
+    const numMesesHistorico = mesesComHistorico.size;
+    const media_historica_entradas =
+      numMesesHistorico > 0 ? totalEntradasHistorico / numMesesHistorico : null;
+    const media_historica_saidas =
+      numMesesHistorico > 0 ? totalSaidasHistorico / numMesesHistorico : null;
+
     return {
       inadimplencia,
       comissoes: comissoesData,
       receita_por_corretor,
       rentabilidade_por_imovel,
       fluxo_caixa_projetado,
+      media_historica_entradas,
+      media_historica_saidas,
     };
   });

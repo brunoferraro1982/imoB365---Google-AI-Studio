@@ -11,6 +11,7 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
+  ReferenceLine,
 } from "recharts";
 import { getFinanceiroDashboard } from "@/lib/financeiroDashboard.functions";
 import { formatBRL } from "@/lib/format";
@@ -211,10 +212,46 @@ function FinanceiroDashboardPage() {
                       fill="var(--destructive)"
                       radius={[4, 4, 0, 0]}
                     />
+                    {data.media_historica_entradas != null && (
+                      <ReferenceLine
+                        y={data.media_historica_entradas}
+                        stroke="var(--primary)"
+                        strokeDasharray="4 4"
+                        label={{
+                          value: "Média histórica (entradas)",
+                          position: "insideTopLeft",
+                          fontSize: 10,
+                          fill: "var(--primary)",
+                        }}
+                      />
+                    )}
+                    {data.media_historica_saidas != null && (
+                      <ReferenceLine
+                        y={data.media_historica_saidas}
+                        stroke="var(--destructive)"
+                        strokeDasharray="4 4"
+                        label={{
+                          value: "Média histórica (saídas)",
+                          position: "insideBottomLeft",
+                          fontSize: 10,
+                          fill: "var(--destructive)",
+                        }}
+                      />
+                    )}
                   </BarChart>
                 </ResponsiveContainer>
               </ClientOnly>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              {data.media_historica_entradas != null || data.media_historica_saidas != null ? (
+                <>
+                  Linhas tracejadas = média dos últimos meses com lançamento já realizado (projeção
+                  estatística simples, não é inteligência artificial nem previsão de verdade).
+                </>
+              ) : (
+                "Histórico insuficiente pra calcular uma média ainda (precisa de pelo menos um lançamento marcado como pago) — a projeção estatística não é IA/previsão real, só uma média simples."
+              )}
+            </p>
           </div>
         </>
       )}
