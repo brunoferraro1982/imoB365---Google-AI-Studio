@@ -44,6 +44,7 @@ import {
   Eye,
   Radar,
   CreditCard,
+  Boxes,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -168,6 +169,12 @@ const tenantModules: Module[] = [
         label: "Integrações Bancárias",
         icon: CreditCard,
       },
+      {
+        to: "/app/configuracoes/conciliacao-bancaria",
+        label: "Conciliação Bancária",
+        icon: Landmark,
+      },
+      { to: "/app/configuracoes/integracoes-erp", label: "Integrações ERP", icon: Boxes },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
       { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },
