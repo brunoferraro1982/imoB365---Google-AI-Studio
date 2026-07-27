@@ -72,6 +72,7 @@ import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
+import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
 import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
@@ -161,8 +162,11 @@ import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.p
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
+import { Route as ApiPublicStatusJsonRouteImport } from './routes/api.public.status.json'
 import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
+import { Route as ApiPublicCronStatusCleanupRouteImport } from './routes/api.public.cron.status-cleanup'
+import { Route as ApiPublicCronStatusCheckRouteImport } from './routes/api.public.cron.status-check'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
 import { Route as ApiPublicCronInadimplenciaRouteImport } from './routes/api.public.cron.inadimplencia'
 import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.public.cron.gerar-repasses'
@@ -491,6 +495,11 @@ const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
 const AdminTenantsRoute = AdminTenantsRouteImport.update({
   id: '/tenants',
   path: '/tenants',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminStatusRoute = AdminStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlanosRoute = AdminPlanosRouteImport.update({
@@ -958,6 +967,11 @@ const ApiPublicV1ImoveisRoute = ApiPublicV1ImoveisRouteImport.update({
   path: '/api/public/v1/imoveis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicStatusJsonRoute = ApiPublicStatusJsonRouteImport.update({
+  id: '/api/public/status/json',
+  path: '/api/public/status/json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicEmailTemplatesTypeRoute =
   ApiPublicEmailTemplatesTypeRouteImport.update({
     id: '/api/public/email-templates/$type',
@@ -968,6 +982,18 @@ const ApiPublicCronVisitasNotificacoesRoute =
   ApiPublicCronVisitasNotificacoesRouteImport.update({
     id: '/api/public/cron/visitas-notificacoes',
     path: '/api/public/cron/visitas-notificacoes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronStatusCleanupRoute =
+  ApiPublicCronStatusCleanupRouteImport.update({
+    id: '/api/public/cron/status-cleanup',
+    path: '/api/public/cron/status-cleanup',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronStatusCheckRoute =
+  ApiPublicCronStatusCheckRouteImport.update({
+    id: '/api/public/cron/status-check',
+    path: '/api/public/cron/status-check',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicCronSnapshotRoute = ApiPublicCronSnapshotRouteImport.update({
@@ -1089,6 +1115,7 @@ export interface FileRoutesByFullPath {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1191,8 +1218,11 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
+  '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
+  '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
+  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1255,6 +1285,7 @@ export interface FileRoutesByTo {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1355,8 +1386,11 @@ export interface FileRoutesByTo {
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
+  '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
+  '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
+  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1423,6 +1457,7 @@ export interface FileRoutesById {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1525,8 +1560,11 @@ export interface FileRoutesById {
   '/api/public/cron/gerar-repasses': typeof ApiPublicCronGerarRepassesRoute
   '/api/public/cron/inadimplencia': typeof ApiPublicCronInadimplenciaRoute
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
+  '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
+  '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
+  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1594,6 +1632,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
     | '/app/cartorios'
@@ -1696,8 +1735,11 @@ export interface FileRouteTypes {
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
+    | '/api/public/cron/status-check'
+    | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
+    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1760,6 +1802,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
     | '/app/cartorios'
@@ -1860,8 +1903,11 @@ export interface FileRouteTypes {
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
+    | '/api/public/cron/status-check'
+    | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
+    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1927,6 +1973,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
     | '/app/cartorios'
@@ -2029,8 +2076,11 @@ export interface FileRouteTypes {
     | '/api/public/cron/gerar-repasses'
     | '/api/public/cron/inadimplencia'
     | '/api/public/cron/snapshot'
+    | '/api/public/cron/status-check'
+    | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
+    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -2111,8 +2161,11 @@ export interface RootRouteChildren {
   ApiPublicCronGerarRepassesRoute: typeof ApiPublicCronGerarRepassesRoute
   ApiPublicCronInadimplenciaRoute: typeof ApiPublicCronInadimplenciaRoute
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
+  ApiPublicCronStatusCheckRoute: typeof ApiPublicCronStatusCheckRoute
+  ApiPublicCronStatusCleanupRoute: typeof ApiPublicCronStatusCleanupRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
+  ApiPublicStatusJsonRoute: typeof ApiPublicStatusJsonRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
@@ -2570,6 +2623,13 @@ declare module '@tanstack/react-router' {
       path: '/tenants'
       fullPath: '/admin/tenants'
       preLoaderRoute: typeof AdminTenantsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/status': {
+      id: '/admin/status'
+      path: '/status'
+      fullPath: '/admin/status'
+      preLoaderRoute: typeof AdminStatusRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/planos': {
@@ -3195,6 +3255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1ImoveisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/status/json': {
+      id: '/api/public/status/json'
+      path: '/api/public/status/json'
+      fullPath: '/api/public/status/json'
+      preLoaderRoute: typeof ApiPublicStatusJsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/email-templates/$type': {
       id: '/api/public/email-templates/$type'
       path: '/api/public/email-templates/$type'
@@ -3207,6 +3274,20 @@ declare module '@tanstack/react-router' {
       path: '/api/public/cron/visitas-notificacoes'
       fullPath: '/api/public/cron/visitas-notificacoes'
       preLoaderRoute: typeof ApiPublicCronVisitasNotificacoesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/status-cleanup': {
+      id: '/api/public/cron/status-cleanup'
+      path: '/api/public/cron/status-cleanup'
+      fullPath: '/api/public/cron/status-cleanup'
+      preLoaderRoute: typeof ApiPublicCronStatusCleanupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/status-check': {
+      id: '/api/public/cron/status-check'
+      path: '/api/public/cron/status-check'
+      fullPath: '/api/public/cron/status-check'
+      preLoaderRoute: typeof ApiPublicCronStatusCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/snapshot': {
@@ -3313,6 +3394,7 @@ interface AdminRouteChildren {
   AdminLimitesRoute: typeof AdminLimitesRoute
   AdminModulosRoute: typeof AdminModulosRoute
   AdminPlanosRoute: typeof AdminPlanosRoute
+  AdminStatusRoute: typeof AdminStatusRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -3327,6 +3409,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLimitesRoute: AdminLimitesRoute,
   AdminModulosRoute: AdminModulosRoute,
   AdminPlanosRoute: AdminPlanosRoute,
+  AdminStatusRoute: AdminStatusRoute,
   AdminTenantsRoute: AdminTenantsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -3605,8 +3688,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronGerarRepassesRoute: ApiPublicCronGerarRepassesRoute,
   ApiPublicCronInadimplenciaRoute: ApiPublicCronInadimplenciaRoute,
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
+  ApiPublicCronStatusCheckRoute: ApiPublicCronStatusCheckRoute,
+  ApiPublicCronStatusCleanupRoute: ApiPublicCronStatusCleanupRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
+  ApiPublicStatusJsonRoute: ApiPublicStatusJsonRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,

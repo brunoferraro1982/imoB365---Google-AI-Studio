@@ -446,6 +446,9 @@ export function SiteFooter() {
             <Link to="/lgpd" className="hover:text-primary transition-colors">
               LGPD
             </Link>
+            <Link to="/status" className="hover:text-primary transition-colors">
+              Status
+            </Link>
           </div>
         </div>
       </div>

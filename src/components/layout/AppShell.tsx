@@ -45,6 +45,7 @@ import {
   Radar,
   CreditCard,
   Boxes,
+  Activity,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -199,6 +200,7 @@ const adminNav: Item[] = [
   { to: "/admin/integracoes", label: "Integrações", icon: Settings },
   { to: "/admin/emails", label: "E-mails", icon: Mail },
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
+  { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
