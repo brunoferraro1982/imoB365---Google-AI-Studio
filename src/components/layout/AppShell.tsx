@@ -97,6 +97,13 @@ const tenantModules: Module[] = [
     ],
   },
   {
+    id: "atendimento",
+    requiredModule: "atendimento" as AppModule,
+    label: "Central de Atendimento",
+    icon: Headset,
+    items: [{ to: "/app/atendimento", label: "Chamados", icon: Headset }],
+  },
+  {
     id: "elearning",
     requiredModule: "elearning" as AppModule,
     label: "E-Learning",

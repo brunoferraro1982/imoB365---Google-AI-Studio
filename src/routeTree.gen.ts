@@ -97,6 +97,7 @@ import { Route as AppContratosIndexRouteImport } from './routes/app.contratos.in
 import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
 import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.index'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
+import { Route as AppAtendimentoIndexRouteImport } from './routes/app.atendimento.index'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
@@ -624,6 +625,11 @@ const AppComissoesIndexRoute = AppComissoesIndexRouteImport.update({
 const AppChatIndexRoute = AppChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAtendimentoIndexRoute = AppAtendimentoIndexRouteImport.update({
+  id: '/atendimento/',
+  path: '/atendimento/',
   getParentRoute: () => AppRoute,
 } as any)
 const SiteSlugBlogRoute = SiteSlugBlogRouteImport.update({
@@ -1227,6 +1233,7 @@ export interface FileRoutesByFullPath {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -1399,6 +1406,7 @@ export interface FileRoutesByTo {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/app/atendimento': typeof AppAtendimentoIndexRoute
   '/app/chat': typeof AppChatIndexRoute
   '/app/comissoes': typeof AppComissoesIndexRoute
   '/app/configuracoes': typeof AppConfiguracoesIndexRoute
@@ -1577,6 +1585,7 @@ export interface FileRoutesById {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
+  '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -1756,6 +1765,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -1928,6 +1938,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/app/atendimento'
     | '/app/chat'
     | '/app/comissoes'
     | '/app/configuracoes'
@@ -2105,6 +2116,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
+    | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -2849,6 +2861,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/app/chat/'
       preLoaderRoute: typeof AppChatIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/atendimento/': {
+      id: '/app/atendimento/'
+      path: '/atendimento'
+      fullPath: '/app/atendimento/'
+      preLoaderRoute: typeof AppAtendimentoIndexRouteImport
       parentRoute: typeof AppRoute
     }
     '/site/$slug_/blog': {
@@ -3608,6 +3627,7 @@ interface AppRouteChildren {
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
+  AppAtendimentoIndexRoute: typeof AppAtendimentoIndexRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
   AppContratosIndexRoute: typeof AppContratosIndexRoute
@@ -3663,6 +3683,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
+  AppAtendimentoIndexRoute: AppAtendimentoIndexRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
   AppContratosIndexRoute: AppContratosIndexRoute,

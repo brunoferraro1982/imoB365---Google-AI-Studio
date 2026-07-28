@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Headset, Send, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { moduleGuard } from "@/lib/routeGuard";
+import { listChamadoAssignees } from "@/lib/atendimento.functions";
 import {
   STATUS_LABEL,
   STATUS_VARIANT,
@@ -22,21 +25,21 @@ import {
   CANAL_LABEL,
 } from "@/lib/chamadosLabels";
 
-export const Route = createFileRoute("/admin/atendimento")({
-  component: AdminAtendimentoPage,
+export const Route = createFileRoute("/app/atendimento/")({
+  beforeLoad: moduleGuard("atendimento"),
+  component: AppAtendimentoPage,
 });
 
 type Chamado = {
   id: string;
   numero: string;
-  tenant_id: string | null;
-  solicitante_tipo: string;
   solicitante_nome: string | null;
   solicitante_email: string | null;
   categoria: string;
   status: string;
   prioridade: string;
   assunto: string;
+  atribuido_user_id: string | null;
   csat_nota: number | null;
   csat_comentario: string | null;
   created_at: string;
@@ -51,12 +54,16 @@ type Mensagem = {
   created_at: string;
 };
 
-type TenantOption = { id: string; nome: string };
+type Assignee = { id: string; nome: string };
+type QuickReply = { id: string; label: string; content: string };
 
 const STATUS_FILTROS = ["novo", "em_atendimento", "aguardando_cliente", "resolvido", "fechado"];
 
-function AdminAtendimentoPage() {
-  const { user } = useAuth();
+function AppAtendimentoPage() {
+  const { user, tenantId, roles } = useAuth();
+  const podeGerenciar = roles.includes("admin") || roles.includes("atendente");
+  const fetchAssignees = useServerFn(listChamadoAssignees);
+
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [loading, setLoading] = useState(true);
@@ -65,18 +72,20 @@ function AdminAtendimentoPage() {
   const [resposta, setResposta] = useState("");
   const [notaInterna, setNotaInterna] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [tenants, setTenants] = useState<TenantOption[]>([]);
-  const [tenantReatribuicao, setTenantReatribuicao] = useState<string>("");
+  const [assignees, setAssignees] = useState<Assignee[]>([]);
+  const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
 
   async function load() {
+    if (!tenantId) return;
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from("chamados")
         .select(
-          "id,numero,tenant_id,solicitante_tipo,solicitante_nome,solicitante_email,categoria,status,prioridade,assunto,csat_nota,csat_comentario,created_at",
+          "id,numero,solicitante_nome,solicitante_email,categoria,status,prioridade,assunto,atribuido_user_id,csat_nota,csat_comentario,created_at",
         )
-        .eq("responsavel_tipo", "imob365")
+        .eq("responsavel_tipo", "tenant")
+        .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       setChamados((data ?? []) as Chamado[]);
@@ -87,23 +96,27 @@ function AdminAtendimentoPage() {
     }
   }
 
-  async function loadTenants() {
-    const { data } = await supabase
-      .from("tenants")
-      .select("id,nome")
-      .in("status", ["active", "trial"])
-      .order("nome");
-    setTenants((data ?? []) as TenantOption[]);
-  }
-
   useEffect(() => {
     load();
-    loadTenants();
-  }, []);
+    if (tenantId) {
+      supabase
+        .from("chat_quick_replies")
+        .select("id,label,content")
+        .eq("tenant_id", tenantId)
+        .eq("ativo", true)
+        .order("ordem")
+        .then(({ data }) => setQuickReplies((data ?? []) as QuickReply[]));
+      if (podeGerenciar) {
+        fetchAssignees({ data: { tenantId } })
+          .then((data) => setAssignees(data))
+          .catch(() => {});
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId]);
 
   async function abrirChamado(chamado: Chamado) {
     setSelecionado(chamado);
-    setTenantReatribuicao("");
     const { data, error } = await supabase
       .from("chamado_mensagens")
       .select("id,autor_tipo,canal,conteudo,interno,created_at")
@@ -136,7 +149,8 @@ function AdminAtendimentoPage() {
         await supabase
           .from("chamados")
           .update(patch as never)
-          .eq("id", selecionado.id);
+          .eq("id", selecionado.id)
+          .select("id");
       }
 
       setResposta("");
@@ -152,10 +166,12 @@ function AdminAtendimentoPage() {
   }
 
   // A RLS de UPDATE em `chamados` filtra silenciosamente linhas fora de
-  // permissão — o client Supabase não lança erro nesse caso, só retorna 0
-  // linhas. Sem `.select()` + checagem de `data.length`, a UI mostraria
-  // sucesso mesmo quando nada foi realmente salvo (achado real testando
-  // com uma conta sem privilégio de super_admin no Sprint 2).
+  // permissão (ex.: broker tentando mexer num chamado não atribuído a ele)
+  // — o client Supabase não lança erro nesse caso, só retorna 0 linhas. Sem
+  // `.select()` + checagem de `data.length`, a UI mostraria sucesso mesmo
+  // quando nada foi realmente salvo (achado real testando com uma conta
+  // broker). Todo update disparado por interação direta do usuário nesta
+  // tela precisa dessa checagem.
   async function alterarStatus(status: string) {
     if (!selecionado) return;
     try {
@@ -194,25 +210,21 @@ function AdminAtendimentoPage() {
     }
   }
 
-  // Triagem: reatribui um chamado sem contexto (cliente final sem imóvel/
-  // corretor de origem) do balcão imoB365 pro balcão do tenant correto —
-  // caso raro previsto no plano, decidido explicitamente pra ficar manual
-  // em vez de heurística de match geográfico.
-  async function reatribuirParaTenant() {
-    if (!selecionado || !tenantReatribuicao) return;
+  async function atribuirA(userId: string) {
+    if (!selecionado) return;
     try {
       const { data, error } = await supabase
         .from("chamados")
-        .update({ responsavel_tipo: "tenant", tenant_id: tenantReatribuicao })
+        .update({ atribuido_user_id: userId })
         .eq("id", selecionado.id)
         .select("id");
       if (error) throw error;
-      if (!data || data.length === 0) throw new Error("Sem permissão pra reatribuir este chamado.");
-      toast.success("Chamado reatribuído à imobiliária.");
-      setSelecionado(null);
+      if (!data || data.length === 0) throw new Error("Sem permissão pra atribuir este chamado.");
+      setSelecionado({ ...selecionado, atribuido_user_id: userId });
       load();
+      toast.success("Chamado atribuído.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao reatribuir chamado");
+      toast.error(err instanceof Error ? err.message : "Erro ao atribuir chamado");
     }
   }
 
@@ -230,11 +242,10 @@ function AdminAtendimentoPage() {
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
           <Headset className="h-6 w-6" />
-          Central de Atendimento — imoB365
+          Central de Atendimento
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Chamados abertos por corretores/imobiliárias sobre a plataforma, e chamados de clientes
-          finais sem contexto (aguardando triagem/reatribuição pra imobiliária correta).
+          Chamados de clientes sobre imóveis, atendimento e dúvidas comerciais.
         </p>
       </div>
 
@@ -299,6 +310,20 @@ function AdminAtendimentoPage() {
                   </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  {podeGerenciar && (
+                    <Select value={selecionado.atribuido_user_id ?? ""} onValueChange={atribuirA}>
+                      <SelectTrigger className="h-8 w-40">
+                        <SelectValue placeholder="Atribuir a" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {assignees.map((a) => (
+                          <SelectItem key={a.id} value={a.id}>
+                            {a.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                   <Select value={selecionado.prioridade} onValueChange={alterarPrioridade}>
                     <SelectTrigger className="h-8 w-32">
                       <SelectValue />
@@ -334,34 +359,6 @@ function AdminAtendimentoPage() {
                 </div>
               )}
 
-              {selecionado.solicitante_tipo === "cliente_final" && (
-                <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-                  <span className="text-amber-700 dark:text-amber-400">
-                    Chamado de cliente final sem imobiliária correspondente — reatribuir:
-                  </span>
-                  <Select value={tenantReatribuicao} onValueChange={setTenantReatribuicao}>
-                    <SelectTrigger className="h-8 w-56">
-                      <SelectValue placeholder="Escolher imobiliária" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={!tenantReatribuicao}
-                    onClick={reatribuirParaTenant}
-                  >
-                    Reatribuir
-                  </Button>
-                </div>
-              )}
-
               <div className="space-y-3 rounded-md border border-border p-3">
                 {mensagens.length === 0 && (
                   <div className="text-sm text-muted-foreground">Nenhuma mensagem ainda.</div>
@@ -391,6 +388,20 @@ function AdminAtendimentoPage() {
               </div>
 
               <div className="space-y-2">
+                {quickReplies.length > 0 && (
+                  <Select onValueChange={(v) => setResposta(v)}>
+                    <SelectTrigger className="h-8 w-56">
+                      <SelectValue placeholder="Resposta rápida..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {quickReplies.map((q) => (
+                        <SelectItem key={q.id} value={q.content}>
+                          {q.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Textarea
                   placeholder="Escrever resposta..."
                   value={resposta}
