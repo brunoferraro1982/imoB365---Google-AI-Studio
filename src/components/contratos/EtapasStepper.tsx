@@ -64,6 +64,24 @@ export function EtapasStepper({ contratoId }: { contratoId: string }) {
     if (!tenantId || !proximaEtapa || !etapaAtual) return;
     setAvancando(true);
     try {
+      // Gate real (Sprint 7 — Checklist): não deixa ativar o contrato com
+      // item obrigatório pendente. Enforcement definitivo (server-side, não
+      // contornável pelo client) vem no Sprint 10; este é o primeiro nível.
+      if (proximaEtapa.value === "ativacao") {
+        const { count } = await (supabase as any)
+          .from("contrato_checklist")
+          .select("id", { count: "exact", head: true })
+          .eq("contrato_id", contratoId)
+          .eq("obrigatorio", true)
+          .eq("concluido", false);
+        if ((count ?? 0) > 0) {
+          toast.error(
+            `${count} item${count === 1 ? "" : "s"} obrigatório${count === 1 ? "" : "s"} do checklist ainda pendente${count === 1 ? "" : "s"} — conclua antes de ativar o contrato.`,
+          );
+          setAvancando(false);
+          return;
+        }
+      }
       const agora = new Date().toISOString();
       // Fecha a etapa atual (se houver uma linha em aberto) e abre a próxima
       // — mesmo padrão de "histórico de transições" já usado em outros
