@@ -9,25 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { TIPOS_CONTRATO, STATUS_CONTRATO } from "@/lib/contratosLabels";
 
 type Props = { contratoId?: string };
-
-export const TIPOS_CONTRATO = [
-  { value: "venda", label: "Venda" },
-  { value: "locacao", label: "Locação" },
-  { value: "permuta", label: "Permuta" },
-  { value: "parceria", label: "Parceria" },
-  { value: "administracao", label: "Administração" },
-  { value: "prestacao_servico", label: "Prestação de Serviço" },
-  { value: "outro", label: "Outro" },
-] as const;
-
-export const STATUS_CONTRATO = [
-  { value: "rascunho", label: "Rascunho" },
-  { value: "ativo", label: "Ativo" },
-  { value: "encerrado", label: "Encerrado" },
-  { value: "cancelado", label: "Cancelado" },
-] as const;
 
 type Template = { id: string; nome: string; tipo: string };
 

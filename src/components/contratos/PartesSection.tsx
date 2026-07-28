@@ -8,14 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
+// Precisa espelhar exatamente o enum `parte_papel` do banco (ver
+// supabase/migrations/20260521144213_..sql:42) — um valor aqui que não
+// existe no enum faz o INSERT falhar em runtime. "Testemunha"/"Corretor"
+// foram removidos daqui (não existiam no enum, o insert sempre falhava
+// silenciosamente pro usuário) até virarem valores reais de enum.
 const PAPEIS = [
   { value: "vendedor", label: "Vendedor" },
   { value: "comprador", label: "Comprador" },
   { value: "locador", label: "Locador" },
   { value: "locatario", label: "Locatário" },
   { value: "fiador", label: "Fiador" },
-  { value: "testemunha", label: "Testemunha" },
-  { value: "corretor", label: "Corretor" },
+  { value: "procurador", label: "Procurador" },
   { value: "outro", label: "Outro" },
 ] as const;
 
