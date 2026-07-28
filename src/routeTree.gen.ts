@@ -56,6 +56,7 @@ import { Route as CorretorSlugRouteImport } from './routes/corretor.$slug'
 import { Route as ContaVisitasRouteImport } from './routes/conta.visitas'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
+import { Route as ContaContratosRouteImport } from './routes/conta.contratos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
@@ -417,6 +418,11 @@ const ContaPerfilRoute = ContaPerfilRouteImport.update({
 const ContaFavoritosRoute = ContaFavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaContratosRoute = ContaContratosRouteImport.update({
+  id: '/contratos',
+  path: '/contratos',
   getParentRoute: () => ContaRoute,
 } as any)
 const ContaBuscasRoute = ContaBuscasRouteImport.update({
@@ -1146,6 +1152,7 @@ export interface FileRoutesByFullPath {
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
+  '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -1316,6 +1323,7 @@ export interface FileRoutesByTo {
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
+  '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -1492,6 +1500,7 @@ export interface FileRoutesById {
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog_/$slug': typeof BlogSlugRoute
   '/conta/buscas': typeof ContaBuscasRoute
+  '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
   '/conta/perfil': typeof ContaPerfilRoute
   '/conta/visitas': typeof ContaVisitasRoute
@@ -1669,6 +1678,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
     | '/conta/buscas'
+    | '/conta/contratos'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -1839,6 +1849,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
     | '/conta/buscas'
+    | '/conta/contratos'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -2014,6 +2025,7 @@ export interface FileRouteTypes {
     | '/avaliacao/$tenantSlug'
     | '/blog_/$slug'
     | '/conta/buscas'
+    | '/conta/contratos'
     | '/conta/favoritos'
     | '/conta/perfil'
     | '/conta/visitas'
@@ -2538,6 +2550,13 @@ declare module '@tanstack/react-router' {
       path: '/favoritos'
       fullPath: '/conta/favoritos'
       preLoaderRoute: typeof ContaFavoritosRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/contratos': {
+      id: '/conta/contratos'
+      path: '/contratos'
+      fullPath: '/conta/contratos'
+      preLoaderRoute: typeof ContaContratosRouteImport
       parentRoute: typeof ContaRoute
     }
     '/conta/buscas': {
@@ -3643,6 +3662,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface ContaRouteChildren {
   ContaBuscasRoute: typeof ContaBuscasRoute
+  ContaContratosRoute: typeof ContaContratosRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
   ContaPerfilRoute: typeof ContaPerfilRoute
   ContaVisitasRoute: typeof ContaVisitasRoute
@@ -3653,6 +3673,7 @@ interface ContaRouteChildren {
 
 const ContaRouteChildren: ContaRouteChildren = {
   ContaBuscasRoute: ContaBuscasRoute,
+  ContaContratosRoute: ContaContratosRoute,
   ContaFavoritosRoute: ContaFavoritosRoute,
   ContaPerfilRoute: ContaPerfilRoute,
   ContaVisitasRoute: ContaVisitasRoute,

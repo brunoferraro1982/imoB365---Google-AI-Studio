@@ -29,17 +29,30 @@ type HistoricoEtapa = {
   concluida_em: string | null;
 };
 
+// CLM Sprint 15 — Marketplace: só os tipos com uma transação real sobre uma
+// unidade específica reservam o imóvel ao entrar em assinatura (mesmo
+// mapeamento de "papel do proprietário" já usado no gate de ativarContrato,
+// Sprint 10) — parceria/prestação de serviço/captação/exclusividade/outro
+// não têm esse conceito.
+const TIPOS_COM_RESERVA = new Set(["venda", "permuta", "locacao", "administracao"]);
+
 export function EtapasStepper({ contratoId }: { contratoId: string }) {
   const { tenantId, roles } = useAuth();
   const [etapaAtual, setEtapaAtual] = useState<EtapaContrato | null>(null);
   const [historico, setHistorico] = useState<HistoricoEtapa[]>([]);
+  const [imovelId, setImovelId] = useState<string | null>(null);
+  const [tipoContrato, setTipoContrato] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [avancando, setAvancando] = useState(false);
 
   async function load() {
     setLoading(true);
     const [{ data: contrato }, { data: etapas }] = await Promise.all([
-      (supabase as any).from("contratos").select("etapa_atual").eq("id", contratoId).maybeSingle(),
+      (supabase as any)
+        .from("contratos")
+        .select("etapa_atual,imovel_id,tipo")
+        .eq("id", contratoId)
+        .maybeSingle(),
       (supabase as any)
         .from("contrato_etapas")
         .select("id,etapa,iniciada_em,concluida_em")
@@ -48,6 +61,8 @@ export function EtapasStepper({ contratoId }: { contratoId: string }) {
     ]);
     setEtapaAtual((contrato?.etapa_atual as EtapaContrato) ?? "captacao");
     setHistorico((etapas ?? []) as HistoricoEtapa[]);
+    setImovelId(contrato?.imovel_id ?? null);
+    setTipoContrato(contrato?.tipo ?? null);
     setLoading(false);
   }
 
@@ -100,6 +115,20 @@ export function EtapasStepper({ contratoId }: { contratoId: string }) {
         .from("contratos")
         .update({ etapa_atual: proximaEtapa.value })
         .eq("id", contratoId);
+
+      // CLM Sprint 15 — Marketplace: imóvel vira "reservado" assim que o
+      // contrato entra em assinatura (sinaliza pro site público/portais que
+      // a unidade já tem proposta em andamento, mesmo antes de "vendido"/
+      // "alugado" na ativação — ver contratos.functions.ts ativarContrato).
+      if (
+        proximaEtapa.value === "assinatura" &&
+        imovelId &&
+        tipoContrato &&
+        TIPOS_COM_RESERVA.has(tipoContrato)
+      ) {
+        await (supabase as any).from("imoveis").update({ status: "reservado" }).eq("id", imovelId);
+      }
+
       toast.success(`Etapa avançada para "${proximaEtapa.label}"`);
       load();
     } catch (err) {

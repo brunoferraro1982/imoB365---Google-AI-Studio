@@ -11,6 +11,7 @@ import {
   Fingerprint,
   Loader2,
   Sparkles,
+  FileSignature,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ function LeadDetail() {
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [lead, setLead] = useState<any>(null);
   const [imovel, setImovel] = useState<any>(null);
+  const [contrato, setContrato] = useState<{ id: string; numero: string | null } | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
   const [interacoes, setInteracoes] = useState<any[]>([]);
   const [nota, setNota] = useState("");
@@ -111,28 +113,43 @@ function LeadDetail() {
       return;
     }
     setLead(l);
-    const [{ data: imo }, { data: cors }, { data: inter }] = await Promise.all([
-      l.imovel_id
-        ? (supabase as any)
-            .from("imoveis")
-            .select("id,titulo,slug")
-            .eq("id", l.imovel_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      (supabase as any)
-        .from("corretores")
-        .select("id,nome")
-        .eq("tenant_id", l.tenant_id)
-        .order("nome"),
-      (supabase as any)
-        .from("lead_interacoes")
-        .select("*")
-        .eq("lead_id", id)
-        .order("created_at", { ascending: false }),
-    ]);
+    const [{ data: imo }, { data: cors }, { data: inter }, { data: contratoData }] =
+      await Promise.all([
+        l.imovel_id
+          ? (supabase as any)
+              .from("imoveis")
+              .select("id,titulo,slug")
+              .eq("id", l.imovel_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+        (supabase as any)
+          .from("corretores")
+          .select("id,nome")
+          .eq("tenant_id", l.tenant_id)
+          .order("nome"),
+        (supabase as any)
+          .from("lead_interacoes")
+          .select("*")
+          .eq("lead_id", id)
+          .order("created_at", { ascending: false }),
+        // CLM Sprint 15 — wiring: contratos.lead_id já existia, só faltava
+        // o funil de lead mostrar o link pro contrato quando formalizado.
+        // Sem .maybeSingle(): contratos.lead_id não tem constraint unique —
+        // um lead pode legitimamente ter mais de um contrato ao longo do
+        // tempo (ex. um negócio caiu, um segundo contrato foi criado depois)
+        // — achado real ao testar, o seed de dev tem 2 contratos pro mesmo
+        // lead. Mostra o mais recente.
+        (supabase as any)
+          .from("contratos")
+          .select("id,numero")
+          .eq("lead_id", id)
+          .order("created_at", { ascending: false })
+          .limit(1),
+      ]);
     setImovel(imo);
     setCorretores(cors ?? []);
     setInteracoes(inter ?? []);
+    setContrato(contratoData?.[0] ?? null);
     setLoading(false);
   }
   useEffect(() => {
@@ -248,6 +265,25 @@ function LeadDetail() {
               </div>
             )}
           </section>
+
+          {contrato && (
+            <Link
+              to="/app/contratos/$id"
+              params={{ id: contrato.id }}
+              className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm hover:border-primary/60"
+            >
+              <FileSignature className="h-4 w-4 text-primary" />
+              <span>
+                Contrato formalizado:{" "}
+                <span className="font-medium">
+                  {contrato.numero ? `#${contrato.numero}` : contrato.id.slice(0, 8)}
+                </span>
+              </span>
+              <Badge variant="secondary" className="ml-auto">
+                Ver contrato
+              </Badge>
+            </Link>
+          )}
 
           <section className="rounded-xl border border-border bg-card p-6">
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

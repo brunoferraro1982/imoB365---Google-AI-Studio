@@ -235,5 +235,24 @@ export const ativarContrato = createServerFn({ method: "POST" })
       .eq("id", contrato_id);
     if (updateError) throw new Error(updateError.message);
 
+    // CLM Sprint 15 — Marketplace: ativação do contrato é o momento em que a
+    // transação de fato se concretiza — imóvel sai de "reservado" (Sprint 3
+    // do stepper) pro status final. Mesmo mapeamento de tipo já usado em
+    // PAPEL_PROPRIETARIO acima; parceria/prestação de serviço/captação/
+    // exclusividade/outro não têm um status final de imóvel associado.
+    const statusFinalImovel: Record<string, string> = {
+      venda: "vendido",
+      permuta: "vendido",
+      locacao: "alugado",
+      administracao: "alugado",
+    };
+    const novoStatusImovel = statusFinalImovel[contrato.tipo];
+    if (novoStatusImovel) {
+      await supabase
+        .from("imoveis")
+        .update({ status: novoStatusImovel as never })
+        .eq("id", contrato.imovel_id);
+    }
+
     return { ok: true };
   });

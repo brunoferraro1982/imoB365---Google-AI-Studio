@@ -6044,6 +6044,24 @@ export type Database = {
           valor_novo: string;
         }[];
       };
+      public_meus_contratos: {
+        Args: never;
+        Returns: {
+          data_fim: string;
+          data_inicio: string;
+          etapa_atual: string;
+          id: string;
+          imovel_id: string;
+          imovel_slug: string;
+          imovel_titulo: string;
+          numero: string;
+          papel: Database["public"]["Enums"]["parte_papel"];
+          status: Database["public"]["Enums"]["contrato_status"];
+          tenant_nome: string;
+          tipo: Database["public"]["Enums"]["contrato_tipo"];
+          valor: number;
+        }[];
+      };
       public_minhas_visitas: {
         Args: never;
         Returns: {
