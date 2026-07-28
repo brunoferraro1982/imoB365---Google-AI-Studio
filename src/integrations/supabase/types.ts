@@ -1064,6 +1064,7 @@ export type Database = {
           tamanho_bytes: number | null;
           tenant_id: string;
           uploaded_by: string | null;
+          validade: string | null;
           versao: number;
         };
         Insert: {
@@ -1077,6 +1078,7 @@ export type Database = {
           tamanho_bytes?: number | null;
           tenant_id: string;
           uploaded_by?: string | null;
+          validade?: string | null;
           versao?: number;
         };
         Update: {
@@ -1090,6 +1092,7 @@ export type Database = {
           tamanho_bytes?: number | null;
           tenant_id?: string;
           uploaded_by?: string | null;
+          validade?: string | null;
           versao?: number;
         };
         Relationships: [
