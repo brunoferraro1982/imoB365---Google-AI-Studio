@@ -1063,35 +1063,56 @@ export type Database = {
       };
       contrato_partes: {
         Row: {
+          assinatura_status: string;
           contrato_id: string;
           created_at: string;
           documento: string | null;
           email: string | null;
+          endereco: string | null;
+          estado_civil: string | null;
           id: string;
+          nacionalidade: string | null;
           nome: string;
           papel: Database["public"]["Enums"]["parte_papel"];
+          percentual_participacao: number | null;
+          profissao: string | null;
+          responsabilidade: string | null;
           telefone: string | null;
           tenant_id: string;
         };
         Insert: {
+          assinatura_status?: string;
           contrato_id: string;
           created_at?: string;
           documento?: string | null;
           email?: string | null;
+          endereco?: string | null;
+          estado_civil?: string | null;
           id?: string;
+          nacionalidade?: string | null;
           nome: string;
           papel: Database["public"]["Enums"]["parte_papel"];
+          percentual_participacao?: number | null;
+          profissao?: string | null;
+          responsabilidade?: string | null;
           telefone?: string | null;
           tenant_id: string;
         };
         Update: {
+          assinatura_status?: string;
           contrato_id?: string;
           created_at?: string;
           documento?: string | null;
           email?: string | null;
+          endereco?: string | null;
+          estado_civil?: string | null;
           id?: string;
+          nacionalidade?: string | null;
           nome?: string;
           papel?: Database["public"]["Enums"]["parte_papel"];
+          percentual_participacao?: number | null;
+          profissao?: string | null;
+          responsabilidade?: string | null;
           telefone?: string | null;
           tenant_id?: string;
         };
@@ -5875,7 +5896,11 @@ export type Database = {
         | "locatario"
         | "fiador"
         | "procurador"
-        | "outro";
+        | "outro"
+        | "testemunha"
+        | "corretor"
+        | "advogado"
+        | "administrador";
       subscription_status: "ativa" | "inadimplente" | "cancelada" | "trial";
       tenant_status: "trial" | "active" | "suspended" | "cancelled";
       visita_status: "agendada" | "confirmada" | "realizada" | "cancelada" | "nao_compareceu";
@@ -6071,6 +6096,10 @@ export const Constants = {
         "fiador",
         "procurador",
         "outro",
+        "testemunha",
+        "corretor",
+        "advogado",
+        "administrador",
       ],
       subscription_status: ["ativa", "inadimplente", "cancelada", "trial"],
       tenant_status: ["trial", "active", "suspended", "cancelled"],
