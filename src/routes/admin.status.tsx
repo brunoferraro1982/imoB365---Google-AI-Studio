@@ -1,7 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2, ExternalLink, Plus, XCircle } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, CheckCircle2, ExternalLink, Plus, Server, XCircle } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { getHostingerPanel, type HostingerPanelData } from "@/lib/hostinger.functions";
 
 export const Route = createFileRoute("/admin/status")({
   component: AdminStatusPage,
@@ -76,10 +90,166 @@ function StatusIcon({ status }: { status: StatusValue | null }) {
   return <span className="text-xs text-muted-foreground">sem dado</span>;
 }
 
+function bytesToGb(bytes: number): number {
+  return Math.round((bytes / 1024 / 1024 / 1024) * 10) / 10;
+}
+
+function formatUptime(seconds: number): string {
+  const dias = Math.floor(seconds / 86400);
+  const horas = Math.floor((seconds % 86400) / 3600);
+  if (dias > 0) return `${dias}d ${horas}h`;
+  const minutos = Math.floor((seconds % 3600) / 60);
+  return `${horas}h ${minutos}min`;
+}
+
+function formatHora(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function HostingerPanel({ data }: { data: HostingerPanelData | null }) {
+  if (!data || !data.configured || !data.vm || !data.metrics) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+        <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
+          <Server className="h-4 w-4" />
+          Infraestrutura (VPS Hostinger)
+        </div>
+        Não configurado — defina <code className="text-xs">HOSTINGER_API_TOKEN</code> e{" "}
+        <code className="text-xs">HOSTINGER_VPS_ID</code> nas variáveis de ambiente do servidor pra
+        ver métricas reais de CPU/RAM/disco aqui.
+      </div>
+    );
+  }
+
+  const { vm, metrics } = data;
+  const memoryBytesTotal = vm.memoryMb * 1024 * 1024;
+  const diskBytesTotal = vm.diskMb * 1024 * 1024;
+
+  const cpuSeries = metrics.cpuUsagePercent.map((p) => ({
+    hora: formatHora(p.timestamp),
+    valor: p.value,
+  }));
+  const ramSeries = metrics.ramUsageBytes.map((p) => ({
+    hora: formatHora(p.timestamp),
+    gb: bytesToGb(p.value),
+  }));
+  const diskSeries = metrics.diskUsageBytes.map((p) => ({
+    hora: formatHora(p.timestamp),
+    gb: bytesToGb(p.value),
+  }));
+
+  const maxRamBytes = Math.max(0, ...metrics.ramUsageBytes.map((p) => p.value));
+  const ramPercentPico =
+    memoryBytesTotal > 0 ? Math.round((maxRamBytes / memoryBytesTotal) * 100) : 0;
+  const ultimoUptime = metrics.uptimeSeconds.at(-1)?.value;
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 font-medium">
+            <Server className="h-4 w-4" />
+            Infraestrutura (VPS Hostinger)
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {vm.hostname} · {vm.ipv4} · {vm.cpus} vCPU · {bytesToGb(memoryBytesTotal)}GB RAM ·{" "}
+            {bytesToGb(diskBytesTotal)}GB disco
+            {ultimoUptime != null && <> · uptime {formatUptime(ultimoUptime)}</>}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {ramPercentPico >= 80 && (
+            <span className="flex items-center gap-1 rounded-full border border-amber-500/40 px-2 py-0.5 text-xs text-amber-600 dark:text-amber-400">
+              <AlertTriangle className="h-3 w-3" />
+              RAM chegou a {ramPercentPico}% nas últimas 24h
+            </span>
+          )}
+          <span
+            className={`rounded-full border px-2 py-0.5 text-xs ${vm.state === "running" ? "border-emerald-500/40 text-emerald-600 dark:text-emerald-400" : "border-red-500/40 text-red-600 dark:text-red-400"}`}
+          >
+            {vm.state}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-3">
+        <div>
+          <div className="mb-1 text-xs text-muted-foreground">CPU (%, últimas 24h)</div>
+          <ResponsiveContainer width="100%" height={120}>
+            <LineChart data={cpuSeries}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="hora" tick={{ fontSize: 10 }} minTickGap={40} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={30} />
+              <Tooltip formatter={(v: number) => [`${v}%`, "CPU"]} />
+              <Line
+                type="monotone"
+                dataKey="valor"
+                stroke="var(--primary)"
+                dot={false}
+                strokeWidth={2}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <div>
+          <div className="mb-1 text-xs text-muted-foreground">
+            RAM (GB, total {bytesToGb(memoryBytesTotal)}GB)
+          </div>
+          <ResponsiveContainer width="100%" height={120}>
+            <AreaChart data={ramSeries}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="hora" tick={{ fontSize: 10 }} minTickGap={40} />
+              <YAxis domain={[0, bytesToGb(memoryBytesTotal)]} tick={{ fontSize: 10 }} width={30} />
+              <Tooltip formatter={(v: number) => [`${v}GB`, "RAM"]} />
+              <ReferenceLine
+                y={bytesToGb(memoryBytesTotal)}
+                stroke="var(--destructive)"
+                strokeDasharray="4 4"
+              />
+              <Area
+                type="monotone"
+                dataKey="gb"
+                stroke="var(--primary)"
+                fill="var(--primary)"
+                fillOpacity={0.2}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+        <div>
+          <div className="mb-1 text-xs text-muted-foreground">
+            Disco (GB, total {bytesToGb(diskBytesTotal)}GB)
+          </div>
+          <ResponsiveContainer width="100%" height={120}>
+            <AreaChart data={diskSeries}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis dataKey="hora" tick={{ fontSize: 10 }} minTickGap={40} />
+              <YAxis domain={[0, bytesToGb(diskBytesTotal)]} tick={{ fontSize: 10 }} width={30} />
+              <Tooltip formatter={(v: number) => [`${v}GB`, "Disco"]} />
+              <Area
+                type="monotone"
+                dataKey="gb"
+                stroke="var(--primary)"
+                fill="var(--primary)"
+                fillOpacity={0.2}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminStatusPage() {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [incidentes, setIncidentes] = useState<Incidente[]>([]);
+  const [hostinger, setHostinger] = useState<HostingerPanelData | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchHostingerPanel = useServerFn(getHostingerPanel);
   const [novoAberto, setNovoAberto] = useState(false);
   const [novoTitulo, setNovoTitulo] = useState("");
   const [novoImpacto, setNovoImpacto] = useState<Impacto>("minor");
@@ -150,6 +320,13 @@ function AdminStatusPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao carregar status");
     } finally {
       setLoading(false);
+    }
+
+    try {
+      const painel = await fetchHostingerPanel();
+      setHostinger(painel);
+    } catch (err) {
+      console.error("[admin.status] falha ao carregar painel Hostinger", err);
     }
   }
 
@@ -304,6 +481,8 @@ function AdminStatusPage() {
           ))}
         </div>
       </div>
+
+      <HostingerPanel data={hostinger} />
 
       <div className="rounded-xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border p-4">
