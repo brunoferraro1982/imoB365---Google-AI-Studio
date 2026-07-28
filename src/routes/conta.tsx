@@ -1,5 +1,13 @@
 import { createFileRoute, Link, Outlet, redirect, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Heart, Bookmark, Calendar, MessageCircle, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  Heart,
+  Bookmark,
+  Calendar,
+  MessageCircle,
+  User,
+  FileSignature,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
@@ -20,6 +28,7 @@ const NAV: NavItem[] = [
   { to: "/conta/favoritos", label: "Favoritos", icon: Heart },
   { to: "/conta/buscas", label: "Buscas salvas", icon: Bookmark },
   { to: "/conta/visitas", label: "Visitas", icon: Calendar },
+  { to: "/conta/contratos", label: "Meus contratos", icon: FileSignature },
   { to: "/conta/chat", label: "Conversas", icon: MessageCircle },
   { to: "/conta/perfil", label: "Perfil", icon: User },
 ];

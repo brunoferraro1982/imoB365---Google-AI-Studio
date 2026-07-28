@@ -46,6 +46,7 @@ import {
   CreditCard,
   Boxes,
   Activity,
+  PenTool,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -176,6 +177,11 @@ const tenantModules: Module[] = [
         icon: Landmark,
       },
       { to: "/app/configuracoes/integracoes-erp", label: "Integrações ERP", icon: Boxes },
+      {
+        to: "/app/configuracoes/assinatura-eletronica",
+        label: "Assinatura eletrônica",
+        icon: PenTool,
+      },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
       { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },

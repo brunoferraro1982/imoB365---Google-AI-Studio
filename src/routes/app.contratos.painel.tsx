@@ -1,38 +1,50 @@
 import { moduleGuard } from "@/lib/routeGuard";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, RefreshCw, AlertTriangle } from "lucide-react";
+import {
+  LayoutDashboard,
+  RefreshCw,
+  AlertTriangle,
+  Wallet,
+  ShieldCheck,
+  TrendingUp,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { verificarSlaContratos } from "@/lib/slaAlertas.functions";
-import { CONTRATO_VENCIMENTO_DIAS } from "@/lib/slaAlertas";
+import { CONTRATO_VENCIMENTO_DIAS, ALERTA_ANTECEDENCIA_DIAS } from "@/lib/slaAlertas";
+import { TIPO_LABEL } from "@/lib/contratosLabels";
+import { formatBRL } from "@/lib/format";
 
 export const Route = createFileRoute("/app/contratos/painel")({
   beforeLoad: moduleGuard("juridico"),
   component: PainelContratosPage,
 });
 
-const TIPO_LABEL: Record<string, string> = {
-  venda: "Venda",
-  locacao: "Locação",
-  permuta: "Permuta",
-  parceria: "Parceria",
-  administracao: "Administração",
-  prestacao_servico: "Prest. de Serviço",
-  outro: "Outro",
-};
-
 type ContratoResumo = {
   id: string;
   numero: string | null;
   tipo: string;
   status: string;
+  data_inicio: string | null;
   data_fim: string | null;
+  valor: number | null;
   corretor_id: string | null;
   corretor: { nome: string | null } | null;
+};
+
+// CLM Sprint 13 — dashboard financeiro da carteira, alimentado pelas
+// tabelas dos Sprints 4/5/6 (reajuste, garantia, dados financeiros).
+type ResumoFinanceiro = {
+  valorCarteiraAtiva: number;
+  tempoMedioDias: number | null;
+  receitaPrevista: number;
+  receitaRealizada: number;
+  garantiasVencendo: number;
+  reajustesPendentes: number;
 };
 
 function diasRestantes(dataFim: string) {
@@ -73,6 +85,7 @@ function StatTile({
 function PainelContratosPage() {
   const { tenantId } = useAuth();
   const [contratos, setContratos] = useState<ContratoResumo[]>([]);
+  const [financeiro, setFinanceiro] = useState<ResumoFinanceiro | null>(null);
   const [loading, setLoading] = useState(true);
   const [verificando, setVerificando] = useState(false);
 
@@ -82,12 +95,35 @@ function PainelContratosPage() {
     // Sem FK real entre contratos.corretor_id e corretores.id no banco, o
     // PostgREST não resolve join aninhado (corretor:corretores(...)) —
     // busca-se separadamente e faz-se o merge no cliente.
-    const [{ data: contratosData, error }, { data: corretoresData }] = await Promise.all([
+    const limiteAlerta = new Date(Date.now() + ALERTA_ANTECEDENCIA_DIAS * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+    const [
+      { data: contratosData, error },
+      { data: corretoresData },
+      { data: parcelasData },
+      { data: repassesData },
+      { count: garantiasVencendo },
+      { count: reajustesPendentes },
+    ] = await Promise.all([
       supabase
         .from("contratos")
-        .select("id,numero,tipo,status,data_fim,corretor_id")
+        .select("id,numero,tipo,status,data_inicio,data_fim,valor,corretor_id")
         .order("data_fim", { ascending: true, nullsFirst: false }),
       supabase.from("corretores").select("id,nome"),
+      (supabase as any).from("contrato_parcelas").select("valor,status"),
+      (supabase as any).from("locacao_repasses").select("valor_repasse,status"),
+      (supabase as any)
+        .from("locacao_garantias")
+        .select("id", { count: "exact", head: true })
+        .eq("ativo", true)
+        .not("vencimento", "is", null)
+        .lte("vencimento", limiteAlerta),
+      (supabase as any)
+        .from("locacao_reajustes")
+        .select("id", { count: "exact", head: true })
+        .not("proximo_reajuste", "is", null)
+        .lte("proximo_reajuste", limiteAlerta),
     ]);
     if (error) toast.error(error.message);
     const nomesPorCorretor = new Map(
@@ -97,6 +133,52 @@ function PainelContratosPage() {
       ...c,
       corretor: c.corretor_id ? { nome: nomesPorCorretor.get(c.corretor_id) ?? null } : null,
     }));
+
+    const contratosLista = (contratosData ?? []) as ContratoResumo[];
+    const valorCarteiraAtiva = contratosLista
+      .filter((c) => c.status === "ativo")
+      .reduce((acc, c) => acc + (c.valor ?? 0), 0);
+
+    const encerrados = contratosLista.filter(
+      (c) =>
+        ["encerrado", "cancelado", "rescindido"].includes(c.status) && c.data_inicio && c.data_fim,
+    );
+    const tempoMedioDias =
+      encerrados.length > 0
+        ? Math.round(
+            encerrados.reduce((acc, c) => {
+              const dias =
+                (new Date(`${c.data_fim}T00:00:00`).getTime() -
+                  new Date(`${c.data_inicio}T00:00:00`).getTime()) /
+                (24 * 60 * 60 * 1000);
+              return acc + dias;
+            }, 0) / encerrados.length,
+          )
+        : null;
+
+    const parcelas = (parcelasData ?? []) as { valor: number; status: string }[];
+    const repasses = (repassesData ?? []) as { valor_repasse: number; status: string }[];
+    const receitaPrevista =
+      parcelas
+        .filter((p) => p.status === "pendente" || p.status === "atrasado")
+        .reduce((acc, p) => acc + (p.valor ?? 0), 0) +
+      repasses
+        .filter((r) => r.status === "pendente" || r.status === "recebido")
+        .reduce((acc, r) => acc + (r.valor_repasse ?? 0), 0);
+    const receitaRealizada =
+      parcelas.filter((p) => p.status === "pago").reduce((acc, p) => acc + (p.valor ?? 0), 0) +
+      repasses
+        .filter((r) => r.status === "repassado")
+        .reduce((acc, r) => acc + (r.valor_repasse ?? 0), 0);
+
+    setFinanceiro({
+      valorCarteiraAtiva,
+      tempoMedioDias,
+      receitaPrevista,
+      receitaRealizada,
+      garantiasVencendo: garantiasVencendo ?? 0,
+      reajustesPendentes: reajustesPendentes ?? 0,
+    });
     setContratos(merged as ContratoResumo[]);
     setLoading(false);
   }
@@ -169,6 +251,60 @@ function PainelContratosPage() {
         <StatTile label="31–60 dias" value={de31a60.length} tone="warning" />
         <StatTile label="61–90 dias" value={de61a90.length} tone="neutral" />
       </div>
+
+      {financeiro && (
+        <section className="mb-8">
+          <h2 className="mb-3 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <Wallet className="h-3.5 w-3.5" /> Dashboard financeiro da carteira
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Valor da carteira ativa</div>
+              <div className="mt-1 text-lg font-bold">
+                {formatBRL(financeiro.valorCarteiraAtiva)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Tempo médio de contrato</div>
+              <div className="mt-1 text-lg font-bold">
+                {financeiro.tempoMedioDias != null ? `${financeiro.tempoMedioDias}d` : "—"}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <TrendingUp className="h-3 w-3" /> Receita prevista
+              </div>
+              <div className="mt-1 text-lg font-bold">{formatBRL(financeiro.receitaPrevista)}</div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">Receita realizada</div>
+              <div className="mt-1 text-lg font-bold text-emerald-600">
+                {formatBRL(financeiro.receitaRealizada)}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <ShieldCheck className="h-3 w-3" /> Garantias vencendo ({ALERTA_ANTECEDENCIA_DIAS}d)
+              </div>
+              <div
+                className={`mt-1 text-lg font-bold ${financeiro.garantiasVencendo > 0 ? "text-amber-600" : ""}`}
+              >
+                {financeiro.garantiasVencendo}
+              </div>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="text-xs text-muted-foreground">
+                Reajustes pendentes ({ALERTA_ANTECEDENCIA_DIAS}d)
+              </div>
+              <div
+                className={`mt-1 text-lg font-bold ${financeiro.reajustesPendentes > 0 ? "text-amber-600" : ""}`}
+              >
+                {financeiro.reajustesPendentes}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

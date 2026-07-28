@@ -63,7 +63,7 @@ export const completeOnboarding = createServerFn({ method: "POST" })
       p_user_id: userId,
       p_nome: data.nome,
       p_tipo: data.tipo,
-      p_imob_nome: data.tipo === "imobiliaria" ? data.imobiliariaNome || null : null,
+      p_imob_nome: data.tipo === "imobiliaria" ? data.imobiliariaNome || undefined : undefined,
     });
 
     if (rpcError) throw new Error("Erro ao provisionar trial: " + rpcError.message);

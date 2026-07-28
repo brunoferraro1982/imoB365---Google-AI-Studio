@@ -5,34 +5,20 @@ import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { TIPOS_CONTRATO, STATUS_CONTRATO } from "@/lib/contratosLabels";
+import { criarContrato, atualizarContrato } from "@/lib/contratos.functions";
 
 type Props = { contratoId?: string };
-
-export const TIPOS_CONTRATO = [
-  { value: "venda", label: "Venda" },
-  { value: "locacao", label: "Locação" },
-  { value: "permuta", label: "Permuta" },
-  { value: "parceria", label: "Parceria" },
-  { value: "administracao", label: "Administração" },
-  { value: "prestacao_servico", label: "Prestação de Serviço" },
-  { value: "outro", label: "Outro" },
-] as const;
-
-export const STATUS_CONTRATO = [
-  { value: "rascunho", label: "Rascunho" },
-  { value: "ativo", label: "Ativo" },
-  { value: "encerrado", label: "Encerrado" },
-  { value: "cancelado", label: "Cancelado" },
-] as const;
 
 type Template = { id: string; nome: string; tipo: string };
 
 export function ContratoForm({ contratoId }: Props) {
-  const { tenantId, user } = useAuth();
+  const { tenantId } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<{
     numero: string;
@@ -52,6 +38,17 @@ export function ContratoForm({ contratoId }: Props) {
     valor_entrada: number | string;
     numero_parcelas: number | string;
     data_primeira_parcela: string;
+    carencia_dias: number | string;
+    renovacao_automatica: boolean;
+    quantidade_renovacoes: number | string;
+    prazo_aviso_previo_dias: number | string;
+    prazo_rescisao_dias: number | string;
+    prazo_entrega_dias: number | string;
+    valor_condominio: number | string;
+    valor_iptu: number | string;
+    valor_seguro: number | string;
+    dia_vencimento: number | string;
+    centro_custo_id: string;
   }>({
     numero: "",
     tipo: "venda",
@@ -70,6 +67,17 @@ export function ContratoForm({ contratoId }: Props) {
     valor_entrada: "",
     numero_parcelas: "",
     data_primeira_parcela: "",
+    carencia_dias: "",
+    renovacao_automatica: false,
+    quantidade_renovacoes: "",
+    prazo_aviso_previo_dias: "",
+    prazo_rescisao_dias: "",
+    prazo_entrega_dias: "",
+    valor_condominio: "",
+    valor_iptu: "",
+    valor_seguro: "",
+    dia_vencimento: "",
+    centro_custo_id: "",
   });
 
   const [imoveis, setImoveis] = useState<
@@ -78,6 +86,9 @@ export function ContratoForm({ contratoId }: Props) {
   const [leads, setLeads] = useState<Array<{ id: string; nome: string }>>([]);
   const [corretores, setCorretores] = useState<Array<{ id: string; nome: string }>>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [centrosCusto, setCentrosCusto] = useState<
+    Array<{ id: string; codigo: string; nome: string }>
+  >([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!contratoId);
 
@@ -85,25 +96,37 @@ export function ContratoForm({ contratoId }: Props) {
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [{ data: i }, { data: l }, { data: c }, { data: tpl }] = await Promise.all([
-        supabase
-          .from("imoveis")
-          .select("id,titulo,codigo_interno")
-          .eq("tenant_id", tenantId)
-          .order("titulo"),
-        supabase.from("leads").select("id,nome").eq("tenant_id", tenantId).order("nome"),
-        supabase
-          .from("corretores")
-          .select("id,nome")
-          .eq("tenant_id", tenantId)
-          .eq("ativo", true)
-          .order("nome"),
-        supabase.from("contrato_templates").select("id,nome,tipo").eq("ativo", true).order("nome"),
-      ]);
+      const [{ data: i }, { data: l }, { data: c }, { data: tpl }, { data: cc }] =
+        await Promise.all([
+          supabase
+            .from("imoveis")
+            .select("id,titulo,codigo_interno")
+            .eq("tenant_id", tenantId)
+            .order("titulo"),
+          supabase.from("leads").select("id,nome").eq("tenant_id", tenantId).order("nome"),
+          supabase
+            .from("corretores")
+            .select("id,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("nome"),
+          supabase
+            .from("contrato_templates")
+            .select("id,nome,tipo")
+            .eq("ativo", true)
+            .order("nome"),
+          supabase
+            .from("centros_custo")
+            .select("id,codigo,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("codigo"),
+        ]);
       setImoveis(i ?? []);
       setLeads(l ?? []);
       setCorretores(c ?? []);
       setTemplates((tpl ?? []) as Template[]);
+      setCentrosCusto(cc ?? []);
     })();
   }, [tenantId]);
 
@@ -135,13 +158,24 @@ export function ContratoForm({ contratoId }: Props) {
           valor_entrada: data.valor_entrada ?? "",
           numero_parcelas: data.numero_parcelas ?? "",
           data_primeira_parcela: data.data_primeira_parcela ?? "",
+          carencia_dias: data.carencia_dias ?? "",
+          renovacao_automatica: data.renovacao_automatica ?? false,
+          quantidade_renovacoes: data.quantidade_renovacoes ?? "",
+          prazo_aviso_previo_dias: data.prazo_aviso_previo_dias ?? "",
+          prazo_rescisao_dias: data.prazo_rescisao_dias ?? "",
+          prazo_entrega_dias: data.prazo_entrega_dias ?? "",
+          valor_condominio: data.valor_condominio ?? "",
+          valor_iptu: data.valor_iptu ?? "",
+          valor_seguro: data.valor_seguro ?? "",
+          dia_vencimento: data.dia_vencimento ?? "",
+          centro_custo_id: data.centro_custo_id ?? "",
         });
       }
       setLoading(false);
     })();
   }, [contratoId]);
 
-  function set(k: string, v: string | number) {
+  function set(k: string, v: string | number | boolean) {
     setForm((f) => ({ ...f, [k]: v }));
   }
 
@@ -193,6 +227,8 @@ export function ContratoForm({ contratoId }: Props) {
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!tenantId) return toast.error("Sem tenant");
+    if (!form.imovel_id) return toast.error("Selecione um imóvel para o contrato");
+    if (!form.corretor_id) return toast.error("Selecione o corretor responsável");
     setSaving(true);
     const payload = {
       tenant_id: tenantId,
@@ -206,40 +242,49 @@ export function ContratoForm({ contratoId }: Props) {
       data_inicio: form.data_inicio || null,
       data_fim: form.data_fim || null,
       observacoes: form.observacoes || null,
-      imovel_id: form.imovel_id || null,
+      imovel_id: form.imovel_id,
       lead_id: form.lead_id || null,
-      corretor_id: form.corretor_id || null,
+      corretor_id: form.corretor_id,
       valor_sinal: form.valor_sinal === "" ? null : Number(form.valor_sinal),
       valor_entrada: form.valor_entrada === "" ? null : Number(form.valor_entrada),
       numero_parcelas: form.numero_parcelas === "" ? null : Number(form.numero_parcelas),
       data_primeira_parcela: form.data_primeira_parcela || null,
+      carencia_dias: form.carencia_dias === "" ? null : Number(form.carencia_dias),
+      renovacao_automatica: form.renovacao_automatica,
+      quantidade_renovacoes:
+        form.quantidade_renovacoes === "" ? 0 : Number(form.quantidade_renovacoes),
+      prazo_aviso_previo_dias:
+        form.prazo_aviso_previo_dias === "" ? null : Number(form.prazo_aviso_previo_dias),
+      prazo_rescisao_dias:
+        form.prazo_rescisao_dias === "" ? null : Number(form.prazo_rescisao_dias),
+      prazo_entrega_dias: form.prazo_entrega_dias === "" ? null : Number(form.prazo_entrega_dias),
+      valor_condominio: form.valor_condominio === "" ? null : Number(form.valor_condominio),
+      valor_iptu: form.valor_iptu === "" ? null : Number(form.valor_iptu),
+      valor_seguro: form.valor_seguro === "" ? null : Number(form.valor_seguro),
+      dia_vencimento: form.dia_vencimento === "" ? null : Number(form.dia_vencimento),
+      centro_custo_id: form.centro_custo_id || null,
     };
 
-    if (contratoId) {
-      const { error } = await (supabase as any)
-        .from("contratos")
-        .update(payload)
-        .eq("id", contratoId);
-      setSaving(false);
-      if (error) return toast.error(error.message);
-      toast.success("Contrato atualizado");
-    } else {
-      const { data, error } = await (supabase as any)
-        .from("contratos")
-        .insert({ ...payload, created_by: user?.id })
-        .select("id")
-        .single();
-      setSaving(false);
-      if (error) return toast.error(error.message);
-      // Auto-apply checklist template if selected
-      if (form.template_id) {
-        await applyChecklistTemplate(data.id);
+    try {
+      if (contratoId) {
+        await atualizarContrato({ data: { ...payload, contrato_id: contratoId } });
+        setSaving(false);
+        toast.success("Contrato atualizado");
+      } else {
+        const { id } = await criarContrato({ data: payload });
+        setSaving(false);
+        // Auto-apply checklist template if selected
+        if (form.template_id) {
+          await applyChecklistTemplate(id);
+        }
+        toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
+        navigate({ to: "/app/contratos/$id", params: { id } });
+        return;
       }
-      toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
-      navigate({ to: "/app/contratos/$id", params: { id: data.id } });
-      return;
+    } catch (err) {
+      setSaving(false);
+      return toast.error(err instanceof Error ? err.message : "Erro ao salvar contrato");
     }
-    setSaving(false);
   }
 
   if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;
@@ -324,6 +369,117 @@ export function ContratoForm({ contratoId }: Props) {
               value={form.data_fim}
               onChange={(e) => set("data_fim", e.target.value)}
             />
+          </Field>
+        </div>
+      </section>
+
+      {/* Vigência */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-base font-semibold">Vigência</h2>
+        <div className="grid gap-4 md:grid-cols-4">
+          <Field label="Carência (dias)">
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={form.carencia_dias}
+              onChange={(e) => set("carencia_dias", e.target.value)}
+            />
+          </Field>
+          <Field label="Aviso prévio (dias)">
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={form.prazo_aviso_previo_dias}
+              onChange={(e) => set("prazo_aviso_previo_dias", e.target.value)}
+            />
+          </Field>
+          <Field label="Prazo de rescisão (dias)">
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={form.prazo_rescisao_dias}
+              onChange={(e) => set("prazo_rescisao_dias", e.target.value)}
+            />
+          </Field>
+          <Field label="Prazo de entrega (dias)">
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              value={form.prazo_entrega_dias}
+              onChange={(e) => set("prazo_entrega_dias", e.target.value)}
+            />
+          </Field>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={form.renovacao_automatica}
+              onCheckedChange={(v) => set("renovacao_automatica", v)}
+            />
+            <Label className="text-sm">Renovação automática</Label>
+          </div>
+          {form.renovacao_automatica && (
+            <Field label="Quantidade de renovações já feitas">
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                className="w-40"
+                value={form.quantidade_renovacoes}
+                onChange={(e) => set("quantidade_renovacoes", e.target.value)}
+              />
+            </Field>
+          )}
+        </div>
+      </section>
+
+      {/* Encargos e centro de custo */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-base font-semibold">Encargos e centro de custo</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Condomínio (R$)">
+            <CurrencyInput
+              value={form.valor_condominio}
+              onValueChange={(v) => set("valor_condominio", v)}
+            />
+          </Field>
+          <Field label="IPTU (R$)">
+            <CurrencyInput value={form.valor_iptu} onValueChange={(v) => set("valor_iptu", v)} />
+          </Field>
+          <Field label="Seguro (R$)">
+            <CurrencyInput
+              value={form.valor_seguro}
+              onValueChange={(v) => set("valor_seguro", v)}
+            />
+          </Field>
+          <Field label="Dia de vencimento">
+            <Input
+              type="number"
+              min="1"
+              max="31"
+              step="1"
+              value={form.dia_vencimento}
+              onChange={(e) => set("dia_vencimento", e.target.value)}
+              placeholder="Ex.: 10"
+            />
+          </Field>
+          <Field label="Centro de custo">
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={form.centro_custo_id}
+              onChange={(e) => set("centro_custo_id", e.target.value)}
+            >
+              <option value="">— Nenhum —</option>
+              {centrosCusto.map((cc) => (
+                <option key={cc.id} value={cc.id}>
+                  [{cc.codigo}] {cc.nome}
+                </option>
+              ))}
+            </select>
           </Field>
         </div>
       </section>

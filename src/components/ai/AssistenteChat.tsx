@@ -23,11 +23,27 @@ const EXEMPLOS_BACKEND = [
   "Como lanço uma comissão?",
 ];
 
+// CLM Sprint 14 — dentro de um contrato específico, os exemplos priorizam
+// perguntas sobre o próprio contrato (contexto RAG dedicado, ver
+// buscarContextoContrato em aiAssistant.ts).
+const EXEMPLOS_CONTRATO = [
+  "Resuma este contrato",
+  "Quais as condições de vigência deste contrato?",
+  "Quem são as partes deste contrato?",
+];
+
+// CLM Sprint 14 — extrai o id do contrato direto da URL (mesma técnica já
+// usada por nomeAmigavelDaPagina em aiAssistant.ts), sem precisar passar
+// contratoId como prop através do FAB global (que vive fora da árvore de
+// rotas com o param $id).
+const CONTRATO_ID_REGEX = /^\/app\/contratos\/([0-9a-f-]{36})(?:$|\/)/i;
+
 export function AssistenteChat({ compact = false }: { compact?: boolean }) {
   const { session, user, tenantId } = useAuth();
   const location = useLocation();
   const emBackend = location.pathname.startsWith("/app");
-  const EXEMPLOS = emBackend ? EXEMPLOS_BACKEND : EXEMPLOS_MERCADO;
+  const contratoId = location.pathname.match(CONTRATO_ID_REGEX)?.[1];
+  const EXEMPLOS = contratoId ? EXEMPLOS_CONTRATO : emBackend ? EXEMPLOS_BACKEND : EXEMPLOS_MERCADO;
   const [pergunta, setPergunta] = useState("");
   const [resposta, setResposta] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -62,7 +78,7 @@ export function AssistenteChat({ compact = false }: { compact?: boolean }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ pergunta: q, pagina: location.pathname }),
+        body: JSON.stringify({ pergunta: q, pagina: location.pathname, contratoId }),
       });
       if (!res.ok) {
         const msg = await res.text();
