@@ -144,13 +144,106 @@ function ordenarPorRelevancia<T extends { titulo: string; corpo: string }>(
   return [...itens].sort((a, b) => score(b) - score(a));
 }
 
+function fmtDataBR(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("pt-BR");
+}
+
+function fmtMoeda(v: number | null): string {
+  if (v == null) return "—";
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function partesPorPapel(partes: { papel: string; nome: string }[], papel: string): string {
+  const nomes = partes.filter((p) => p.papel === papel).map((p) => p.nome);
+  return nomes.length > 0 ? nomes.join("; ") : "—";
+}
+
+// Mesmo formato de variável ({{contrato.numero}}, {{partes.locador}}, etc.)
+// já usado em app.contratos.$id_.imprimir.tsx — reimplementado aqui (não
+// importado de lá) porque aquele arquivo é client-only (useMemo/React), e
+// esta função roda tanto no server (rota de IA) quanto precisa ser simples
+// o bastante pra virar texto de prompt, não HTML de impressão.
+function interpolarTemplate(template: string, ctx: Record<string, string>): string {
+  return template.replace(/\{\{\s*([\w.]+)\s*\}\}/g, (_, key) => ctx[key] ?? "");
+}
+
+/**
+ * CLM Sprint 14 — contexto RAG específico de um contrato: dados gerais +
+ * partes + o modelo de contrato aplicável (interpolado), quando a pergunta
+ * é feita dentro de app.contratos.$id.tsx. Mesma disciplina anti-alucinação
+ * do resto do assistente: só entra no CONTEXTO o que está de fato gravado
+ * no banco pra este contrato — nunca inventado.
+ */
+export async function buscarContextoContrato(
+  contratoId: string,
+  client: AiAssistantSupabaseClient,
+): Promise<string[]> {
+  const trechos: string[] = [];
+
+  const { data: contrato } = await client
+    .from("contratos")
+    .select(
+      "id,tenant_id,numero,tipo,status,valor,data_inicio,data_fim,comissao_percentual,comissao_valor,assinatura_status,etapa_atual",
+    )
+    .eq("id", contratoId)
+    .maybeSingle();
+  if (!contrato) return trechos;
+
+  const { data: partesData } = await client
+    .from("contrato_partes")
+    .select("papel,nome")
+    .eq("contrato_id", contratoId);
+  const partes: { papel: string; nome: string }[] = partesData ?? [];
+
+  const ctx: Record<string, string> = {
+    "contrato.numero": contrato.numero ?? `#${String(contrato.id).slice(0, 8)}`,
+    "contrato.tipo": contrato.tipo,
+    "contrato.status": contrato.status,
+    "contrato.valor": fmtMoeda(contrato.valor),
+    "contrato.data_inicio": fmtDataBR(contrato.data_inicio),
+    "contrato.data_fim": fmtDataBR(contrato.data_fim),
+    "contrato.comissao_percentual": contrato.comissao_percentual
+      ? `${contrato.comissao_percentual}%`
+      : "—",
+    "contrato.comissao_valor": fmtMoeda(contrato.comissao_valor),
+    "partes.vendedor": partesPorPapel(partes, "vendedor"),
+    "partes.comprador": partesPorPapel(partes, "comprador"),
+    "partes.locador": partesPorPapel(partes, "locador"),
+    "partes.locatario": partesPorPapel(partes, "locatario"),
+    "partes.fiador": partesPorPapel(partes, "fiador"),
+  };
+
+  const resumo = `Contrato ${ctx["contrato.numero"]} — tipo: ${ctx["contrato.tipo"]}, status: ${ctx["contrato.status"]}, etapa: ${contrato.etapa_atual ?? "—"}, valor: ${ctx["contrato.valor"]}, vigência: ${ctx["contrato.data_inicio"]} a ${ctx["contrato.data_fim"]}, assinatura: ${contrato.assinatura_status ?? "—"}. Vendedor/Locador: ${ctx["partes.vendedor"] !== "—" ? ctx["partes.vendedor"] : ctx["partes.locador"]}. Comprador/Locatário: ${ctx["partes.comprador"] !== "—" ? ctx["partes.comprador"] : ctx["partes.locatario"]}.`;
+  trechos.push(resumo);
+
+  const { data: template } = await client
+    .from("contrato_templates")
+    .select("nome,conteudo")
+    .eq("tenant_id", contrato.tenant_id)
+    .eq("tipo", contrato.tipo)
+    .eq("ativo", true)
+    .limit(1)
+    .maybeSingle();
+  if (template?.conteudo) {
+    const texto = stripHtml(interpolarTemplate(template.conteudo, ctx)).slice(0, 3000);
+    trechos.push(`Cláusulas do modelo "${template.nome}" aplicado a este contrato: ${texto}`);
+  }
+
+  return trechos;
+}
+
 /** Busca os trechos mais relevantes da base de conhecimento + blog público via full-text search. */
 export async function buscarContexto(
   pergunta: string,
   client: AiAssistantSupabaseClient,
   paginaAtual?: string,
+  contratoId?: string,
 ): Promise<string[]> {
   const trechos: string[] = [];
+  if (contratoId) {
+    trechos.push(...(await buscarContextoContrato(contratoId, client)));
+  }
   const palavras = palavrasDaBusca(pergunta, paginaAtual);
   const query = tsQuery(palavras);
   if (!query) return trechos;
@@ -234,14 +327,20 @@ function nomeAmigavelDaPagina(pathname: string | undefined): string | null {
   return encontrada?.nome ?? null;
 }
 
-function buildSystemPrompt(contexto: string[], paginaAtual?: string): string {
+function buildSystemPrompt(
+  contexto: string[],
+  paginaAtual?: string,
+  temContratoEspecifico?: boolean,
+): string {
   const tela = nomeAmigavelDaPagina(paginaAtual);
   const base = `Você é o assistente de IA da imoB365, especializado em mercado imobiliário brasileiro e em como usar a plataforma imoB365. Responda de forma direta, curta (no máximo 4-5 frases) e em português do Brasil.
 
 REGRA MAIS IMPORTANTE: para qualquer fato específico (impostos, percentuais, documentos exigidos, prazos legais, valores), use SOMENTE as informações no CONTEXTO abaixo. Nunca invente ou complete com conhecimento próprio quando o contexto não cobrir o assunto — nesse caso, diga que não tem essa informação específica e sugira falar com o suporte da imoB365. Não responda perguntas fora desses temas — redirecione educadamente.${
-    tela
-      ? `\n\nO usuário está agora na tela "${tela}" do backend da imoB365. Se a pergunta for genérica tipo "como uso isso" ou "o que eu faço aqui", priorize explicar essa tela específica usando o CONTEXTO.`
-      : ""
+    temContratoEspecifico
+      ? `\n\nO usuário está vendo um contrato específico agora — o CONTEXTO abaixo inclui os dados reais e as cláusulas desse contrato. Priorize responder sobre ESTE contrato quando a pergunta for genérica tipo "resuma este contrato" ou "quais as condições aqui".`
+      : tela
+        ? `\n\nO usuário está agora na tela "${tela}" do backend da imoB365. Se a pergunta for genérica tipo "como uso isso" ou "o que eu faço aqui", priorize explicar essa tela específica usando o CONTEXTO.`
+        : ""
   }`;
 
   if (contexto.length === 0) {
@@ -256,9 +355,10 @@ export async function perguntarAssistente(
   client: AiAssistantSupabaseClient,
   onChunk: (texto: string) => void,
   paginaAtual?: string,
+  contratoId?: string,
 ): Promise<void> {
-  const contexto = await buscarContexto(pergunta, client, paginaAtual);
-  const systemPrompt = buildSystemPrompt(contexto, paginaAtual);
+  const contexto = await buscarContexto(pergunta, client, paginaAtual, contratoId);
+  const systemPrompt = buildSystemPrompt(contexto, paginaAtual, !!contratoId);
 
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: "POST",
