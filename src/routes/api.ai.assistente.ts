@@ -52,6 +52,14 @@ export const Route = createFileRoute("/api/ai/assistente")({
           return new Response("Pergunta deve ter entre 3 e 500 caracteres.", { status: 400 });
         }
         const pagina = typeof body?.pagina === "string" ? body.pagina.slice(0, 200) : undefined;
+        // CLM Sprint 14 — contexto RAG específico de um contrato (dados +
+        // cláusulas do modelo aplicado), quando a pergunta parte de
+        // app.contratos.$id.tsx. RLS do client autenticado acima já garante
+        // que só um membro do tenant dono do contrato recebe esse contexto.
+        const contratoId =
+          typeof body?.contratoId === "string" && /^[0-9a-f-]{36}$/i.test(body.contratoId)
+            ? body.contratoId
+            : undefined;
 
         const { data: profile } = await supabase
           .from("profiles")
@@ -92,6 +100,7 @@ export const Route = createFileRoute("/api/ai/assistente")({
                   controller.enqueue(encoder.encode(chunk));
                 },
                 pagina,
+                contratoId,
               );
             } catch (err: any) {
               controller.enqueue(

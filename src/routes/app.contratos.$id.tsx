@@ -16,6 +16,7 @@ import { DadosPagamentoSection } from "@/components/contratos/DadosPagamentoSect
 import { DocumentoUpload } from "@/components/contratos/DocumentoUpload";
 import { AssinaturaEletronicaPanel } from "@/components/contratos/AssinaturaEletronicaPanel";
 import { HistoricoContrato } from "@/components/contratos/HistoricoContrato";
+import { ResumoExecutivoContrato } from "@/components/contratos/ResumoExecutivoContrato";
 
 export const Route = createFileRoute("/app/contratos/$id")({
   component: EditarContrato,
@@ -122,6 +123,7 @@ function EditarContrato() {
           </div>
         )}
 
+        <ResumoExecutivoContrato contratoId={id} />
         <HistoricoContrato contratoId={id} />
       </div>
     </div>

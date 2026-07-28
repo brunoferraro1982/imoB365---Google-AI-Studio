@@ -31,18 +31,23 @@ function addMeses(dataIso: string, meses: number): string {
 export function ReajusteSection({ contratoId }: { contratoId: string }) {
   const { tenantId } = useAuth();
   const [reajuste, setReajuste] = useState<Reajuste | null>(null);
+  const [valorContrato, setValorContrato] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ indice: "IGPM", periodicidadeMeses: "12" });
   const [novoValor, setNovoValor] = useState<number | string>("");
+  const [percentualIndice, setPercentualIndice] = useState("");
 
   async function load() {
     setLoading(true);
-    const { data } = await (supabase as any)
-      .from("locacao_reajustes")
-      .select("id,indice,periodicidade_meses,ultimo_reajuste,proximo_reajuste,ultimo_valor")
-      .eq("contrato_id", contratoId)
-      .maybeSingle();
+    const [{ data }, { data: contrato }] = await Promise.all([
+      (supabase as any)
+        .from("locacao_reajustes")
+        .select("id,indice,periodicidade_meses,ultimo_reajuste,proximo_reajuste,ultimo_valor")
+        .eq("contrato_id", contratoId)
+        .maybeSingle(),
+      (supabase as any).from("contratos").select("valor").eq("id", contratoId).maybeSingle(),
+    ]);
     if (data) {
       setReajuste(data as Reajuste);
       setForm({
@@ -50,12 +55,24 @@ export function ReajusteSection({ contratoId }: { contratoId: string }) {
         periodicidadeMeses: String(data.periodicidade_meses),
       });
     }
+    setValorContrato(contrato?.valor ?? null);
     setLoading(false);
   }
 
   useEffect(() => {
     load();
   }, [contratoId]);
+
+  // Cálculo determinístico (não é IA) — não existe integração com nenhum
+  // índice real (IGPM/IPCA) no projeto, então o corretor digita o
+  // percentual já obtido na fonte oficial (Banco Central, FGV etc.) e este
+  // formulário só faz a aritmética: novo valor = valor atual × (1 + %/100).
+  const valorBase = reajuste?.ultimo_valor ?? valorContrato;
+  const percentualNum = Number(percentualIndice.replace(",", "."));
+  const valorCalculado =
+    valorBase != null && percentualIndice !== "" && !Number.isNaN(percentualNum)
+      ? valorBase * (1 + percentualNum / 100)
+      : null;
 
   async function salvarConfig(e: FormEvent) {
     e.preventDefault();
@@ -166,6 +183,48 @@ export function ReajusteSection({ contratoId }: { contratoId: string }) {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Calcular reajuste (cálculo determinístico — não é IA)
+            </p>
+            <p className="mb-2 text-xs text-muted-foreground">
+              Digite o percentual do índice já divulgado na fonte oficial (Banco Central, FGV etc.)
+              — o valor não é buscado automaticamente.
+            </p>
+            <div className="flex flex-wrap items-end gap-3">
+              <div>
+                <Label className="mb-1.5 block text-xs uppercase text-muted-foreground">
+                  Percentual do índice (%)
+                </Label>
+                <Input
+                  className="w-32"
+                  inputMode="decimal"
+                  placeholder="Ex.: 4,5"
+                  value={percentualIndice}
+                  onChange={(e) => setPercentualIndice(e.target.value)}
+                />
+              </div>
+              {valorCalculado != null && (
+                <div className="text-sm">
+                  <span className="text-xs text-muted-foreground">Valor calculado: </span>
+                  <span className="font-semibold">
+                    R$ {valorCalculado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
+              {valorCalculado != null && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNovoValor(Number(valorCalculado.toFixed(2)))}
+                >
+                  Usar este valor
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap items-end gap-3">
