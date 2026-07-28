@@ -1242,6 +1242,7 @@ export type Database = {
       };
       contrato_partes: {
         Row: {
+          assinatura_referencia_externa: string | null;
           assinatura_status: string;
           contrato_id: string;
           created_at: string;
@@ -1260,6 +1261,7 @@ export type Database = {
           tenant_id: string;
         };
         Insert: {
+          assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
           contrato_id: string;
           created_at?: string;
@@ -1278,6 +1280,7 @@ export type Database = {
           tenant_id: string;
         };
         Update: {
+          assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
           contrato_id?: string;
           created_at?: string;
@@ -4966,6 +4969,44 @@ export type Database = {
           tenant_id?: string;
         };
         Relationships: [];
+      };
+      tenant_assinatura_config: {
+        Row: {
+          api_key: string | null;
+          ativo: boolean;
+          created_at: string;
+          provider: string;
+          tenant_id: string;
+          updated_at: string;
+          webhook_secret: string | null;
+        };
+        Insert: {
+          api_key?: string | null;
+          ativo?: boolean;
+          created_at?: string;
+          provider: string;
+          tenant_id: string;
+          updated_at?: string;
+          webhook_secret?: string | null;
+        };
+        Update: {
+          api_key?: string | null;
+          ativo?: boolean;
+          created_at?: string;
+          provider?: string;
+          tenant_id?: string;
+          updated_at?: string;
+          webhook_secret?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_assinatura_config_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tenant_custom_fields: {
         Row: {
