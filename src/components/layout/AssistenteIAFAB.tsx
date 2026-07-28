@@ -1,6 +1,6 @@
 /**
  * Assistente de IA — botão flutuante visível em toda rota (pública e
- * autenticada), diferente do WhatsAppFAB que só aparece no portal público.
+ * autenticada), diferente do AtendimentoFAB que só aparece no portal público.
  * O acesso Pro/Business ilimitado só faz sentido logado, então esconder
  * em /app quebraria o próprio requisito do produto.
  *

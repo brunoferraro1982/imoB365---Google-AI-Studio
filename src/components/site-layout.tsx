@@ -11,8 +11,7 @@ import {
   Search,
   Building,
   Home,
-  Mail,
-  Phone,
+  Headset,
   Instagram,
   Facebook,
   Linkedin,
@@ -92,10 +91,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
     logo: <Logo className="h-7 w-auto" />,
     logoTo: "/",
     topBar: {
-      contacts: [
-        { icon: Mail, label: "contato@imob365.com.br", href: "mailto:contato@imob365.com.br" },
-        { icon: Phone, label: "(13) 99779-4382", href: "https://wa.me/5513997794382" },
-      ],
+      contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],
       nav: <InstitutionalNav />,
     },
     groups: [
@@ -405,30 +401,22 @@ export function SiteFooter() {
               Fale com a gente
             </h4>
             <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-              <li className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <Mail className="h-4 w-4 text-primary" />
-                </div>
-                <span>contato@imob365.com.br</span>
-              </li>
               <li>
-                <a
-                  href="https://wa.me/5513997794382"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/atendimento"
                   className="flex items-center gap-3 hover:text-primary transition-all duration-200"
                 >
                   <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                    <Phone className="h-4 w-4 text-primary" />
+                    <Headset className="h-4 w-4 text-primary" />
                   </div>
-                  <span>(13) 99779-4382</span>
-                </a>
+                  <span className="font-semibold text-white/95">Central de Atendimento</span>
+                </Link>
               </li>
               <li className="flex items-center gap-3">
                 <div className="p-2 bg-white/5 rounded-lg border border-white/10">
                   <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
                 </div>
-                <span className="font-semibold text-white/95">Suporte 365 dias por ano</span>
+                <span>Suporte 365 dias por ano</span>
               </li>
             </ul>
           </div>

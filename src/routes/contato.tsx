@@ -85,12 +85,16 @@ function ContatoPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.rpc("public_create_tenant_lead", {
-      _tenant_slug: "imob365",
+    // Antes chamava public_create_tenant_lead fixo no tenant "imob365" —
+    // agora vira um chamado real na Central de Atendimento, sem contexto
+    // de imóvel/corretor (cai no balcão imoB365 pra triagem, decisão
+    // confirmada no plano da Central de Atendimento).
+    const { error } = await supabase.rpc("public_create_chamado", {
       _nome: nome,
       _email: email,
       _telefone: telefone,
       _mensagem: mensagem,
+      _categoria: "duvida_comercial",
     });
     setLoading(false);
     if (error) {
