@@ -20,6 +20,7 @@ import { PartesSection } from "@/components/contratos/PartesSection";
 import { ParcelasSection } from "@/components/contratos/ParcelasSection";
 import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
 import { EtapasStepper } from "@/components/contratos/EtapasStepper";
+import { ReajusteSection } from "@/components/contratos/ReajusteSection";
 
 export const Route = createFileRoute("/app/contratos/$id")({
   component: EditarContrato,
@@ -32,6 +33,17 @@ function EditarContrato() {
   const { tenantId } = useAuth();
   const navigate = useNavigate();
   const [comissaoGerada, setComissaoGerada] = useState(false);
+  const [tipoContrato, setTipoContrato] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) return;
+    (supabase as any)
+      .from("contratos")
+      .select("tipo")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }: { data: { tipo: string } | null }) => setTipoContrato(data?.tipo ?? null));
+  }, [id]);
 
   // Carrega se já existe comissão para este contrato — no máximo uma por
   // contrato (trava também aplicada no banco, ver comissoes_unique_contrato).
@@ -165,6 +177,9 @@ function EditarContrato() {
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
         <ParcelasSection contratoId={id} />
+        {(tipoContrato === "locacao" || tipoContrato === "administracao") && (
+          <ReajusteSection contratoId={id} />
+        )}
 
         {tenantId && statusLoaded && (
           <div className="grid gap-6 md:grid-cols-2">

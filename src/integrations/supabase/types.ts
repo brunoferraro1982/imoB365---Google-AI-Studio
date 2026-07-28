@@ -1217,6 +1217,7 @@ export type Database = {
         Row: {
           arquivo_path: string | null;
           assinatura_status: string;
+          carencia_dias: number | null;
           comissao_percentual: number | null;
           comissao_valor: number | null;
           corretor_id: string | null;
@@ -1232,6 +1233,11 @@ export type Database = {
           numero: string | null;
           numero_parcelas: number | null;
           observacoes: string | null;
+          prazo_aviso_previo_dias: number | null;
+          prazo_entrega_dias: number | null;
+          prazo_rescisao_dias: number | null;
+          quantidade_renovacoes: number;
+          renovacao_automatica: boolean;
           status: Database["public"]["Enums"]["contrato_status"];
           tenant_id: string;
           tipo: Database["public"]["Enums"]["contrato_tipo"];
@@ -1243,6 +1249,7 @@ export type Database = {
         Insert: {
           arquivo_path?: string | null;
           assinatura_status?: string;
+          carencia_dias?: number | null;
           comissao_percentual?: number | null;
           comissao_valor?: number | null;
           corretor_id?: string | null;
@@ -1258,6 +1265,11 @@ export type Database = {
           numero?: string | null;
           numero_parcelas?: number | null;
           observacoes?: string | null;
+          prazo_aviso_previo_dias?: number | null;
+          prazo_entrega_dias?: number | null;
+          prazo_rescisao_dias?: number | null;
+          quantidade_renovacoes?: number;
+          renovacao_automatica?: boolean;
           status?: Database["public"]["Enums"]["contrato_status"];
           tenant_id: string;
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
@@ -1269,6 +1281,7 @@ export type Database = {
         Update: {
           arquivo_path?: string | null;
           assinatura_status?: string;
+          carencia_dias?: number | null;
           comissao_percentual?: number | null;
           comissao_valor?: number | null;
           corretor_id?: string | null;
@@ -1284,6 +1297,11 @@ export type Database = {
           numero?: string | null;
           numero_parcelas?: number | null;
           observacoes?: string | null;
+          prazo_aviso_previo_dias?: number | null;
+          prazo_entrega_dias?: number | null;
+          prazo_rescisao_dias?: number | null;
+          quantidade_renovacoes?: number;
+          renovacao_automatica?: boolean;
           status?: Database["public"]["Enums"]["contrato_status"];
           tenant_id?: string;
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
