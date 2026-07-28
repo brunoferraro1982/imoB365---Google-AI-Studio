@@ -43,6 +43,11 @@ export function ContratoForm({ contratoId }: Props) {
     prazo_aviso_previo_dias: number | string;
     prazo_rescisao_dias: number | string;
     prazo_entrega_dias: number | string;
+    valor_condominio: number | string;
+    valor_iptu: number | string;
+    valor_seguro: number | string;
+    dia_vencimento: number | string;
+    centro_custo_id: string;
   }>({
     numero: "",
     tipo: "venda",
@@ -67,6 +72,11 @@ export function ContratoForm({ contratoId }: Props) {
     prazo_aviso_previo_dias: "",
     prazo_rescisao_dias: "",
     prazo_entrega_dias: "",
+    valor_condominio: "",
+    valor_iptu: "",
+    valor_seguro: "",
+    dia_vencimento: "",
+    centro_custo_id: "",
   });
 
   const [imoveis, setImoveis] = useState<
@@ -75,6 +85,9 @@ export function ContratoForm({ contratoId }: Props) {
   const [leads, setLeads] = useState<Array<{ id: string; nome: string }>>([]);
   const [corretores, setCorretores] = useState<Array<{ id: string; nome: string }>>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [centrosCusto, setCentrosCusto] = useState<
+    Array<{ id: string; codigo: string; nome: string }>
+  >([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!contratoId);
 
@@ -82,25 +95,37 @@ export function ContratoForm({ contratoId }: Props) {
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [{ data: i }, { data: l }, { data: c }, { data: tpl }] = await Promise.all([
-        supabase
-          .from("imoveis")
-          .select("id,titulo,codigo_interno")
-          .eq("tenant_id", tenantId)
-          .order("titulo"),
-        supabase.from("leads").select("id,nome").eq("tenant_id", tenantId).order("nome"),
-        supabase
-          .from("corretores")
-          .select("id,nome")
-          .eq("tenant_id", tenantId)
-          .eq("ativo", true)
-          .order("nome"),
-        supabase.from("contrato_templates").select("id,nome,tipo").eq("ativo", true).order("nome"),
-      ]);
+      const [{ data: i }, { data: l }, { data: c }, { data: tpl }, { data: cc }] =
+        await Promise.all([
+          supabase
+            .from("imoveis")
+            .select("id,titulo,codigo_interno")
+            .eq("tenant_id", tenantId)
+            .order("titulo"),
+          supabase.from("leads").select("id,nome").eq("tenant_id", tenantId).order("nome"),
+          supabase
+            .from("corretores")
+            .select("id,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("nome"),
+          supabase
+            .from("contrato_templates")
+            .select("id,nome,tipo")
+            .eq("ativo", true)
+            .order("nome"),
+          supabase
+            .from("centros_custo")
+            .select("id,codigo,nome")
+            .eq("tenant_id", tenantId)
+            .eq("ativo", true)
+            .order("codigo"),
+        ]);
       setImoveis(i ?? []);
       setLeads(l ?? []);
       setCorretores(c ?? []);
       setTemplates((tpl ?? []) as Template[]);
+      setCentrosCusto(cc ?? []);
     })();
   }, [tenantId]);
 
@@ -138,6 +163,11 @@ export function ContratoForm({ contratoId }: Props) {
           prazo_aviso_previo_dias: data.prazo_aviso_previo_dias ?? "",
           prazo_rescisao_dias: data.prazo_rescisao_dias ?? "",
           prazo_entrega_dias: data.prazo_entrega_dias ?? "",
+          valor_condominio: data.valor_condominio ?? "",
+          valor_iptu: data.valor_iptu ?? "",
+          valor_seguro: data.valor_seguro ?? "",
+          dia_vencimento: data.dia_vencimento ?? "",
+          centro_custo_id: data.centro_custo_id ?? "",
         });
       }
       setLoading(false);
@@ -225,6 +255,11 @@ export function ContratoForm({ contratoId }: Props) {
       prazo_rescisao_dias:
         form.prazo_rescisao_dias === "" ? null : Number(form.prazo_rescisao_dias),
       prazo_entrega_dias: form.prazo_entrega_dias === "" ? null : Number(form.prazo_entrega_dias),
+      valor_condominio: form.valor_condominio === "" ? null : Number(form.valor_condominio),
+      valor_iptu: form.valor_iptu === "" ? null : Number(form.valor_iptu),
+      valor_seguro: form.valor_seguro === "" ? null : Number(form.valor_seguro),
+      dia_vencimento: form.dia_vencimento === "" ? null : Number(form.dia_vencimento),
+      centro_custo_id: form.centro_custo_id || null,
     };
 
     if (contratoId) {
@@ -401,6 +436,53 @@ export function ContratoForm({ contratoId }: Props) {
               />
             </Field>
           )}
+        </div>
+      </section>
+
+      {/* Encargos e centro de custo */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-base font-semibold">Encargos e centro de custo</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Condomínio (R$)">
+            <CurrencyInput
+              value={form.valor_condominio}
+              onValueChange={(v) => set("valor_condominio", v)}
+            />
+          </Field>
+          <Field label="IPTU (R$)">
+            <CurrencyInput value={form.valor_iptu} onValueChange={(v) => set("valor_iptu", v)} />
+          </Field>
+          <Field label="Seguro (R$)">
+            <CurrencyInput
+              value={form.valor_seguro}
+              onValueChange={(v) => set("valor_seguro", v)}
+            />
+          </Field>
+          <Field label="Dia de vencimento">
+            <Input
+              type="number"
+              min="1"
+              max="31"
+              step="1"
+              value={form.dia_vencimento}
+              onChange={(e) => set("dia_vencimento", e.target.value)}
+              placeholder="Ex.: 10"
+            />
+          </Field>
+          <Field label="Centro de custo">
+            <select
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={form.centro_custo_id}
+              onChange={(e) => set("centro_custo_id", e.target.value)}
+            >
+              <option value="">— Nenhum —</option>
+              {centrosCusto.map((cc) => (
+                <option key={cc.id} value={cc.id}>
+                  [{cc.codigo}] {cc.nome}
+                </option>
+              ))}
+            </select>
+          </Field>
         </div>
       </section>
 
