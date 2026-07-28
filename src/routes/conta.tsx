@@ -7,6 +7,7 @@ import {
   MessageCircle,
   User,
   FileSignature,
+  Headset,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const NAV: NavItem[] = [
   { to: "/conta/buscas", label: "Buscas salvas", icon: Bookmark },
   { to: "/conta/visitas", label: "Visitas", icon: Calendar },
   { to: "/conta/contratos", label: "Meus contratos", icon: FileSignature },
+  { to: "/conta/atendimento", label: "Meus chamados", icon: Headset },
   { to: "/conta/chat", label: "Conversas", icon: MessageCircle },
   { to: "/conta/perfil", label: "Perfil", icon: User },
 ];

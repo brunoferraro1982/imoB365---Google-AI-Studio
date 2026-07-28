@@ -6224,6 +6224,22 @@ export type Database = {
         };
         Returns: Json;
       };
+      public_buscar_chamado: {
+        Args: { _email: string; _numero: string };
+        Returns: Json;
+      };
+      public_create_chamado: {
+        Args: {
+          _categoria?: string;
+          _corretor_slug?: string;
+          _email: string;
+          _imovel_id?: string;
+          _mensagem: string;
+          _nome: string;
+          _telefone: string;
+        };
+        Returns: Json;
+      };
       public_create_lead: {
         Args: {
           _email: string;

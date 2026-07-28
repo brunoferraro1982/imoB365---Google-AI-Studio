@@ -37,6 +37,7 @@ import { Route as CalculadoraFinanciamentoRouteImport } from './routes/calculado
 import { Route as CalculadoraAvaliacaoRouteImport } from './routes/calculadora-avaliacao'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -58,6 +59,7 @@ import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaContratosRouteImport } from './routes/conta.contratos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
+import { Route as ContaAtendimentoRouteImport } from './routes/conta.atendimento'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -327,6 +329,11 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtendimentoRoute = AtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -430,6 +437,11 @@ const ContaContratosRoute = ContaContratosRouteImport.update({
 const ContaBuscasRoute = ContaBuscasRouteImport.update({
   id: '/buscas',
   path: '/buscas',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaAtendimentoRoute = ContaAtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
   getParentRoute: () => ContaRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -1110,6 +1122,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1164,6 +1177,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1286,6 +1300,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/ajuda': typeof AjudaRoute
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1337,6 +1352,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1462,6 +1478,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1516,6 +1533,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog_/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1642,6 +1660,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajuda'
     | '/app'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -1696,6 +1715,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -1818,6 +1838,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/ajuda'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -1869,6 +1890,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -1993,6 +2015,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajuda'
     | '/app'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -2047,6 +2070,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog_/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -2172,6 +2196,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AjudaRoute: typeof AjudaRoute
   AppRoute: typeof AppRouteWithChildren
+  AtendimentoRoute: typeof AtendimentoRoute
   BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
   CalculadoraAvaliacaoRoute: typeof CalculadoraAvaliacaoRoute
@@ -2443,6 +2468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atendimento': {
+      id: '/atendimento'
+      path: '/atendimento'
+      fullPath: '/atendimento'
+      preLoaderRoute: typeof AtendimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -2588,6 +2620,13 @@ declare module '@tanstack/react-router' {
       path: '/buscas'
       fullPath: '/conta/buscas'
       preLoaderRoute: typeof ContaBuscasRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/atendimento': {
+      id: '/conta/atendimento'
+      path: '/atendimento'
+      fullPath: '/conta/atendimento'
+      preLoaderRoute: typeof ContaAtendimentoRouteImport
       parentRoute: typeof ContaRoute
     }
     '/blog_/$slug': {
@@ -3703,6 +3742,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface ContaRouteChildren {
+  ContaAtendimentoRoute: typeof ContaAtendimentoRoute
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaContratosRoute: typeof ContaContratosRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -3714,6 +3754,7 @@ interface ContaRouteChildren {
 }
 
 const ContaRouteChildren: ContaRouteChildren = {
+  ContaAtendimentoRoute: ContaAtendimentoRoute,
   ContaBuscasRoute: ContaBuscasRoute,
   ContaContratosRoute: ContaContratosRoute,
   ContaFavoritosRoute: ContaFavoritosRoute,
@@ -3743,6 +3784,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AjudaRoute: AjudaRoute,
   AppRoute: AppRouteWithChildren,
+  AtendimentoRoute: AtendimentoRoute,
   BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
   CalculadoraAvaliacaoRoute: CalculadoraAvaliacaoRoute,
