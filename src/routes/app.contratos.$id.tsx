@@ -21,6 +21,7 @@ import { ParcelasSection } from "@/components/contratos/ParcelasSection";
 import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
 import { EtapasStepper } from "@/components/contratos/EtapasStepper";
 import { ReajusteSection } from "@/components/contratos/ReajusteSection";
+import { GarantiasSection } from "@/components/contratos/GarantiasSection";
 
 export const Route = createFileRoute("/app/contratos/$id")({
   component: EditarContrato,
@@ -178,7 +179,10 @@ function EditarContrato() {
         <PartesSection contratoId={id} />
         <ParcelasSection contratoId={id} />
         {(tipoContrato === "locacao" || tipoContrato === "administracao") && (
-          <ReajusteSection contratoId={id} />
+          <>
+            <ReajusteSection contratoId={id} />
+            <GarantiasSection contratoId={id} />
+          </>
         )}
 
         {tenantId && statusLoaded && (
