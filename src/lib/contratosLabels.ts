@@ -10,6 +10,8 @@ export const TIPO_LABEL: Record<string, string> = {
   parceria: "Parceria",
   administracao: "Administração",
   prestacao_servico: "Prestação de Serviço",
+  exclusividade: "Exclusividade",
+  captacao: "Captação",
   outro: "Outro",
 };
 
@@ -17,6 +19,7 @@ export const STATUS_LABEL: Record<string, string> = {
   rascunho: "Rascunho",
   ativo: "Ativo",
   encerrado: "Encerrado",
+  rescindido: "Rescindido",
   cancelado: "Cancelado",
 };
 
@@ -24,6 +27,7 @@ export const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" 
   ativo: "default",
   rascunho: "secondary",
   encerrado: "outline",
+  rescindido: "destructive",
   cancelado: "destructive",
 };
 
