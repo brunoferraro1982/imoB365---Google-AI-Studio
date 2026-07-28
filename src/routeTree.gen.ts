@@ -83,6 +83,7 @@ import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
+import { Route as AdminAtendimentoRouteImport } from './routes/admin.atendimento'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
@@ -553,6 +554,11 @@ const AdminBlogRoute = AdminBlogRouteImport.update({
 const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   id: '/auditoria',
   path: '/auditoria',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAtendimentoRoute = AdminAtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
   getParentRoute: () => AdminRoute,
 } as any)
 const ContaChatIndexRoute = ContaChatIndexRouteImport.update({
@@ -1126,6 +1132,7 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1299,6 +1306,7 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1474,6 +1482,7 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
+  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1652,6 +1661,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
+    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -1825,6 +1835,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
+    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -1999,6 +2010,7 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
+    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -2741,6 +2753,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditoriaRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/atendimento': {
+      id: '/admin/atendimento'
+      path: '/atendimento'
+      fullPath: '/admin/atendimento'
+      preLoaderRoute: typeof AdminAtendimentoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/conta/chat/': {
       id: '/conta/chat/'
       path: '/chat'
@@ -3445,6 +3464,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAtendimentoRoute: typeof AdminAtendimentoRoute
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
   AdminBlogRoute: typeof AdminBlogRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -3460,6 +3480,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAtendimentoRoute: AdminAtendimentoRoute,
   AdminAuditoriaRoute: AdminAuditoriaRoute,
   AdminBlogRoute: AdminBlogRoute,
   AdminEmailsRoute: AdminEmailsRoute,
