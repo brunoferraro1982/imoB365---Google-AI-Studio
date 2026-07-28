@@ -11,13 +11,14 @@ import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { TIPOS_CONTRATO, STATUS_CONTRATO } from "@/lib/contratosLabels";
+import { criarContrato, atualizarContrato } from "@/lib/contratos.functions";
 
 type Props = { contratoId?: string };
 
 type Template = { id: string; nome: string; tipo: string };
 
 export function ContratoForm({ contratoId }: Props) {
-  const { tenantId, user } = useAuth();
+  const { tenantId } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<{
     numero: string;
@@ -226,6 +227,8 @@ export function ContratoForm({ contratoId }: Props) {
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!tenantId) return toast.error("Sem tenant");
+    if (!form.imovel_id) return toast.error("Selecione um imóvel para o contrato");
+    if (!form.corretor_id) return toast.error("Selecione o corretor responsável");
     setSaving(true);
     const payload = {
       tenant_id: tenantId,
@@ -239,9 +242,9 @@ export function ContratoForm({ contratoId }: Props) {
       data_inicio: form.data_inicio || null,
       data_fim: form.data_fim || null,
       observacoes: form.observacoes || null,
-      imovel_id: form.imovel_id || null,
+      imovel_id: form.imovel_id,
       lead_id: form.lead_id || null,
-      corretor_id: form.corretor_id || null,
+      corretor_id: form.corretor_id,
       valor_sinal: form.valor_sinal === "" ? null : Number(form.valor_sinal),
       valor_entrada: form.valor_entrada === "" ? null : Number(form.valor_entrada),
       numero_parcelas: form.numero_parcelas === "" ? null : Number(form.numero_parcelas),
@@ -262,31 +265,26 @@ export function ContratoForm({ contratoId }: Props) {
       centro_custo_id: form.centro_custo_id || null,
     };
 
-    if (contratoId) {
-      const { error } = await (supabase as any)
-        .from("contratos")
-        .update(payload)
-        .eq("id", contratoId);
-      setSaving(false);
-      if (error) return toast.error(error.message);
-      toast.success("Contrato atualizado");
-    } else {
-      const { data, error } = await (supabase as any)
-        .from("contratos")
-        .insert({ ...payload, created_by: user?.id })
-        .select("id")
-        .single();
-      setSaving(false);
-      if (error) return toast.error(error.message);
-      // Auto-apply checklist template if selected
-      if (form.template_id) {
-        await applyChecklistTemplate(data.id);
+    try {
+      if (contratoId) {
+        await atualizarContrato({ data: { ...payload, contrato_id: contratoId } });
+        setSaving(false);
+        toast.success("Contrato atualizado");
+      } else {
+        const { id } = await criarContrato({ data: payload });
+        setSaving(false);
+        // Auto-apply checklist template if selected
+        if (form.template_id) {
+          await applyChecklistTemplate(id);
+        }
+        toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
+        navigate({ to: "/app/contratos/$id", params: { id } });
+        return;
       }
-      toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
-      navigate({ to: "/app/contratos/$id", params: { id: data.id } });
-      return;
+    } catch (err) {
+      setSaving(false);
+      return toast.error(err instanceof Error ? err.message : "Erro ao salvar contrato");
     }
-    setSaving(false);
   }
 
   if (loading) return <div className="text-sm text-muted-foreground">Carregando…</div>;

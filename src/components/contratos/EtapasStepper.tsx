@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Check, ChevronRight } from "lucide-react";
 import { podeAgirNaEtapa, type EtapaContrato } from "@/lib/permissions";
+import { ativarContrato } from "@/lib/contratos.functions";
 
 // Sequência fixa do workflow (CLM) — texto livre no banco (contrato_etapas
 // não usa enum, ver migration 20260728160000), a ordem aqui é só a
@@ -64,23 +65,16 @@ export function EtapasStepper({ contratoId }: { contratoId: string }) {
     if (!tenantId || !proximaEtapa || !etapaAtual) return;
     setAvancando(true);
     try {
-      // Gate real (Sprint 7 — Checklist): não deixa ativar o contrato com
-      // item obrigatório pendente. Enforcement definitivo (server-side, não
-      // contornável pelo client) vem no Sprint 10; este é o primeiro nível.
+      // Gate real e definitivo (Sprint 10 — Regras de Negócio): a transição
+      // pra "ativacao" passa inteira pelo server function `ativarContrato`
+      // (checklist obrigatório, garantia, parte com papel compatível,
+      // assinatura quando configurada) — não contornável pelo client, ao
+      // contrário do soft-check que existia aqui antes (Sprint 7).
       if (proximaEtapa.value === "ativacao") {
-        const { count } = await (supabase as any)
-          .from("contrato_checklist")
-          .select("id", { count: "exact", head: true })
-          .eq("contrato_id", contratoId)
-          .eq("obrigatorio", true)
-          .eq("concluido", false);
-        if ((count ?? 0) > 0) {
-          toast.error(
-            `${count} item${count === 1 ? "" : "s"} obrigatório${count === 1 ? "" : "s"} do checklist ainda pendente${count === 1 ? "" : "s"} — conclua antes de ativar o contrato.`,
-          );
-          setAvancando(false);
-          return;
-        }
+        await ativarContrato({ data: { tenant_id: tenantId, contrato_id: contratoId } });
+        toast.success(`Etapa avançada para "${proximaEtapa.label}"`);
+        load();
+        return;
       }
       const agora = new Date().toISOString();
       // Fecha a etapa atual (se houver uma linha em aberto) e abre a próxima
