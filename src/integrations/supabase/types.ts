@@ -983,6 +983,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "contrato_checklist_documento_id_fkey";
+            columns: ["documento_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_documentos";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "contrato_checklist_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
@@ -1038,6 +1045,70 @@ export type Database = {
           },
           {
             foreignKeyName: "contrato_dados_pagamento_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      contrato_documentos: {
+        Row: {
+          categoria: string;
+          contrato_id: string;
+          created_at: string;
+          documento_anterior_id: string | null;
+          id: string;
+          nome_original: string;
+          storage_path: string;
+          tamanho_bytes: number | null;
+          tenant_id: string;
+          uploaded_by: string | null;
+          versao: number;
+        };
+        Insert: {
+          categoria: string;
+          contrato_id: string;
+          created_at?: string;
+          documento_anterior_id?: string | null;
+          id?: string;
+          nome_original: string;
+          storage_path: string;
+          tamanho_bytes?: number | null;
+          tenant_id: string;
+          uploaded_by?: string | null;
+          versao?: number;
+        };
+        Update: {
+          categoria?: string;
+          contrato_id?: string;
+          created_at?: string;
+          documento_anterior_id?: string | null;
+          id?: string;
+          nome_original?: string;
+          storage_path?: string;
+          tamanho_bytes?: number | null;
+          tenant_id?: string;
+          uploaded_by?: string | null;
+          versao?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_documentos_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_documentos_documento_anterior_id_fkey";
+            columns: ["documento_anterior_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_documentos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_documentos_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
             referencedRelation: "tenants";
