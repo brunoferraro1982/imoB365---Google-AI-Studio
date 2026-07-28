@@ -17,6 +17,7 @@ export type AppModule =
   | "marketing"
   | "ajustes"
   | "elearning"
+  | "atendimento"
   | "admin";
 
 export type AppAction = "read" | "write" | "delete" | "config";
@@ -45,6 +46,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: ["read", "write", "delete", "config"],
     ajustes: ["read", "write", "delete", "config"],
     elearning: ["read", "write", "delete", "config"],
+    atendimento: ["read", "write", "delete", "config"],
     admin: ["read", "write", "delete", "config"],
   },
   admin: {
@@ -54,6 +56,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: ["read", "write", "delete", "config"],
     ajustes: ["read", "write", "config"],
     elearning: ["read", "write", "config"],
+    atendimento: ["read", "write", "delete", "config"],
     admin: [], // sem acesso ao painel super-admin
   },
   broker: {
@@ -63,6 +66,10 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: ["read"],
     ajustes: [],
     elearning: ["read"],
+    // RLS restringe a chamados atribuídos ao próprio broker (mesmo
+    // espírito de comissoes_members_read) — a matriz aqui só libera a
+    // entrada no módulo, não a visibilidade de todas as linhas.
+    atendimento: ["read", "write"],
   },
   juridico: {
     imobiliario: ["read"],
@@ -71,6 +78,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: [],
     ajustes: [],
     elearning: ["read"],
+    atendimento: [],
   },
   financeiro: {
     imobiliario: ["read"],
@@ -79,6 +87,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: [],
     ajustes: [],
     elearning: ["read"],
+    atendimento: [],
   },
   atendente: {
     imobiliario: ["read", "write"], // leads e visitas
@@ -87,6 +96,7 @@ const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>
     marketing: ["read"],
     ajustes: [],
     elearning: ["read"],
+    atendimento: ["read", "write", "delete", "config"],
   },
 };
 

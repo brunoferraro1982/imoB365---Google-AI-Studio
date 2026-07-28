@@ -6,6 +6,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       ai_knowledge_base: {
@@ -540,6 +565,148 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "centros_custo_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chamado_mensagens: {
+        Row: {
+          anexos: Json;
+          autor_tipo: string;
+          autor_user_id: string | null;
+          canal: Database["public"]["Enums"]["chamado_canal"];
+          chamado_id: string;
+          conteudo: string;
+          created_at: string;
+          id: string;
+          interno: boolean;
+          read_at: string | null;
+          whatsapp_message_id: string | null;
+        };
+        Insert: {
+          anexos?: Json;
+          autor_tipo: string;
+          autor_user_id?: string | null;
+          canal?: Database["public"]["Enums"]["chamado_canal"];
+          chamado_id: string;
+          conteudo: string;
+          created_at?: string;
+          id?: string;
+          interno?: boolean;
+          read_at?: string | null;
+          whatsapp_message_id?: string | null;
+        };
+        Update: {
+          anexos?: Json;
+          autor_tipo?: string;
+          autor_user_id?: string | null;
+          canal?: Database["public"]["Enums"]["chamado_canal"];
+          chamado_id?: string;
+          conteudo?: string;
+          created_at?: string;
+          id?: string;
+          interno?: boolean;
+          read_at?: string | null;
+          whatsapp_message_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chamado_mensagens_chamado_id_fkey";
+            columns: ["chamado_id"];
+            isOneToOne: false;
+            referencedRelation: "chamados";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chamados: {
+        Row: {
+          assunto: string;
+          atribuido_user_id: string | null;
+          canal_origem: Database["public"]["Enums"]["chamado_canal"];
+          categoria: Database["public"]["Enums"]["chamado_categoria"];
+          contexto: Json;
+          created_at: string;
+          csat_comentario: string | null;
+          csat_nota: number | null;
+          fechado_em: string | null;
+          id: string;
+          numero: string;
+          primeira_resposta_em: string | null;
+          prioridade: Database["public"]["Enums"]["chamado_prioridade"];
+          resolvido_em: string | null;
+          responsavel_tipo: Database["public"]["Enums"]["chamado_responsavel_tipo"];
+          sla_prazo_primeira_resposta: string | null;
+          sla_prazo_resolucao: string | null;
+          solicitante_email: string | null;
+          solicitante_nome: string | null;
+          solicitante_telefone: string | null;
+          solicitante_tipo: Database["public"]["Enums"]["chamado_solicitante_tipo"];
+          solicitante_user_id: string | null;
+          status: Database["public"]["Enums"]["chamado_status"];
+          tenant_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          assunto: string;
+          atribuido_user_id?: string | null;
+          canal_origem?: Database["public"]["Enums"]["chamado_canal"];
+          categoria?: Database["public"]["Enums"]["chamado_categoria"];
+          contexto?: Json;
+          created_at?: string;
+          csat_comentario?: string | null;
+          csat_nota?: number | null;
+          fechado_em?: string | null;
+          id?: string;
+          numero: string;
+          primeira_resposta_em?: string | null;
+          prioridade?: Database["public"]["Enums"]["chamado_prioridade"];
+          resolvido_em?: string | null;
+          responsavel_tipo: Database["public"]["Enums"]["chamado_responsavel_tipo"];
+          sla_prazo_primeira_resposta?: string | null;
+          sla_prazo_resolucao?: string | null;
+          solicitante_email?: string | null;
+          solicitante_nome?: string | null;
+          solicitante_telefone?: string | null;
+          solicitante_tipo: Database["public"]["Enums"]["chamado_solicitante_tipo"];
+          solicitante_user_id?: string | null;
+          status?: Database["public"]["Enums"]["chamado_status"];
+          tenant_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          assunto?: string;
+          atribuido_user_id?: string | null;
+          canal_origem?: Database["public"]["Enums"]["chamado_canal"];
+          categoria?: Database["public"]["Enums"]["chamado_categoria"];
+          contexto?: Json;
+          created_at?: string;
+          csat_comentario?: string | null;
+          csat_nota?: number | null;
+          fechado_em?: string | null;
+          id?: string;
+          numero?: string;
+          primeira_resposta_em?: string | null;
+          prioridade?: Database["public"]["Enums"]["chamado_prioridade"];
+          resolvido_em?: string | null;
+          responsavel_tipo?: Database["public"]["Enums"]["chamado_responsavel_tipo"];
+          sla_prazo_primeira_resposta?: string | null;
+          sla_prazo_resolucao?: string | null;
+          solicitante_email?: string | null;
+          solicitante_nome?: string | null;
+          solicitante_telefone?: string | null;
+          solicitante_tipo?: Database["public"]["Enums"]["chamado_solicitante_tipo"];
+          solicitante_user_id?: string | null;
+          status?: Database["public"]["Enums"]["chamado_status"];
+          tenant_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chamados_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
             referencedRelation: "tenants";
@@ -5011,6 +5178,47 @@ export type Database = {
           },
         ];
       };
+      tenant_atendimento_config: {
+        Row: {
+          horario_atendimento: Json;
+          last_assigned_user_id: string | null;
+          mensagem_fora_horario: string | null;
+          round_robin_ativo: boolean;
+          sla_primeira_resposta_minutos: number;
+          sla_resolucao_horas: number;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          horario_atendimento?: Json;
+          last_assigned_user_id?: string | null;
+          mensagem_fora_horario?: string | null;
+          round_robin_ativo?: boolean;
+          sla_primeira_resposta_minutos?: number;
+          sla_resolucao_horas?: number;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          horario_atendimento?: Json;
+          last_assigned_user_id?: string | null;
+          mensagem_fora_horario?: string | null;
+          round_robin_ativo?: boolean;
+          sla_primeira_resposta_minutos?: number;
+          sla_resolucao_horas?: number;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_atendimento_config_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_custom_fields: {
         Row: {
           chave: string;
@@ -6122,6 +6330,17 @@ export type Database = {
     };
     Enums: {
       app_role: "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
+      chamado_canal: "web_chat" | "web_formulario" | "email" | "whatsapp" | "manual";
+      chamado_categoria:
+        | "problema_plataforma"
+        | "duvida_comercial"
+        | "reclamacao_anuncio"
+        | "financeiro_cobranca"
+        | "outro";
+      chamado_prioridade: "baixa" | "media" | "alta" | "urgente";
+      chamado_responsavel_tipo: "imob365" | "tenant";
+      chamado_solicitante_tipo: "tenant_member" | "cliente_final" | "anonimo";
+      chamado_status: "novo" | "em_atendimento" | "aguardando_cliente" | "resolvido" | "fechado";
       comissao_status: "a_pagar" | "paga" | "cancelada";
       contrato_parcela_tipo: "sinal" | "entrada" | "parcela" | "quitacao";
       contrato_status: "rascunho" | "ativo" | "encerrado" | "cancelado" | "rescindido";
@@ -6314,9 +6533,24 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["super_admin", "admin", "broker", "juridico", "financeiro", "atendente"],
+      chamado_canal: ["web_chat", "web_formulario", "email", "whatsapp", "manual"],
+      chamado_categoria: [
+        "problema_plataforma",
+        "duvida_comercial",
+        "reclamacao_anuncio",
+        "financeiro_cobranca",
+        "outro",
+      ],
+      chamado_prioridade: ["baixa", "media", "alta", "urgente"],
+      chamado_responsavel_tipo: ["imob365", "tenant"],
+      chamado_solicitante_tipo: ["tenant_member", "cliente_final", "anonimo"],
+      chamado_status: ["novo", "em_atendimento", "aguardando_cliente", "resolvido", "fechado"],
       comissao_status: ["a_pagar", "paga", "cancelada"],
       contrato_parcela_tipo: ["sinal", "entrada", "parcela", "quitacao"],
       contrato_status: ["rascunho", "ativo", "encerrado", "cancelado", "rescindido"],
