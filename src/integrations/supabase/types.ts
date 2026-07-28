@@ -988,6 +988,60 @@ export type Database = {
           },
         ];
       };
+      contrato_dados_pagamento: {
+        Row: {
+          agencia: string | null;
+          banco: string | null;
+          chave_pix: string | null;
+          conta: string | null;
+          contrato_id: string;
+          created_at: string;
+          id: string;
+          tenant_id: string;
+          tipo_chave_pix: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          agencia?: string | null;
+          banco?: string | null;
+          chave_pix?: string | null;
+          conta?: string | null;
+          contrato_id: string;
+          created_at?: string;
+          id?: string;
+          tenant_id: string;
+          tipo_chave_pix?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          agencia?: string | null;
+          banco?: string | null;
+          chave_pix?: string | null;
+          conta?: string | null;
+          contrato_id?: string;
+          created_at?: string;
+          id?: string;
+          tenant_id?: string;
+          tipo_chave_pix?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_dados_pagamento_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: true;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_dados_pagamento_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contrato_etapas: {
         Row: {
           concluida_em: string | null;
@@ -1218,6 +1272,7 @@ export type Database = {
           arquivo_path: string | null;
           assinatura_status: string;
           carencia_dias: number | null;
+          centro_custo_id: string | null;
           comissao_percentual: number | null;
           comissao_valor: number | null;
           corretor_id: string | null;
@@ -1226,6 +1281,7 @@ export type Database = {
           data_fim: string | null;
           data_inicio: string | null;
           data_primeira_parcela: string | null;
+          dia_vencimento: number | null;
           etapa_atual: string;
           id: string;
           imovel_id: string | null;
@@ -1243,13 +1299,17 @@ export type Database = {
           tipo: Database["public"]["Enums"]["contrato_tipo"];
           updated_at: string;
           valor: number;
+          valor_condominio: number | null;
           valor_entrada: number | null;
+          valor_iptu: number | null;
+          valor_seguro: number | null;
           valor_sinal: number | null;
         };
         Insert: {
           arquivo_path?: string | null;
           assinatura_status?: string;
           carencia_dias?: number | null;
+          centro_custo_id?: string | null;
           comissao_percentual?: number | null;
           comissao_valor?: number | null;
           corretor_id?: string | null;
@@ -1258,6 +1318,7 @@ export type Database = {
           data_fim?: string | null;
           data_inicio?: string | null;
           data_primeira_parcela?: string | null;
+          dia_vencimento?: number | null;
           etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
@@ -1275,13 +1336,17 @@ export type Database = {
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
           updated_at?: string;
           valor?: number;
+          valor_condominio?: number | null;
           valor_entrada?: number | null;
+          valor_iptu?: number | null;
+          valor_seguro?: number | null;
           valor_sinal?: number | null;
         };
         Update: {
           arquivo_path?: string | null;
           assinatura_status?: string;
           carencia_dias?: number | null;
+          centro_custo_id?: string | null;
           comissao_percentual?: number | null;
           comissao_valor?: number | null;
           corretor_id?: string | null;
@@ -1290,6 +1355,7 @@ export type Database = {
           data_fim?: string | null;
           data_inicio?: string | null;
           data_primeira_parcela?: string | null;
+          dia_vencimento?: number | null;
           etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
@@ -1307,10 +1373,20 @@ export type Database = {
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
           updated_at?: string;
           valor?: number;
+          valor_condominio?: number | null;
           valor_entrada?: number | null;
+          valor_iptu?: number | null;
+          valor_seguro?: number | null;
           valor_sinal?: number | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "contratos_centro_custo_id_fkey";
+            columns: ["centro_custo_id"];
+            isOneToOne: false;
+            referencedRelation: "centros_custo";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "contratos_imovel_id_fkey";
             columns: ["imovel_id"];
@@ -5358,6 +5434,7 @@ export type Database = {
           regiao_atuacao: string | null;
           slug: string;
           status: Database["public"]["Enums"]["tenant_status"];
+          taxa_admin_padrao_percentual: number | null;
           tema: Json;
           tipo_tenant: string | null;
           trial_ends_at: string | null;
@@ -5390,6 +5467,7 @@ export type Database = {
           regiao_atuacao?: string | null;
           slug: string;
           status?: Database["public"]["Enums"]["tenant_status"];
+          taxa_admin_padrao_percentual?: number | null;
           tema?: Json;
           tipo_tenant?: string | null;
           trial_ends_at?: string | null;
@@ -5422,6 +5500,7 @@ export type Database = {
           regiao_atuacao?: string | null;
           slug?: string;
           status?: Database["public"]["Enums"]["tenant_status"];
+          taxa_admin_padrao_percentual?: number | null;
           tema?: Json;
           tipo_tenant?: string | null;
           trial_ends_at?: string | null;
