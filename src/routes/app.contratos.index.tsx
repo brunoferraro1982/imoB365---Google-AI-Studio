@@ -10,55 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { formatBRL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
+import { TIPO_LABEL, STATUS_LABEL, STATUS_VARIANT, ASSINATURA_INFO } from "@/lib/contratosLabels";
 
 export const Route = createFileRoute("/app/contratos/")({
   beforeLoad: moduleGuard("juridico"),
   component: ContratosList,
 });
-
-export const TIPO_LABEL: Record<string, string> = {
-  venda: "Venda",
-  locacao: "Locação",
-  permuta: "Permuta",
-  parceria: "Parceria",
-  administracao: "Administração",
-  prestacao_servico: "Prest. de Serviço",
-  outro: "Outro",
-};
-
-export const STATUS_LABEL: Record<string, string> = {
-  rascunho: "Rascunho",
-  ativo: "Ativo",
-  encerrado: "Encerrado",
-  cancelado: "Cancelado",
-};
-
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
-  ativo: "default",
-  rascunho: "secondary",
-  encerrado: "outline",
-  cancelado: "destructive",
-};
-
-export const ASSINATURA_INFO: Record<string, { label: string; className: string }> = {
-  rascunho: {
-    label: "Não enviado",
-    className: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
-  },
-  enviado: {
-    label: "Aguardando",
-    className: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300",
-  },
-  assinado_parcial: {
-    label: "Parcial (1/2)",
-    className:
-      "bg-indigo-100 text-indigo-800 animate-pulse dark:bg-indigo-900/40 dark:text-indigo-300",
-  },
-  assinado_total: {
-    label: "Assinado ✓",
-    className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300",
-  },
-};
 
 type Contrato = {
   id: string;

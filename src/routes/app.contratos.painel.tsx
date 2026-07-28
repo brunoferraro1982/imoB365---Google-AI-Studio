@@ -9,21 +9,12 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { verificarSlaContratos } from "@/lib/slaAlertas.functions";
 import { CONTRATO_VENCIMENTO_DIAS } from "@/lib/slaAlertas";
+import { TIPO_LABEL } from "@/lib/contratosLabels";
 
 export const Route = createFileRoute("/app/contratos/painel")({
   beforeLoad: moduleGuard("juridico"),
   component: PainelContratosPage,
 });
-
-const TIPO_LABEL: Record<string, string> = {
-  venda: "Venda",
-  locacao: "Locação",
-  permuta: "Permuta",
-  parceria: "Parceria",
-  administracao: "Administração",
-  prestacao_servico: "Prest. de Serviço",
-  outro: "Outro",
-};
 
 type ContratoResumo = {
   id: string;
