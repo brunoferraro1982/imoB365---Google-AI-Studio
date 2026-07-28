@@ -10,7 +10,7 @@ const GRAVIDADE: Record<StatusValue, number> = { operational: 0, degraded: 1, ou
 // de extensão futuro: quando uma ferramenta externa (Zabbix, Datadog) for
 // conectada de verdade, ela pode consumir este mesmo formato sem precisar
 // de nenhuma mudança de código aqui.
-export const Route = createFileRoute("/api/public/status/json")({
+export const Route = createFileRoute("/api/public/status.json")({
   server: {
     handlers: {
       GET: async () => {
