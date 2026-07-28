@@ -1,0 +1,410 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Headset, Send, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  STATUS_LABEL,
+  STATUS_VARIANT,
+  PRIORIDADE_LABEL,
+  CATEGORIA_LABEL,
+  CANAL_LABEL,
+} from "@/lib/chamadosLabels";
+
+export const Route = createFileRoute("/admin/atendimento")({
+  component: AdminAtendimentoPage,
+});
+
+type Chamado = {
+  id: string;
+  numero: string;
+  tenant_id: string | null;
+  solicitante_tipo: string;
+  solicitante_nome: string | null;
+  solicitante_email: string | null;
+  categoria: string;
+  status: string;
+  prioridade: string;
+  assunto: string;
+  csat_nota: number | null;
+  csat_comentario: string | null;
+  created_at: string;
+};
+
+type Mensagem = {
+  id: string;
+  autor_tipo: string;
+  canal: string;
+  conteudo: string;
+  interno: boolean;
+  created_at: string;
+};
+
+type TenantOption = { id: string; nome: string };
+
+const STATUS_FILTROS = ["novo", "em_atendimento", "aguardando_cliente", "resolvido", "fechado"];
+
+function AdminAtendimentoPage() {
+  const { user } = useAuth();
+  const [chamados, setChamados] = useState<Chamado[]>([]);
+  const [filtroStatus, setFiltroStatus] = useState<string>("todos");
+  const [loading, setLoading] = useState(true);
+  const [selecionado, setSelecionado] = useState<Chamado | null>(null);
+  const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  const [resposta, setResposta] = useState("");
+  const [notaInterna, setNotaInterna] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+  const [tenants, setTenants] = useState<TenantOption[]>([]);
+  const [tenantReatribuicao, setTenantReatribuicao] = useState<string>("");
+
+  async function load() {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("chamados")
+        .select(
+          "id,numero,tenant_id,solicitante_tipo,solicitante_nome,solicitante_email,categoria,status,prioridade,assunto,csat_nota,csat_comentario,created_at",
+        )
+        .eq("responsavel_tipo", "imob365")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setChamados((data ?? []) as Chamado[]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao carregar chamados");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadTenants() {
+    const { data } = await supabase
+      .from("tenants")
+      .select("id,nome")
+      .in("status", ["active", "trial"])
+      .order("nome");
+    setTenants((data ?? []) as TenantOption[]);
+  }
+
+  useEffect(() => {
+    load();
+    loadTenants();
+  }, []);
+
+  async function abrirChamado(chamado: Chamado) {
+    setSelecionado(chamado);
+    setTenantReatribuicao("");
+    const { data, error } = await supabase
+      .from("chamado_mensagens")
+      .select("id,autor_tipo,canal,conteudo,interno,created_at")
+      .eq("chamado_id", chamado.id)
+      .order("created_at", { ascending: true });
+    if (error) {
+      toast.error("Erro ao carregar mensagens do chamado");
+      return;
+    }
+    setMensagens((data ?? []) as Mensagem[]);
+  }
+
+  async function enviarResposta() {
+    if (!selecionado || !resposta.trim()) return;
+    setEnviando(true);
+    try {
+      const { error } = await supabase.from("chamado_mensagens").insert({
+        chamado_id: selecionado.id,
+        autor_tipo: "agente",
+        autor_user_id: user?.id,
+        canal: "web_chat",
+        conteudo: resposta.trim(),
+        interno: notaInterna,
+      });
+      if (error) throw error;
+
+      const patch: Record<string, unknown> = {};
+      if (!notaInterna && selecionado.status === "novo") patch.status = "em_atendimento";
+      if (Object.keys(patch).length > 0) {
+        await supabase
+          .from("chamados")
+          .update(patch as never)
+          .eq("id", selecionado.id);
+      }
+
+      setResposta("");
+      setNotaInterna(false);
+      await abrirChamado({ ...selecionado, ...patch } as Chamado);
+      load();
+      toast.success(notaInterna ? "Nota interna registrada." : "Resposta enviada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar resposta");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function alterarStatus(status: string) {
+    if (!selecionado) return;
+    try {
+      const patch: Record<string, unknown> = { status };
+      if (status === "resolvido") patch.resolvido_em = new Date().toISOString();
+      if (status === "fechado") patch.fechado_em = new Date().toISOString();
+      const { error } = await supabase
+        .from("chamados")
+        .update(patch as never)
+        .eq("id", selecionado.id);
+      if (error) throw error;
+      setSelecionado({ ...selecionado, status });
+      load();
+      toast.success("Status atualizado.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar status");
+    }
+  }
+
+  async function alterarPrioridade(prioridade: string) {
+    if (!selecionado) return;
+    try {
+      const { error } = await supabase
+        .from("chamados")
+        .update({ prioridade } as never)
+        .eq("id", selecionado.id);
+      if (error) throw error;
+      setSelecionado({ ...selecionado, prioridade });
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar prioridade");
+    }
+  }
+
+  // Triagem: reatribui um chamado sem contexto (cliente final sem imóvel/
+  // corretor de origem) do balcão imoB365 pro balcão do tenant correto —
+  // caso raro previsto no plano, decidido explicitamente pra ficar manual
+  // em vez de heurística de match geográfico.
+  async function reatribuirParaTenant() {
+    if (!selecionado || !tenantReatribuicao) return;
+    try {
+      const { error } = await supabase
+        .from("chamados")
+        .update({ responsavel_tipo: "tenant", tenant_id: tenantReatribuicao })
+        .eq("id", selecionado.id);
+      if (error) throw error;
+      toast.success("Chamado reatribuído à imobiliária.");
+      setSelecionado(null);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao reatribuir chamado");
+    }
+  }
+
+  const chamadosFiltrados = useMemo(() => {
+    if (filtroStatus === "todos") return chamados;
+    return chamados.filter((c) => c.status === filtroStatus);
+  }, [chamados, filtroStatus]);
+
+  if (loading) {
+    return <div className="p-6 text-sm text-muted-foreground">Carregando...</div>;
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      <div>
+        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+          <Headset className="h-6 w-6" />
+          Central de Atendimento — imoB365
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Chamados abertos por corretores/imobiliárias sobre a plataforma, e chamados de clientes
+          finais sem contexto (aguardando triagem/reatribuição pra imobiliária correta).
+        </p>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[380px_1fr]">
+        <div className="rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border p-3">
+            <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+              <SelectTrigger className="h-8 w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os status</SelectItem>
+                {STATUS_FILTROS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {STATUS_LABEL[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="max-h-[70vh] divide-y divide-border overflow-y-auto">
+            {chamadosFiltrados.length === 0 && (
+              <div className="p-4 text-sm text-muted-foreground">Nenhum chamado.</div>
+            )}
+            {chamadosFiltrados.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => abrirChamado(c)}
+                className={`block w-full space-y-1 p-3 text-left text-sm hover:bg-muted/50 ${
+                  selecionado?.id === c.id ? "bg-muted" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{c.numero}</span>
+                  <Badge variant={STATUS_VARIANT[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                </div>
+                <div className="truncate text-muted-foreground">{c.assunto}</div>
+                <div className="text-xs text-muted-foreground">
+                  {c.solicitante_nome ?? c.solicitante_email ?? "—"} ·{" "}
+                  {CATEGORIA_LABEL[c.categoria]}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-5">
+          {!selecionado && (
+            <div className="text-sm text-muted-foreground">
+              Selecione um chamado na lista pra ver os detalhes.
+            </div>
+          )}
+          {selecionado && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="text-lg font-semibold">{selecionado.assunto}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {selecionado.numero} · {CATEGORIA_LABEL[selecionado.categoria]} ·{" "}
+                    {new Date(selecionado.created_at).toLocaleString("pt-BR")}
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select value={selecionado.prioridade} onValueChange={alterarPrioridade}>
+                    <SelectTrigger className="h-8 w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PRIORIDADE_LABEL).map(([v, l]) => (
+                        <SelectItem key={v} value={v}>
+                          {l}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selecionado.status} onValueChange={alterarStatus}>
+                    <SelectTrigger className="h-8 w-40">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUS_FILTROS.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {STATUS_LABEL[s]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {selecionado.csat_nota != null && (
+                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 p-2 text-sm">
+                  <Star className="h-4 w-4 text-amber-500" />
+                  Satisfação: {selecionado.csat_nota}/5
+                  {selecionado.csat_comentario && ` — "${selecionado.csat_comentario}"`}
+                </div>
+              )}
+
+              {selecionado.solicitante_tipo === "cliente_final" && (
+                <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                  <span className="text-amber-700 dark:text-amber-400">
+                    Chamado de cliente final sem imobiliária correspondente — reatribuir:
+                  </span>
+                  <Select value={tenantReatribuicao} onValueChange={setTenantReatribuicao}>
+                    <SelectTrigger className="h-8 w-56">
+                      <SelectValue placeholder="Escolher imobiliária" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tenants.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={!tenantReatribuicao}
+                    onClick={reatribuirParaTenant}
+                  >
+                    Reatribuir
+                  </Button>
+                </div>
+              )}
+
+              <div className="space-y-3 rounded-md border border-border p-3">
+                {mensagens.length === 0 && (
+                  <div className="text-sm text-muted-foreground">Nenhuma mensagem ainda.</div>
+                )}
+                {mensagens.map((m) => (
+                  <div
+                    key={m.id}
+                    className={`rounded-md p-2 text-sm ${
+                      m.interno
+                        ? "border border-dashed border-amber-500/50 bg-amber-500/10"
+                        : m.autor_tipo === "agente"
+                          ? "bg-primary/10"
+                          : "bg-muted"
+                    }`}
+                  >
+                    <div className="mb-1 text-xs text-muted-foreground">
+                      {m.interno
+                        ? "Nota interna"
+                        : m.autor_tipo === "agente"
+                          ? "Agente"
+                          : "Cliente"}{" "}
+                      · {new Date(m.created_at).toLocaleString("pt-BR")} · {CANAL_LABEL[m.canal]}
+                    </div>
+                    {m.conteudo}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Escrever resposta..."
+                  value={resposta}
+                  onChange={(e) => setResposta(e.target.value)}
+                  rows={3}
+                />
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={notaInterna}
+                      onChange={(e) => setNotaInterna(e.target.checked)}
+                    />
+                    Nota interna (não visível ao solicitante)
+                  </label>
+                  <Button onClick={enviarResposta} disabled={enviando || !resposta.trim()}>
+                    <Send className="mr-1 h-4 w-4" />
+                    {notaInterna ? "Registrar nota" : "Enviar resposta"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
