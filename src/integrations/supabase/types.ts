@@ -935,6 +935,7 @@ export type Database = {
           concluido_por: string | null;
           contrato_id: string;
           created_at: string;
+          documento_id: string | null;
           etapa: string;
           id: string;
           obrigatorio: boolean;
@@ -949,6 +950,7 @@ export type Database = {
           concluido_por?: string | null;
           contrato_id: string;
           created_at?: string;
+          documento_id?: string | null;
           etapa: string;
           id?: string;
           obrigatorio?: boolean;
@@ -963,6 +965,7 @@ export type Database = {
           concluido_por?: string | null;
           contrato_id?: string;
           created_at?: string;
+          documento_id?: string | null;
           etapa?: string;
           id?: string;
           obrigatorio?: boolean;
