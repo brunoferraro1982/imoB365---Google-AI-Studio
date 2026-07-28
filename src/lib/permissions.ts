@@ -21,6 +21,21 @@ export type AppModule =
 
 export type AppAction = "read" | "write" | "delete" | "config";
 
+// Etapas do ciclo de vida do contrato (CLM) — não é um enum de banco
+// (contrato_etapas.etapa é texto livre), pra permitir customização por
+// tenant no futuro sem migration nova. Espelha o conjunto usado no stepper
+// de app.contratos.$id.tsx.
+export type EtapaContrato =
+  | "captacao"
+  | "analise"
+  | "documentacao"
+  | "juridico"
+  | "assinatura"
+  | "ativacao"
+  | "financeiro"
+  | "administracao"
+  | "encerramento";
+
 // Matriz RBAC: role → módulo → ações permitidas
 const PERMISSION_MATRIX: Record<AppRole, Partial<Record<AppModule, AppAction[]>>> = {
   super_admin: {
@@ -131,4 +146,28 @@ export function canAndEnabled(
   action: AppAction,
 ): boolean {
   return isModuleEnabled(enabledModules, module) && can(roles, module, action);
+}
+
+/**
+ * Verifica se um array de roles pode agir num contrato numa etapa
+ * específica do workflow (CLM) — complementa can(roles, "juridico",
+ * action), não substitui.
+ *
+ * Decisão de produto (confirmada explicitamente): o papel `financeiro` não
+ * tem acesso ao módulo `juridico` de forma geral (ver matriz acima — parede
+ * intencional entre jurídico e financeiro), mas passa a poder ler/agir no
+ * contrato especificamente quando `etapa_atual === "financeiro"` — não
+ * abre o módulo inteiro pra esse papel, só a etapa pontual em que ele
+ * realmente precisa atuar (gerar cobrança, confirmar repasse, etc.).
+ */
+export function podeAgirNaEtapa(
+  roles: AppRole[],
+  etapa: EtapaContrato,
+  action: AppAction = "read",
+): boolean {
+  if (can(roles, "juridico", action)) return true;
+  if (etapa === "financeiro" && roles.includes("financeiro")) {
+    return action === "read" || action === "write";
+  }
+  return false;
 }

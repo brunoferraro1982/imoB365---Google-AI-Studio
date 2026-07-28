@@ -988,6 +988,57 @@ export type Database = {
           },
         ];
       };
+      contrato_etapas: {
+        Row: {
+          concluida_em: string | null;
+          contrato_id: string;
+          created_at: string;
+          etapa: string;
+          id: string;
+          iniciada_em: string;
+          observacoes: string | null;
+          responsavel_user_id: string | null;
+          tenant_id: string;
+        };
+        Insert: {
+          concluida_em?: string | null;
+          contrato_id: string;
+          created_at?: string;
+          etapa: string;
+          id?: string;
+          iniciada_em?: string;
+          observacoes?: string | null;
+          responsavel_user_id?: string | null;
+          tenant_id: string;
+        };
+        Update: {
+          concluida_em?: string | null;
+          contrato_id?: string;
+          created_at?: string;
+          etapa?: string;
+          id?: string;
+          iniciada_em?: string;
+          observacoes?: string | null;
+          responsavel_user_id?: string | null;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_etapas_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_etapas_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contrato_parcelas: {
         Row: {
           contrato_id: string;
@@ -1174,6 +1225,7 @@ export type Database = {
           data_fim: string | null;
           data_inicio: string | null;
           data_primeira_parcela: string | null;
+          etapa_atual: string;
           id: string;
           imovel_id: string | null;
           lead_id: string | null;
@@ -1199,6 +1251,7 @@ export type Database = {
           data_fim?: string | null;
           data_inicio?: string | null;
           data_primeira_parcela?: string | null;
+          etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
           lead_id?: string | null;
@@ -1224,6 +1277,7 @@ export type Database = {
           data_fim?: string | null;
           data_inicio?: string | null;
           data_primeira_parcela?: string | null;
+          etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
           lead_id?: string | null;

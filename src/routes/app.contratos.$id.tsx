@@ -19,6 +19,7 @@ import { ContratoForm } from "@/components/contratos/ContratoForm";
 import { PartesSection } from "@/components/contratos/PartesSection";
 import { ParcelasSection } from "@/components/contratos/ParcelasSection";
 import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
+import { EtapasStepper } from "@/components/contratos/EtapasStepper";
 
 export const Route = createFileRoute("/app/contratos/$id")({
   component: EditarContrato,
@@ -160,6 +161,7 @@ function EditarContrato() {
       </header>
 
       <div className="max-w-4xl space-y-6">
+        <EtapasStepper contratoId={id} />
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
         <ParcelasSection contratoId={id} />
