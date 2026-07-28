@@ -144,6 +144,7 @@ import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.nov
 import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
+import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
@@ -162,7 +163,6 @@ import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.p
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
-import { Route as ApiPublicStatusJsonRouteImport } from './routes/api.public.status.json'
 import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
 import { Route as ApiPublicCronStatusCleanupRouteImport } from './routes/api.public.cron.status-cleanup'
@@ -870,6 +870,11 @@ const AppAdminAprovacoesRoute = AppAdminAprovacoesRouteImport.update({
   path: '/admin/aprovacoes',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiPublicStatusDotjsonRoute = ApiPublicStatusDotjsonRouteImport.update({
+  id: '/api/public/status.json',
+  path: '/api/public/status.json',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
   path: '/api/public/health',
@@ -965,11 +970,6 @@ const ApiPublicV1LeadsRoute = ApiPublicV1LeadsRouteImport.update({
 const ApiPublicV1ImoveisRoute = ApiPublicV1ImoveisRouteImport.update({
   id: '/api/public/v1/imoveis',
   path: '/api/public/v1/imoveis',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicStatusJsonRoute = ApiPublicStatusJsonRouteImport.update({
-  id: '/api/public/status/json',
-  path: '/api/public/status/json',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicEmailTemplatesTypeRoute =
@@ -1148,6 +1148,7 @@ export interface FileRoutesByFullPath {
   '/conta/': typeof ContaIndexRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
@@ -1222,7 +1223,6 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
-  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1316,6 +1316,7 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaIndexRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
@@ -1390,7 +1391,6 @@ export interface FileRoutesByTo {
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
-  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1490,6 +1490,7 @@ export interface FileRoutesById {
   '/conta/': typeof ContaIndexRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
@@ -1564,7 +1565,6 @@ export interface FileRoutesById {
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
-  '/api/public/status/json': typeof ApiPublicStatusJsonRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
@@ -1665,6 +1665,7 @@ export interface FileRouteTypes {
     | '/conta/'
     | '/api/ai/assistente'
     | '/api/public/health'
+    | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
@@ -1739,7 +1740,6 @@ export interface FileRouteTypes {
     | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
-    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -1833,6 +1833,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/api/ai/assistente'
     | '/api/public/health'
+    | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
@@ -1907,7 +1908,6 @@ export interface FileRouteTypes {
     | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
-    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -2006,6 +2006,7 @@ export interface FileRouteTypes {
     | '/conta/'
     | '/api/ai/assistente'
     | '/api/public/health'
+    | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
@@ -2080,7 +2081,6 @@ export interface FileRouteTypes {
     | '/api/public/cron/status-cleanup'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
-    | '/api/public/status/json'
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
@@ -2152,6 +2152,7 @@ export interface RootRouteChildren {
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
@@ -2165,7 +2166,6 @@ export interface RootRouteChildren {
   ApiPublicCronStatusCleanupRoute: typeof ApiPublicCronStatusCleanupRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
-  ApiPublicStatusJsonRoute: typeof ApiPublicStatusJsonRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
@@ -3129,6 +3129,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminAprovacoesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/public/status.json': {
+      id: '/api/public/status.json'
+      path: '/api/public/status.json'
+      fullPath: '/api/public/status.json'
+      preLoaderRoute: typeof ApiPublicStatusDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/health': {
       id: '/api/public/health'
       path: '/api/public/health'
@@ -3253,13 +3260,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/v1/imoveis'
       fullPath: '/api/public/v1/imoveis'
       preLoaderRoute: typeof ApiPublicV1ImoveisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/status/json': {
-      id: '/api/public/status/json'
-      path: '/api/public/status/json'
-      fullPath: '/api/public/status/json'
-      preLoaderRoute: typeof ApiPublicStatusJsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/email-templates/$type': {
@@ -3678,6 +3678,7 @@ const rootRouteChildren: RootRouteChildren = {
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiAiAssistenteRoute: ApiAiAssistenteRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
@@ -3692,7 +3693,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronStatusCleanupRoute: ApiPublicCronStatusCleanupRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
-  ApiPublicStatusJsonRoute: ApiPublicStatusJsonRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
