@@ -139,6 +139,7 @@ import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
+import { Route as AppConfiguracoesAssinaturaEletronicaRouteImport } from './routes/app.configuracoes.assinatura-eletronica'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
 import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
@@ -175,6 +176,7 @@ import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.publ
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
+import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/api.public.mercadopago.oauth.callback'
@@ -845,6 +847,12 @@ const AppConfiguracoesCadenciasRoute =
     path: '/cadencias',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesAssinaturaEletronicaRoute =
+  AppConfiguracoesAssinaturaEletronicaRouteImport.update({
+    id: '/assinatura-eletronica',
+    path: '/assinatura-eletronica',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesApiRoute = AppConfiguracoesApiRouteImport.update({
   id: '/api',
   path: '/api',
@@ -1042,6 +1050,12 @@ const ApiPublicCronBuscasAlertasRoute =
     path: '/api/public/cron/buscas-alertas',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksAssinaturaProviderRoute =
+  ApiPublicWebhooksAssinaturaProviderRouteImport.update({
+    id: '/api/public/webhooks/assinatura/$provider',
+    path: '/api/public/webhooks/assinatura/$provider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1ImoveisSlugRoute = ApiPublicV1ImoveisSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -1154,6 +1168,7 @@ export interface FileRoutesByFullPath {
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1244,6 +1259,7 @@ export interface FileRoutesByFullPath {
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
+  '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1322,6 +1338,7 @@ export interface FileRoutesByTo {
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1412,6 +1429,7 @@ export interface FileRoutesByTo {
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
+  '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1496,6 +1514,7 @@ export interface FileRoutesById {
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
+  '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1586,6 +1605,7 @@ export interface FileRoutesById {
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
+  '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1671,6 +1691,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura-eletronica'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1761,6 +1782,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
+    | '/api/public/webhooks/assinatura/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1839,6 +1861,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura-eletronica'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1929,6 +1952,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
+    | '/api/public/webhooks/assinatura/$provider'
   id:
     | '__root__'
     | '/'
@@ -2012,6 +2036,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
+    | '/app/configuracoes/assinatura-eletronica'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -2102,6 +2127,7 @@ export interface FileRouteTypes {
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
+    | '/api/public/webhooks/assinatura/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2180,6 +2206,7 @@ export interface RootRouteChildren {
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   ApiPublicMercadopagoOauthCallbackRoute: typeof ApiPublicMercadopagoOauthCallbackRoute
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
+  ApiPublicWebhooksAssinaturaProviderRoute: typeof ApiPublicWebhooksAssinaturaProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -3094,6 +3121,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesCadenciasRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/assinatura-eletronica': {
+      id: '/app/configuracoes/assinatura-eletronica'
+      path: '/assinatura-eletronica'
+      fullPath: '/app/configuracoes/assinatura-eletronica'
+      preLoaderRoute: typeof AppConfiguracoesAssinaturaEletronicaRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/api': {
       id: '/app/configuracoes/api'
       path: '/api'
@@ -3346,6 +3380,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBuscasAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/assinatura/$provider': {
+      id: '/api/public/webhooks/assinatura/$provider'
+      path: '/api/public/webhooks/assinatura/$provider'
+      fullPath: '/api/public/webhooks/assinatura/$provider'
+      preLoaderRoute: typeof ApiPublicWebhooksAssinaturaProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/imoveis/$slug': {
       id: '/api/public/v1/imoveis/$slug'
       path: '/$slug'
@@ -3418,6 +3459,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
+  AppConfiguracoesAssinaturaEletronicaRoute: typeof AppConfiguracoesAssinaturaEletronicaRoute
   AppConfiguracoesCadenciasRoute: typeof AppConfiguracoesCadenciasRoute
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
@@ -3440,6 +3482,8 @@ interface AppConfiguracoesRouteChildren {
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesApiRoute: AppConfiguracoesApiRoute,
+  AppConfiguracoesAssinaturaEletronicaRoute:
+    AppConfiguracoesAssinaturaEletronicaRoute,
   AppConfiguracoesCadenciasRoute: AppConfiguracoesCadenciasRoute,
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
@@ -3712,6 +3756,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicMercadopagoOauthCallbackRoute,
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute:
     ApiPublicSitemapTenantSlugSitemapDotxmlRoute,
+  ApiPublicWebhooksAssinaturaProviderRoute:
+    ApiPublicWebhooksAssinaturaProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
