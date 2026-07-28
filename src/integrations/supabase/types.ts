@@ -5816,7 +5816,7 @@ export type Database = {
       app_role: "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
       comissao_status: "a_pagar" | "paga" | "cancelada";
       contrato_parcela_tipo: "sinal" | "entrada" | "parcela" | "quitacao";
-      contrato_status: "rascunho" | "ativo" | "encerrado" | "cancelado";
+      contrato_status: "rascunho" | "ativo" | "encerrado" | "cancelado" | "rescindido";
       contrato_tipo:
         | "venda"
         | "locacao"
@@ -5824,7 +5824,9 @@ export type Database = {
         | "outro"
         | "parceria"
         | "administracao"
-        | "prestacao_servico";
+        | "prestacao_servico"
+        | "exclusividade"
+        | "captacao";
       financeiro_status: "pendente" | "pago" | "atrasado" | "cancelado";
       financeiro_tipo: "receita" | "despesa";
       imovel_finalidade: "venda" | "aluguel" | "temporada";
@@ -6005,7 +6007,7 @@ export const Constants = {
       app_role: ["super_admin", "admin", "broker", "juridico", "financeiro", "atendente"],
       comissao_status: ["a_pagar", "paga", "cancelada"],
       contrato_parcela_tipo: ["sinal", "entrada", "parcela", "quitacao"],
-      contrato_status: ["rascunho", "ativo", "encerrado", "cancelado"],
+      contrato_status: ["rascunho", "ativo", "encerrado", "cancelado", "rescindido"],
       contrato_tipo: [
         "venda",
         "locacao",
@@ -6014,6 +6016,8 @@ export const Constants = {
         "parceria",
         "administracao",
         "prestacao_servico",
+        "exclusividade",
+        "captacao",
       ],
       financeiro_status: ["pendente", "pago", "atrasado", "cancelado"],
       financeiro_tipo: ["receita", "despesa"],
