@@ -166,17 +166,31 @@ export type ProcessarCaptacoesResult = {
   leadsNovos: number;
 };
 
+export type ProcessarCaptacoesOpcoes = {
+  // Restringe o lote a um único tenant — usado pelo botão "Sincronizar
+  // agora" (força a sincronização de UM tenant específico) em vez do
+  // varredor global que o cron horário roda.
+  tenantId?: string;
+  // Ignora o gate de intervalo (ultima_execucao + intervalo_horas) — é
+  // exatamente o "forçado" do botão manual; o cron horário nunca passa
+  // essa flag, sempre respeita o ciclo configurado.
+  forcar?: boolean;
+};
+
 export async function processarCaptacoes(
   client: CaptacaoSupabaseClient,
+  opcoes: ProcessarCaptacoesOpcoes = {},
 ): Promise<ProcessarCaptacoesResult> {
   const nowIso = new Date().toISOString();
-  const { data: configs } = await client
+  let query = client
     .from("captacao_configs")
     .select("*, tenants!inner(plano_slug)")
     .eq("ativo", true)
     .in("tenants.plano_slug", PLANOS_COM_ACESSO)
     .order("ultima_execucao", { ascending: true, nullsFirst: true })
     .limit(BATCH_SIZE_CONFIGS);
+  if (opcoes.tenantId) query = query.eq("tenant_id", opcoes.tenantId);
+  const { data: configs } = await query;
 
   let listingsEncontrados = 0;
   let leadsNovos = 0;
@@ -185,7 +199,7 @@ export async function processarCaptacoes(
   for (const config of (configs ?? []) as CaptacaoConfig[]) {
     const intervaloHoras = (config as any).intervalo_horas ?? 24;
     const ultimaExecucao = (config as any).ultima_execucao as string | null;
-    if (ultimaExecucao) {
+    if (!opcoes.forcar && ultimaExecucao) {
       const proximaExecucao = new Date(ultimaExecucao).getTime() + intervaloHoras * 3600_000;
       if (proximaExecucao > Date.now()) continue;
     }
