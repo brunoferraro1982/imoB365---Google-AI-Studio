@@ -487,14 +487,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                   key={m.id}
                   to={first.to}
                   title={m.label}
-                  className={`group flex shrink-0 items-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-all duration-250 relative ${
+                  className={`group flex shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-250 relative ${
                     active
                       ? "gap-2 bg-primary/15 text-primary border border-primary/20 shadow-sm"
                       : "gap-0 text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:gap-2"
                   }`}
                 >
                   <m.icon
-                    className={`h-4 w-4 shrink-0 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                    className={`h-5 w-5 shrink-0 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
                   />
                   <span
                     className={`overflow-hidden whitespace-nowrap transition-all duration-300 ease-out ${
