@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { processarCaptacoes } from "@/lib/captacao";
 
 // Robô de captação automática: só tenants em planos Pro/Business têm
 // acesso — feature de topo de linha. A autorização de quem-edita-o-quê
@@ -86,6 +88,40 @@ export const removerCaptacao = createServerFn({ method: "POST" })
     const { error } = await supabase.from("captacao_configs").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+// Botão "Sincronizar agora" (app.leads.captacao.tsx): força o processamento
+// das buscas do tenant chamado ignorando o gate de intervalo_horas — usa o
+// mesmo motor do cron horário (processarCaptacoes), mas com service role
+// (supabaseAdmin) porque captacao_listings só tem policy de escrita pra ele
+// (ver nota em create_captacao_tables.sql). Como isso contorna a RLS,
+// checamos admin/broker do tenant explicitamente aqui, sem depender dela.
+export const sincronizarCaptacaoAgora = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { tenant_id: string }) => z.object({ tenant_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await garantirPlanoPermitido(supabase, data.tenant_id);
+
+    const { data: isAdmin } = await supabase.rpc("has_role_in_tenant", {
+      _user_id: userId,
+      _tenant_id: data.tenant_id,
+      _role: "admin",
+    });
+    const { data: isBroker } = await supabase.rpc("has_role_in_tenant", {
+      _user_id: userId,
+      _tenant_id: data.tenant_id,
+      _role: "broker",
+    });
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
+    if (!isAdmin && !isBroker && !isSuper) {
+      throw new Error("Sem permissão para sincronizar a captação desta imobiliária.");
+    }
+
+    return processarCaptacoes(supabaseAdmin, { tenantId: data.tenant_id, forcar: true });
   });
 
 export const toggleCaptacao = createServerFn({ method: "POST" })
