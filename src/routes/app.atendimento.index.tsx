@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { moduleGuard } from "@/lib/routeGuard";
 import { listChamadoAssignees } from "@/lib/atendimento.functions";
 import { enviarEmailChamado } from "@/lib/atendimentoEmail.functions";
+import { enviarWhatsAppChamado } from "@/lib/atendimentoWhatsApp.functions";
 import {
   STATUS_LABEL,
   STATUS_VARIANT,
@@ -65,6 +66,7 @@ function AppAtendimentoPage() {
   const podeGerenciar = roles.includes("admin") || roles.includes("atendente");
   const fetchAssignees = useServerFn(listChamadoAssignees);
   const fetchEnviarEmailChamado = useServerFn(enviarEmailChamado);
+  const fetchEnviarWhatsAppChamado = useServerFn(enviarWhatsAppChamado);
 
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
@@ -155,11 +157,12 @@ function AppAtendimentoPage() {
           .select("id");
       }
 
-      // Notifica o solicitante por e-mail quando o tenant tem um canal de
-      // e-mail configurado — best effort, nunca bloqueia o fluxo de
-      // resposta se não estiver configurado ou falhar.
+      // Notifica o solicitante por e-mail/WhatsApp quando o tenant tem o
+      // canal correspondente configurado — best effort, nunca bloqueia o
+      // fluxo de resposta se não estiver configurado ou falhar.
       if (!notaInterna) {
         fetchEnviarEmailChamado({ data: { chamadoId: selecionado.id } }).catch(() => {});
+        fetchEnviarWhatsAppChamado({ data: { chamadoId: selecionado.id } }).catch(() => {});
       }
 
       setResposta("");

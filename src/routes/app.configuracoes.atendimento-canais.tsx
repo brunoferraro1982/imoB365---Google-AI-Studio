@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Headset } from "lucide-react";
 import { moduleGuard } from "@/lib/routeGuard";
 import { AtendimentoCanalEmailSection } from "@/components/atendimento/AtendimentoCanalEmailSection";
+import { AtendimentoCanalWhatsAppSection } from "@/components/atendimento/AtendimentoCanalWhatsAppSection";
 
 export const Route = createFileRoute("/app/configuracoes/atendimento-canais")({
   beforeLoad: moduleGuard("atendimento"),
@@ -20,6 +21,7 @@ function AtendimentoCanaisPage() {
         credenciais, nunca uma conta compartilhada da imoB365.
       </p>
       <AtendimentoCanalEmailSection />
+      <AtendimentoCanalWhatsAppSection />
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { enviarEmailChamado } from "@/lib/atendimentoEmail.functions";
+import { enviarWhatsAppChamado } from "@/lib/atendimentoWhatsApp.functions";
 import {
   STATUS_LABEL,
   STATUS_VARIANT,
@@ -60,6 +61,7 @@ const STATUS_FILTROS = ["novo", "em_atendimento", "aguardando_cliente", "resolvi
 function AdminAtendimentoPage() {
   const { user } = useAuth();
   const fetchEnviarEmailChamado = useServerFn(enviarEmailChamado);
+  const fetchEnviarWhatsAppChamado = useServerFn(enviarWhatsAppChamado);
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [loading, setLoading] = useState(true);
@@ -142,12 +144,13 @@ function AdminAtendimentoPage() {
           .eq("id", selecionado.id);
       }
 
-      // Notifica o solicitante por e-mail quando o tenant (ou a imoB365,
-      // pro balcão imob365) tem um canal de e-mail configurado — best
-      // effort, nunca bloqueia o fluxo de resposta se não estiver
-      // configurado ou falhar.
+      // Notifica o solicitante por e-mail/WhatsApp quando o tenant (ou a
+      // imoB365, pro balcão imob365) tem o canal correspondente
+      // configurado — best effort, nunca bloqueia o fluxo de resposta se
+      // não estiver configurado ou falhar.
       if (!notaInterna) {
         fetchEnviarEmailChamado({ data: { chamadoId: selecionado.id } }).catch(() => {});
+        fetchEnviarWhatsAppChamado({ data: { chamadoId: selecionado.id } }).catch(() => {});
       }
 
       setResposta("");
