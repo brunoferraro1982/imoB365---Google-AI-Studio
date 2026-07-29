@@ -148,7 +148,12 @@ function AppAtendimentoPage() {
       if (error) throw error;
 
       const patch: Record<string, unknown> = {};
-      if (!notaInterna && selecionado.status === "novo") patch.status = "em_atendimento";
+      if (!notaInterna && selecionado.status === "novo") {
+        patch.status = "em_atendimento";
+        // Marco de SLA: só a primeira resposta real (não-interna) conta
+        // pra "primeira_resposta_em" — usado pela detecção de estouro.
+        patch.primeira_resposta_em = new Date().toISOString();
+      }
       if (Object.keys(patch).length > 0) {
         await supabase
           .from("chamados")

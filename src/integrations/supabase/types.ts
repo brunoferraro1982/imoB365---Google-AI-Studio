@@ -3549,6 +3549,7 @@ export type Database = {
       lead_tarefas: {
         Row: {
           cartorio_registro_id: string | null;
+          chamado_id: string | null;
           concluida_em: string | null;
           contrato_id: string | null;
           created_at: string;
@@ -3567,6 +3568,7 @@ export type Database = {
         };
         Insert: {
           cartorio_registro_id?: string | null;
+          chamado_id?: string | null;
           concluida_em?: string | null;
           contrato_id?: string | null;
           created_at?: string;
@@ -3585,6 +3587,7 @@ export type Database = {
         };
         Update: {
           cartorio_registro_id?: string | null;
+          chamado_id?: string | null;
           concluida_em?: string | null;
           contrato_id?: string | null;
           created_at?: string;
@@ -3607,6 +3610,13 @@ export type Database = {
             columns: ["cartorio_registro_id"];
             isOneToOne: false;
             referencedRelation: "cartorio_registros";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_tarefas_chamado_id_fkey";
+            columns: ["chamado_id"];
+            isOneToOne: false;
+            referencedRelation: "chamados";
             referencedColumns: ["id"];
           },
           {
