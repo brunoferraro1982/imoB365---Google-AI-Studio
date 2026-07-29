@@ -342,9 +342,10 @@ type ConstrutoraRodape = { id: string; slug: string; nome: string; logo_url: str
 
 // Slider infinito de logos das construtoras curadas — compartilhado entre
 // o SiteFooter deste arquivo e o duplicado em routes/index.tsx (ver nota
-// de débito técnico lá) pra não triplicar a mesma lógica de novo. Ícones
-// pequenos (h-4) e o strip fica ACIMA do bloco escuro do rodapé, não
-// dentro dele.
+// de débito técnico lá) pra não triplicar a mesma lógica de novo. Fundo
+// branco (destaque real contra o bloco escuro do rodapé logo abaixo,
+// mesmo padrão de "trusted by" com logos bem visíveis, sem esmaecer) —
+// o strip fica ACIMA do bloco escuro do rodapé, não dentro dele.
 export function ConstrutorasMarquee() {
   const [construtoras, setConstrutoras] = useState<ConstrutoraRodape[]>([]);
 
@@ -365,21 +366,24 @@ export function ConstrutorasMarquee() {
   const itens = [...construtoras, ...construtoras];
 
   return (
-    <div className="overflow-hidden border-b border-border bg-muted/40 py-3">
-      <div className="flex w-max animate-marquee items-center gap-10">
+    <div className="overflow-hidden border-b border-border bg-white py-8">
+      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-neutral-500">
+        Construtoras Parceiras
+      </p>
+      <div className="flex w-max animate-marquee items-center gap-16">
         {itens.map((c, i) => (
           <Link
             key={`${c.id}-${i}`}
             to="/construtora/$slug"
             params={{ slug: c.slug }}
             title={c.nome}
-            className="flex shrink-0 items-center gap-1.5 opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
+            className="flex shrink-0 items-center gap-2 transition hover:scale-105"
           >
             {c.logo_url ? (
-              <img src={c.logo_url} alt={c.nome} className="h-4 w-auto object-contain" />
+              <img src={c.logo_url} alt={c.nome} className="h-10 w-auto object-contain" />
             ) : (
-              <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                <Factory className="h-3 w-3" />
+              <span className="flex items-center gap-1.5 text-base font-semibold text-neutral-700">
+                <Factory className="h-5 w-5" />
                 {c.nome}
               </span>
             )}
