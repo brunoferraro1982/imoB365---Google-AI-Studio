@@ -4,6 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronLeft, Plus, Trash2, Calculator, Radio, ImagePlus, Camera, X } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +30,8 @@ function EmpDetail() {
   const [sim, setSim] = useState({ entrada: 20, prazoMeses: 360, juroAnual: 11 });
   const [liveSync, setLiveSync] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [construtoras, setConstrutoras] = useState<{ id: string; nome: string }[]>([]);
+  const [parceiras, setParceiras] = useState<string[]>([]);
 
   async function load() {
     const { data: e } = await (supabase as any)
@@ -51,6 +60,30 @@ function EmpDetail() {
   useEffect(() => {
     load();
   }, [id]);
+
+  useEffect(() => {
+    supabase
+      .from("construtoras")
+      .select("id,nome")
+      .eq("ativo", true)
+      .order("nome")
+      .then(({ data }) => setConstrutoras(data ?? []));
+  }, []);
+
+  useEffect(() => {
+    if (!emp?.tenant_id) return;
+    supabase
+      .from("construtora_tenant_parceria")
+      .select("construtoras(nome)")
+      .eq("tenant_id", emp.tenant_id)
+      .then(({ data }) => {
+        setParceiras(
+          ((data ?? []) as { construtoras: { nome: string } | null }[])
+            .map((p) => p.construtoras?.nome)
+            .filter((n): n is string => !!n),
+        );
+      });
+  }, [emp?.tenant_id]);
 
   useEffect(() => {
     if (!emp?.tenant_id) return;
@@ -175,10 +208,26 @@ function EmpDetail() {
           </div>
           <div>
             <label className="text-xs">Construtora</label>
-            <Input
-              defaultValue={emp.construtora ?? ""}
-              onBlur={(e) => patchEmp({ construtora: e.target.value || null })}
-            />
+            <Select
+              value={emp.construtora_id ?? ""}
+              onValueChange={(v) => patchEmp({ construtora_id: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecionar construtora" />
+              </SelectTrigger>
+              <SelectContent>
+                {construtoras.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!emp.construtora_id && emp.construtora && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Cadastro antigo (texto livre): {emp.construtora}
+              </p>
+            )}
           </div>
           <div>
             <label className="text-xs">Fase</label>
@@ -218,6 +267,21 @@ function EmpDetail() {
           </label>
         </div>
       </section>
+
+      {parceiras.length > 0 && (
+        <section className="rounded-xl border bg-card p-4 text-sm">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Construtoras parceiras da sua imobiliária
+          </span>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {parceiras.map((nome) => (
+              <span key={nome} className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                {nome}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* FOTOS DO EMPREENDIMENTO */}
       <section className="rounded-xl border bg-card p-6">

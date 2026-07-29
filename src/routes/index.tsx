@@ -1,4 +1,4 @@
-import { SiteHeader } from "@/components/site-layout";
+import { SiteHeader, ConstrutorasMarquee } from "@/components/site-layout";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -15,8 +15,6 @@ import {
   Maximize2,
   ArrowRight,
   Building,
-  Mail,
-  Phone,
   Instagram,
   Facebook,
   Linkedin,
@@ -33,6 +31,7 @@ import {
   GraduationCap,
   Plug,
   BookOpen,
+  Headset,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -859,115 +858,115 @@ function Field({
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
+
   return (
-    <footer className="border-t border-border bg-secondary text-secondary-foreground">
-      <div className="mx-auto max-w-6xl px-6 py-14">
-        <div className="grid gap-10 md:grid-cols-4">
-          <div className="space-y-4">
-            <Logo className="h-9 w-auto" variant="white" />
-            <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-              A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores e
-              clientes em todo o Brasil.
-            </p>
-            <div className="mt-5 flex gap-3">
-              {[
-                { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
-                { Icon: Instagram, href: "https://www.instagram.com/imob365/", label: "Instagram" },
+    <>
+      <ConstrutorasMarquee />
+      <footer className="border-t border-border bg-secondary text-secondary-foreground">
+        <div className="mx-auto max-w-6xl px-6 py-14">
+          <div className="grid gap-10 md:grid-cols-4">
+            <div className="space-y-4">
+              <Logo className="h-9 w-auto" variant="white" />
+              <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
+                A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores
+                e clientes em todo o Brasil.
+              </p>
+              <div className="mt-5 flex gap-3">
+                {[
+                  { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
+                  {
+                    Icon: Instagram,
+                    href: "https://www.instagram.com/imob365/",
+                    label: "Instagram",
+                  },
+                  {
+                    Icon: Linkedin,
+                    href: "https://www.linkedin.com/company/imob365/",
+                    label: "LinkedIn",
+                  },
+                ].map(({ Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
+                  >
+                    <Icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            <FooterCol
+              title="Encontrar"
+              links={[
+                { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
+                { label: "Alugar imóvel", to: "/buscar", icon: Key },
+                { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
+                { label: "Lançamentos e novidades", to: "/buscar", icon: Sparkles },
+              ]}
+            />
+            <FooterCol
+              title="Para imobiliárias"
+              links={[
+                { label: "Planos e preços", to: "/planos", icon: CreditCard },
+                { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
+                { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
+                { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
+                { label: "Acessar plataforma", to: "/login", icon: Users },
                 {
-                  Icon: Linkedin,
-                  href: "https://www.linkedin.com/company/imob365/",
-                  label: "LinkedIn",
+                  label: "Calculadoras (ITBI, financiamento)",
+                  to: "/calculadoras",
+                  icon: Calculator,
+                  highlight: true,
                 },
-              ].map(({ Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
+              ]}
+            />
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
+                Fale com a gente
+              </h4>
+              <ul className="mt-4 space-y-3.5 text-sm opacity-85">
+                <li>
+                  <Link
+                    to="/atendimento"
+                    className="flex items-center gap-3 hover:text-primary transition-all duration-200"
+                  >
+                    <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
+                      <Headset className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="font-semibold text-white/95">Central de Atendimento</span>
+                  </Link>
+                </li>
+                <li className="flex items-center gap-3">
+                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
+                    <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
+                  </div>
+                  <span>Suporte 365 dias por ano</span>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <FooterCol
-            title="Encontrar"
-            links={[
-              { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
-              { label: "Alugar imóvel", to: "/buscar", icon: Key },
-              { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-              { label: "Lançamentos e novidades", to: "/buscar", icon: Sparkles },
-            ]}
-          />
-          <FooterCol
-            title="Para imobiliárias"
-            links={[
-              { label: "Planos e preços", to: "/planos", icon: CreditCard },
-              { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
-              { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
-              { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
-              { label: "Acessar plataforma", to: "/login", icon: Users },
-              {
-                label: "Calculadoras (ITBI, financiamento)",
-                to: "/calculadoras",
-                icon: Calculator,
-                highlight: true,
-              },
-            ]}
-          />
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
-              Fale com a gente
-            </h4>
-            <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-              <li className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <Mail className="h-4 w-4 text-primary" />
-                </div>
-                <span>contato@imob365.com.br</span>
-              </li>
-              <li>
-                <a
-                  href="https://wa.me/5513997794382"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 hover:text-primary transition-all duration-200"
-                >
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                    <Phone className="h-4 w-4 text-primary" />
-                  </div>
-                  <span>(13) 99779-4382</span>
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
-                </div>
-                <span className="font-semibold text-white/95">Suporte 365 dias por ano</span>
-              </li>
-            </ul>
+          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
+            <span>© {year} imob365. Todos os direitos reservados.</span>
+            <div className="flex flex-wrap gap-5">
+              <Link to="/termos" className="hover:text-primary transition-colors">
+                Termos de uso
+              </Link>
+              <Link to="/privacidade" className="hover:text-primary transition-colors">
+                Política de privacidade
+              </Link>
+              <Link to="/lgpd" className="hover:text-primary transition-colors">
+                LGPD
+              </Link>
+            </div>
           </div>
         </div>
-
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
-          <span>© {year} imob365. Todos os direitos reservados.</span>
-          <div className="flex flex-wrap gap-5">
-            <Link to="/termos" className="hover:text-primary transition-colors">
-              Termos de uso
-            </Link>
-            <Link to="/privacidade" className="hover:text-primary transition-colors">
-              Política de privacidade
-            </Link>
-            <Link to="/lgpd" className="hover:text-primary transition-colors">
-              LGPD
-            </Link>
-          </div>
-        </div>
-      </div>
-    </footer>
+      </footer>
+    </>
   );
 }
 
