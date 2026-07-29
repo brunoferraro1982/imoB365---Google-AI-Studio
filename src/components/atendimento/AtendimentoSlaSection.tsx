@@ -7,6 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
+// plans.slug reais (confirmado contra dev): "pro"/"business", sem prefixo
+// "plan-" — mesma convenção já usada em app.leads.captacao.tsx.
+const PLANOS_COM_ACESSO = ["pro", "business"];
+
 // SLA por tenant (item #3 do pedido original) — tenant_atendimento_config
 // já existe desde o Sprint 0; esta tela expõe os campos pro admin do
 // tenant editar. Sem config própria, o trigger tg_chamado_sla (Sprint 6)
@@ -29,11 +33,19 @@ export function AtendimentoSlaSection() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [existe, setExiste] = useState(false);
+  const [planoOk, setPlanoOk] = useState(false);
   const [form, setForm] = useState<SlaForm>(FORM_VAZIO);
 
   async function load() {
     if (!tenantId) return;
     setLoading(true);
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("plano_slug")
+      .eq("id", tenantId)
+      .maybeSingle();
+    setPlanoOk(PLANOS_COM_ACESSO.includes((tenant as { plano_slug?: string })?.plano_slug ?? ""));
+
     const { data } = await supabase
       .from("tenant_atendimento_config")
       .select("sla_primeira_resposta_minutos,sla_resolucao_horas,round_robin_ativo")
@@ -61,8 +73,11 @@ export function AtendimentoSlaSection() {
     setSaving(true);
     const payload = {
       tenant_id: tenantId,
-      sla_primeira_resposta_minutos: Number(form.slaRespostaMinutos) || 240,
-      sla_resolucao_horas: Number(form.slaResolucaoHoras) || 48,
+      // Planos abaixo de Pro/Business não podem customizar os prazos —
+      // força o default mesmo que o form tenha sido adulterado, já que os
+      // inputs ficam desabilitados na UI só pra esses planos.
+      sla_primeira_resposta_minutos: planoOk ? Number(form.slaRespostaMinutos) || 240 : 240,
+      sla_resolucao_horas: planoOk ? Number(form.slaResolucaoHoras) || 48 : 48,
       round_robin_ativo: form.roundRobinAtivo,
     };
     const { error } = existe
@@ -87,6 +102,16 @@ export function AtendimentoSlaSection() {
         Prazo que sua equipe se compromete a cumprir ao responder e resolver um chamado. Sem
         configurar, vale o padrão de 4h para a primeira resposta e 48h para resolução.
       </p>
+      {!planoOk && (
+        <p className="rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+          Personalizar esses prazos é um recurso dos planos <strong>Pro</strong> e{" "}
+          <strong>Business</strong> — no seu plano atual vale o padrão fixo abaixo, mas os chamados
+          continuam sendo recebidos e respondidos normalmente.{" "}
+          <a href="/app/contratacao" className="font-medium text-primary underline">
+            Ver planos
+          </a>
+        </p>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
@@ -96,6 +121,7 @@ export function AtendimentoSlaSection() {
           <Input
             type="number"
             min={1}
+            disabled={!planoOk}
             value={form.slaRespostaMinutos}
             onChange={(e) => setForm((f) => ({ ...f, slaRespostaMinutos: e.target.value }))}
           />
@@ -107,6 +133,7 @@ export function AtendimentoSlaSection() {
           <Input
             type="number"
             min={1}
+            disabled={!planoOk}
             value={form.slaResolucaoHoras}
             onChange={(e) => setForm((f) => ({ ...f, slaResolucaoHoras: e.target.value }))}
           />
