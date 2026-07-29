@@ -1095,6 +1095,120 @@ export type Database = {
           },
         ];
       };
+      construtora_tenant_parceria: {
+        Row: {
+          construtora_id: string;
+          created_at: string;
+          criado_por: string;
+          id: string;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          construtora_id: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          status?: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          construtora_id?: string;
+          created_at?: string;
+          criado_por?: string;
+          id?: string;
+          status?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "construtora_tenant_parceria_construtora_id_fkey";
+            columns: ["construtora_id"];
+            isOneToOne: false;
+            referencedRelation: "construtoras";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_tenant_parceria_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      construtoras: {
+        Row: {
+          ativo: boolean;
+          cnpj: string | null;
+          created_at: string;
+          descricao: string | null;
+          email: string | null;
+          endereco_bairro: string | null;
+          endereco_cep: string | null;
+          endereco_cidade: string | null;
+          endereco_logradouro: string | null;
+          endereco_numero: string | null;
+          endereco_uf: string | null;
+          exibir_no_rodape: boolean;
+          id: string;
+          logo_url: string | null;
+          nome: string;
+          site: string | null;
+          slug: string;
+          telefone: string | null;
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          ativo?: boolean;
+          cnpj?: string | null;
+          created_at?: string;
+          descricao?: string | null;
+          email?: string | null;
+          endereco_bairro?: string | null;
+          endereco_cep?: string | null;
+          endereco_cidade?: string | null;
+          endereco_logradouro?: string | null;
+          endereco_numero?: string | null;
+          endereco_uf?: string | null;
+          exibir_no_rodape?: boolean;
+          id?: string;
+          logo_url?: string | null;
+          nome: string;
+          site?: string | null;
+          slug: string;
+          telefone?: string | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          ativo?: boolean;
+          cnpj?: string | null;
+          created_at?: string;
+          descricao?: string | null;
+          email?: string | null;
+          endereco_bairro?: string | null;
+          endereco_cep?: string | null;
+          endereco_cidade?: string | null;
+          endereco_logradouro?: string | null;
+          endereco_numero?: string | null;
+          endereco_uf?: string | null;
+          exibir_no_rodape?: boolean;
+          id?: string;
+          logo_url?: string | null;
+          nome?: string;
+          site?: string | null;
+          slug?: string;
+          telefone?: string | null;
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       contrato_checklist: {
         Row: {
           concluido: boolean;
@@ -2446,6 +2560,7 @@ export type Database = {
         Row: {
           cnpj_construtora: string | null;
           construtora: string | null;
+          construtora_id: string | null;
           created_at: string;
           descricao: string | null;
           endereco_bairro: string | null;
@@ -2470,6 +2585,7 @@ export type Database = {
         Insert: {
           cnpj_construtora?: string | null;
           construtora?: string | null;
+          construtora_id?: string | null;
           created_at?: string;
           descricao?: string | null;
           endereco_bairro?: string | null;
@@ -2494,6 +2610,7 @@ export type Database = {
         Update: {
           cnpj_construtora?: string | null;
           construtora?: string | null;
+          construtora_id?: string | null;
           created_at?: string;
           descricao?: string | null;
           endereco_bairro?: string | null;
@@ -2516,6 +2633,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "empreendimentos_construtora_id_fkey";
+            columns: ["construtora_id"];
+            isOneToOne: false;
+            referencedRelation: "construtoras";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "empreendimentos_tenant_id_fkey";
             columns: ["tenant_id"];

@@ -60,6 +60,7 @@ import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaContratosRouteImport } from './routes/conta.contratos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
 import { Route as ContaAtendimentoRouteImport } from './routes/conta.atendimento'
+import { Route as ConstrutoraSlugRouteImport } from './routes/construtora.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -83,6 +84,7 @@ import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
+import { Route as AdminConstrutorasRouteImport } from './routes/admin.construtoras'
 import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
@@ -452,6 +454,11 @@ const ContaAtendimentoRoute = ContaAtendimentoRouteImport.update({
   path: '/atendimento',
   getParentRoute: () => ContaRoute,
 } as any)
+const ConstrutoraSlugRoute = ConstrutoraSlugRouteImport.update({
+  id: '/construtora/$slug',
+  path: '/construtora/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog_/$slug',
   path: '/blog/$slug',
@@ -565,6 +572,11 @@ const AdminFaturamentoRoute = AdminFaturamentoRouteImport.update({
 const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminConstrutorasRoute = AdminConstrutorasRouteImport.update({
+  id: '/construtoras',
+  path: '/construtoras',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminBlogRoute = AdminBlogRouteImport.update({
@@ -1206,6 +1218,7 @@ export interface FileRoutesByFullPath {
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
+  '/admin/construtoras': typeof AdminConstrutorasRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1229,6 +1242,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/construtora/$slug': typeof ConstrutoraSlugRoute
   '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
@@ -1391,6 +1405,7 @@ export interface FileRoutesByTo {
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
+  '/admin/construtoras': typeof AdminConstrutorasRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1412,6 +1427,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/construtora/$slug': typeof ConstrutoraSlugRoute
   '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
@@ -1578,6 +1594,7 @@ export interface FileRoutesById {
   '/termos': typeof TermosRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
+  '/admin/construtoras': typeof AdminConstrutorasRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
@@ -1601,6 +1618,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog_/$slug': typeof BlogSlugRoute
+  '/construtora/$slug': typeof ConstrutoraSlugRoute
   '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
@@ -1768,6 +1786,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin/auditoria'
     | '/admin/blog'
+    | '/admin/construtoras'
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
@@ -1791,6 +1810,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/construtora/$slug'
     | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
@@ -1953,6 +1973,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin/auditoria'
     | '/admin/blog'
+    | '/admin/construtoras'
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
@@ -1974,6 +1995,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/construtora/$slug'
     | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
@@ -2139,6 +2161,7 @@ export interface FileRouteTypes {
     | '/termos'
     | '/admin/auditoria'
     | '/admin/blog'
+    | '/admin/construtoras'
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
@@ -2162,6 +2185,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog_/$slug'
+    | '/construtora/$slug'
     | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
@@ -2330,6 +2354,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  ConstrutoraSlugRoute: typeof ConstrutoraSlugRoute
   CorretorSlugRoute: typeof CorretorSlugRoute
   DocsApiRoute: typeof DocsApiRoute
   EmpreendimentoSlugRoute: typeof EmpreendimentoSlugRoute
@@ -2734,6 +2759,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContaAtendimentoRouteImport
       parentRoute: typeof ContaRoute
     }
+    '/construtora/$slug': {
+      id: '/construtora/$slug'
+      path: '/construtora/$slug'
+      fullPath: '/construtora/$slug'
+      preLoaderRoute: typeof ConstrutoraSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog_/$slug': {
       id: '/blog_/$slug'
       path: '/blog/$slug'
@@ -2893,6 +2925,13 @@ declare module '@tanstack/react-router' {
       path: '/emails'
       fullPath: '/admin/emails'
       preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/construtoras': {
+      id: '/admin/construtoras'
+      path: '/construtoras'
+      fullPath: '/admin/construtoras'
+      preLoaderRoute: typeof AdminConstrutorasRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/blog': {
@@ -3685,6 +3724,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
   AdminBlogRoute: typeof AdminBlogRoute
+  AdminConstrutorasRoute: typeof AdminConstrutorasRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
@@ -3702,6 +3742,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditoriaRoute: AdminAuditoriaRoute,
   AdminBlogRoute: AdminBlogRoute,
+  AdminConstrutorasRoute: AdminConstrutorasRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminFlagsRoute: AdminFlagsRoute,
@@ -3987,6 +4028,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
   BlogSlugRoute: BlogSlugRoute,
+  ConstrutoraSlugRoute: ConstrutoraSlugRoute,
   CorretorSlugRoute: CorretorSlugRoute,
   DocsApiRoute: DocsApiRoute,
   EmpreendimentoSlugRoute: EmpreendimentoSlugRoute,

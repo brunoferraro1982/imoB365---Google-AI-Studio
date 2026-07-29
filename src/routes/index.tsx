@@ -15,8 +15,6 @@ import {
   Maximize2,
   ArrowRight,
   Building,
-  Mail,
-  Phone,
   Instagram,
   Facebook,
   Linkedin,
@@ -33,6 +31,8 @@ import {
   GraduationCap,
   Plug,
   BookOpen,
+  Headset,
+  Factory,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -857,8 +857,22 @@ function Field({
   );
 }
 
+type ConstrutoraRodape = { id: string; slug: string; nome: string; logo_url: string | null };
+
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  const [construtorasRodape, setConstrutorasRodape] = useState<ConstrutoraRodape[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("construtoras")
+      .select("id,slug,nome,logo_url")
+      .eq("ativo", true)
+      .eq("exibir_no_rodape", true)
+      .order("nome")
+      .then(({ data }) => setConstrutorasRodape((data ?? []) as ConstrutoraRodape[]));
+  }, []);
+
   return (
     <footer className="border-t border-border bg-secondary text-secondary-foreground">
       <div className="mx-auto max-w-6xl px-6 py-14">
@@ -923,34 +937,54 @@ export function SiteFooter() {
               Fale com a gente
             </h4>
             <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-              <li className="flex items-center gap-3">
-                <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                  <Mail className="h-4 w-4 text-primary" />
-                </div>
-                <span>contato@imob365.com.br</span>
-              </li>
               <li>
-                <a
-                  href="https://wa.me/5513997794382"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/atendimento"
                   className="flex items-center gap-3 hover:text-primary transition-all duration-200"
                 >
                   <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                    <Phone className="h-4 w-4 text-primary" />
+                    <Headset className="h-4 w-4 text-primary" />
                   </div>
-                  <span>(13) 99779-4382</span>
-                </a>
+                  <span className="font-semibold text-white/95">Central de Atendimento</span>
+                </Link>
               </li>
               <li className="flex items-center gap-3">
                 <div className="p-2 bg-white/5 rounded-lg border border-white/10">
                   <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
                 </div>
-                <span className="font-semibold text-white/95">Suporte 365 dias por ano</span>
+                <span>Suporte 365 dias por ano</span>
               </li>
             </ul>
           </div>
         </div>
+
+        {construtorasRodape.length > 0 && (
+          <div className="mt-12 border-t border-white/10 pt-10">
+            <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-widest opacity-60">
+              Construtoras Parceiras
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+              {construtorasRodape.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/construtora/$slug"
+                  params={{ slug: c.slug }}
+                  title={c.nome}
+                  className="opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0"
+                >
+                  {c.logo_url ? (
+                    <img src={c.logo_url} alt={c.nome} className="h-10 w-auto object-contain" />
+                  ) : (
+                    <span className="flex h-10 items-center gap-1.5 text-sm font-semibold text-white/80">
+                      <Factory className="h-4 w-4" />
+                      {c.nome}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
           <span>© {year} imob365. Todos os direitos reservados.</span>
