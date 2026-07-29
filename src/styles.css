@@ -162,3 +162,18 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* Slider infinito de logos (construtoras parceiras) — conteúdo duplicado
+   2x no container, anima metade da largura pra criar o loop sem costura. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee 28s linear infinite;
+}
