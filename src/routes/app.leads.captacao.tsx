@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Radar, Plus, Trash2, Sparkles, Clock, Building2 } from "lucide-react";
+import { Radar, Plus, Trash2, Sparkles, Clock, Building2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ import {
   salvarCaptacao,
   removerCaptacao,
   toggleCaptacao,
+  sincronizarCaptacaoAgora,
 } from "@/lib/captacao.functions";
 import { toast } from "sonner";
 
@@ -73,6 +74,7 @@ function CaptacaoPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  const [sincronizando, setSincronizando] = useState(false);
 
   const [form, setForm] = useState({
     nome: "",
@@ -90,6 +92,7 @@ function CaptacaoPage() {
   const fnSalvar = useServerFn(salvarCaptacao);
   const fnRemover = useServerFn(removerCaptacao);
   const fnToggle = useServerFn(toggleCaptacao);
+  const fnSincronizar = useServerFn(sincronizarCaptacaoAgora);
 
   async function load() {
     if (!tenantId) return;
@@ -159,6 +162,30 @@ function CaptacaoPage() {
     }
   }
 
+  async function onSincronizarAgora() {
+    if (!tenantId) return;
+    setSincronizando(true);
+    try {
+      const resultado = await fnSincronizar({ data: { tenant_id: tenantId } });
+      if (resultado.leadsNovos > 0) {
+        toast.success(
+          `${resultado.leadsNovos} lead(s) novo(s) capturado(s) de ${resultado.listingsEncontrados} anúncio(s) encontrado(s).`,
+        );
+      } else if (resultado.configsProcessadas === 0) {
+        toast.info("Nenhuma busca ativa pra sincronizar.");
+      } else {
+        toast.info(
+          `Sincronizado: ${resultado.listingsEncontrados} anúncio(s) encontrado(s), nenhum lead novo (já capturados antes ou fora do filtro).`,
+        );
+      }
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao sincronizar");
+    } finally {
+      setSincronizando(false);
+    }
+  }
+
   async function onToggle(id: string, ativo: boolean) {
     await fnToggle({ data: { id, ativo } });
     load();
@@ -204,128 +231,134 @@ function CaptacaoPage() {
             {totalLeads} lead(s) captados até agora · leads novos entram direto no seu funil
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-1.5 h-4 w-4" /> Nova busca
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Nova busca de captação</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nome da busca</Label>
-                <Input
-                  value={form.nome}
-                  onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
-                  placeholder="Ex: Apartamentos Zona Leste"
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="col-span-2 space-y-2">
-                  <Label>Cidade</Label>
-                  <Input
-                    value={form.cidade}
-                    onChange={(e) => setForm((f) => ({ ...f, cidade: e.target.value }))}
-                    placeholder="Santos"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>UF</Label>
-                  <Input
-                    value={form.uf}
-                    maxLength={2}
-                    onChange={(e) => setForm((f) => ({ ...f, uf: e.target.value.toUpperCase() }))}
-                    placeholder="SP"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Bairro (opcional)</Label>
-                <Input
-                  value={form.bairro}
-                  onChange={(e) => setForm((f) => ({ ...f, bairro: e.target.value }))}
-                  placeholder="Deixe em branco pra buscar a cidade toda"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Tipo</Label>
-                  <Select
-                    value={form.tipo}
-                    onValueChange={(v) => setForm((f) => ({ ...f, tipo: v }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TIPO_LABEL).map(([v, l]) => (
-                        <SelectItem key={v} value={v}>
-                          {l}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Finalidade</Label>
-                  <Select
-                    value={form.finalidade}
-                    onValueChange={(v) => setForm((f) => ({ ...f, finalidade: v }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="venda">Venda</SelectItem>
-                      <SelectItem value="aluguel">Aluguel</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Preço mínimo (opcional)</Label>
-                  <Input
-                    type="number"
-                    value={form.preco_min}
-                    onChange={(e) => setForm((f) => ({ ...f, preco_min: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Preço máximo (opcional)</Label>
-                  <Input
-                    type="number"
-                    value={form.preco_max}
-                    onChange={(e) => setForm((f) => ({ ...f, preco_max: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Ciclo de execução</Label>
-                <Select
-                  value={String(form.intervalo_horas)}
-                  onValueChange={(v) => setForm((f) => ({ ...f, intervalo_horas: Number(v) }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="8">A cada 8 horas</SelectItem>
-                    <SelectItem value="12">A cada 12 horas</SelectItem>
-                    <SelectItem value="24">Diariamente</SelectItem>
-                    <SelectItem value="48">A cada 2 dias</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={onSalvar} disabled={salvando} className="w-full">
-                {salvando ? "Salvando..." : "Criar busca"}
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={onSincronizarAgora} disabled={sincronizando}>
+            <RefreshCw className={`mr-1.5 h-4 w-4 ${sincronizando ? "animate-spin" : ""}`} />
+            {sincronizando ? "Sincronizando..." : "Sincronizar agora"}
+          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-1.5 h-4 w-4" /> Nova busca
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Nova busca de captação</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Nome da busca</Label>
+                  <Input
+                    value={form.nome}
+                    onChange={(e) => setForm((f) => ({ ...f, nome: e.target.value }))}
+                    placeholder="Ex: Apartamentos Zona Leste"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2 space-y-2">
+                    <Label>Cidade</Label>
+                    <Input
+                      value={form.cidade}
+                      onChange={(e) => setForm((f) => ({ ...f, cidade: e.target.value }))}
+                      placeholder="Santos"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>UF</Label>
+                    <Input
+                      value={form.uf}
+                      maxLength={2}
+                      onChange={(e) => setForm((f) => ({ ...f, uf: e.target.value.toUpperCase() }))}
+                      placeholder="SP"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Bairro (opcional)</Label>
+                  <Input
+                    value={form.bairro}
+                    onChange={(e) => setForm((f) => ({ ...f, bairro: e.target.value }))}
+                    placeholder="Deixe em branco pra buscar a cidade toda"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Tipo</Label>
+                    <Select
+                      value={form.tipo}
+                      onValueChange={(v) => setForm((f) => ({ ...f, tipo: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(TIPO_LABEL).map(([v, l]) => (
+                          <SelectItem key={v} value={v}>
+                            {l}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Finalidade</Label>
+                    <Select
+                      value={form.finalidade}
+                      onValueChange={(v) => setForm((f) => ({ ...f, finalidade: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="venda">Venda</SelectItem>
+                        <SelectItem value="aluguel">Aluguel</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Preço mínimo (opcional)</Label>
+                    <Input
+                      type="number"
+                      value={form.preco_min}
+                      onChange={(e) => setForm((f) => ({ ...f, preco_min: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Preço máximo (opcional)</Label>
+                    <Input
+                      type="number"
+                      value={form.preco_max}
+                      onChange={(e) => setForm((f) => ({ ...f, preco_max: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Ciclo de execução</Label>
+                  <Select
+                    value={String(form.intervalo_horas)}
+                    onValueChange={(v) => setForm((f) => ({ ...f, intervalo_horas: Number(v) }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="8">A cada 8 horas</SelectItem>
+                      <SelectItem value="12">A cada 12 horas</SelectItem>
+                      <SelectItem value="24">Diariamente</SelectItem>
+                      <SelectItem value="48">A cada 2 dias</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={onSalvar} disabled={salvando} className="w-full">
+                  {salvando ? "Salvando..." : "Criar busca"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </header>
 
       {configs.length === 0 ? (
