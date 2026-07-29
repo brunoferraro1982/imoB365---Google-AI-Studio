@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BarChart3, Clock, MessageSquareText, Star, TrendingUp } from "lucide-react";
+import { BarChart3, Clock, MessageSquareText, Sparkles, Star, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { moduleGuard } from "@/lib/routeGuard";
@@ -12,6 +13,10 @@ export const Route = createFileRoute("/app/atendimento/painel")({
   beforeLoad: moduleGuard("atendimento"),
   component: PainelAtendimentoPage,
 });
+
+// plans.slug reais (confirmado contra dev): "pro"/"business", sem prefixo
+// "plan-" — mesma convenção já usada em app.leads.captacao.tsx.
+const PLANOS_COM_ACESSO = ["pro", "business"];
 
 function StatTile({
   label,
@@ -66,25 +71,60 @@ function PainelAtendimentoPage() {
   const { tenantId } = useAuth();
   const [chamados, setChamados] = useState<ChamadoMetrico[]>([]);
   const [loading, setLoading] = useState(true);
+  const [planoOk, setPlanoOk] = useState(false);
 
   useEffect(() => {
     async function load() {
       if (!tenantId) return;
       setLoading(true);
-      const { data } = await supabase
-        .from("chamados")
-        .select(
-          "status,categoria,canal_origem,created_at,primeira_resposta_em,resolvido_em,csat_nota",
-        )
-        .eq("responsavel_tipo", "tenant")
-        .eq("tenant_id", tenantId);
-      setChamados((data ?? []) as ChamadoMetrico[]);
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("plano_slug")
+        .eq("id", tenantId)
+        .maybeSingle();
+      const ok = PLANOS_COM_ACESSO.includes((tenant as { plano_slug?: string })?.plano_slug ?? "");
+      setPlanoOk(ok);
+
+      if (ok) {
+        const { data } = await supabase
+          .from("chamados")
+          .select(
+            "status,categoria,canal_origem,created_at,primeira_resposta_em,resolvido_em,csat_nota",
+          )
+          .eq("responsavel_tipo", "tenant")
+          .eq("tenant_id", tenantId);
+        setChamados((data ?? []) as ChamadoMetrico[]);
+      }
       setLoading(false);
     }
     load();
   }, [tenantId]);
 
   const m = calcularMetricasChamados(chamados);
+
+  if (loading) {
+    return <div className="p-6 text-sm text-muted-foreground">Carregando…</div>;
+  }
+
+  if (!planoOk) {
+    return (
+      <div className="p-8">
+        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-8 text-center">
+          <Sparkles className="mx-auto h-8 w-8 text-primary" />
+          <h1 className="mt-4 text-xl font-bold">Painel da Central de Atendimento</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Relatórios avançados (tempo médio de resposta/resolução, satisfação CSAT, volume por
+            canal e categoria) — disponível nos planos <strong>Pro</strong> e{" "}
+            <strong>Business</strong>. Seus chamados continuam sendo recebidos e respondidos
+            normalmente nos demais planos.
+          </p>
+          <a href="/app/contratacao">
+            <Button className="mt-6">Ver planos</Button>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-6">
@@ -98,55 +138,49 @@ function PainelAtendimentoPage() {
         </p>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando…</p>
-      ) : (
-        <>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            <StatTile label="Total de chamados" value={String(m.total)} />
-            <StatTile label="Em aberto" value={String(m.abertos)} />
-            <StatTile label="Resolvidos" value={String(m.resolvidos)} />
-            <StatTile
-              label="Tempo médio 1ª resposta"
-              value={m.tempoMedioRespostaMin != null ? `${m.tempoMedioRespostaMin} min` : "—"}
-              icon={Clock}
-            />
-            <StatTile
-              label="Tempo médio resolução"
-              value={m.tempoMedioResolucaoHoras != null ? `${m.tempoMedioResolucaoHoras} h` : "—"}
-              icon={TrendingUp}
-            />
-          </div>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <StatTile label="Total de chamados" value={String(m.total)} />
+        <StatTile label="Em aberto" value={String(m.abertos)} />
+        <StatTile label="Resolvidos" value={String(m.resolvidos)} />
+        <StatTile
+          label="Tempo médio 1ª resposta"
+          value={m.tempoMedioRespostaMin != null ? `${m.tempoMedioRespostaMin} min` : "—"}
+          icon={Clock}
+        />
+        <StatTile
+          label="Tempo médio resolução"
+          value={m.tempoMedioResolucaoHoras != null ? `${m.tempoMedioResolucaoHoras} h` : "—"}
+          icon={TrendingUp}
+        />
+      </div>
 
-          <div className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Star className="h-3.5 w-3.5" /> Satisfação (CSAT)
-            </div>
-            <div className="mt-1 text-2xl font-bold">
-              {m.csatMedio != null ? `${m.csatMedio} / 5` : "—"}
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
-                ({m.csatRespostas} avaliação{m.csatRespostas === 1 ? "" : "ões"})
-              </span>
-            </div>
-          </div>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Star className="h-3.5 w-3.5" /> Satisfação (CSAT)
+        </div>
+        <div className="mt-1 text-2xl font-bold">
+          {m.csatMedio != null ? `${m.csatMedio} / 5` : "—"}
+          <span className="ml-2 text-sm font-normal text-muted-foreground">
+            ({m.csatRespostas} avaliação{m.csatRespostas === 1 ? "" : "ões"})
+          </span>
+        </div>
+      </div>
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <ContagemLista titulo="Por status" itens={m.porStatus} labels={STATUS_LABEL} />
-            <ContagemLista titulo="Por categoria" itens={m.porCategoria} labels={CATEGORIA_LABEL} />
-            <ContagemLista
-              titulo="Por canal"
-              itens={m.porCanal}
-              labels={{ ...CANAL_LABEL, [""]: "—" }}
-            />
-          </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <ContagemLista titulo="Por status" itens={m.porStatus} labels={STATUS_LABEL} />
+        <ContagemLista titulo="Por categoria" itens={m.porCategoria} labels={CATEGORIA_LABEL} />
+        <ContagemLista
+          titulo="Por canal"
+          itens={m.porCanal}
+          labels={{ ...CANAL_LABEL, [""]: "—" }}
+        />
+      </div>
 
-          {m.total === 0 && (
-            <div className="flex items-center gap-2 rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-              <MessageSquareText className="h-4 w-4" />
-              Nenhum chamado registrado ainda pro seu tenant.
-            </div>
-          )}
-        </>
+      {m.total === 0 && (
+        <div className="flex items-center gap-2 rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+          <MessageSquareText className="h-4 w-4" />
+          Nenhum chamado registrado ainda pro seu tenant.
+        </div>
       )}
     </div>
   );
