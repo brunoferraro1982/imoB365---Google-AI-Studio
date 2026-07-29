@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Headset, Plus, Send, Star } from "lucide-react";
+import { Headset, Loader2, Plus, Send, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -79,7 +79,7 @@ const NOVO_CHAMADO_VAZIO = {
 };
 
 function AdminAtendimentoPage() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const fetchEnviarEmailChamado = useServerFn(enviarEmailChamado);
   const fetchEnviarWhatsAppChamado = useServerFn(enviarWhatsAppChamado);
   const fetchCriarChamadoManual = useServerFn(criarChamadoManual);
@@ -96,6 +96,8 @@ function AdminAtendimentoPage() {
   const [novoAberto, setNovoAberto] = useState(false);
   const [novoChamado, setNovoChamado] = useState(NOVO_CHAMADO_VAZIO);
   const [criando, setCriando] = useState(false);
+  const [sugerindo, setSugerindo] = useState(false);
+  const [erroSugestao, setErroSugestao] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -290,6 +292,40 @@ function AdminAtendimentoPage() {
       toast.error(err instanceof Error ? err.message : "Erro ao criar chamado");
     } finally {
       setCriando(false);
+    }
+  }
+
+  async function sugerirResposta() {
+    if (!selecionado || !session?.access_token) return;
+    setSugerindo(true);
+    setErroSugestao(null);
+    setResposta("");
+    try {
+      const res = await fetch("/api/ai/sugestao-chamado", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ chamadoId: selecionado.id }),
+      });
+      if (!res.ok) {
+        setErroSugestao((await res.text()) || "Erro ao gerar sugestão.");
+        return;
+      }
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder();
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          setResposta((prev) => prev + decoder.decode(value, { stream: true }));
+        }
+      }
+    } catch {
+      setErroSugestao("Não foi possível gerar a sugestão agora.");
+    } finally {
+      setSugerindo(false);
     }
   }
 
@@ -560,6 +596,25 @@ function AdminAtendimentoPage() {
               </div>
 
               <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {erroSugestao && <span className="text-destructive">{erroSugestao}</span>}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={sugerirResposta}
+                    disabled={sugerindo}
+                  >
+                    {sugerindo ? (
+                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-1 h-3.5 w-3.5" />
+                    )}
+                    Sugerir resposta (IA)
+                  </Button>
+                </div>
                 <Textarea
                   placeholder="Escrever resposta..."
                   value={resposta}
