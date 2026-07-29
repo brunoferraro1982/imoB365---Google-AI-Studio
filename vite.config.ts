@@ -28,4 +28,20 @@ export default defineConfig({
   nitro: (isNodeDeploy
     ? { preset: "node-server", renderer: { handler: "./src/nitro-node-renderer.ts" } }
     : undefined) as { preset: string; renderer: { handler: string } } | undefined,
+  // jsdom (via isomorphic-dompurify em src/lib/sanitizeHtml.ts) não pode ser
+  // inlinado pelo Rollup: ele e suas dependências transitivas (css-tree,
+  // whatwg-url...) fazem `require()`s relativos a arquivos de dados/asset
+  // reais (data/patch.json, browser/default-stylesheet.css, xhr-sync-
+  // worker.js — 3 achados reais, provavelmente não os únicos) que o bundle
+  // único por dependência do Nitro não consegue rastrear/copiar — causou
+  // incidente real de produção duas vezes (ver changelog "Assistente de IA"
+  // 2026-07-24, e o fix deste commit). Marcado external aqui (fica um
+  // require("jsdom") de verdade no bundle) + scripts/copy-jsdom-external.mjs
+  // (postbuild) copia a árvore de dependências real do jsdom via
+  // @vercel/nft pra dist/server/node_modules — Node resolve normalmente a
+  // partir daí (sobe diretórios a partir de quem chama, acha
+  // dist/server/node_modules).
+  vite: isNodeDeploy
+    ? { ssr: { external: ["jsdom"] }, build: { rollupOptions: { external: ["jsdom"] } } }
+    : undefined,
 });

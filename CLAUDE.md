@@ -82,16 +82,24 @@ No test suite configured — validate via CADERNO_DE_TESTES.md (manual QA).
 | `/` (`index.tsx`) | Public landing page / property search portal                   |
 | `/app/*`          | Authenticated back-office (tenant CRM) — guarded by `AppShell` |
 | `/admin/*`        | Super-admin panel (multi-tenant management)                    |
-| `/conta/*`        | End-user account area (saved searches, favorites, chat)        |
+| `/conta/*`        | End-user account area (favorites, saved searches, chat, contracts, support tickets) |
 | `/site.$slug/*`   | White-label public site per tenant                             |
-| `/api/public/*`   | Server-only API routes (REST + XML feeds + cron)               |
-| `/lovable/*`      | Email queue and webhook infrastructure                         |
+| `/api/public/*`   | Server-only API routes (REST + XML feeds + webhooks + cron)     |
+| `/api/ai/*`       | AI Assistant streaming chat endpoint — raw `Response`, not `createServerFn` (see `aiAssistant.ts`) |
+| `/lovable/*`      | Email queue and webhook infrastructure (legacy path — mostly disconnected today, GoTrue's native SMTP send doesn't route through it, see changelog 2026-07-21) |
 | `/planos`         | Public pricing page (toggle mensal/anual, comparativo)         |
 | `/blog/*`         | Public blog listing + article detail                           |
-| `/calculadoras/*` | Public calculators (financiamento, ITBI, mudança)              |
-| `/empreendimentos`| Public listing of published empreendimentos/lançamentos        |
-| `/empreendimento/$slug` | Public detail page for a specific empreendimento         |
+| `/calculadoras/*` | Public calculators (financiamento, ITBI, mudança, avaliação de imóvel) |
+| `/empreendimentos`, `/empreendimento/$slug` | Public listing + detail of published empreendimentos/lançamentos |
+| `/construtora/$slug` | Public builder profile page (Construtoras V1 — super_admin-curated directory) |
+| `/corretor/$slug` | Public individual broker profile page                          |
+| `/status`         | Public infrastructure status page (see `statusPage.ts`)        |
+| `/atendimento`    | Public support-ticket lookup/creation for anonymous visitors (Central de Atendimento) |
+| `/quero-anunciar/$tenantSlug`, `/avaliacao/$tenantSlug` | Public per-tenant lead-capture forms (listing intake, property valuation request) |
+| `/l/$slug`        | Short-link redirector with click tracking (`short_links`/`short_link_clicks`) |
 | `/docs/api`       | Public API documentation page                                  |
+| `/a-imob365`, `/sobre`, `/contato`, `/consultoria`, `/plataforma`, `/termos`, `/lgpd`, `/privacidade`, `/politica-de-privacidade`, `/ajuda` | Public institutional/marketing pages |
+| `/login`, `/signup`, `/reset-password`, `/onboarding`, `/auth/callback`, `/pending-approval` | Auth flow pages |
 
 ### Multi-Tenancy
 
@@ -160,22 +168,51 @@ Usuários que entram via Google OAuth ou e-mail são redirecionados para `/auth/
 | `serverAuth.ts`               | Server-side auth helpers (`requireServerAuth()`, JWT-based tenant_id)        |
 | `team.functions.ts`           | Tenant team management (invite, list, remove members)                        |
 | `admin.functions.ts`          | Admin server functions (listAdminUsers: profiles + auth emails/metadata)     |
+| `admin-faturamento.functions.ts` | Super-admin billing overview across all tenants (`payment_events` aggregates) |
 | `onboarding.functions.ts`     | Onboarding completion: validates input, calls `provision_trial_business()` RPC |
 | `mercadopago.functions.ts`    | `createMercadoPagoCheckout`: generates a dynamic checkout URL (preapproval or Checkout Pro) per tenant |
+| `mercadopagoOAuth.functions.ts` | Per-tenant Mercado Pago Marketplace OAuth connection (Fase 3 parte 1 — distinto do `MERCADOPAGO_ACCESS_TOKEN` da própria plataforma) |
+| `cobrancaMercadoPago.functions.ts` | Mercado Pago Marketplace: cobrança real do tenant pro próprio cliente final (Fase 3 parte 2) |
+| `atendimento.functions.ts`    | Central de Atendimento: criar/atribuir/listar chamados (ticketing)           |
+| `atendimentoEmail.functions.ts` | Envia e-mail de chamado usando as credenciais SMTP do próprio tenant (BYO)  |
+| `atendimentoWhatsApp.functions.ts` | Envia WhatsApp de chamado usando as credenciais Evolution API do próprio tenant (BYO) |
+| `atendimentoEmailInbound.ts`  | Polling IMAP por tenant — importa e-mails recebidos como respostas de chamado |
+| `atendimentoSla.ts`           | Detecção de estouro de SLA da Central de Atendimento (dedupe via `lead_tarefas`) |
+| `captacao.ts` / `captacao.functions.ts` | Robô de captação automática (varre a Chaves na Mão via JSON-LD, pagina até 5 páginas, dedupe em `leads`) — `sincronizarCaptacaoAgora` força um ciclo sob demanda por tenant |
+| `contratos.functions.ts`      | CLM Sprint 10 — regras de negócio: `criarContrato`/`atualizarContrato`/`ativarContrato` (gate de ativação: garantia, checklist, assinatura) |
+| `slaAlertas.ts` / `slaAlertas.functions.ts` | SLA do Jurídico (CLM): cartórios parados e contratos a vencer          |
+| `financeiroDashboard.functions.ts` | Agregados do dashboard executivo do Financeiro                          |
+| `inadimplencia.ts` / `inadimplencia.functions.ts` | Detecção automática de lançamentos vencidos (`lancamentos_financeiros`) |
+| `locacaoRepasses.ts` / `locacaoRepasses.functions.ts` | Geração mensal de repasse ao proprietário por contrato de locação ativo |
+| `prestacaoContas.functions.ts` | Prestação de contas de locação por imóvel                                   |
+| `siteContent.functions.ts`    | Escrita sanitizada (DOMPurify) do conteúdo HTML do site/blog/widgets do tenant |
+| `hostinger.functions.ts`      | Lê métricas reais de recursos da VPS via API da Hostinger para `/admin/status` |
+| `aiAssistant.ts`              | Motor RAG do Assistente de IA — ancorado em `ai_knowledge_base` + blog do tenant corporativo, nunca responde só do conhecimento de treinamento do modelo |
+| `avaliacaoImovel.ts`          | Motor de estimativa de valor de imóvel (m², localização, características) — estimativa de referência, não laudo |
+| `sanitizeHtml.ts`             | Allowlist do DOMPurify alinhado ao que o RichTextEditor de fato produz       |
+| `rateLimit.ts`                | Rate limiter em memória (single-process) usado pelos feeds públicos, API v1 e Assistente de IA |
+| `mfaGate.ts`                  | Enforcement de MFA pós-login (sessão `aal1` → força desafio antes de `/app`/`/admin`) |
+| `roles.ts`                    | `ROLE_LABEL` — labels em pt-BR pros valores do enum `app_role`               |
+| `statusPage.ts`               | Checkers de saúde por trás de `/status` e `/admin/status`                    |
+| `corporateTenant.ts`          | Resolve o Tenant 0 (a própria imoB365) por slug, não por UUID fixo          |
 
 ### Environment Variables
 
 ```
-GEMINI_API_KEY                  # Google Gemini API (server-side only)
-SUPABASE_URL                    # Server-side Supabase URL
-SUPABASE_PUBLISHABLE_KEY        # Client-safe anon key
-VITE_SUPABASE_URL               # Build-time Supabase URL
-VITE_SUPABASE_PUBLISHABLE_KEY   # Build-time anon key
-APP_URL                         # Canonical URL (OAuth callbacks)
-MERCADOPAGO_ACCESS_TOKEN        # Mercado Pago API token (server-side only — checkout/preapproval)
-MERCADOPAGO_WEBHOOK_SECRET      # Mercado Pago webhook HMAC signature secret (server-side only)
-HOSTINGER_API_TOKEN             # API da Hostinger (opcional) — painel de infra real em /admin/status
-HOSTINGER_VPS_ID                # ID numérico da VPS de produção (opcional, junto com o token acima)
+GEMINI_API_KEY                       # Google Gemini API (server-side only)
+SUPABASE_URL                         # Server-side Supabase URL
+SUPABASE_PUBLISHABLE_KEY             # Client-safe anon key
+SUPABASE_SERVICE_ROLE_KEY            # Admin key (server-side only) — usado por client.server.ts e crons
+VITE_SUPABASE_URL                    # Build-time Supabase URL
+VITE_SUPABASE_PUBLISHABLE_KEY        # Build-time anon key
+APP_URL                              # Canonical URL (OAuth callbacks)
+MERCADOPAGO_ACCESS_TOKEN             # Mercado Pago API token (server-side only — checkout/preapproval da própria plataforma)
+MERCADOPAGO_WEBHOOK_SECRET           # Mercado Pago webhook HMAC signature secret (assinatura SaaS)
+MERCADOPAGO_MARKETPLACE_CLIENT_ID    # OAuth Marketplace por tenant (Fase 3 do Financeiro) — opcional em dev
+MERCADOPAGO_MARKETPLACE_CLIENT_SECRET # Idem — distinto do MERCADOPAGO_ACCESS_TOKEN acima
+MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→cliente final (Fase 3 parte 2)
+HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
+HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
