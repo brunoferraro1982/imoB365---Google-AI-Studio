@@ -36,7 +36,7 @@ import {
   CATEGORIA_CHAMADO,
 } from "@/lib/chamadosLabels";
 
-export const Route = createFileRoute("/admin/atendimento")({
+export const Route = createFileRoute("/admin/atendimento/")({
   component: AdminAtendimentoPage,
 });
 

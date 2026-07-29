@@ -85,7 +85,6 @@ import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
 import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
-import { Route as AdminAtendimentoRouteImport } from './routes/admin.atendimento'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
@@ -100,6 +99,7 @@ import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configur
 import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.index'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as AppAtendimentoIndexRouteImport } from './routes/app.atendimento.index'
+import { Route as AdminAtendimentoIndexRouteImport } from './routes/admin.atendimento.index'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
@@ -151,10 +151,12 @@ import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configurac
 import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
 import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppAtendimentoPainelRouteImport } from './routes/app.atendimento.painel'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
+import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
 import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
@@ -574,11 +576,6 @@ const AdminAuditoriaRoute = AdminAuditoriaRouteImport.update({
   path: '/auditoria',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminAtendimentoRoute = AdminAtendimentoRouteImport.update({
-  id: '/atendimento',
-  path: '/atendimento',
-  getParentRoute: () => AdminRoute,
-} as any)
 const ContaChatIndexRoute = ContaChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -648,6 +645,11 @@ const AppAtendimentoIndexRoute = AppAtendimentoIndexRouteImport.update({
   id: '/atendimento/',
   path: '/atendimento/',
   getParentRoute: () => AppRoute,
+} as any)
+const AdminAtendimentoIndexRoute = AdminAtendimentoIndexRouteImport.update({
+  id: '/atendimento/',
+  path: '/atendimento/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SiteSlugBlogRoute = SiteSlugBlogRouteImport.update({
   id: '/site/$slug_/blog',
@@ -920,6 +922,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAtendimentoPainelRoute = AppAtendimentoPainelRouteImport.update({
+  id: '/atendimento/painel',
+  path: '/atendimento/painel',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminAprovacoesRoute = AppAdminAprovacoesRouteImport.update({
   id: '/admin/aprovacoes',
   path: '/admin/aprovacoes',
@@ -939,6 +946,11 @@ const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
   id: '/api/ai/assistente',
   path: '/api/ai/assistente',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAtendimentoPainelRoute = AdminAtendimentoPainelRouteImport.update({
+  id: '/atendimento/painel',
+  path: '/atendimento/painel',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AppLocacaoRepassesIndexRoute = AppLocacaoRepassesIndexRouteImport.update({
   id: '/locacao/repasses/',
@@ -1186,7 +1198,6 @@ export interface FileRoutesByFullPath {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1229,10 +1240,12 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -1284,6 +1297,7 @@ export interface FileRoutesByFullPath {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
   '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
@@ -1368,7 +1382,6 @@ export interface FileRoutesByTo {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1409,10 +1422,12 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -1464,6 +1479,7 @@ export interface FileRoutesByTo {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento': typeof AdminAtendimentoIndexRoute
   '/app/atendimento': typeof AppAtendimentoIndexRoute
   '/app/chat': typeof AppChatIndexRoute
   '/app/comissoes': typeof AppComissoesIndexRoute
@@ -1552,7 +1568,6 @@ export interface FileRoutesById {
   '/sobre': typeof SobreRoute
   '/status': typeof StatusRoute
   '/termos': typeof TermosRoute
-  '/admin/atendimento': typeof AdminAtendimentoRoute
   '/admin/auditoria': typeof AdminAuditoriaRoute
   '/admin/blog': typeof AdminBlogRoute
   '/admin/emails': typeof AdminEmailsRoute
@@ -1595,10 +1610,12 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -1650,6 +1667,7 @@ export interface FileRoutesById {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
   '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
@@ -1739,7 +1757,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -1782,10 +1799,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -1837,6 +1856,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/admin/atendimento/'
     | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
@@ -1921,7 +1941,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -1962,10 +1981,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/conta'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -2017,6 +2038,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/admin/atendimento'
     | '/app/atendimento'
     | '/app/chat'
     | '/app/comissoes'
@@ -2104,7 +2126,6 @@ export interface FileRouteTypes {
     | '/sobre'
     | '/status'
     | '/termos'
-    | '/admin/atendimento'
     | '/admin/auditoria'
     | '/admin/blog'
     | '/admin/emails'
@@ -2147,10 +2168,12 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -2202,6 +2225,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
+    | '/admin/atendimento/'
     | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
@@ -2872,13 +2896,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAuditoriaRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/atendimento': {
-      id: '/admin/atendimento'
-      path: '/atendimento'
-      fullPath: '/admin/atendimento'
-      preLoaderRoute: typeof AdminAtendimentoRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/conta/chat/': {
       id: '/conta/chat/'
       path: '/chat'
@@ -2976,6 +2993,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/atendimento/'
       preLoaderRoute: typeof AppAtendimentoIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/admin/atendimento/': {
+      id: '/admin/atendimento/'
+      path: '/atendimento'
+      fullPath: '/admin/atendimento/'
+      preLoaderRoute: typeof AdminAtendimentoIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/site/$slug_/blog': {
       id: '/site/$slug_/blog'
@@ -3334,6 +3358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/atendimento/painel': {
+      id: '/app/atendimento/painel'
+      path: '/atendimento/painel'
+      fullPath: '/app/atendimento/painel'
+      preLoaderRoute: typeof AppAtendimentoPainelRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/admin/aprovacoes': {
       id: '/app/admin/aprovacoes'
       path: '/admin/aprovacoes'
@@ -3361,6 +3392,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/ai/assistente'
       preLoaderRoute: typeof ApiAiAssistenteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/atendimento/painel': {
+      id: '/admin/atendimento/painel'
+      path: '/atendimento/painel'
+      fullPath: '/admin/atendimento/painel'
+      preLoaderRoute: typeof AdminAtendimentoPainelRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/app/locacao/repasses/': {
       id: '/app/locacao/repasses/'
@@ -3625,7 +3663,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
-  AdminAtendimentoRoute: typeof AdminAtendimentoRoute
   AdminAuditoriaRoute: typeof AdminAuditoriaRoute
   AdminBlogRoute: typeof AdminBlogRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
@@ -3638,10 +3675,11 @@ interface AdminRouteChildren {
   AdminStatusRoute: typeof AdminStatusRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
+  AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminAtendimentoRoute: AdminAtendimentoRoute,
   AdminAuditoriaRoute: AdminAuditoriaRoute,
   AdminBlogRoute: AdminBlogRoute,
   AdminEmailsRoute: AdminEmailsRoute,
@@ -3654,6 +3692,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminStatusRoute: AdminStatusRoute,
   AdminTenantsRoute: AdminTenantsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
+  AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -3748,6 +3788,7 @@ interface AppRouteChildren {
   AppVisitasRoute: typeof AppVisitasRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
+  AppAtendimentoPainelRoute: typeof AppAtendimentoPainelRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppComissoesIdRoute: typeof AppComissoesIdRoute
   AppComissoesNovoRoute: typeof AppComissoesNovoRoute
@@ -3804,6 +3845,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppVisitasRoute: AppVisitasRoute,
   AppIndexRoute: AppIndexRoute,
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
+  AppAtendimentoPainelRoute: AppAtendimentoPainelRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppComissoesIdRoute: AppComissoesIdRoute,
   AppComissoesNovoRoute: AppComissoesNovoRoute,
