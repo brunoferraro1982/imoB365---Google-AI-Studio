@@ -219,19 +219,19 @@ const tenantModules: Module[] = [
 const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
-  { to: "/admin/planos", label: "Planos", icon: Banknote },
+  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
+  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
+  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
   { to: "/admin/faturamento", label: "Faturamento", icon: Receipt },
+  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
+  { to: "/admin/planos", label: "Planos", icon: Banknote },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
   { to: "/admin/modulos", label: "Módulos", icon: Globe2 },
-  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
   { to: "/admin/flags", label: "Feature flags", icon: Flag },
   { to: "/admin/integracoes", label: "Integrações", icon: Settings },
   { to: "/admin/emails", label: "E-mails", icon: Mail },
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
-  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
-  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
-  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
@@ -438,6 +438,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   // Tenant: top module bar + filtered sidebar
   // IAM: filtrar módulos pelo que o usuário tem acesso
   const visibleModules = tenantModules.filter((m) => {
+    // Central de Atendimento não entra na barra de módulos — vive como badge
+    // ao lado de "Planos & Assinatura" no canto direito (ver abaixo).
+    if (m.id === "atendimento") return false;
     // Super admins (por role ou por e-mail) enxergam todos os módulos
     if (isSuperAdmin) return true;
     // Guard 1: role tem acesso ao módulo
@@ -446,6 +449,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
     return roleOk && planOk;
   });
+
+  const atendimentoModule = tenantModules.find((m) => m.id === "atendimento")!;
+  const atendimentoVisible =
+    isSuperAdmin ||
+    ((!atendimentoModule.requiredModule ||
+      canAccessModule(roles, atendimentoModule.requiredModule)) &&
+      (!atendimentoModule.requiredModule ||
+        isModuleEnabled(enabledModules, atendimentoModule.requiredModule)));
 
   // Escolhe o módulo pelo item de maior prefixo (mais específico) entre TODOS
   // os grupos, não o primeiro grupo (em ordem de array) que contenha algum
@@ -519,6 +530,20 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 className="hidden rounded-full border border-sidebar-border px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/80 hover:bg-sidebar-accent/80 md:inline-block transition-colors"
               >
                 Super-admin
+              </Link>
+            )}
+            {atendimentoVisible && (
+              <Link
+                to={atendimentoModule.items[0].to}
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors duration-250 ${
+                  activeModule.id === "atendimento"
+                    ? "border-primary/30 bg-primary/15 text-primary"
+                    : "border-sidebar-border text-sidebar-foreground/80 hover:bg-sidebar-accent/80"
+                }`}
+              >
+                <Headset className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline-block">Central de Atendimento</span>
+                <span className="sm:hidden">Atendimento</span>
               </Link>
             )}
             <Link
