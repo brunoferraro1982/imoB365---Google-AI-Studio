@@ -190,6 +190,11 @@ const tenantModules: Module[] = [
         label: "Assinatura eletrônica",
         icon: PenTool,
       },
+      {
+        to: "/app/configuracoes/atendimento-canais",
+        label: "Canais de Atendimento",
+        icon: Headset,
+      },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
       { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },

@@ -144,6 +144,7 @@ import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
+import { Route as AppConfiguracoesAtendimentoCanaisRouteImport } from './routes/app.configuracoes.atendimento-canais'
 import { Route as AppConfiguracoesAssinaturaEletronicaRouteImport } from './routes/app.configuracoes.assinatura-eletronica'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
@@ -181,6 +182,7 @@ import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.publ
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
+import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -877,6 +879,12 @@ const AppConfiguracoesCadenciasRoute =
     path: '/cadencias',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesAtendimentoCanaisRoute =
+  AppConfiguracoesAtendimentoCanaisRouteImport.update({
+    id: '/atendimento-canais',
+    path: '/atendimento-canais',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesAssinaturaEletronicaRoute =
   AppConfiguracoesAssinaturaEletronicaRouteImport.update({
     id: '/assinatura-eletronica',
@@ -1080,6 +1088,12 @@ const ApiPublicCronBuscasAlertasRoute =
     path: '/api/public/cron/buscas-alertas',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronAtendimentoEmailRoute =
+  ApiPublicCronAtendimentoEmailRouteImport.update({
+    id: '/api/public/cron/atendimento-email',
+    path: '/api/public/cron/atendimento-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
     id: '/api/public/webhooks/assinatura/$provider',
@@ -1203,6 +1217,7 @@ export interface FileRoutesByFullPath {
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1261,6 +1276,7 @@ export interface FileRoutesByFullPath {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1378,6 +1394,7 @@ export interface FileRoutesByTo {
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1436,6 +1453,7 @@ export interface FileRoutesByTo {
   '/app/locacao': typeof AppLocacaoIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1559,6 +1577,7 @@ export interface FileRoutesById {
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1617,6 +1636,7 @@ export interface FileRoutesById {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1741,6 +1761,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1799,6 +1820,7 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/api/public/cron/atendimento-email'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -1916,6 +1938,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1974,6 +1997,7 @@ export interface FileRouteTypes {
     | '/app/locacao'
     | '/app/site'
     | '/conta/chat'
+    | '/api/public/cron/atendimento-email'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -2096,6 +2120,7 @@ export interface FileRouteTypes {
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -2154,6 +2179,7 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/api/public/cron/atendimento-email'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -2241,6 +2267,7 @@ export interface RootRouteChildren {
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
+  ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
@@ -3217,6 +3244,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesCadenciasRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/atendimento-canais': {
+      id: '/app/configuracoes/atendimento-canais'
+      path: '/atendimento-canais'
+      fullPath: '/app/configuracoes/atendimento-canais'
+      preLoaderRoute: typeof AppConfiguracoesAtendimentoCanaisRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/assinatura-eletronica': {
       id: '/app/configuracoes/assinatura-eletronica'
       path: '/assinatura-eletronica'
@@ -3476,6 +3510,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBuscasAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/atendimento-email': {
+      id: '/api/public/cron/atendimento-email'
+      path: '/api/public/cron/atendimento-email'
+      fullPath: '/api/public/cron/atendimento-email'
+      preLoaderRoute: typeof ApiPublicCronAtendimentoEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
       path: '/api/public/webhooks/assinatura/$provider'
@@ -3558,6 +3599,7 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
   AppConfiguracoesAssinaturaEletronicaRoute: typeof AppConfiguracoesAssinaturaEletronicaRoute
+  AppConfiguracoesAtendimentoCanaisRoute: typeof AppConfiguracoesAtendimentoCanaisRoute
   AppConfiguracoesCadenciasRoute: typeof AppConfiguracoesCadenciasRoute
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
@@ -3582,6 +3624,8 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesApiRoute: AppConfiguracoesApiRoute,
   AppConfiguracoesAssinaturaEletronicaRoute:
     AppConfiguracoesAssinaturaEletronicaRoute,
+  AppConfiguracoesAtendimentoCanaisRoute:
+    AppConfiguracoesAtendimentoCanaisRoute,
   AppConfiguracoesCadenciasRoute: AppConfiguracoesCadenciasRoute,
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
@@ -3829,6 +3873,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
+  ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
