@@ -101,7 +101,10 @@ const tenantModules: Module[] = [
     requiredModule: "atendimento" as AppModule,
     label: "Central de Atendimento",
     icon: Headset,
-    items: [{ to: "/app/atendimento", label: "Chamados", icon: Headset }],
+    items: [
+      { to: "/app/atendimento", label: "Chamados", icon: Headset },
+      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
+    ],
   },
   {
     id: "elearning",
@@ -226,6 +229,7 @@ const adminNav: Item[] = [
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
   { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
+  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
