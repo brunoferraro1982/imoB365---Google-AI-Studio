@@ -219,19 +219,19 @@ const tenantModules: Module[] = [
 const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
-  { to: "/admin/planos", label: "Planos", icon: Banknote },
+  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
+  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
+  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
   { to: "/admin/faturamento", label: "Faturamento", icon: Receipt },
+  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
+  { to: "/admin/planos", label: "Planos", icon: Banknote },
   { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
   { to: "/admin/modulos", label: "Módulos", icon: Globe2 },
-  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
   { to: "/admin/flags", label: "Feature flags", icon: Flag },
   { to: "/admin/integracoes", label: "Integrações", icon: Settings },
   { to: "/admin/emails", label: "E-mails", icon: Mail },
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
-  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
-  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
-  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
@@ -438,6 +438,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   // Tenant: top module bar + filtered sidebar
   // IAM: filtrar módulos pelo que o usuário tem acesso
   const visibleModules = tenantModules.filter((m) => {
+    // Central de Atendimento não entra na barra de módulos — vive como badge
+    // ao lado de "Planos & Assinatura" no canto direito (ver abaixo).
+    if (m.id === "atendimento") return false;
     // Super admins (por role ou por e-mail) enxergam todos os módulos
     if (isSuperAdmin) return true;
     // Guard 1: role tem acesso ao módulo
@@ -446,6 +449,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
     return roleOk && planOk;
   });
+
+  const atendimentoModule = tenantModules.find((m) => m.id === "atendimento")!;
+  const atendimentoVisible =
+    isSuperAdmin ||
+    ((!atendimentoModule.requiredModule ||
+      canAccessModule(roles, atendimentoModule.requiredModule)) &&
+      (!atendimentoModule.requiredModule ||
+        isModuleEnabled(enabledModules, atendimentoModule.requiredModule)));
 
   // Escolhe o módulo pelo item de maior prefixo (mais específico) entre TODOS
   // os grupos, não o primeiro grupo (em ordem de array) que contenha algum
@@ -478,7 +489,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           >
             <Logo className="h-8.5 w-auto" variant="white" />
           </Link>
-          <nav className="flex flex-1 items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
+          <nav className="flex flex-1 items-center gap-1 overflow-x-auto py-1 scrollbar-none">
             {visibleModules.map((m) => {
               const active = m.id === activeModule.id;
               const first = m.items[0];
@@ -486,16 +497,25 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 <Link
                   key={m.id}
                   to={first.to}
-                  className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-250 relative ${
+                  title={m.label}
+                  className={`group flex shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-250 relative ${
                     active
-                      ? "bg-primary/15 text-primary border border-primary/20 shadow-sm"
-                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      ? "gap-2 bg-primary/15 text-primary border border-primary/20 shadow-sm"
+                      : "gap-0 text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:gap-2"
                   }`}
                 >
                   <m.icon
-                    className={`h-4 w-4 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                    className={`h-5 w-5 shrink-0 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
                   />
-                  {m.label}
+                  <span
+                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ease-out ${
+                      active
+                        ? "max-w-40 opacity-100"
+                        : "max-w-0 opacity-0 group-hover:max-w-40 group-hover:opacity-100"
+                    }`}
+                  >
+                    {m.label}
+                  </span>
                   {active && (
                     <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-primary rounded-full" />
                   )}
@@ -510,6 +530,20 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 className="hidden rounded-full border border-sidebar-border px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/80 hover:bg-sidebar-accent/80 md:inline-block transition-colors"
               >
                 Super-admin
+              </Link>
+            )}
+            {atendimentoVisible && (
+              <Link
+                to={atendimentoModule.items[0].to}
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors duration-250 ${
+                  activeModule.id === "atendimento"
+                    ? "border-primary/30 bg-primary/15 text-primary"
+                    : "border-sidebar-border text-sidebar-foreground/80 hover:bg-sidebar-accent/80"
+                }`}
+              >
+                <Headset className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline-block">Central de Atendimento</span>
+                <span className="sm:hidden">Atendimento</span>
               </Link>
             )}
             <Link

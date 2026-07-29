@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 type Theme = "light" | "dark" | "system";
@@ -6,12 +7,19 @@ type Ctx = { theme: Theme; setTheme: (t: Theme) => void; resolved: "light" | "da
 
 const ThemeCtx = createContext<Ctx>({ theme: "system", setTheme: () => {}, resolved: "light" });
 
-function applyTheme(t: Theme): "light" | "dark" {
+function isInternalPath(path: string) {
+  return path.startsWith("/app") || path.startsWith("/admin");
+}
+
+// Recebe o path explicitamente (em vez de ler window.location.pathname na hora)
+// porque este provider vive acima do router e nunca remonta durante a
+// navegação client-side da SPA — sem isso, o path só era checado uma vez no
+// mount inicial, e o site público ficava preso em dark mode depois de
+// qualquer navegação saindo de /app ou /admin com o SO em modo escuro.
+function applyTheme(t: Theme, path: string): "light" | "dark" {
   if (typeof window === "undefined") return "light";
   // Frontend público sempre em tema claro. Dark mode apenas no app interno (/app, /admin).
-  const path = window.location.pathname;
-  const isInternal = path.startsWith("/app") || path.startsWith("/admin");
-  if (!isInternal) {
+  if (!isInternalPath(path)) {
     document.documentElement.classList.remove("dark");
     return "light";
   }
@@ -27,13 +35,29 @@ function readStoredTheme(): Theme {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   // Lidos e aplicados de forma síncrona (lazy initializer, não useEffect) para que o
   // primeiro paint já saia com o tema certo — antes disso, qualquer remount completo do
   // provider (ex.: um hard reload) renderizava um frame com "system"/claro hardcoded
   // antes do efeito corrigir, causando um flash visível para dark quando o SO estava em
   // modo escuro, mesmo com o usuário tendo o tema claro salvo.
   const [theme, setThemeState] = useState<Theme>(() => readStoredTheme());
-  const [resolved, setResolved] = useState<"light" | "dark">(() => applyTheme(readStoredTheme()));
+  const [resolved, setResolved] = useState<"light" | "dark">(() =>
+    applyTheme(readStoredTheme(), typeof window !== "undefined" ? window.location.pathname : "/"),
+  );
+  // Sempre atualizado, sem recriar os listeners abaixo — evita o closure
+  // preso no valor de "theme" do momento em que o efeito rodou (o efeito com
+  // deps [] só via a versão inicial do state pra sempre).
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
+
+  // Reaplica o tema a cada navegação — sem isso, sair de /app ou /admin pra
+  // uma rota pública via navegação client-side (sem reload completo) deixava
+  // o site público preso em dark mode, já que o path só era checado no mount
+  // do provider (ver comentário em applyTheme()).
+  useEffect(() => {
+    setResolved(applyTheme(themeRef.current, pathname));
+  }, [pathname]);
 
   useEffect(() => {
     // fetch user pref
@@ -48,21 +72,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         .then(({ data: p }) => {
           const t = (p?.tema_preferido as Theme) || "system";
           setThemeState(t);
-          setResolved(applyTheme(t));
+          setResolved(applyTheme(t, window.location.pathname));
         });
     });
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const onChange = () => {
-      if (theme === "system") setResolved(applyTheme("system"));
+      if (themeRef.current === "system")
+        setResolved(applyTheme("system", window.location.pathname));
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function setTheme(t: Theme) {
     setThemeState(t);
-    setResolved(applyTheme(t));
+    setResolved(applyTheme(t, window.location.pathname));
     localStorage.setItem("imob365_theme", t);
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
