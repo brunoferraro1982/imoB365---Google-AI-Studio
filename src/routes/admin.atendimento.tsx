@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Headset, Send, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { enviarEmailChamado } from "@/lib/atendimentoEmail.functions";
 import {
   STATUS_LABEL,
   STATUS_VARIANT,
@@ -57,6 +59,7 @@ const STATUS_FILTROS = ["novo", "em_atendimento", "aguardando_cliente", "resolvi
 
 function AdminAtendimentoPage() {
   const { user } = useAuth();
+  const fetchEnviarEmailChamado = useServerFn(enviarEmailChamado);
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [loading, setLoading] = useState(true);
@@ -137,6 +140,14 @@ function AdminAtendimentoPage() {
           .from("chamados")
           .update(patch as never)
           .eq("id", selecionado.id);
+      }
+
+      // Notifica o solicitante por e-mail quando o tenant (ou a imoB365,
+      // pro balcão imob365) tem um canal de e-mail configurado — best
+      // effort, nunca bloqueia o fluxo de resposta se não estiver
+      // configurado ou falhar.
+      if (!notaInterna) {
+        fetchEnviarEmailChamado({ data: { chamadoId: selecionado.id } }).catch(() => {});
       }
 
       setResposta("");

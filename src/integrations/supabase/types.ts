@@ -5178,6 +5178,41 @@ export type Database = {
           },
         ];
       };
+      tenant_atendimento_canal_config: {
+        Row: {
+          ativo: boolean;
+          canal: string;
+          config: Json;
+          id: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          canal: string;
+          config?: Json;
+          id?: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          ativo?: boolean;
+          canal?: string;
+          config?: Json;
+          id?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_atendimento_canal_config_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_atendimento_config: {
         Row: {
           horario_atendimento: Json;
