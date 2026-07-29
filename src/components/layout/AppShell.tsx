@@ -195,6 +195,11 @@ const tenantModules: Module[] = [
         label: "Canais de Atendimento",
         icon: Headset,
       },
+      {
+        to: "/app/configuracoes/atendimento-sla",
+        label: "SLA de Atendimento",
+        icon: Headset,
+      },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
       { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },
