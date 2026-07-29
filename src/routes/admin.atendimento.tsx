@@ -2,10 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Headset, Send, Star } from "lucide-react";
+import { Headset, Plus, Send, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -17,12 +26,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { enviarEmailChamado } from "@/lib/atendimentoEmail.functions";
 import { enviarWhatsAppChamado } from "@/lib/atendimentoWhatsApp.functions";
+import { criarChamadoManual } from "@/lib/atendimento.functions";
 import {
   STATUS_LABEL,
   STATUS_VARIANT,
   PRIORIDADE_LABEL,
   CATEGORIA_LABEL,
   CANAL_LABEL,
+  CATEGORIA_CHAMADO,
 } from "@/lib/chamadosLabels";
 
 export const Route = createFileRoute("/admin/atendimento")({
@@ -58,10 +69,20 @@ type TenantOption = { id: string; nome: string };
 
 const STATUS_FILTROS = ["novo", "em_atendimento", "aguardando_cliente", "resolvido", "fechado"];
 
+const NOVO_CHAMADO_VAZIO = {
+  solicitanteNome: "",
+  solicitanteEmail: "",
+  solicitanteTelefone: "",
+  categoria: "outro",
+  assunto: "",
+  mensagemInicial: "",
+};
+
 function AdminAtendimentoPage() {
   const { user } = useAuth();
   const fetchEnviarEmailChamado = useServerFn(enviarEmailChamado);
   const fetchEnviarWhatsAppChamado = useServerFn(enviarWhatsAppChamado);
+  const fetchCriarChamadoManual = useServerFn(criarChamadoManual);
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [filtroStatus, setFiltroStatus] = useState<string>("todos");
   const [loading, setLoading] = useState(true);
@@ -72,6 +93,9 @@ function AdminAtendimentoPage() {
   const [enviando, setEnviando] = useState(false);
   const [tenants, setTenants] = useState<TenantOption[]>([]);
   const [tenantReatribuicao, setTenantReatribuicao] = useState<string>("");
+  const [novoAberto, setNovoAberto] = useState(false);
+  const [novoChamado, setNovoChamado] = useState(NOVO_CHAMADO_VAZIO);
+  const [criando, setCriando] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -235,6 +259,40 @@ function AdminAtendimentoPage() {
     }
   }
 
+  async function criarNovoChamado() {
+    if (!novoChamado.solicitanteNome.trim() || !novoChamado.assunto.trim()) {
+      toast.error("Preencha nome e assunto.");
+      return;
+    }
+    setCriando(true);
+    try {
+      await fetchCriarChamadoManual({
+        data: {
+          tenantId: null,
+          solicitanteNome: novoChamado.solicitanteNome.trim(),
+          solicitanteEmail: novoChamado.solicitanteEmail.trim() || undefined,
+          solicitanteTelefone: novoChamado.solicitanteTelefone.trim() || undefined,
+          categoria: novoChamado.categoria as
+            | "problema_plataforma"
+            | "duvida_comercial"
+            | "reclamacao_anuncio"
+            | "financeiro_cobranca"
+            | "outro",
+          assunto: novoChamado.assunto.trim(),
+          mensagemInicial: novoChamado.mensagemInicial.trim() || novoChamado.assunto.trim(),
+        },
+      });
+      toast.success("Chamado criado.");
+      setNovoAberto(false);
+      setNovoChamado(NOVO_CHAMADO_VAZIO);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao criar chamado");
+    } finally {
+      setCriando(false);
+    }
+  }
+
   const chamadosFiltrados = useMemo(() => {
     if (filtroStatus === "todos") return chamados;
     return chamados.filter((c) => c.status === filtroStatus);
@@ -246,16 +304,108 @@ function AdminAtendimentoPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Headset className="h-6 w-6" />
-          Central de Atendimento — imoB365
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Chamados abertos por corretores/imobiliárias sobre a plataforma, e chamados de clientes
-          finais sem contexto (aguardando triagem/reatribuição pra imobiliária correta).
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            <Headset className="h-6 w-6" />
+            Central de Atendimento — imoB365
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Chamados abertos por corretores/imobiliárias sobre a plataforma, e chamados de clientes
+            finais sem contexto (aguardando triagem/reatribuição pra imobiliária correta).
+          </p>
+        </div>
+        <Button size="sm" onClick={() => setNovoAberto(true)}>
+          <Plus className="mr-1 h-4 w-4" />
+          Novo chamado
+        </Button>
       </div>
+
+      <Dialog open={novoAberto} onOpenChange={setNovoAberto}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo chamado — balcão imoB365</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label className="mb-1 block text-xs uppercase text-muted-foreground">Nome *</Label>
+              <Input
+                value={novoChamado.solicitanteNome}
+                onChange={(e) => setNovoChamado((f) => ({ ...f, solicitanteNome: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="mb-1 block text-xs uppercase text-muted-foreground">E-mail</Label>
+                <Input
+                  value={novoChamado.solicitanteEmail}
+                  onChange={(e) =>
+                    setNovoChamado((f) => ({ ...f, solicitanteEmail: e.target.value }))
+                  }
+                />
+              </div>
+              <div>
+                <Label className="mb-1 block text-xs uppercase text-muted-foreground">
+                  Telefone
+                </Label>
+                <Input
+                  value={novoChamado.solicitanteTelefone}
+                  onChange={(e) =>
+                    setNovoChamado((f) => ({ ...f, solicitanteTelefone: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs uppercase text-muted-foreground">
+                Categoria
+              </Label>
+              <Select
+                value={novoChamado.categoria}
+                onValueChange={(v) => setNovoChamado((f) => ({ ...f, categoria: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIA_CHAMADO.map((c) => (
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs uppercase text-muted-foreground">
+                Assunto *
+              </Label>
+              <Input
+                value={novoChamado.assunto}
+                onChange={(e) => setNovoChamado((f) => ({ ...f, assunto: e.target.value }))}
+              />
+            </div>
+            <div>
+              <Label className="mb-1 block text-xs uppercase text-muted-foreground">
+                Mensagem inicial
+              </Label>
+              <Textarea
+                rows={3}
+                value={novoChamado.mensagemInicial}
+                onChange={(e) => setNovoChamado((f) => ({ ...f, mensagemInicial: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNovoAberto(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={criarNovoChamado} disabled={criando}>
+              {criando ? "Criando..." : "Criar chamado"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 lg:grid-cols-[380px_1fr]">
         <div className="rounded-xl border border-border bg-card">
