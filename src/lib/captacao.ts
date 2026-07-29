@@ -142,19 +142,38 @@ function matchesFilters(listing: RawListing, config: CaptacaoConfig): boolean {
   return true;
 }
 
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
+
+// Cada página real da Chaves na Mão traz ~15 anúncios (confirmado buscando
+// "apartamentos-a-venda/sp-praia-grande" — a busca real tem milhares de
+// resultados e pagina via "?pg=N", com <link rel="next"> apontando pra
+// próxima). Antes só a página 1 era lida, então qualquer busca de cidade
+// inteira (sem bairro) ficava artificialmente limitada a ~15 anúncios por
+// ciclo, não importa quão ampla fosse a configuração. 5 páginas
+// (~75 anúncios/config/ciclo) é o equilíbrio escolhido entre cobrir mais
+// resultado real e não martelar demais o site de origem — o cron processa
+// até 20 configs por execução horária.
+const MAX_PAGINAS = 5;
+
 export async function fetchChavesNaMaoListings(
   config: Pick<CaptacaoConfig, "cidade" | "uf" | "tipo" | "finalidade">,
 ): Promise<RawListing[]> {
-  const url = buildSearchUrl(config);
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-    },
-  });
-  if (!res.ok) return [];
-  const html = await res.text();
-  return parseListingsFromHtml(html);
+  const baseUrl = buildSearchUrl(config);
+  const todosListings: RawListing[] = [];
+
+  for (let pagina = 1; pagina <= MAX_PAGINAS; pagina++) {
+    const url = pagina === 1 ? baseUrl : `${baseUrl}?pg=${pagina}`;
+    const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+    if (!res.ok) break;
+    const html = await res.text();
+    const listings = parseListingsFromHtml(html);
+    if (listings.length === 0) break;
+    todosListings.push(...listings);
+    if (!html.includes('rel="next"')) break;
+  }
+
+  return todosListings;
 }
 
 const BATCH_SIZE_CONFIGS = 20;
@@ -280,12 +299,7 @@ export async function verificarDisponibilidade(
     verificados++;
     let disponivel = true;
     try {
-      const res = await fetch(listing.url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        },
-      });
+      const res = await fetch(listing.url, { headers: { "User-Agent": USER_AGENT } });
       if (!res.ok) {
         disponivel = false;
       } else {

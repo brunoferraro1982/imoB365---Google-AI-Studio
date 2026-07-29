@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ChevronLeft,
   Mail,
@@ -12,6 +12,7 @@ import {
   Loader2,
   Sparkles,
   FileSignature,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,34 @@ const STATUS = [
   { v: "ganho", label: "Ganho" },
   { v: "perdido", label: "Perdido" },
 ];
+
+const URL_REGEX = /https?:\/\/[^\s]+/g;
+
+// Torna clicável qualquer URL solta dentro do texto livre de `mensagem` —
+// leads de captação automática (e outras origens) embutem o link do anúncio
+// original ali, e antes disso o corretor precisava copiar/colar manualmente.
+function linkifyText(text: string) {
+  const parts = text.split(URL_REGEX);
+  const urls = text.match(URL_REGEX) ?? [];
+  const nodes: ReactNode[] = [];
+  parts.forEach((part, i) => {
+    if (part) nodes.push(<span key={`t${i}`}>{part}</span>);
+    if (urls[i]) {
+      nodes.push(
+        <a
+          key={`u${i}`}
+          href={urls[i]}
+          target="_blank"
+          rel="noreferrer"
+          className="break-all text-primary underline hover:no-underline"
+        >
+          {urls[i]}
+        </a>,
+      );
+    }
+  });
+  return nodes;
+}
 
 function LeadDetail() {
   const { id } = Route.useParams();
@@ -194,6 +223,7 @@ function LeadDetail() {
   if (loading || !lead) return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
 
   const tel = (lead.telefone ?? "").replace(/\D/g, "");
+  const linkAnuncio = (lead.mensagem ?? "").match(URL_REGEX)?.[0] ?? null;
 
   return (
     <div className="mx-auto max-w-5xl p-8">
@@ -258,10 +288,20 @@ function LeadDetail() {
                   <Building2 className="h-4 w-4" /> {imovel.titulo}
                 </Link>
               )}
+              {linkAnuncio && (
+                <a
+                  href={linkAnuncio}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-primary hover:underline"
+                >
+                  <Link2 className="h-4 w-4" /> Ver anúncio de origem
+                </a>
+              )}
             </div>
             {lead.mensagem && (
               <div className="mt-4 rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">
-                {lead.mensagem}
+                {linkifyText(lead.mensagem)}
               </div>
             )}
           </section>
