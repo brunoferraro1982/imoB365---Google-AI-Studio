@@ -48,6 +48,7 @@ import {
   Activity,
   PenTool,
   Headset,
+  Factory,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -230,6 +231,7 @@ const adminNav: Item[] = [
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
   { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
   { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
+  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {

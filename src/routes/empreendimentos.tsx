@@ -28,6 +28,7 @@ type Empreend = {
   slug: string;
   nome: string;
   construtora: string | null;
+  construtora_ref: { nome: string; logo_url: string | null; slug: string } | null;
   fase: string;
   endereco_bairro: string | null;
   endereco_cidade: string | null;
@@ -60,7 +61,7 @@ function EmpreendimentosPublic() {
       const { data } = await (supabase as any)
         .from("empreendimentos")
         .select(
-          "id,slug,nome,construtora,fase,endereco_bairro,endereco_cidade,endereco_uf,entrega_prevista,unidades_total,fotos_urls,descricao",
+          "id,slug,nome,construtora,fase,endereco_bairro,endereco_cidade,endereco_uf,entrega_prevista,unidades_total,fotos_urls,descricao,construtora_ref:construtoras(nome,logo_url,slug)",
         )
         .eq("publicado", true)
         .order("created_at", { ascending: false });
@@ -143,8 +144,21 @@ function EmpreendimentosPublic() {
                   </div>
                   <div className="p-4">
                     <h3 className="line-clamp-1 text-sm font-semibold">{e.nome}</h3>
-                    {e.construtora && (
-                      <p className="mt-0.5 text-xs text-muted-foreground">por {e.construtora}</p>
+                    {e.construtora_ref ? (
+                      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {e.construtora_ref.logo_url && (
+                          <img
+                            src={e.construtora_ref.logo_url}
+                            alt={e.construtora_ref.nome}
+                            className="h-4 w-4 rounded object-contain"
+                          />
+                        )}
+                        por {e.construtora_ref.nome}
+                      </p>
+                    ) : (
+                      e.construtora && (
+                        <p className="mt-0.5 text-xs text-muted-foreground">por {e.construtora}</p>
+                      )
                     )}
                     <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="h-3 w-3" />

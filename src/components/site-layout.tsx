@@ -2,6 +2,7 @@ import { InstitutionalNav } from "@/components/site/InstitutionalNav";
 // site-layout.tsx — SiteHeader/SiteFooter compartilhados do site público corporativo
 
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Users,
@@ -27,10 +28,12 @@ import {
   Truck,
   Landmark,
   Sparkles,
+  Factory,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { MegaNavHeader, type MegaNavConfig, type MegaNavLeaf } from "@/components/site/MegaNav";
 
 export function SiteHeader() {
@@ -335,8 +338,22 @@ function SiteHeaderImpl() {
   return <MegaNavHeader config={config} />;
 }
 
+type ConstrutoraRodape = { id: string; slug: string; nome: string; logo_url: string | null };
+
 export function SiteFooter() {
   const year = new Date().getFullYear();
+  const [construtoras, setConstrutoras] = useState<ConstrutoraRodape[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("construtoras")
+      .select("id,slug,nome,logo_url")
+      .eq("ativo", true)
+      .eq("exibir_no_rodape", true)
+      .order("nome")
+      .then(({ data }) => setConstrutoras((data ?? []) as ConstrutoraRodape[]));
+  }, []);
+
   return (
     <footer className="border-t border-border bg-secondary text-secondary-foreground">
       <div className="mx-auto max-w-6xl px-6 py-14">
@@ -421,6 +438,34 @@ export function SiteFooter() {
             </ul>
           </div>
         </div>
+
+        {construtoras.length > 0 && (
+          <div className="mt-12 border-t border-white/10 pt-10">
+            <p className="mb-6 text-center text-[11px] font-semibold uppercase tracking-widest opacity-60">
+              Construtoras Parceiras
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+              {construtoras.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/construtora/$slug"
+                  params={{ slug: c.slug }}
+                  title={c.nome}
+                  className="opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0"
+                >
+                  {c.logo_url ? (
+                    <img src={c.logo_url} alt={c.nome} className="h-10 w-auto object-contain" />
+                  ) : (
+                    <span className="flex h-10 items-center gap-1.5 text-sm font-semibold text-white/80">
+                      <Factory className="h-4 w-4" />
+                      {c.nome}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
           <span>© {year} imob365. Todos os direitos reservados.</span>

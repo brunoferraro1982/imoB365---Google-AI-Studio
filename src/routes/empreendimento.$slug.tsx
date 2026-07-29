@@ -22,6 +22,7 @@ type Empreendimento = {
   slug: string;
   nome: string;
   construtora: string | null;
+  construtora_ref: { nome: string; logo_url: string | null; slug: string } | null;
   fase: string;
   endereco_logradouro: string | null;
   endereco_numero: string | null;
@@ -40,7 +41,7 @@ const fetchEmpreendimentoBySlug = createServerFn({ method: "GET" })
   .handler(async ({ data: slug }) => {
     const { data, error } = await (supabase as any)
       .from("empreendimentos")
-      .select("*")
+      .select("*, construtora_ref:construtoras(nome,logo_url,slug)")
       .eq("slug", slug)
       .eq("publicado", true)
       .maybeSingle();
@@ -215,8 +216,25 @@ function EmpreendimentoDetail() {
               </span>
             </div>
             <h1 className="text-3xl font-bold tracking-tight">{emp.nome}</h1>
-            {emp.construtora && (
-              <p className="mt-1 text-sm text-muted-foreground">por {emp.construtora}</p>
+            {emp.construtora_ref ? (
+              <Link
+                to="/construtora/$slug"
+                params={{ slug: emp.construtora_ref.slug }}
+                className="mt-1 flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-primary hover:underline"
+              >
+                {emp.construtora_ref.logo_url && (
+                  <img
+                    src={emp.construtora_ref.logo_url}
+                    alt={emp.construtora_ref.nome}
+                    className="h-5 w-5 rounded object-contain"
+                  />
+                )}
+                por {emp.construtora_ref.nome}
+              </Link>
+            ) : (
+              emp.construtora && (
+                <p className="mt-1 text-sm text-muted-foreground">por {emp.construtora}</p>
+              )
             )}
 
             {endereco && (
