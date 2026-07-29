@@ -6,6 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 
+// Mesmo padrão de validação já usado em AgendarVisita.tsx (EMAIL_RE) —
+// telefone aqui usa contagem de dígitos (10 ou 11, DDD+fixo/celular) em vez
+// de regex de formatação, tolerando qualquer jeito de digitar.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function telefoneValido(v: string) {
+  const digitos = v.replace(/\D/g, "");
+  return digitos.length === 10 || digitos.length === 11;
+}
+
 // Widget compartilhado de "abrir chamado" — usado dentro do AtendimentoFAB
 // (painel flutuante) e da página pública /atendimento (seção "Novo
 // chamado"). Reaproveita a mesma RPC pública public_create_chamado
@@ -30,6 +39,14 @@ export function AtendimentoWidget({
   async function enviar() {
     if (nome.trim().length < 2) {
       toast.error("Informe seu nome.");
+      return;
+    }
+    if (!email.trim() || !EMAIL_RE.test(email.trim())) {
+      toast.error("Informe um e-mail válido — é por ele que você acompanha o chamado depois.");
+      return;
+    }
+    if (telefone.trim() && !telefoneValido(telefone.trim())) {
+      toast.error("Telefone inválido — informe DDD + número.");
       return;
     }
     if (mensagem.trim().length < 5) {

@@ -16,6 +16,7 @@ import {
   FileCheck,
   Terminal,
   Settings2,
+  Headset,
   Info,
   X,
   UserCheck,
@@ -475,6 +476,21 @@ export function HeaderUserMenu() {
                             <span className="block font-bold">Configurar Sistema</span>
                             <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
                               Definição de canais, domínios, equipe e taxas.
+                            </span>
+                          </div>
+                        </Link>
+
+                        {/* CENTRAL DE ATENDIMENTO */}
+                        <Link
+                          to={tenantId ? "/app/atendimento" : "/conta/atendimento"}
+                          onClick={() => setIsOpen(false)}
+                          className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-bold text-foreground transition-all border border-transparent hover:border-border/30"
+                        >
+                          <Headset className="h-4 w-4 text-primary" />
+                          <div className="flex-1">
+                            <span className="block font-bold">Central de Atendimento</span>
+                            <span className="text-[9.5px] text-muted-foreground/85 block font-normal leading-normal">
+                              Chamados abertos com a equipe imoB365.
                             </span>
                           </div>
                         </Link>

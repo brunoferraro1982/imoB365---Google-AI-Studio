@@ -47,6 +47,7 @@ type Chamado = {
   solicitante_tipo: string;
   solicitante_nome: string | null;
   solicitante_email: string | null;
+  solicitante_telefone: string | null;
   categoria: string;
   status: string;
   prioridade: string;
@@ -105,7 +106,7 @@ function AdminAtendimentoPage() {
       const { data, error } = await supabase
         .from("chamados")
         .select(
-          "id,numero,tenant_id,solicitante_tipo,solicitante_nome,solicitante_email,categoria,status,prioridade,assunto,csat_nota,csat_comentario,created_at",
+          "id,numero,tenant_id,solicitante_tipo,solicitante_nome,solicitante_email,solicitante_telefone,categoria,status,prioridade,assunto,csat_nota,csat_comentario,created_at",
         )
         .eq("responsavel_tipo", "imob365")
         .order("created_at", { ascending: false });
@@ -502,6 +503,11 @@ function AdminAtendimentoPage() {
                     {selecionado.numero} · {CATEGORIA_LABEL[selecionado.categoria]} ·{" "}
                     {new Date(selecionado.created_at).toLocaleString("pt-BR")}
                   </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {selecionado.solicitante_nome ?? "Solicitante não identificado"}
+                    {selecionado.solicitante_email && ` · ${selecionado.solicitante_email}`}
+                    {selecionado.solicitante_telefone && ` · ${selecionado.solicitante_telefone}`}
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Select value={selecionado.prioridade} onValueChange={alterarPrioridade}>
@@ -539,33 +545,33 @@ function AdminAtendimentoPage() {
                 </div>
               )}
 
-              {selecionado.solicitante_tipo === "cliente_final" && (
-                <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-                  <span className="text-amber-700 dark:text-amber-400">
-                    Chamado de cliente final sem imobiliária correspondente — reatribuir:
-                  </span>
-                  <Select value={tenantReatribuicao} onValueChange={setTenantReatribuicao}>
-                    <SelectTrigger className="h-8 w-56">
-                      <SelectValue placeholder="Escolher imobiliária" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tenants.map((t) => (
-                        <SelectItem key={t.id} value={t.id}>
-                          {t.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={!tenantReatribuicao}
-                    onClick={reatribuirParaTenant}
-                  >
-                    Reatribuir
-                  </Button>
-                </div>
-              )}
+              <div className="flex flex-wrap items-center gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+                <span className="text-amber-700 dark:text-amber-400">
+                  {selecionado.solicitante_tipo === "cliente_final"
+                    ? "Chamado de cliente final sem imobiliária correspondente — direcionar para:"
+                    : "Direcionar este chamado para outra imobiliária/corretor:"}
+                </span>
+                <Select value={tenantReatribuicao} onValueChange={setTenantReatribuicao}>
+                  <SelectTrigger className="h-8 w-56">
+                    <SelectValue placeholder="Escolher imobiliária" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        {t.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!tenantReatribuicao}
+                  onClick={reatribuirParaTenant}
+                >
+                  Reatribuir
+                </Button>
+              </div>
 
               <div className="space-y-3 rounded-md border border-border p-3">
                 {mensagens.length === 0 && (
