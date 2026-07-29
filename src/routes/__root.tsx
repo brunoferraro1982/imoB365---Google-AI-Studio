@@ -1,4 +1,4 @@
-import { WhatsAppFAB } from "@/components/layout/WhatsAppFAB";
+import { AtendimentoFAB } from "@/components/layout/AtendimentoFAB";
 import { AssistenteIAFAB } from "@/components/layout/AssistenteIAFAB";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -188,7 +188,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <Outlet />
-        <WhatsAppFAB />
+        <AtendimentoFAB />
         <AssistenteIAFAB />
         <Toaster richColors position="top-right" />
       </ThemeProvider>

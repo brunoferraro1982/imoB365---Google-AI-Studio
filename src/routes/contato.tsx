@@ -9,7 +9,7 @@ import {
   Phone,
   Mail,
   Globe,
-  MessageCircle,
+  Headset,
   ArrowRight,
   Clock,
   Star,
@@ -54,10 +54,10 @@ const CONTATOS = [
     color: "bg-primary/10 text-primary",
   },
   {
-    icon: MessageCircle,
-    titulo: "WhatsApp",
-    desc: "Disponível 365 dias por ano",
-    href: "https://wa.me/5513997794382",
+    icon: Headset,
+    titulo: "Central de Atendimento",
+    desc: "Abra um chamado com nossa equipe",
+    href: "/atendimento",
     color: "bg-emerald-100/70 text-emerald-800",
   },
 ];
@@ -85,12 +85,16 @@ function ContatoPage() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.rpc("public_create_tenant_lead", {
-      _tenant_slug: "imob365",
+    // Antes chamava public_create_tenant_lead fixo no tenant "imob365" —
+    // agora vira um chamado real na Central de Atendimento, sem contexto
+    // de imóvel/corretor (cai no balcão imoB365 pra triagem, decisão
+    // confirmada no plano da Central de Atendimento).
+    const { error } = await supabase.rpc("public_create_chamado", {
       _nome: nome,
       _email: email,
       _telefone: telefone,
       _mensagem: mensagem,
+      _categoria: "duvida_comercial",
     });
     setLoading(false);
     if (error) {
@@ -146,12 +150,10 @@ function ContatoPage() {
                 Enviar mensagem <ArrowRight className="h-4 w-4" />
               </a>
               <a
-                href="https://wa.me/5513997794382"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/atendimento"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors"
               >
-                <Phone className="h-4 w-4" /> WhatsApp
+                <Headset className="h-4 w-4" /> Central de Atendimento
               </a>
             </div>
           </div>
@@ -373,12 +375,10 @@ function ContatoPage() {
                 Conheça a imoB365 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
-                href="https://wa.me/5513997794382"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/atendimento"
                 className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-bold hover:bg-muted transition-colors"
               >
-                <Phone className="h-4 w-4" /> WhatsApp
+                <Headset className="h-4 w-4" /> Central de Atendimento
               </a>
               <Link
                 to="/buscar"

@@ -37,6 +37,7 @@ import { Route as CalculadoraFinanciamentoRouteImport } from './routes/calculado
 import { Route as CalculadoraAvaliacaoRouteImport } from './routes/calculadora-avaliacao'
 import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -58,6 +59,7 @@ import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaContratosRouteImport } from './routes/conta.contratos'
 import { Route as ContaBuscasRouteImport } from './routes/conta.buscas'
+import { Route as ContaAtendimentoRouteImport } from './routes/conta.atendimento'
 import { Route as BlogSlugRouteImport } from './routes/blog_.$slug'
 import { Route as AvaliacaoTenantSlugRouteImport } from './routes/avaliacao.$tenantSlug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
@@ -96,6 +98,8 @@ import { Route as AppContratosIndexRouteImport } from './routes/app.contratos.in
 import { Route as AppConfiguracoesIndexRouteImport } from './routes/app.configuracoes.index'
 import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.index'
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
+import { Route as AppAtendimentoIndexRouteImport } from './routes/app.atendimento.index'
+import { Route as AdminAtendimentoIndexRouteImport } from './routes/admin.atendimento.index'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
@@ -140,15 +144,20 @@ import { Route as AppConfiguracoesChecklistRouteImport } from './routes/app.conf
 import { Route as AppConfiguracoesCentrosCustoRouteImport } from './routes/app.configuracoes.centros-custo'
 import { Route as AppConfiguracoesCamposRouteImport } from './routes/app.configuracoes.campos'
 import { Route as AppConfiguracoesCadenciasRouteImport } from './routes/app.configuracoes.cadencias'
+import { Route as AppConfiguracoesAtendimentoSlaRouteImport } from './routes/app.configuracoes.atendimento-sla'
+import { Route as AppConfiguracoesAtendimentoCanaisRouteImport } from './routes/app.configuracoes.atendimento-canais'
 import { Route as AppConfiguracoesAssinaturaEletronicaRouteImport } from './routes/app.configuracoes.assinatura-eletronica'
 import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configuracoes.api'
 import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
 import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
+import { Route as AppAtendimentoPainelRouteImport } from './routes/app.atendimento.painel'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
+import { Route as ApiAiSugestaoChamadoRouteImport } from './routes/api.ai.sugestao-chamado'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
+import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
 import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
@@ -162,6 +171,7 @@ import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contrat
 import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
 import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
+import { Route as ApiPublicWebhooksEvolutionRouteImport } from './routes/api.public.webhooks.evolution'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
@@ -177,6 +187,8 @@ import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.publ
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
+import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
+import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -325,6 +337,11 @@ const BlogRoute = BlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtendimentoRoute = AtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
@@ -428,6 +445,11 @@ const ContaContratosRoute = ContaContratosRouteImport.update({
 const ContaBuscasRoute = ContaBuscasRouteImport.update({
   id: '/buscas',
   path: '/buscas',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaAtendimentoRoute = ContaAtendimentoRouteImport.update({
+  id: '/atendimento',
+  path: '/atendimento',
   getParentRoute: () => ContaRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
@@ -619,6 +641,16 @@ const AppChatIndexRoute = AppChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
   getParentRoute: () => AppRoute,
+} as any)
+const AppAtendimentoIndexRoute = AppAtendimentoIndexRouteImport.update({
+  id: '/atendimento/',
+  path: '/atendimento/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AdminAtendimentoIndexRoute = AdminAtendimentoIndexRouteImport.update({
+  id: '/atendimento/',
+  path: '/atendimento/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const SiteSlugBlogRoute = SiteSlugBlogRouteImport.update({
   id: '/site/$slug_/blog',
@@ -853,6 +885,18 @@ const AppConfiguracoesCadenciasRoute =
     path: '/cadencias',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const AppConfiguracoesAtendimentoSlaRoute =
+  AppConfiguracoesAtendimentoSlaRouteImport.update({
+    id: '/atendimento-sla',
+    path: '/atendimento-sla',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesAtendimentoCanaisRoute =
+  AppConfiguracoesAtendimentoCanaisRouteImport.update({
+    id: '/atendimento-canais',
+    path: '/atendimento-canais',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesAssinaturaEletronicaRoute =
   AppConfiguracoesAssinaturaEletronicaRouteImport.update({
     id: '/assinatura-eletronica',
@@ -879,6 +923,11 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAtendimentoPainelRoute = AppAtendimentoPainelRouteImport.update({
+  id: '/atendimento/painel',
+  path: '/atendimento/painel',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminAprovacoesRoute = AppAdminAprovacoesRouteImport.update({
   id: '/admin/aprovacoes',
   path: '/admin/aprovacoes',
@@ -894,10 +943,20 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiSugestaoChamadoRoute = ApiAiSugestaoChamadoRouteImport.update({
+  id: '/api/ai/sugestao-chamado',
+  path: '/api/ai/sugestao-chamado',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
   id: '/api/ai/assistente',
   path: '/api/ai/assistente',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAtendimentoPainelRoute = AdminAtendimentoPainelRouteImport.update({
+  id: '/atendimento/painel',
+  path: '/atendimento/painel',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AppLocacaoRepassesIndexRoute = AppLocacaoRepassesIndexRouteImport.update({
   id: '/locacao/repasses/',
@@ -968,6 +1027,12 @@ const ApiPublicWebhooksMercadopagoRoute =
   ApiPublicWebhooksMercadopagoRouteImport.update({
     id: '/api/public/webhooks/mercadopago',
     path: '/api/public/webhooks/mercadopago',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicWebhooksEvolutionRoute =
+  ApiPublicWebhooksEvolutionRouteImport.update({
+    id: '/api/public/webhooks/evolution',
+    path: '/api/public/webhooks/evolution',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicWebhooksDeliverRoute =
@@ -1056,6 +1121,18 @@ const ApiPublicCronBuscasAlertasRoute =
     path: '/api/public/cron/buscas-alertas',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronAtendimentoSlaRoute =
+  ApiPublicCronAtendimentoSlaRouteImport.update({
+    id: '/api/public/cron/atendimento-sla',
+    path: '/api/public/cron/atendimento-sla',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronAtendimentoEmailRoute =
+  ApiPublicCronAtendimentoEmailRouteImport.update({
+    id: '/api/public/cron/atendimento-email',
+    path: '/api/public/cron/atendimento-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
     id: '/api/public/webhooks/assinatura/$provider',
@@ -1098,6 +1175,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1151,6 +1229,7 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1167,15 +1246,20 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
+  '/app/configuracoes/atendimento-sla': typeof AppConfiguracoesAtendimentoSlaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1220,6 +1304,8 @@ export interface FileRoutesByFullPath {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
+  '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -1233,6 +1319,8 @@ export interface FileRoutesByFullPath {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
+  '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1248,6 +1336,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
@@ -1272,6 +1361,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/ajuda': typeof AjudaRoute
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1322,6 +1412,7 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1338,15 +1429,20 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
+  '/app/configuracoes/atendimento-sla': typeof AppConfiguracoesAtendimentoSlaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1391,6 +1487,8 @@ export interface FileRoutesByTo {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento': typeof AdminAtendimentoIndexRoute
+  '/app/atendimento': typeof AppAtendimentoIndexRoute
   '/app/chat': typeof AppChatIndexRoute
   '/app/comissoes': typeof AppComissoesIndexRoute
   '/app/configuracoes': typeof AppConfiguracoesIndexRoute
@@ -1404,6 +1502,8 @@ export interface FileRoutesByTo {
   '/app/locacao': typeof AppLocacaoIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
+  '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1419,6 +1519,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
@@ -1446,6 +1547,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
+  '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
   '/calculadora-avaliacao': typeof CalculadoraAvaliacaoRoute
@@ -1499,6 +1601,7 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/avaliacao/$tenantSlug': typeof AvaliacaoTenantSlugRoute
   '/blog_/$slug': typeof BlogSlugRoute
+  '/conta/atendimento': typeof ContaAtendimentoRoute
   '/conta/buscas': typeof ContaBuscasRoute
   '/conta/contratos': typeof ContaContratosRoute
   '/conta/favoritos': typeof ContaFavoritosRoute
@@ -1515,15 +1618,20 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
+  '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
+  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
   '/app/configuracoes/api': typeof AppConfiguracoesApiRoute
   '/app/configuracoes/assinatura-eletronica': typeof AppConfiguracoesAssinaturaEletronicaRoute
+  '/app/configuracoes/atendimento-canais': typeof AppConfiguracoesAtendimentoCanaisRoute
+  '/app/configuracoes/atendimento-sla': typeof AppConfiguracoesAtendimentoSlaRoute
   '/app/configuracoes/cadencias': typeof AppConfiguracoesCadenciasRoute
   '/app/configuracoes/campos': typeof AppConfiguracoesCamposRoute
   '/app/configuracoes/centros-custo': typeof AppConfiguracoesCentrosCustoRoute
@@ -1568,6 +1676,8 @@ export interface FileRoutesById {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
+  '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
+  '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
   '/app/comissoes/': typeof AppComissoesIndexRoute
   '/app/configuracoes/': typeof AppConfiguracoesIndexRoute
@@ -1581,6 +1691,8 @@ export interface FileRoutesById {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
+  '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
@@ -1596,6 +1708,7 @@ export interface FileRoutesById {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
@@ -1624,6 +1737,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajuda'
     | '/app'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -1677,6 +1791,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -1693,15 +1808,20 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
+    | '/app/configuracoes/atendimento-sla'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1746,6 +1866,8 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/admin/atendimento/'
+    | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -1759,6 +1881,8 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/api/public/cron/atendimento-email'
+    | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -1774,6 +1898,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
@@ -1798,6 +1923,7 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/ajuda'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -1848,6 +1974,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -1864,15 +1991,20 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/conta'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
+    | '/app/configuracoes/atendimento-sla'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -1917,6 +2049,8 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/admin/atendimento'
+    | '/app/atendimento'
     | '/app/chat'
     | '/app/comissoes'
     | '/app/configuracoes'
@@ -1930,6 +2064,8 @@ export interface FileRouteTypes {
     | '/app/locacao'
     | '/app/site'
     | '/conta/chat'
+    | '/api/public/cron/atendimento-email'
+    | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -1945,6 +2081,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
@@ -1971,6 +2108,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/ajuda'
     | '/app'
+    | '/atendimento'
     | '/blog'
     | '/buscar'
     | '/calculadora-avaliacao'
@@ -2024,6 +2162,7 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/avaliacao/$tenantSlug'
     | '/blog_/$slug'
+    | '/conta/atendimento'
     | '/conta/buscas'
     | '/conta/contratos'
     | '/conta/favoritos'
@@ -2040,15 +2179,20 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/app/'
     | '/conta/'
+    | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
+    | '/app/atendimento/painel'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
     | '/app/configuracoes/api'
     | '/app/configuracoes/assinatura-eletronica'
+    | '/app/configuracoes/atendimento-canais'
+    | '/app/configuracoes/atendimento-sla'
     | '/app/configuracoes/cadencias'
     | '/app/configuracoes/campos'
     | '/app/configuracoes/centros-custo'
@@ -2093,6 +2237,8 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
+    | '/admin/atendimento/'
+    | '/app/atendimento/'
     | '/app/chat/'
     | '/app/comissoes/'
     | '/app/configuracoes/'
@@ -2106,6 +2252,8 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/api/public/cron/atendimento-email'
+    | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
     | '/api/public/cron/contratos-sla'
@@ -2121,6 +2269,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
@@ -2148,6 +2297,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AjudaRoute: typeof AjudaRoute
   AppRoute: typeof AppRouteWithChildren
+  AtendimentoRoute: typeof AtendimentoRoute
   BlogRoute: typeof BlogRoute
   BuscarRoute: typeof BuscarRoute
   CalculadoraAvaliacaoRoute: typeof CalculadoraAvaliacaoRoute
@@ -2189,9 +2339,12 @@ export interface RootRouteChildren {
   SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
+  ApiAiSugestaoChamadoRoute: typeof ApiAiSugestaoChamadoRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
+  ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
+  ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
@@ -2207,6 +2360,7 @@ export interface RootRouteChildren {
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
+  ApiPublicWebhooksEvolutionRoute: typeof ApiPublicWebhooksEvolutionRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   ApiPublicWebhooksMercadopagoMarketplaceRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -2419,6 +2573,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/atendimento': {
+      id: '/atendimento'
+      path: '/atendimento'
+      fullPath: '/atendimento'
+      preLoaderRoute: typeof AtendimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app': {
       id: '/app'
       path: '/app'
@@ -2564,6 +2725,13 @@ declare module '@tanstack/react-router' {
       path: '/buscas'
       fullPath: '/conta/buscas'
       preLoaderRoute: typeof ContaBuscasRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/atendimento': {
+      id: '/conta/atendimento'
+      path: '/atendimento'
+      fullPath: '/conta/atendimento'
+      preLoaderRoute: typeof ContaAtendimentoRouteImport
       parentRoute: typeof ContaRoute
     }
     '/blog_/$slug': {
@@ -2831,6 +2999,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/chat/'
       preLoaderRoute: typeof AppChatIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/atendimento/': {
+      id: '/app/atendimento/'
+      path: '/atendimento'
+      fullPath: '/app/atendimento/'
+      preLoaderRoute: typeof AppAtendimentoIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/admin/atendimento/': {
+      id: '/admin/atendimento/'
+      path: '/atendimento'
+      fullPath: '/admin/atendimento/'
+      preLoaderRoute: typeof AdminAtendimentoIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/site/$slug_/blog': {
       id: '/site/$slug_/blog'
@@ -3140,6 +3322,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesCadenciasRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/app/configuracoes/atendimento-sla': {
+      id: '/app/configuracoes/atendimento-sla'
+      path: '/atendimento-sla'
+      fullPath: '/app/configuracoes/atendimento-sla'
+      preLoaderRoute: typeof AppConfiguracoesAtendimentoSlaRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/atendimento-canais': {
+      id: '/app/configuracoes/atendimento-canais'
+      path: '/atendimento-canais'
+      fullPath: '/app/configuracoes/atendimento-canais'
+      preLoaderRoute: typeof AppConfiguracoesAtendimentoCanaisRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/assinatura-eletronica': {
       id: '/app/configuracoes/assinatura-eletronica'
       path: '/assinatura-eletronica'
@@ -3175,6 +3371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/atendimento/painel': {
+      id: '/app/atendimento/painel'
+      path: '/atendimento/painel'
+      fullPath: '/app/atendimento/painel'
+      preLoaderRoute: typeof AppAtendimentoPainelRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/admin/aprovacoes': {
       id: '/app/admin/aprovacoes'
       path: '/admin/aprovacoes'
@@ -3196,12 +3399,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/sugestao-chamado': {
+      id: '/api/ai/sugestao-chamado'
+      path: '/api/ai/sugestao-chamado'
+      fullPath: '/api/ai/sugestao-chamado'
+      preLoaderRoute: typeof ApiAiSugestaoChamadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/assistente': {
       id: '/api/ai/assistente'
       path: '/api/ai/assistente'
       fullPath: '/api/ai/assistente'
       preLoaderRoute: typeof ApiAiAssistenteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/atendimento/painel': {
+      id: '/admin/atendimento/painel'
+      path: '/atendimento/painel'
+      fullPath: '/admin/atendimento/painel'
+      preLoaderRoute: typeof AdminAtendimentoPainelRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/app/locacao/repasses/': {
       id: '/app/locacao/repasses/'
@@ -3292,6 +3509,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/webhooks/mercadopago'
       fullPath: '/api/public/webhooks/mercadopago'
       preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/webhooks/evolution': {
+      id: '/api/public/webhooks/evolution'
+      path: '/api/public/webhooks/evolution'
+      fullPath: '/api/public/webhooks/evolution'
+      preLoaderRoute: typeof ApiPublicWebhooksEvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhooks/deliver': {
@@ -3399,6 +3623,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBuscasAlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/atendimento-sla': {
+      id: '/api/public/cron/atendimento-sla'
+      path: '/api/public/cron/atendimento-sla'
+      fullPath: '/api/public/cron/atendimento-sla'
+      preLoaderRoute: typeof ApiPublicCronAtendimentoSlaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/atendimento-email': {
+      id: '/api/public/cron/atendimento-email'
+      path: '/api/public/cron/atendimento-email'
+      fullPath: '/api/public/cron/atendimento-email'
+      preLoaderRoute: typeof ApiPublicCronAtendimentoEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
       path: '/api/public/webhooks/assinatura/$provider'
@@ -3457,6 +3695,8 @@ interface AdminRouteChildren {
   AdminStatusRoute: typeof AdminStatusRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
+  AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -3472,6 +3712,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminStatusRoute: AdminStatusRoute,
   AdminTenantsRoute: AdminTenantsRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
+  AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -3479,6 +3721,8 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 interface AppConfiguracoesRouteChildren {
   AppConfiguracoesApiRoute: typeof AppConfiguracoesApiRoute
   AppConfiguracoesAssinaturaEletronicaRoute: typeof AppConfiguracoesAssinaturaEletronicaRoute
+  AppConfiguracoesAtendimentoCanaisRoute: typeof AppConfiguracoesAtendimentoCanaisRoute
+  AppConfiguracoesAtendimentoSlaRoute: typeof AppConfiguracoesAtendimentoSlaRoute
   AppConfiguracoesCadenciasRoute: typeof AppConfiguracoesCadenciasRoute
   AppConfiguracoesCamposRoute: typeof AppConfiguracoesCamposRoute
   AppConfiguracoesCentrosCustoRoute: typeof AppConfiguracoesCentrosCustoRoute
@@ -3503,6 +3747,9 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesApiRoute: AppConfiguracoesApiRoute,
   AppConfiguracoesAssinaturaEletronicaRoute:
     AppConfiguracoesAssinaturaEletronicaRoute,
+  AppConfiguracoesAtendimentoCanaisRoute:
+    AppConfiguracoesAtendimentoCanaisRoute,
+  AppConfiguracoesAtendimentoSlaRoute: AppConfiguracoesAtendimentoSlaRoute,
   AppConfiguracoesCadenciasRoute: AppConfiguracoesCadenciasRoute,
   AppConfiguracoesCamposRoute: AppConfiguracoesCamposRoute,
   AppConfiguracoesCentrosCustoRoute: AppConfiguracoesCentrosCustoRoute,
@@ -3561,6 +3808,7 @@ interface AppRouteChildren {
   AppVisitasRoute: typeof AppVisitasRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
+  AppAtendimentoPainelRoute: typeof AppAtendimentoPainelRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppComissoesIdRoute: typeof AppComissoesIdRoute
   AppComissoesNovoRoute: typeof AppComissoesNovoRoute
@@ -3587,6 +3835,7 @@ interface AppRouteChildren {
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
+  AppAtendimentoIndexRoute: typeof AppAtendimentoIndexRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
   AppContratosIndexRoute: typeof AppContratosIndexRoute
@@ -3616,6 +3865,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppVisitasRoute: AppVisitasRoute,
   AppIndexRoute: AppIndexRoute,
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
+  AppAtendimentoPainelRoute: AppAtendimentoPainelRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppComissoesIdRoute: AppComissoesIdRoute,
   AppComissoesNovoRoute: AppComissoesNovoRoute,
@@ -3642,6 +3892,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
+  AppAtendimentoIndexRoute: AppAtendimentoIndexRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
   AppContratosIndexRoute: AppContratosIndexRoute,
@@ -3661,6 +3912,7 @@ const AppRouteChildren: AppRouteChildren = {
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface ContaRouteChildren {
+  ContaAtendimentoRoute: typeof ContaAtendimentoRoute
   ContaBuscasRoute: typeof ContaBuscasRoute
   ContaContratosRoute: typeof ContaContratosRoute
   ContaFavoritosRoute: typeof ContaFavoritosRoute
@@ -3672,6 +3924,7 @@ interface ContaRouteChildren {
 }
 
 const ContaRouteChildren: ContaRouteChildren = {
+  ContaAtendimentoRoute: ContaAtendimentoRoute,
   ContaBuscasRoute: ContaBuscasRoute,
   ContaContratosRoute: ContaContratosRoute,
   ContaFavoritosRoute: ContaFavoritosRoute,
@@ -3701,6 +3954,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AjudaRoute: AjudaRoute,
   AppRoute: AppRouteWithChildren,
+  AtendimentoRoute: AtendimentoRoute,
   BlogRoute: BlogRoute,
   BuscarRoute: BuscarRoute,
   CalculadoraAvaliacaoRoute: CalculadoraAvaliacaoRoute,
@@ -3742,9 +3996,12 @@ const rootRouteChildren: RootRouteChildren = {
   SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiAiAssistenteRoute: ApiAiAssistenteRoute,
+  ApiAiSugestaoChamadoRoute: ApiAiSugestaoChamadoRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
+  ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
+  ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
@@ -3761,6 +4018,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
+  ApiPublicWebhooksEvolutionRoute: ApiPublicWebhooksEvolutionRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   ApiPublicWebhooksMercadopagoMarketplaceRoute:
     ApiPublicWebhooksMercadopagoMarketplaceRoute,

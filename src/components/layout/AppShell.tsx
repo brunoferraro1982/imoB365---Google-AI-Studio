@@ -47,6 +47,7 @@ import {
   Boxes,
   Activity,
   PenTool,
+  Headset,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -93,6 +94,16 @@ const tenantModules: Module[] = [
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
+    ],
+  },
+  {
+    id: "atendimento",
+    requiredModule: "atendimento" as AppModule,
+    label: "Central de Atendimento",
+    icon: Headset,
+    items: [
+      { to: "/app/atendimento", label: "Chamados", icon: Headset },
+      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
     ],
   },
   {
@@ -182,6 +193,16 @@ const tenantModules: Module[] = [
         label: "Assinatura eletrônica",
         icon: PenTool,
       },
+      {
+        to: "/app/configuracoes/atendimento-canais",
+        label: "Canais de Atendimento",
+        icon: Headset,
+      },
+      {
+        to: "/app/configuracoes/atendimento-sla",
+        label: "SLA de Atendimento",
+        icon: Headset,
+      },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
       { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
       { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },
@@ -207,6 +228,8 @@ const adminNav: Item[] = [
   { to: "/admin/emails", label: "E-mails", icon: Mail },
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
+  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
+  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
 ];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
