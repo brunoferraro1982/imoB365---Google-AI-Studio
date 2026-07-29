@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "postbuild": "node scripts/copy-jsdom-external.mjs",
+    "postbuild": "node scripts/copy-jsdom-external.mjs && node scripts/smoke-test-sanitize.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -107,6 +107,7 @@
     "@types/react-dom": "^19.2.0",
     "@vercel/nft": "^1.10.2",
     "@vitejs/plugin-react": "^5.0.4",
+    "dompurify": "^3.4.12",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
