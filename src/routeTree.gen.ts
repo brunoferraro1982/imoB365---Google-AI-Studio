@@ -155,6 +155,7 @@ import { Route as AppAtendimentoPainelRouteImport } from './routes/app.atendimen
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
+import { Route as ApiAiSugestaoChamadoRouteImport } from './routes/api.ai.sugestao-chamado'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
 import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
@@ -942,6 +943,11 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiSugestaoChamadoRoute = ApiAiSugestaoChamadoRouteImport.update({
+  id: '/api/ai/sugestao-chamado',
+  path: '/api/ai/sugestao-chamado',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
   id: '/api/ai/assistente',
   path: '/api/ai/assistente',
@@ -1242,6 +1248,7 @@ export interface FileRoutesByFullPath {
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
@@ -1424,6 +1431,7 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
@@ -1612,6 +1620,7 @@ export interface FileRoutesById {
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
+  '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
@@ -1801,6 +1810,7 @@ export interface FileRouteTypes {
     | '/conta/'
     | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
@@ -1983,6 +1993,7 @@ export interface FileRouteTypes {
     | '/conta'
     | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
@@ -2170,6 +2181,7 @@ export interface FileRouteTypes {
     | '/conta/'
     | '/admin/atendimento/painel'
     | '/api/ai/assistente'
+    | '/api/ai/sugestao-chamado'
     | '/api/public/health'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
@@ -2327,6 +2339,7 @@ export interface RootRouteChildren {
   SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
   ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
+  ApiAiSugestaoChamadoRoute: typeof ApiAiSugestaoChamadoRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
@@ -3386,6 +3399,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/sugestao-chamado': {
+      id: '/api/ai/sugestao-chamado'
+      path: '/api/ai/sugestao-chamado'
+      fullPath: '/api/ai/sugestao-chamado'
+      preLoaderRoute: typeof ApiAiSugestaoChamadoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/ai/assistente': {
       id: '/api/ai/assistente'
       path: '/api/ai/assistente'
@@ -3976,6 +3996,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
   ApiAiAssistenteRoute: ApiAiAssistenteRoute,
+  ApiAiSugestaoChamadoRoute: ApiAiSugestaoChamadoRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,

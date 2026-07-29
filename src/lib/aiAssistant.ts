@@ -233,6 +233,47 @@ export async function buscarContextoContrato(
   return trechos;
 }
 
+// Central de Atendimento Sprint 9 — contexto do chamado (assunto + thread)
+// pra sugestão de resposta. Notas internas entram no contexto (o agente que
+// pede a sugestão já as vê na própria tela) mas o prompt final instrui o
+// modelo a nunca reproduzi-las na resposta sugerida (essa é sempre voltada
+// ao cliente).
+async function buscarContextoChamado(
+  chamadoId: string,
+  client: AiAssistantSupabaseClient,
+): Promise<{ trechos: string[]; assunto: string; categoria: string }> {
+  const { data: chamado } = await client
+    .from("chamados")
+    .select("assunto,categoria,status")
+    .eq("id", chamadoId)
+    .maybeSingle();
+  if (!chamado) return { trechos: [], assunto: "", categoria: "" };
+
+  const { data: mensagensData } = await client
+    .from("chamado_mensagens")
+    .select("autor_tipo,conteudo,interno,created_at")
+    .eq("chamado_id", chamadoId)
+    .order("created_at", { ascending: true })
+    .limit(30);
+  const mensagens: { autor_tipo: string; conteudo: string; interno: boolean }[] =
+    mensagensData ?? [];
+
+  const transcricao = mensagens
+    .map((m) => {
+      const autor =
+        m.autor_tipo === "cliente" ? "Cliente" : m.interno ? "Nota interna do agente" : "Agente";
+      return `${autor}: ${m.conteudo}`;
+    })
+    .join("\n");
+
+  const trechos = [
+    `Chamado — assunto: "${chamado.assunto}", categoria: ${chamado.categoria}, status: ${chamado.status}.`,
+  ];
+  if (transcricao) trechos.push(`Conversa até agora:\n${transcricao}`);
+
+  return { trechos, assunto: chamado.assunto, categoria: chamado.categoria };
+}
+
 /** Busca os trechos mais relevantes da base de conhecimento + blog público via full-text search. */
 export async function buscarContexto(
   pergunta: string,
@@ -359,7 +400,15 @@ export async function perguntarAssistente(
 ): Promise<void> {
   const contexto = await buscarContexto(pergunta, client, paginaAtual, contratoId);
   const systemPrompt = buildSystemPrompt(contexto, paginaAtual, !!contratoId);
+  await chamarOllamaStreaming(systemPrompt, pergunta, onChunk);
+}
 
+/** Chama o Ollama em modo streaming e repassa cada trecho via callback — extraído de perguntarAssistente pra ser reaproveitado por sugerirRespostaChamado. */
+async function chamarOllamaStreaming(
+  systemPrompt: string,
+  userPrompt: string,
+  onChunk: (texto: string) => void,
+): Promise<void> {
   const res = await fetch(`${OLLAMA_URL}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -367,7 +416,7 @@ export async function perguntarAssistente(
       model: OLLAMA_MODEL,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: pergunta },
+        { role: "user", content: userPrompt },
       ],
       stream: true,
     }),
@@ -397,4 +446,36 @@ export async function perguntarAssistente(
       }
     }
   }
+}
+
+/**
+ * Sugestão de resposta pro agente — Central de Atendimento Sprint 9. Usa a
+ * transcrição do chamado (buscarContextoChamado) + base de conhecimento
+ * relacionada ao assunto/categoria (buscarContexto, reaproveitando a mesma
+ * busca full-text da KB) pra rascunhar uma resposta, nunca pra enviar
+ * automaticamente — o agente sempre revisa/edita antes de enviar.
+ */
+export async function sugerirRespostaChamado(
+  chamadoId: string,
+  client: AiAssistantSupabaseClient,
+  onChunk: (texto: string) => void,
+): Promise<void> {
+  const {
+    trechos: trechosChamado,
+    assunto,
+    categoria,
+  } = await buscarContextoChamado(chamadoId, client);
+  if (trechosChamado.length === 0) {
+    throw new Error("Chamado não encontrado.");
+  }
+  const trechosKb = await buscarContexto(`${assunto} ${categoria}`, client);
+  const contexto = [...trechosChamado, ...trechosKb];
+
+  const systemPrompt = `Você é o assistente de IA da imoB365, ajudando um agente de atendimento a redigir a PRÓXIMA resposta de um chamado de suporte. Escreva em português do Brasil, tom profissional e cordial, direto (no máximo 5-6 frases), pronto pra ser revisado e enviado pelo agente — não é uma resposta automática.
+
+REGRAS: (1) Nunca reproduza o conteúdo de "Nota interna do agente" na resposta — notas internas são só contexto pra você entender a situação, nunca aparecem pro cliente. (2) Para qualquer fato específico (impostos, prazos, documentos, valores), use SOMENTE o CONTEXTO abaixo — se não houver informação suficiente, escreva uma resposta genérica pedindo mais detalhes ou avisando que vai verificar, nunca invente. (3) Responda só com o texto da mensagem sugerida, sem saudações de e-mail redundantes tipo "Prezado(a)" a menos que o tom da conversa já use isso.
+
+CONTEXTO:\n${contexto.map((c, i) => `[${i + 1}] ${c}`).join("\n\n")}`;
+
+  await chamarOllamaStreaming(systemPrompt, "Sugira a próxima resposta pra este chamado.", onChunk);
 }
