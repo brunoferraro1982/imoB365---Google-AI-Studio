@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowRight, Phone } from "lucide-react";
+import { ArrowRight, Headset } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/consultoria")({
@@ -102,12 +102,10 @@ function ConsultoriaPage() {
               Agendar Consultoria <ArrowRight className="h-4 w-4" />
             </Link>
             <a
-              href="https://wa.me/5513997794382"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/atendimento"
               className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-2.5 text-sm font-bold text-white hover:bg-white/10 transition-colors"
             >
-              <Phone className="h-4 w-4" /> (13) 99779-4382
+              <Headset className="h-4 w-4" /> Central de Atendimento
             </a>
           </div>
         </section>
