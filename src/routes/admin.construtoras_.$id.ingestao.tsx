@@ -35,7 +35,11 @@ import {
   FileText,
   Video,
 } from "lucide-react";
-import { aprovarLote, rejeitarLote } from "@/lib/construtoraIngestao.functions";
+import {
+  aprovarLote,
+  rejeitarLote,
+  obterThumbnailsFrescos,
+} from "@/lib/construtoraIngestao.functions";
 
 export const Route = createFileRoute("/admin/construtoras_/$id/ingestao")({
   component: IngestaoRevisaoPage,
@@ -119,6 +123,7 @@ function IngestaoRevisaoPage() {
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const fnAprovar = useServerFn(aprovarLote);
   const fnRejeitar = useServerFn(rejeitarLote);
+  const fnThumbnails = useServerFn(obterThumbnailsFrescos);
 
   const [nomeConstrutora, setNomeConstrutora] = useState("");
   const [fontes, setFontes] = useState<Map<string, Fonte>>(new Map());
@@ -206,12 +211,27 @@ function IngestaoRevisaoPage() {
       .eq("lote_id", lote.id)
       .neq("tipo", "pdf_tabela")
       .order("score_ia", { ascending: false, nullsFirst: false });
-    const midias = (midiasData ?? []) as Midia[];
+    let midias = (midiasData ?? []) as Midia[];
     const selecionadasIniciais = new Set(midias.filter((m) => m.recomendada).map((m) => m.id));
     setEstados((prev) => ({
       ...prev,
       [lote.id]: { ...prev[lote.id], midias, midiasSelecionadas: selecionadasIniciais },
     }));
+
+    // O thumbnail_url salvo no banco é uma URL assinada da Drive API que
+    // expira bem antes da revisão acontecer (achado real — ver
+    // construtoraIngestao.functions.ts) — busca um link fresco pra cada
+    // mídia antes de exibir, em vez de confiar no valor gravado.
+    try {
+      const frescos = await fnThumbnails({ data: { midiaIds: midias.map((m) => m.id) } });
+      const porId = new Map(frescos.map((f) => [f.id, f.thumbnailUrl]));
+      midias = midias.map((m) => ({ ...m, thumbnail_url: porId.get(m.id) ?? null }));
+      setEstados((prev) => ({ ...prev, [lote.id]: { ...prev[lote.id], midias } }));
+    } catch {
+      // Se a busca de thumbnails frescos falhar (ex.: Drive API fora do ar),
+      // mantém os dados já carregados — mídias ficam sem preview, mas o
+      // resto da revisão (unidades, seleção por id) continua funcionando.
+    }
   }
 
   function patchEstado(loteId: string, patch: Partial<EstadoLote>) {
