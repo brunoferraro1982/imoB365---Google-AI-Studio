@@ -187,6 +187,7 @@ import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.pub
 import { Route as ApiPublicCronGerarCobrancasMercadopagoRouteImport } from './routes/api.public.cron.gerar-cobrancas-mercadopago'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
+import { Route as ApiPublicCronConstrutoraIngestaoRouteImport } from './routes/api.public.cron.construtora-ingestao'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
@@ -1122,6 +1123,12 @@ const ApiPublicCronContratosSlaRoute =
     path: '/api/public/cron/contratos-sla',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronConstrutoraIngestaoRoute =
+  ApiPublicCronConstrutoraIngestaoRouteImport.update({
+    id: '/api/public/cron/construtora-ingestao',
+    path: '/api/public/cron/construtora-ingestao',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronCaptacaoRoute = ApiPublicCronCaptacaoRouteImport.update({
   id: '/api/public/cron/captacao',
   path: '/api/public/cron/captacao',
@@ -1337,6 +1344,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1522,6 +1530,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1713,6 +1722,7 @@ export interface FileRoutesById {
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1905,6 +1915,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2090,6 +2101,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2280,6 +2292,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2372,6 +2385,7 @@ export interface RootRouteChildren {
   ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
+  ApiPublicCronConstrutoraIngestaoRoute: typeof ApiPublicCronConstrutoraIngestaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronGerarCobrancasMercadopagoRoute: typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -3648,6 +3662,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronContratosSlaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/construtora-ingestao': {
+      id: '/api/public/cron/construtora-ingestao'
+      path: '/api/public/cron/construtora-ingestao'
+      fullPath: '/api/public/cron/construtora-ingestao'
+      preLoaderRoute: typeof ApiPublicCronConstrutoraIngestaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/captacao': {
       id: '/api/public/cron/captacao'
       path: '/api/public/cron/captacao'
@@ -4046,6 +4067,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
+  ApiPublicCronConstrutoraIngestaoRoute: ApiPublicCronConstrutoraIngestaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronGerarCobrancasMercadopagoRoute:

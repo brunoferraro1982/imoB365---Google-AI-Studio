@@ -179,6 +179,7 @@ Usuários que entram via Google OAuth ou e-mail são redirecionados para `/auth/
 | `atendimentoEmailInbound.ts`  | Polling IMAP por tenant — importa e-mails recebidos como respostas de chamado |
 | `atendimentoSla.ts`           | Detecção de estouro de SLA da Central de Atendimento (dedupe via `lead_tarefas`) |
 | `captacao.ts` / `captacao.functions.ts` | Robô de captação automática (varre a Chaves na Mão via JSON-LD, pagina até 5 páginas, dedupe em `leads`) — `sincronizarCaptacaoAgora` força um ciclo sob demanda por tenant |
+| `construtoraIngestao.ts` / `construtoraIngestao.functions.ts` | Ingestão automatizada de empreendimentos/imóveis de construtoras parceiras (ex.: GMV) a partir de Linktree → Google Drive/PDF — genérico por construtora, gera lotes pendentes de revisão do super_admin, nunca publica sozinho |
 | `contratos.functions.ts`      | CLM Sprint 10 — regras de negócio: `criarContrato`/`atualizarContrato`/`ativarContrato` (gate de ativação: garantia, checklist, assinatura) |
 | `slaAlertas.ts` / `slaAlertas.functions.ts` | SLA do Jurídico (CLM): cartórios parados e contratos a vencer          |
 | `financeiroDashboard.functions.ts` | Agregados do dashboard executivo do Financeiro                          |
@@ -213,6 +214,7 @@ MERCADOPAGO_MARKETPLACE_CLIENT_SECRET # Idem — distinto do MERCADOPAGO_ACCESS_
 MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→cliente final (Fase 3 parte 2)
 HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
 HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
+GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
