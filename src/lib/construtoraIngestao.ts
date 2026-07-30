@@ -206,6 +206,39 @@ export async function baixarArquivoDrive(fileId: string): Promise<ArrayBuffer | 
   return res.arrayBuffer();
 }
 
+// Achado real (GMV/Residencial Allure): alguns lançamentos organizam as
+// fotos em subpastas por categoria dentro da pasta linkada no Linktree
+// (ex.: "Imagens 3D" contendo as subpastas FACHADA/INTERNAS
+// APARTAMENTOS/ÁREAS COMUNS/PLANTAS HUMANIZADAS), em vez de deixar os
+// arquivos soltos direto na pasta — sem recursar, a subpasta em si virava
+// um item "outro" sem preview (pastas não têm thumbnailLink) e as fotos
+// reais lá dentro nunca eram descobertas. Recursa até um limite razoável
+// de profundidade (evita custo/loop em estrutura anômala) e classifica
+// cada nível pelo nome da PRÓPRIA subpasta — mais preciso que herdar só o
+// título do link Linktree de nível acima.
+const MAX_PROFUNDIDADE_PASTA = 3;
+
+async function coletarArquivosDePasta(
+  folderId: string,
+  tipoHerdado: TipoMidia,
+  profundidade: number,
+): Promise<{ arquivo: ArquivoDrive; tipo: TipoMidia }[]> {
+  if (profundidade > MAX_PROFUNDIDADE_PASTA) return [];
+  const itens = await listarPastaDrive(folderId);
+  const resultado: { arquivo: ArquivoDrive; tipo: TipoMidia }[] = [];
+  for (const item of itens) {
+    if (item.mimeType === "application/vnd.google-apps.folder") {
+      const subTipo = classificarPorTitulo(item.name);
+      const subArquivos = await coletarArquivosDePasta(item.id, subTipo, profundidade + 1);
+      resultado.push(...subArquivos);
+    } else {
+      const tipo = classificarPorMime(item.mimeType) ?? tipoHerdado;
+      resultado.push({ arquivo: item, tipo });
+    }
+  }
+  return resultado;
+}
+
 const BATCH_SIZE_FONTES = 20;
 
 export type ProcessarIngestaoOpcoes = {
@@ -484,18 +517,11 @@ export async function processarIngestao(
           if (!driveId) continue;
 
           if (isDriveFolderUrl(midia.url)) {
-            const arquivos = await listarPastaDrive(driveId);
             const tipoPasta = classificarPorTitulo(midia.titulo);
-            for (const arquivo of arquivos) {
-              const tipoFinal = classificarPorMime(arquivo.mimeType) ?? tipoPasta;
+            const arquivos = await coletarArquivosDePasta(driveId, tipoPasta, 0);
+            for (const { arquivo, tipo } of arquivos) {
               if (
-                await upsertMidia(
-                  client,
-                  loteId,
-                  arquivo.id,
-                  tipoFinal,
-                  arquivo.thumbnailLink ?? null,
-                )
+                await upsertMidia(client, loteId, arquivo.id, tipo, arquivo.thumbnailLink ?? null)
               ) {
                 midiasEncontradas++;
               }
