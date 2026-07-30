@@ -228,7 +228,7 @@ function AdminConstrutorasPage() {
     try {
       const resultado = await fnSincronizar({ data: { construtora_id: selecionada.id } });
       toast.success(
-        `${resultado.lotesNovos} lote(s) novo(s), ${resultado.lotesAtualizados} atualizado(s), ${resultado.midiasEncontradas} mídia(s) encontrada(s).`,
+        `${resultado.lotesNovos} lote(s) novo(s), ${resultado.lotesAtualizados} atualizado(s), ${resultado.midiasEncontradas} mídia(s) — ${resultado.pdfsProcessados} tabela(s) de preço lida(s), ${resultado.fotosAvaliadas} foto(s) avaliada(s) pela IA.`,
       );
       abrirConstrutora(selecionada);
     } catch (err) {

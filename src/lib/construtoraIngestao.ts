@@ -18,6 +18,8 @@
 // filtrados por allowlist de domínio (só linktr.ee e drive.google.com
 // interessam aqui — o resto é descartado, nunca vira mídia candidata).
 
+import { avaliarFotos, extrairTabelaPdf, nomesCorrespondem } from "@/lib/construtoraIngestaoAI";
+
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36";
 
@@ -199,6 +201,8 @@ export type ProcessarIngestaoResult = {
   lotesNovos: number;
   lotesAtualizados: number;
   midiasEncontradas: number;
+  pdfsProcessados: number;
+  fotosAvaliadas: number;
 };
 
 async function upsertMidia(
@@ -215,6 +219,147 @@ async function upsertMidia(
       { onConflict: "lote_id,origem_drive_id", ignoreDuplicates: true },
     );
   return !error;
+}
+
+// Quantas fotos recomendar por categoria (fachada/lazer/planta) — pedido
+// explícito do usuário: não subir toda mídia, recomendar as melhores.
+const MELHORES_POR_TIPO = 3;
+const TIPOS_FOTO: TipoMidia[] = ["foto_fachada", "foto_lazer", "foto_planta"];
+// "outro" entra na AVALIAÇÃO (não na recomendação final) — a classificação
+// por nome de pasta erra bastante na prática (achado real: a maioria das
+// fotos do GMV caía em "outro" e nunca chegava a ser vista pela IA), então
+// mandamos pro Gemini avaliar mesmo assim; ele reclassifica com base no
+// que a foto realmente mostra antes de decidir o que recomendar.
+const TIPOS_ELEGIVEIS_PARA_AVALIACAO: TipoMidia[] = [...TIPOS_FOTO, "outro"];
+const CATEGORIA_PARA_TIPO: Record<string, TipoMidia> = {
+  fachada: "foto_fachada",
+  lazer: "foto_lazer",
+  planta: "foto_planta",
+  outro: "outro",
+};
+
+// Roda depois da descoberta de lotes/mídias de uma fonte (não durante —
+// evita misturar as duas responsabilidades e permite tratar falha de IA
+// isoladamente do resto do ciclo, mesmo espírito do try/catch por lote
+// acima). Processa PDFs de preço (uma vez por arquivo único, mesmo que
+// compartilhado entre vários lotes — achado real do GMV.incorporadora) e
+// pontua fotos ainda sem score_ia.
+async function processarIAparaFonte(
+  client: ConstrutoraIngestaoClient,
+  fonteId: string,
+): Promise<{ pdfsProcessados: number; fotosAvaliadas: number }> {
+  let pdfsProcessados = 0;
+  let fotosAvaliadas = 0;
+
+  const { data: lotes } = await client
+    .from("construtora_ingestao_lotes")
+    .select("id,nome_bruto")
+    .eq("fonte_id", fonteId)
+    .eq("status", "pronto_revisao");
+  const lotesDaFonte = (lotes ?? []) as { id: string; nome_bruto: string }[];
+  if (lotesDaFonte.length === 0) return { pdfsProcessados, fotosAvaliadas };
+
+  const loteIds = lotesDaFonte.map((l) => l.id);
+  const { data: midias } = await client
+    .from("construtora_ingestao_midias")
+    .select("id,lote_id,tipo,origem_drive_id,thumbnail_url,score_ia")
+    .in("lote_id", loteIds);
+  const todasMidias = (midias ?? []) as {
+    id: string;
+    lote_id: string;
+    tipo: TipoMidia;
+    origem_drive_id: string | null;
+    thumbnail_url: string | null;
+    score_ia: number | null;
+  }[];
+
+  // PDFs: extrai uma vez por arquivo único, casa o resultado com o(s)
+  // lote(s) que compartilham aquele mesmo arquivo por nome (fuzzy).
+  const pdfsPorDriveId = new Map<string, typeof todasMidias>();
+  for (const m of todasMidias.filter((m) => m.tipo === "pdf_tabela" && m.origem_drive_id)) {
+    const lista = pdfsPorDriveId.get(m.origem_drive_id!) ?? [];
+    lista.push(m);
+    pdfsPorDriveId.set(m.origem_drive_id!, lista);
+  }
+
+  for (const [driveId, ocorrencias] of pdfsPorDriveId) {
+    try {
+      const bytes = await baixarArquivoDrive(driveId);
+      if (!bytes) continue;
+      const lotesEnvolvidos = lotesDaFonte.filter((l) =>
+        ocorrencias.some((o) => o.lote_id === l.id),
+      );
+      const grupos = await extrairTabelaPdf(
+        bytes,
+        lotesEnvolvidos.map((l) => l.nome_bruto),
+      );
+      pdfsProcessados++;
+      if (grupos.length === 0) continue;
+
+      for (const lote of lotesEnvolvidos) {
+        const grupo = grupos.find((g) => nomesCorrespondem(g.nome_empreendimento, lote.nome_bruto));
+        if (!grupo || grupo.unidades.length === 0) continue;
+        await client
+          .from("construtora_ingestao_lotes")
+          .update({ dados_extraidos: { unidades: grupo.unidades, extraido_de: driveId } })
+          .eq("id", lote.id);
+      }
+    } catch {
+      // Falha isolada num PDF (download, parsing) não afeta os demais.
+      continue;
+    }
+  }
+
+  // Fotos: só avalia as que ainda não têm score_ia (evita reprocessar em
+  // toda sincronização — custo de chamada de IA é por foto nova). Inclui
+  // "outro" de propósito (ver comentário em TIPOS_ELEGIVEIS_PARA_AVALIACAO).
+  const fotosNaoAvaliadas = todasMidias.filter(
+    (m) => TIPOS_ELEGIVEIS_PARA_AVALIACAO.includes(m.tipo) && m.score_ia == null && m.thumbnail_url,
+  );
+  if (fotosNaoAvaliadas.length > 0) {
+    try {
+      const avaliacoes = await avaliarFotos(
+        fotosNaoAvaliadas.map((m) => ({ id: m.id, thumbnailUrl: m.thumbnail_url! })),
+      );
+      for (const a of avaliacoes) {
+        await client
+          .from("construtora_ingestao_midias")
+          .update({
+            score_ia: a.score,
+            legenda_ia: a.legenda,
+            tipo: CATEGORIA_PARA_TIPO[a.categoria] ?? "outro",
+          })
+          .eq("id", a.id);
+        fotosAvaliadas++;
+      }
+    } catch {
+      // Falha na avaliação em lote não impede o restante do ciclo — as
+      // fotos ficam sem score_ia, revisáveis manualmente depois.
+    }
+  }
+
+  // Recomendação: top N por tipo, por lote — só entre as que têm score_ia
+  // (fotos que falharam na avaliação não são recomendadas automaticamente).
+  for (const lote of lotesDaFonte) {
+    for (const tipo of TIPOS_FOTO) {
+      const { data: candidatas } = await client
+        .from("construtora_ingestao_midias")
+        .select("id,score_ia")
+        .eq("lote_id", lote.id)
+        .eq("tipo", tipo)
+        .not("score_ia", "is", null)
+        .order("score_ia", { ascending: false })
+        .limit(MELHORES_POR_TIPO);
+      for (const c of (candidatas ?? []) as { id: string }[]) {
+        await client
+          .from("construtora_ingestao_midias")
+          .update({ recomendada: true })
+          .eq("id", c.id);
+      }
+    }
+  }
+
+  return { pdfsProcessados, fotosAvaliadas };
 }
 
 export async function processarIngestao(
@@ -236,6 +381,8 @@ export async function processarIngestao(
   let lotesNovos = 0;
   let lotesAtualizados = 0;
   let midiasEncontradas = 0;
+  let pdfsProcessados = 0;
+  let fotosAvaliadas = 0;
 
   for (const fonte of (fontes ?? []) as Record<string, unknown>[]) {
     const intervaloHoras = (fonte.intervalo_horas as number) ?? 24;
@@ -368,11 +515,29 @@ export async function processarIngestao(
       }
     }
 
+    try {
+      const resultadoIA = await processarIAparaFonte(client, fonteId);
+      pdfsProcessados += resultadoIA.pdfsProcessados;
+      fotosAvaliadas += resultadoIA.fotosAvaliadas;
+    } catch {
+      // Ciclo de IA falhar por completo (ex.: GEMINI_API_KEY ausente) não
+      // pode impedir que a descoberta de lotes/mídias já feita acima seja
+      // salva — os lotes continuam pronto_revisao, só sem score/extração
+      // ainda, revisáveis manualmente.
+    }
+
     await client
       .from("construtora_fontes_ingestao")
       .update({ ultima_execucao: nowIso })
       .eq("id", fonteId);
   }
 
-  return { fontesProcessadas, lotesNovos, lotesAtualizados, midiasEncontradas };
+  return {
+    fontesProcessadas,
+    lotesNovos,
+    lotesAtualizados,
+    midiasEncontradas,
+    pdfsProcessados,
+    fotosAvaliadas,
+  };
 }
