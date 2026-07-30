@@ -35,6 +35,40 @@ export const sincronizarIngestaoAgora = createServerFn({ method: "POST" })
     return processarIngestao(supabaseAdmin, { construtoraId: data.construtora_id, forcar: true });
   });
 
+// A thumbnailLink que a Drive API devolve é uma URL assinada de curta
+// duração — o valor gravado em construtora_ingestao_midias no momento da
+// coleta (usado ali mesmo, na mesma sincronização, pra pontuação da IA)
+// expira bem antes do super_admin abrir a tela de revisão depois (achado
+// real: link testado horas depois voltava 403, um pedido novo à Drive API
+// pro mesmo arquivo devolve link fresco e funcional). Por isso a tela de
+// revisão nunca usa o thumbnail_url salvo pra exibir a imagem — sempre
+// busca um link fresco sob demanda, só quando o lote é aberto.
+export const obterThumbnailsFrescos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ midiaIds: z.array(z.string().uuid()) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await exigirSuperAdmin(supabase, userId);
+
+    if (data.midiaIds.length === 0) return [];
+    const { data: midias } = await supabaseAdmin
+      .from("construtora_ingestao_midias")
+      .select("id,origem_drive_id")
+      .in("id", data.midiaIds);
+
+    return Promise.all(
+      (midias ?? []).map(async (m) => {
+        if (!m.origem_drive_id) return { id: m.id, thumbnailUrl: null as string | null };
+        try {
+          const info = await obterArquivoDrive(m.origem_drive_id);
+          return { id: m.id, thumbnailUrl: info?.thumbnailLink ?? null };
+        } catch {
+          return { id: m.id, thumbnailUrl: null };
+        }
+      }),
+    );
+  });
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function exigirSuperAdmin(supabase: any, userId: string): Promise<void> {
   const { data: isSuper } = await supabase.rpc("has_role", {
