@@ -187,10 +187,12 @@ import { Route as ApiPublicCronGerarRepassesRouteImport } from './routes/api.pub
 import { Route as ApiPublicCronGerarCobrancasMercadopagoRouteImport } from './routes/api.public.cron.gerar-cobrancas-mercadopago'
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
+import { Route as ApiPublicCronConstrutoraIngestaoRouteImport } from './routes/api.public.cron.construtora-ingestao'
 import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
+import { Route as AdminConstrutorasIdIngestaoRouteImport } from './routes/admin.construtoras_.$id.ingestao'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -1122,6 +1124,12 @@ const ApiPublicCronContratosSlaRoute =
     path: '/api/public/cron/contratos-sla',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronConstrutoraIngestaoRoute =
+  ApiPublicCronConstrutoraIngestaoRouteImport.update({
+    id: '/api/public/cron/construtora-ingestao',
+    path: '/api/public/cron/construtora-ingestao',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronCaptacaoRoute = ApiPublicCronCaptacaoRouteImport.update({
   id: '/api/public/cron/captacao',
   path: '/api/public/cron/captacao',
@@ -1144,6 +1152,12 @@ const ApiPublicCronAtendimentoEmailRoute =
     id: '/api/public/cron/atendimento-email',
     path: '/api/public/cron/atendimento-email',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminConstrutorasIdIngestaoRoute =
+  AdminConstrutorasIdIngestaoRouteImport.update({
+    id: '/construtoras_/$id/ingestao',
+    path: '/construtoras/$id/ingestao',
+    getParentRoute: () => AdminRoute,
   } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
@@ -1333,10 +1347,12 @@ export interface FileRoutesByFullPath {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1518,10 +1534,12 @@ export interface FileRoutesByTo {
   '/app/locacao': typeof AppLocacaoIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1709,10 +1727,12 @@ export interface FileRoutesById {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
   '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
+  '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
   '/api/public/cron/gerar-cobrancas-mercadopago': typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -1901,10 +1921,12 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2086,10 +2108,12 @@ export interface FileRouteTypes {
     | '/app/locacao'
     | '/app/site'
     | '/conta/chat'
+    | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2276,10 +2300,12 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras_/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
     | '/api/public/cron/captacao'
+    | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
     | '/api/public/cron/gerar-cobrancas-mercadopago'
@@ -2372,6 +2398,7 @@ export interface RootRouteChildren {
   ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
   ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
+  ApiPublicCronConstrutoraIngestaoRoute: typeof ApiPublicCronConstrutoraIngestaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
   ApiPublicCronGerarCobrancasMercadopagoRoute: typeof ApiPublicCronGerarCobrancasMercadopagoRoute
@@ -3648,6 +3675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronContratosSlaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/construtora-ingestao': {
+      id: '/api/public/cron/construtora-ingestao'
+      path: '/api/public/cron/construtora-ingestao'
+      fullPath: '/api/public/cron/construtora-ingestao'
+      preLoaderRoute: typeof ApiPublicCronConstrutoraIngestaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/captacao': {
       id: '/api/public/cron/captacao'
       path: '/api/public/cron/captacao'
@@ -3675,6 +3709,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/cron/atendimento-email'
       preLoaderRoute: typeof ApiPublicCronAtendimentoEmailRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/construtoras_/$id/ingestao': {
+      id: '/admin/construtoras_/$id/ingestao'
+      path: '/construtoras/$id/ingestao'
+      fullPath: '/admin/construtoras/$id/ingestao'
+      preLoaderRoute: typeof AdminConstrutorasIdIngestaoRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
@@ -3737,6 +3778,7 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
+  AdminConstrutorasIdIngestaoRoute: typeof AdminConstrutorasIdIngestaoRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -3755,6 +3797,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
+  AdminConstrutorasIdIngestaoRoute: AdminConstrutorasIdIngestaoRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
@@ -4046,6 +4089,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
   ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
+  ApiPublicCronConstrutoraIngestaoRoute: ApiPublicCronConstrutoraIngestaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
   ApiPublicCronGerarCobrancasMercadopagoRoute:

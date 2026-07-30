@@ -1095,6 +1095,183 @@ export type Database = {
           },
         ];
       };
+      construtora_fontes_ingestao: {
+        Row: {
+          ativo: boolean;
+          construtora_id: string;
+          created_at: string;
+          id: string;
+          intervalo_horas: number;
+          nome: string;
+          tipo_alvo: string;
+          ultima_execucao: string | null;
+          updated_at: string;
+          url: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          construtora_id: string;
+          created_at?: string;
+          id?: string;
+          intervalo_horas?: number;
+          nome: string;
+          tipo_alvo: string;
+          ultima_execucao?: string | null;
+          updated_at?: string;
+          url: string;
+        };
+        Update: {
+          ativo?: boolean;
+          construtora_id?: string;
+          created_at?: string;
+          id?: string;
+          intervalo_horas?: number;
+          nome?: string;
+          tipo_alvo?: string;
+          ultima_execucao?: string | null;
+          updated_at?: string;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "construtora_fontes_ingestao_construtora_id_fkey";
+            columns: ["construtora_id"];
+            isOneToOne: false;
+            referencedRelation: "construtoras";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      construtora_ingestao_lotes: {
+        Row: {
+          construtora_id: string;
+          created_at: string;
+          dados_extraidos: Json;
+          empreendimento_id: string | null;
+          erro_mensagem: string | null;
+          fonte_id: string;
+          id: string;
+          imovel_id: string | null;
+          link_origem: string;
+          nome_bruto: string;
+          revisado_em: string | null;
+          revisado_por: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          construtora_id: string;
+          created_at?: string;
+          dados_extraidos?: Json;
+          empreendimento_id?: string | null;
+          erro_mensagem?: string | null;
+          fonte_id: string;
+          id?: string;
+          imovel_id?: string | null;
+          link_origem: string;
+          nome_bruto: string;
+          revisado_em?: string | null;
+          revisado_por?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          construtora_id?: string;
+          created_at?: string;
+          dados_extraidos?: Json;
+          empreendimento_id?: string | null;
+          erro_mensagem?: string | null;
+          fonte_id?: string;
+          id?: string;
+          imovel_id?: string | null;
+          link_origem?: string;
+          nome_bruto?: string;
+          revisado_em?: string | null;
+          revisado_por?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "construtora_ingestao_lotes_construtora_id_fkey";
+            columns: ["construtora_id"];
+            isOneToOne: false;
+            referencedRelation: "construtoras";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_lotes_empreendimento_id_fkey";
+            columns: ["empreendimento_id"];
+            isOneToOne: false;
+            referencedRelation: "empreendimentos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_lotes_fonte_id_fkey";
+            columns: ["fonte_id"];
+            isOneToOne: false;
+            referencedRelation: "construtora_fontes_ingestao";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_lotes_imovel_id_fkey";
+            columns: ["imovel_id"];
+            isOneToOne: false;
+            referencedRelation: "imoveis";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      construtora_ingestao_midias: {
+        Row: {
+          aprovada: boolean;
+          created_at: string;
+          id: string;
+          legenda_ia: string | null;
+          lote_id: string;
+          origem_drive_id: string | null;
+          recomendada: boolean;
+          score_ia: number | null;
+          storage_path: string | null;
+          thumbnail_url: string | null;
+          tipo: string;
+        };
+        Insert: {
+          aprovada?: boolean;
+          created_at?: string;
+          id?: string;
+          legenda_ia?: string | null;
+          lote_id: string;
+          origem_drive_id?: string | null;
+          recomendada?: boolean;
+          score_ia?: number | null;
+          storage_path?: string | null;
+          thumbnail_url?: string | null;
+          tipo: string;
+        };
+        Update: {
+          aprovada?: boolean;
+          created_at?: string;
+          id?: string;
+          legenda_ia?: string | null;
+          lote_id?: string;
+          origem_drive_id?: string | null;
+          recomendada?: boolean;
+          score_ia?: number | null;
+          storage_path?: string | null;
+          thumbnail_url?: string | null;
+          tipo?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "construtora_ingestao_midias_lote_id_fkey";
+            columns: ["lote_id"];
+            isOneToOne: false;
+            referencedRelation: "construtora_ingestao_lotes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       construtora_tenant_parceria: {
         Row: {
           construtora_id: string;

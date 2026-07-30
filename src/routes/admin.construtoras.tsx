@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +24,18 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
-import { Factory, Plus, Search, Trash2, UserPlus, Building2 } from "lucide-react";
+import {
+  Factory,
+  Plus,
+  Search,
+  Trash2,
+  UserPlus,
+  Building2,
+  RefreshCw,
+  Link2,
+  ClipboardList,
+} from "lucide-react";
+import { sincronizarIngestaoAgora } from "@/lib/construtoraIngestao.functions";
 
 export const Route = createFileRoute("/admin/construtoras")({
   component: AdminConstrutorasPage,
@@ -58,6 +77,28 @@ type Construtora = {
 type Parceria = { id: string; tenant_id: string; tenant_nome: string; status: string };
 type TenantOption = { id: string; nome: string };
 
+type FonteIngestao = {
+  id: string;
+  nome: string;
+  url: string;
+  tipo_alvo: "empreendimento" | "imovel";
+  ativo: boolean;
+  intervalo_horas: number;
+  ultima_execucao: string | null;
+};
+
+const FONTE_VAZIA = {
+  nome: "",
+  url: "",
+  tipo_alvo: "empreendimento" as const,
+  intervalo_horas: 24,
+};
+
+function fmtUltimaExecucao(d: string | null) {
+  if (!d) return "Nunca rodou";
+  return new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
 const CONSTRUTORA_VAZIA = {
   nome: "",
   cnpj: "",
@@ -86,6 +127,15 @@ function AdminConstrutorasPage() {
   const [novaConstrutora, setNovaConstrutora] = useState(CONSTRUTORA_VAZIA);
   const [criando, setCriando] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [fontes, setFontes] = useState<FonteIngestao[]>([]);
+  const [novaFonte, setNovaFonte] = useState<
+    Omit<typeof FONTE_VAZIA, "tipo_alvo"> & { tipo_alvo: "empreendimento" | "imovel" }
+  >(FONTE_VAZIA);
+  const [criandoFonte, setCriandoFonte] = useState(false);
+  const [sincronizando, setSincronizando] = useState(false);
+  const [lotesPendentes, setLotesPendentes] = useState(0);
+
+  const fnSincronizar = useServerFn(sincronizarIngestaoAgora);
 
   async function load() {
     setLoading(true);
@@ -110,10 +160,17 @@ function AdminConstrutorasPage() {
     setSelecionada(c);
     setBuscaTenant("");
     setResultadosBusca([]);
-    const { data, error } = await supabase
-      .from("construtora_tenant_parceria")
-      .select("id,tenant_id,status,tenants(nome)")
-      .eq("construtora_id", c.id);
+    const [{ data, error }, { data: fontesData }] = await Promise.all([
+      supabase
+        .from("construtora_tenant_parceria")
+        .select("id,tenant_id,status,tenants(nome)")
+        .eq("construtora_id", c.id),
+      supabase
+        .from("construtora_fontes_ingestao")
+        .select("*")
+        .eq("construtora_id", c.id)
+        .order("created_at"),
+    ]);
     if (error) {
       toast.error("Erro ao carregar parcerias");
       return;
@@ -126,6 +183,82 @@ function AdminConstrutorasPage() {
         status: p.status,
       })),
     );
+    setFontes((fontesData ?? []) as FonteIngestao[]);
+
+    const fonteIds = (fontesData ?? []).map((f) => f.id as string);
+    if (fonteIds.length > 0) {
+      const { count } = await supabase
+        .from("construtora_ingestao_lotes")
+        .select("id", { count: "exact", head: true })
+        .in("fonte_id", fonteIds)
+        .eq("status", "pronto_revisao");
+      setLotesPendentes(count ?? 0);
+    } else {
+      setLotesPendentes(0);
+    }
+  }
+
+  async function criarFonte() {
+    if (!selecionada) return;
+    if (!novaFonte.nome.trim() || !novaFonte.url.trim()) {
+      toast.error("Informe nome e URL da fonte.");
+      return;
+    }
+    setCriandoFonte(true);
+    try {
+      const { error } = await supabase.from("construtora_fontes_ingestao").insert({
+        construtora_id: selecionada.id,
+        nome: novaFonte.nome.trim(),
+        url: novaFonte.url.trim(),
+        tipo_alvo: novaFonte.tipo_alvo,
+        intervalo_horas: novaFonte.intervalo_horas,
+      });
+      if (error) throw error;
+      toast.success("Fonte de ingestão cadastrada.");
+      setNovaFonte(FONTE_VAZIA);
+      abrirConstrutora(selecionada);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao cadastrar fonte");
+    } finally {
+      setCriandoFonte(false);
+    }
+  }
+
+  async function toggleFonte(fonte: FonteIngestao, ativo: boolean) {
+    const { error } = await supabase
+      .from("construtora_fontes_ingestao")
+      .update({ ativo })
+      .eq("id", fonte.id);
+    if (error) return toast.error(error.message);
+    if (selecionada) abrirConstrutora(selecionada);
+  }
+
+  async function removerFonte(fonte: FonteIngestao) {
+    if (!(await confirmDialog(`Remover a fonte "${fonte.nome}"?`, { title: "Remover fonte" })))
+      return;
+    const { error } = await supabase
+      .from("construtora_fontes_ingestao")
+      .delete()
+      .eq("id", fonte.id);
+    if (error) return toast.error(error.message);
+    toast.success("Fonte removida.");
+    if (selecionada) abrirConstrutora(selecionada);
+  }
+
+  async function sincronizarAgora() {
+    if (!selecionada) return;
+    setSincronizando(true);
+    try {
+      const resultado = await fnSincronizar({ data: { construtora_id: selecionada.id } });
+      toast.success(
+        `${resultado.lotesNovos} lote(s) novo(s), ${resultado.lotesAtualizados} atualizado(s), ${resultado.midiasEncontradas} mídia(s) — ${resultado.pdfsProcessados} tabela(s) de preço lida(s), ${resultado.fotosAvaliadas} foto(s) avaliada(s) pela IA.`,
+      );
+      abrirConstrutora(selecionada);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao sincronizar");
+    } finally {
+      setSincronizando(false);
+    }
   }
 
   async function criarConstrutora() {
@@ -674,6 +807,127 @@ function AdminConstrutorasPage() {
                     ))}
                   </ul>
                 )}
+              </div>
+
+              <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                    <Link2 className="h-4 w-4" /> Fontes de ingestão ({fontes.length})
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Link to="/admin/construtoras/$id/ingestao" params={{ id: selecionada.id }}>
+                      <Button size="sm" variant="outline">
+                        <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
+                        Ver lotes
+                        {lotesPendentes > 0 && (
+                          <Badge className="ml-1.5 h-4 px-1 text-[10px]">{lotesPendentes}</Badge>
+                        )}
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={sincronizarAgora}
+                      disabled={sincronizando || fontes.length === 0}
+                    >
+                      <RefreshCw
+                        className={`mr-1.5 h-3.5 w-3.5 ${sincronizando ? "animate-spin" : ""}`}
+                      />
+                      {sincronizando ? "Sincronizando..." : "Sincronizar agora"}
+                    </Button>
+                  </div>
+                </div>
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Links (Linktree) de onde puxar automaticamente lançamentos/revendas desta
+                  construtora — fotos, plantas e tabelas de preço viram lotes pendentes de revisão.
+                </p>
+                <div className="mb-3 space-y-1.5">
+                  {fontes.length === 0 && (
+                    <p className="text-xs text-muted-foreground">Nenhuma fonte cadastrada ainda.</p>
+                  )}
+                  {fontes.map((f) => (
+                    <div
+                      key={f.id}
+                      className="flex items-center justify-between gap-2 rounded-md bg-card px-3 py-2 text-sm"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="truncate font-medium">{f.nome}</span>
+                          <Badge variant="outline" className="text-[10px]">
+                            {f.tipo_alvo === "empreendimento" ? "Lançamento" : "Revenda"}
+                          </Badge>
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">
+                          {f.url} · a cada {f.intervalo_horas}h ·{" "}
+                          {fmtUltimaExecucao(f.ultima_execucao)}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Switch checked={f.ativo} onCheckedChange={(v) => toggleFonte(f, v)} />
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-destructive"
+                          onClick={() => removerFonte(f)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Input
+                    className="h-8 text-xs sm:col-span-2"
+                    placeholder="Nome (ex: Lançamentos — Linktree principal)"
+                    value={novaFonte.nome}
+                    onChange={(e) => setNovaFonte((f) => ({ ...f, nome: e.target.value }))}
+                  />
+                  <Input
+                    className="h-8 text-xs sm:col-span-2"
+                    placeholder="https://linktr.ee/..."
+                    value={novaFonte.url}
+                    onChange={(e) => setNovaFonte((f) => ({ ...f, url: e.target.value }))}
+                  />
+                  <Select
+                    value={novaFonte.tipo_alvo}
+                    onValueChange={(v) =>
+                      setNovaFonte((f) => ({ ...f, tipo_alvo: v as "empreendimento" | "imovel" }))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="empreendimento">Lançamento (empreendimento)</SelectItem>
+                      <SelectItem value="imovel">Revenda (imóvel avulso)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={String(novaFonte.intervalo_horas)}
+                    onValueChange={(v) =>
+                      setNovaFonte((f) => ({ ...f, intervalo_horas: Number(v) }))
+                    }
+                  >
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="24">Diariamente</SelectItem>
+                      <SelectItem value="48">A cada 2 dias</SelectItem>
+                      <SelectItem value="168">Semanalmente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    className="sm:col-span-2"
+                    onClick={criarFonte}
+                    disabled={criandoFonte}
+                  >
+                    <Plus className="mr-1 h-3.5 w-3.5" />
+                    {criandoFonte ? "Cadastrando..." : "Adicionar fonte"}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
