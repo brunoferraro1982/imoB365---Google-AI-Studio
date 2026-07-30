@@ -20,6 +20,12 @@ import {
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
+// Mesmo valor de construtoraIngestao.ts (duplicado, não importado, pra
+// evitar import circular entre os dois arquivos) — sem timeout, um
+// rate-limit silencioso do Google (conexão pendurada em vez de 429/403)
+// trava a chamada pra sempre.
+const FETCH_TIMEOUT_MS = 15000;
+
 let _ai: InstanceType<typeof GoogleGenAI> | null = null;
 function getAI(): InstanceType<typeof GoogleGenAI> {
   if (_ai) return _ai;
@@ -68,7 +74,9 @@ export async function avaliarFotos(fotos: FotoParaAvaliar[]): Promise<AvaliacaoF
 
     for (const foto of grupo) {
       try {
-        const res = await fetch(foto.thumbnailUrl);
+        const res = await fetch(foto.thumbnailUrl, {
+          signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        });
         if (!res.ok) continue;
         const buf = await res.arrayBuffer();
         const base64 = Buffer.from(buf).toString("base64");

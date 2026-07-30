@@ -6,6 +6,7 @@ import {
   processarIngestao,
   baixarArquivoDrive,
   obterArquivoDrive,
+  DRIVE_TIMEOUT_MS,
 } from "@/lib/construtoraIngestao";
 
 // Botão "Sincronizar agora" (tela de ingestão dentro de /admin/construtoras):
@@ -35,14 +36,17 @@ export const sincronizarIngestaoAgora = createServerFn({ method: "POST" })
     return processarIngestao(supabaseAdmin, { construtoraId: data.construtora_id, forcar: true });
   });
 
-// A thumbnailLink que a Drive API devolve é uma URL assinada de curta
-// duração — o valor gravado em construtora_ingestao_midias no momento da
-// coleta (usado ali mesmo, na mesma sincronização, pra pontuação da IA)
-// expira bem antes do super_admin abrir a tela de revisão depois (achado
-// real: link testado horas depois voltava 403, um pedido novo à Drive API
-// pro mesmo arquivo devolve link fresco e funcional). Por isso a tela de
-// revisão nunca usa o thumbnail_url salvo pra exibir a imagem — sempre
-// busca um link fresco sob demanda, só quando o lote é aberto.
+// A thumbnailLink que a Drive API devolve é uma URL assinada de validade
+// curtíssima (achado real: expira em segundos, não em horas — o valor
+// gravado em construtora_ingestao_midias no momento da coleta é usado ali
+// mesmo, na mesma sincronização, pra pontuação da IA, mas já não serve pra
+// exibir na tela de revisão depois) e além disso é hospedada em
+// lh3.googleusercontent.com — hotlinkar direto num <img src> do navegador
+// também esbarra em rate-limit por IP/referer do lado do Google, então nem
+// pedir um link fresco e devolver a URL crua pro navegador é confiável.
+// Por isso o próprio servidor baixa os bytes do thumbnail (usando o link
+// fresco só internamente, na mesma chamada) e devolve como data URI —
+// o navegador nunca faz nenhuma requisição direta ao Google.
 export const obterThumbnailsFrescos = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ midiaIds: z.array(z.string().uuid()) }).parse(d))
@@ -61,7 +65,15 @@ export const obterThumbnailsFrescos = createServerFn({ method: "POST" })
         if (!m.origem_drive_id) return { id: m.id, thumbnailUrl: null as string | null };
         try {
           const info = await obterArquivoDrive(m.origem_drive_id);
-          return { id: m.id, thumbnailUrl: info?.thumbnailLink ?? null };
+          if (!info?.thumbnailLink) return { id: m.id, thumbnailUrl: null };
+          const res = await fetch(info.thumbnailLink, {
+            signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+          });
+          if (!res.ok) return { id: m.id, thumbnailUrl: null };
+          const buf = await res.arrayBuffer();
+          const base64 = Buffer.from(buf).toString("base64");
+          const mime = res.headers.get("content-type") || "image/jpeg";
+          return { id: m.id, thumbnailUrl: `data:${mime};base64,${base64}` };
         } catch {
           return { id: m.id, thumbnailUrl: null };
         }

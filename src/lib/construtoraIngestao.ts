@@ -99,7 +99,10 @@ function classificarPorMime(mimeType: string): TipoMidia | null {
 // publicamente, então caminhar por qualquer objeto com essas duas chaves é
 // mais robusto que confiar num caminho fixo dentro do JSON.
 export async function crawlLinktree(url: string): Promise<LinkBruto[]> {
-  const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+  const res = await fetch(url, {
+    headers: { "User-Agent": USER_AGENT },
+    signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+  });
   if (!res.ok) return [];
   const html = await res.text();
   const match = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
@@ -160,6 +163,14 @@ function driveApiKey(): string {
   return key;
 }
 
+// Achado real: sem timeout, um rate-limit silencioso do Google (a conexão
+// fica pendurada em vez de devolver um 429/403 limpo) trava a chamada pra
+// sempre — na tela de revisão isso significa TODAS as fotos do lote
+// travadas em "carregando" indefinidamente (um Promise.all esperando uma
+// promise que nunca resolve nem rejeita). Todo fetch à Drive API usa esse
+// timeout, e uma mídia que estoura vira "sem preview", não trava o resto.
+export const DRIVE_TIMEOUT_MS = 15000;
+
 export async function listarPastaDrive(folderId: string): Promise<ArquivoDrive[]> {
   const params = new URLSearchParams({
     q: `'${folderId}' in parents and trashed = false`,
@@ -167,7 +178,9 @@ export async function listarPastaDrive(folderId: string): Promise<ArquivoDrive[]
     pageSize: "100",
     key: driveApiKey(),
   });
-  const res = await fetch(`${DRIVE_API_BASE}/files?${params}`);
+  const res = await fetch(`${DRIVE_API_BASE}/files?${params}`, {
+    signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+  });
   if (!res.ok) return [];
   const json = (await res.json()) as { files?: ArquivoDrive[] };
   return json.files ?? [];
@@ -178,13 +191,17 @@ export async function obterArquivoDrive(fileId: string): Promise<ArquivoDrive | 
     fields: "id,name,mimeType,thumbnailLink",
     key: driveApiKey(),
   });
-  const res = await fetch(`${DRIVE_API_BASE}/files/${fileId}?${params}`);
+  const res = await fetch(`${DRIVE_API_BASE}/files/${fileId}?${params}`, {
+    signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+  });
   if (!res.ok) return null;
   return (await res.json()) as ArquivoDrive;
 }
 
 export async function baixarArquivoDrive(fileId: string): Promise<ArrayBuffer | null> {
-  const res = await fetch(`${DRIVE_API_BASE}/files/${fileId}?alt=media&key=${driveApiKey()}`);
+  const res = await fetch(`${DRIVE_API_BASE}/files/${fileId}?alt=media&key=${driveApiKey()}`, {
+    signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+  });
   if (!res.ok) return null;
   return res.arrayBuffer();
 }
