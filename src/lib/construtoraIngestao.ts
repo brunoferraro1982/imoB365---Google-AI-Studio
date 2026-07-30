@@ -65,6 +65,13 @@ function extractDriveId(url: string): string | null {
 // Heurística por título do link Linktree (nome da pasta/arquivo tal como
 // divulgado, ex.: "Perspectivas", "Lazer", "Plantas", "Vídeo", "Tabela
 // Atualizada") — não depende de IA pra essa parte, só string matching.
+// Heurística deliberadamente simples e imperfeita — cada empreendimento
+// nomeia as pastas do Drive do seu próprio jeito (ex.: "Perspectivas" numa,
+// "Imagens 3D" noutra, achado real testando contra o GMV) e nenhum
+// vocabulário fixo cobre tudo. A classificação de verdade (o que a foto
+// REALMENTE mostra, não o nome da pasta) é da Fase 2 (Gemini vision, olha
+// o pixel, não o rótulo) — "outro" aqui é só um fallback razoável, não um
+// erro a perseguir.
 function classificarPorTitulo(titulo: string): TipoMidia {
   const t = titulo.toLowerCase();
   if (t.includes("planta")) return "foto_planta";
@@ -72,6 +79,9 @@ function classificarPorTitulo(titulo: string): TipoMidia {
   if (t.includes("perspectiva") || t.includes("fachada")) return "foto_fachada";
   if (t.includes("vídeo") || t.includes("video")) return "video";
   if (t.includes("tabela") || t.includes("e-book") || t.includes("ebook")) return "pdf_tabela";
+  if (t.includes("imagem") || t.includes("imagens") || t.includes("foto") || t.includes("3d")) {
+    return "foto_fachada";
+  }
   return "outro";
 }
 
