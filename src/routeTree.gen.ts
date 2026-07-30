@@ -192,6 +192,7 @@ import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.c
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
+import { Route as AdminConstrutorasIdIngestaoRouteImport } from './routes/admin.construtoras_.$id.ingestao'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -1152,6 +1153,12 @@ const ApiPublicCronAtendimentoEmailRoute =
     path: '/api/public/cron/atendimento-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminConstrutorasIdIngestaoRoute =
+  AdminConstrutorasIdIngestaoRouteImport.update({
+    id: '/construtoras_/$id/ingestao',
+    path: '/construtoras/$id/ingestao',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
     id: '/api/public/webhooks/assinatura/$provider',
@@ -1340,6 +1347,7 @@ export interface FileRoutesByFullPath {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
@@ -1526,6 +1534,7 @@ export interface FileRoutesByTo {
   '/app/locacao': typeof AppLocacaoIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
@@ -1718,6 +1727,7 @@ export interface FileRoutesById {
   '/app/locacao/': typeof AppLocacaoIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
@@ -1911,6 +1921,7 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
@@ -2097,6 +2108,7 @@ export interface FileRouteTypes {
     | '/app/locacao'
     | '/app/site'
     | '/conta/chat'
+    | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
@@ -2288,6 +2300,7 @@ export interface FileRouteTypes {
     | '/app/locacao/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras_/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
@@ -3697,6 +3710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronAtendimentoEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/construtoras_/$id/ingestao': {
+      id: '/admin/construtoras_/$id/ingestao'
+      path: '/construtoras/$id/ingestao'
+      fullPath: '/admin/construtoras/$id/ingestao'
+      preLoaderRoute: typeof AdminConstrutorasIdIngestaoRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
       path: '/api/public/webhooks/assinatura/$provider'
@@ -3758,6 +3778,7 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
+  AdminConstrutorasIdIngestaoRoute: typeof AdminConstrutorasIdIngestaoRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
@@ -3776,6 +3797,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
+  AdminConstrutorasIdIngestaoRoute: AdminConstrutorasIdIngestaoRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

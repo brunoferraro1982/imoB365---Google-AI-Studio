@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +24,17 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
-import { Factory, Plus, Search, Trash2, UserPlus, Building2, RefreshCw, Link2 } from "lucide-react";
+import {
+  Factory,
+  Plus,
+  Search,
+  Trash2,
+  UserPlus,
+  Building2,
+  RefreshCw,
+  Link2,
+  ClipboardList,
+} from "lucide-react";
 import { sincronizarIngestaoAgora } from "@/lib/construtoraIngestao.functions";
 
 export const Route = createFileRoute("/admin/construtoras")({
@@ -123,6 +133,7 @@ function AdminConstrutorasPage() {
   >(FONTE_VAZIA);
   const [criandoFonte, setCriandoFonte] = useState(false);
   const [sincronizando, setSincronizando] = useState(false);
+  const [lotesPendentes, setLotesPendentes] = useState(0);
 
   const fnSincronizar = useServerFn(sincronizarIngestaoAgora);
 
@@ -173,6 +184,18 @@ function AdminConstrutorasPage() {
       })),
     );
     setFontes((fontesData ?? []) as FonteIngestao[]);
+
+    const fonteIds = (fontesData ?? []).map((f) => f.id as string);
+    if (fonteIds.length > 0) {
+      const { count } = await supabase
+        .from("construtora_ingestao_lotes")
+        .select("id", { count: "exact", head: true })
+        .in("fonte_id", fonteIds)
+        .eq("status", "pronto_revisao");
+      setLotesPendentes(count ?? 0);
+    } else {
+      setLotesPendentes(0);
+    }
   }
 
   async function criarFonte() {
@@ -791,17 +814,28 @@ function AdminConstrutorasPage() {
                   <h3 className="flex items-center gap-1.5 text-sm font-semibold">
                     <Link2 className="h-4 w-4" /> Fontes de ingestão ({fontes.length})
                   </h3>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={sincronizarAgora}
-                    disabled={sincronizando || fontes.length === 0}
-                  >
-                    <RefreshCw
-                      className={`mr-1.5 h-3.5 w-3.5 ${sincronizando ? "animate-spin" : ""}`}
-                    />
-                    {sincronizando ? "Sincronizando..." : "Sincronizar agora"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Link to="/admin/construtoras/$id/ingestao" params={{ id: selecionada.id }}>
+                      <Button size="sm" variant="outline">
+                        <ClipboardList className="mr-1.5 h-3.5 w-3.5" />
+                        Ver lotes
+                        {lotesPendentes > 0 && (
+                          <Badge className="ml-1.5 h-4 px-1 text-[10px]">{lotesPendentes}</Badge>
+                        )}
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={sincronizarAgora}
+                      disabled={sincronizando || fontes.length === 0}
+                    >
+                      <RefreshCw
+                        className={`mr-1.5 h-3.5 w-3.5 ${sincronizando ? "animate-spin" : ""}`}
+                      />
+                      {sincronizando ? "Sincronizando..." : "Sincronizar agora"}
+                    </Button>
+                  </div>
                 </div>
                 <p className="mb-3 text-xs text-muted-foreground">
                   Links (Linktree) de onde puxar automaticamente lançamentos/revendas desta
