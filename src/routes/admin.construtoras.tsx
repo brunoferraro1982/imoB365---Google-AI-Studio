@@ -249,13 +249,12 @@ function AdminConstrutorasPage() {
     if (!selecionada) return;
     setSincronizando(true);
     try {
-      const resultado = await fnSincronizar({ data: { construtora_id: selecionada.id } });
+      await fnSincronizar({ data: { construtora_id: selecionada.id } });
       toast.success(
-        `${resultado.lotesNovos} lote(s) novo(s), ${resultado.lotesAtualizados} atualizado(s), ${resultado.midiasEncontradas} mídia(s) — ${resultado.pdfsProcessados} tabela(s) de preço lida(s), ${resultado.fotosAvaliadas} foto(s) avaliada(s) pela IA.`,
+        "Sincronização iniciada em segundo plano — o ciclo completo pode levar 20+ minutos (crawl + Drive + IA). Reabra a construtora daqui a alguns minutos pra ver o progresso.",
       );
-      abrirConstrutora(selecionada);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao sincronizar");
+      toast.error(err instanceof Error ? err.message : "Erro ao iniciar sincronização");
     } finally {
       setSincronizando(false);
     }
