@@ -17,6 +17,19 @@ import {
 // supabase/migrations/20260730100000_construtora_ingestao.sql). Como isso
 // contorna a RLS, checamos super_admin explicitamente aqui, sem depender
 // dela — mesmo padrão de src/lib/captacao.functions.ts.
+//
+// Achado real em produção: o ciclo completo (crawl + Drive + Gemini) leva
+// 20-25+ minutos pro dataset real do GMV — bem além do proxy_read_timeout
+// do nginx (504 Gateway Time-out reproduzido ao vivo) e do timeout padrão
+// do próprio servidor HTTP do Node. Fica errado tentar esticar timeout de
+// proxy pra uma dezena de minutos (trava conexão, não sobrevive a reload
+// de página, etc.) — a correção certa é não esperar a sincronização
+// terminar dentro da requisição: dispara em segundo plano (fire-and-forget,
+// o processo Node continua rodando normalmente depois da resposta, já que
+// isso roda num servidor persistente via systemd, não serverless) e
+// responde na hora. O progresso passa a ser visto reabrindo a construtora
+// depois (ultima_execucao/lotes/mídias já vão atualizando conforme cada
+// fonte é processada).
 export const sincronizarIngestaoAgora = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { construtora_id: string }) =>
@@ -33,7 +46,13 @@ export const sincronizarIngestaoAgora = createServerFn({ method: "POST" })
       throw new Error("Sem permissão para sincronizar ingestão de construtoras.");
     }
 
-    return processarIngestao(supabaseAdmin, { construtoraId: data.construtora_id, forcar: true });
+    processarIngestao(supabaseAdmin, { construtoraId: data.construtora_id, forcar: true }).catch(
+      (err) => {
+        console.error("[construtoraIngestao] sincronização manual falhou em segundo plano:", err);
+      },
+    );
+
+    return { iniciado: true };
   });
 
 // A thumbnailLink que a Drive API devolve é uma URL assinada de validade
