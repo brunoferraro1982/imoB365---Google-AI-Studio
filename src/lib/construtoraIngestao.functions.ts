@@ -210,6 +210,11 @@ export const aprovarLote = createServerFn({ method: "POST" })
     z
       .object({
         loteId: z.string().uuid(),
+        // Tipo escolhido pelo super_admin na revisão — sobrescreve o
+        // tipo_alvo herdado da fonte (achado real: nem todo lote de uma
+        // fonte "Lançamento" é de fato um empreendimento com várias
+        // unidades, ex. "Residencial Telavive" era 1 imóvel avulso).
+        tipoAlvo: z.enum(["empreendimento", "imovel"]),
         destinos: z.array(DestinoSchema).min(1),
         midiaIds: z.array(z.string().uuid()),
         nome: z.string().min(1),
@@ -236,12 +241,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
       .maybeSingle();
     if (loteErr || !lote) throw new Error("Lote não encontrado.");
 
-    const { data: fonte } = await supabaseAdmin
-      .from("construtora_fontes_ingestao")
-      .select("tipo_alvo")
-      .eq("id", lote.fonte_id)
-      .maybeSingle();
-    const tipoAlvo = (fonte?.tipo_alvo as "empreendimento" | "imovel") ?? "empreendimento";
+    const tipoAlvo = data.tipoAlvo;
 
     const { data: midiasSelecionadas } = await supabaseAdmin
       .from("construtora_ingestao_midias")
@@ -410,10 +410,18 @@ export const aprovarLote = createServerFn({ method: "POST" })
       }
     }
 
-    await supabaseAdmin
+    // tipo_alvo_override ainda não está em types.ts (coluna nova, requer
+    // regenerar os tipos) — mesmo cast já usado nesta feature pra tabela/
+    // coluna nova sem regeneração de tipos ainda.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabaseAdmin as any)
       .from("construtora_ingestao_lotes")
       .update({
         status: "aprovado",
+        // Fica gravado como escolha definitiva do lote (não só desta
+        // submissão) — se o mesmo lote for aprovado de novo depois pra
+        // mais destinos, reabre já com o mesmo tipo escolhido aqui.
+        tipo_alvo_override: tipoAlvo,
         empreendimento_id: ultimoEmpreendimentoId,
         imovel_id: ultimoImovelId,
         revisado_por: userId,
