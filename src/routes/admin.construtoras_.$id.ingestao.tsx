@@ -10,6 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NumberInput } from "@/components/ui/number-input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -55,6 +62,11 @@ type Lote = {
   erro_mensagem: string | null;
   empreendimento_id: string | null;
   imovel_id: string | null;
+  // Sobrescreve o tipo_alvo herdado da fonte pra este lote específico —
+  // achado real: nem todo lote de uma fonte "Lançamento" é de fato um
+  // empreendimento (ex.: "Residencial Telavive" era 1 imóvel avulso).
+  // NULL até o super_admin escolher/aprovar pela primeira vez.
+  tipo_alvo_override: TipoAlvo | null;
 };
 
 type Midia = {
@@ -85,6 +97,7 @@ type Aprovacao = { tenantId: string; corretorId: string | null; label: string };
 
 type EstadoLote = {
   nome: string;
+  tipoAlvoEfetivo: TipoAlvo;
   destinos: Destino[];
   buscaDestino: string;
   resultadosBuscaDestino: Destino[];
@@ -164,11 +177,14 @@ function IngestaoRevisaoPage() {
     const { data: lotesData } = await supabase
       .from("construtora_ingestao_lotes")
       .select(
-        "id,fonte_id,nome_bruto,link_origem,status,dados_extraidos,erro_mensagem,empreendimento_id,imovel_id",
+        // tipo_alvo_override ainda não está em types.ts (coluna nova) —
+        // string solta no select ainda funciona em runtime, só perde o
+        // autocomplete/checagem de tipo dessa coluna específica.
+        "id,fonte_id,nome_bruto,link_origem,status,dados_extraidos,erro_mensagem,empreendimento_id,imovel_id,tipo_alvo_override",
       )
       .in("fonte_id", fonteIds)
       .order("created_at", { ascending: false });
-    setLotes((lotesData ?? []) as Lote[]);
+    setLotes((lotesData ?? []) as unknown as Lote[]);
     setLoading(false);
   }
 
@@ -184,10 +200,13 @@ function IngestaoRevisaoPage() {
       key: crypto.randomUUID(),
     }));
     const primeira = unidadesBase[0];
+    const tipoInicial: TipoAlvo =
+      lote.tipo_alvo_override ?? fontes.get(lote.fonte_id)?.tipo_alvo ?? "empreendimento";
     setEstados((prev) => ({
       ...prev,
       [lote.id]: {
         nome: lote.nome_bruto,
+        tipoAlvoEfetivo: tipoInicial,
         destinos: [],
         buscaDestino: "",
         resultadosBuscaDestino: [],
@@ -275,10 +294,10 @@ function IngestaoRevisaoPage() {
       patchEstado(lote.id, { resultadosBuscaDestino: [] });
       return;
     }
-    const fonte = fontes.get(lote.fonte_id);
+    const tipoAlvoEfetivo = estados[lote.id]?.tipoAlvoEfetivo;
     const [{ data: tenantsData }, corretoresRes] = await Promise.all([
       supabase.from("tenants").select("id,nome").ilike("nome", `%${termo}%`).limit(8),
-      fonte?.tipo_alvo === "imovel"
+      tipoAlvoEfetivo === "imovel"
         ? supabase
             .from("corretores")
             .select("id,nome,tenant_id")
@@ -381,8 +400,7 @@ function IngestaoRevisaoPage() {
 
   async function aprovar(lote: Lote) {
     const estado = estados[lote.id];
-    const fonte = fontes.get(lote.fonte_id);
-    if (!estado || !fonte) return;
+    if (!estado) return;
     if (estado.destinos.length === 0) {
       toast.error("Selecione ao menos uma imobiliária ou corretor.");
       return;
@@ -392,6 +410,7 @@ function IngestaoRevisaoPage() {
       const resultado = await fnAprovar({
         data: {
           loteId: lote.id,
+          tipoAlvo: estado.tipoAlvoEfetivo,
           destinos: estado.destinos.map((d) => ({
             tenantId: d.tenantId,
             corretorId: d.corretorId,
@@ -399,11 +418,11 @@ function IngestaoRevisaoPage() {
           midiaIds: Array.from(estado.midiasSelecionadas),
           nome: estado.nome.trim() || lote.nome_bruto,
           unidades:
-            fonte.tipo_alvo === "empreendimento"
+            estado.tipoAlvoEfetivo === "empreendimento"
               ? estado.unidades.filter((u) => u.numero.trim()).map(({ key: _key, ...u }) => u)
               : undefined,
           imovel:
-            fonte.tipo_alvo === "imovel"
+            estado.tipoAlvoEfetivo === "imovel"
               ? {
                   preco: estado.imovelPreco,
                   area_total: estado.imovelArea,
@@ -417,7 +436,7 @@ function IngestaoRevisaoPage() {
       const falhas = resultado.resultados.filter((r) => r.erro);
       if (sucesso > 0) {
         toast.success(
-          `${sucesso} rascunho(s) criado(s) — publicado=false, revise em ${fonte.tipo_alvo === "empreendimento" ? "/app/empreendimentos" : "/app/imoveis"}.`,
+          `${sucesso} rascunho(s) criado(s) — publicado=false, revise em ${estado.tipoAlvoEfetivo === "empreendimento" ? "/app/empreendimentos" : "/app/imoveis"}.`,
         );
       }
       for (const f of falhas) {
@@ -502,6 +521,8 @@ function IngestaoRevisaoPage() {
       <Accordion type="multiple" className="rounded-xl border border-border bg-card px-4">
         {lotesFiltrados.map((lote) => {
           const fonte = fontes.get(lote.fonte_id);
+          const tipoAlvoPadrao: TipoAlvo =
+            lote.tipo_alvo_override ?? fonte?.tipo_alvo ?? "empreendimento";
           const st = STATUS_LABEL[lote.status] ?? {
             label: lote.status,
             variant: "outline" as const,
@@ -515,7 +536,9 @@ function IngestaoRevisaoPage() {
                 <div className="flex flex-1 flex-wrap items-center gap-2 pr-2 text-left">
                   <span className="font-medium">{lote.nome_bruto}</span>
                   <Badge variant="outline" className="text-[10px]">
-                    {fonte?.tipo_alvo === "imovel" ? "Revenda" : "Lançamento"}
+                    {(estado?.tipoAlvoEfetivo ?? tipoAlvoPadrao) === "imovel"
+                      ? "Revenda"
+                      : "Lançamento"}
                   </Badge>
                   <Badge variant={st.variant} className="text-[10px]">
                     {st.label}
@@ -567,7 +590,37 @@ function IngestaoRevisaoPage() {
 
                     {podeRevisar && (
                       <>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="grid gap-3 sm:grid-cols-3">
+                          <div>
+                            <Label className="mb-1 block text-xs uppercase text-muted-foreground">
+                              Tipo
+                            </Label>
+                            <Select
+                              value={estado.tipoAlvoEfetivo}
+                              onValueChange={(v) =>
+                                patchEstado(lote.id, {
+                                  tipoAlvoEfetivo: v as TipoAlvo,
+                                  // troca de tipo pode mudar quem faz sentido
+                                  // como destino (corretor só existe pra
+                                  // imóvel avulso) — limpa a busca em
+                                  // andamento pra evitar confusão, mas
+                                  // mantém os destinos já escolhidos.
+                                  buscaDestino: "",
+                                  resultadosBuscaDestino: [],
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="empreendimento">
+                                  Lançamento (empreendimento)
+                                </SelectItem>
+                                <SelectItem value="imovel">Imóvel avulso (revenda)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <div>
                             <Label className="mb-1 block text-xs uppercase text-muted-foreground">
                               Nome
@@ -638,7 +691,7 @@ function IngestaoRevisaoPage() {
                           </div>
                         </div>
 
-                        {fonte?.tipo_alvo === "empreendimento" ? (
+                        {estado.tipoAlvoEfetivo === "empreendimento" ? (
                           <div>
                             <div className="mb-2 flex items-center justify-between">
                               <Label className="text-xs uppercase text-muted-foreground">
