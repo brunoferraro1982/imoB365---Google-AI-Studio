@@ -156,6 +156,7 @@ import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
 import { Route as AppAtendimentoPainelRouteImport } from './routes/app.atendimento.painel'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
+import { Route as ApiPublicSitemapIndexDotxmlRouteImport } from './routes/api.public.sitemap-index[.]xml'
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiSugestaoChamadoRouteImport } from './routes/api.ai.sugestao-chamado'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
@@ -952,6 +953,12 @@ const ApiPublicStatusDotjsonRoute = ApiPublicStatusDotjsonRouteImport.update({
   path: '/api/public/status.json',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSitemapIndexDotxmlRoute =
+  ApiPublicSitemapIndexDotxmlRouteImport.update({
+    id: '/api/public/sitemap-index.xml',
+    path: '/api/public/sitemap-index.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   id: '/api/public/health',
   path: '/api/public/health',
@@ -1278,6 +1285,7 @@ export interface FileRoutesByFullPath {
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
@@ -1465,6 +1473,7 @@ export interface FileRoutesByTo {
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
@@ -1658,6 +1667,7 @@ export interface FileRoutesById {
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
   '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
@@ -1852,6 +1862,7 @@ export interface FileRouteTypes {
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
+    | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/atendimento/painel'
@@ -2039,6 +2050,7 @@ export interface FileRouteTypes {
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
+    | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/atendimento/painel'
@@ -2231,6 +2243,7 @@ export interface FileRouteTypes {
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
+    | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
     | '/app/atendimento/painel'
@@ -2392,6 +2405,7 @@ export interface RootRouteChildren {
   ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
   ApiAiSugestaoChamadoRoute: typeof ApiAiSugestaoChamadoRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicSitemapIndexDotxmlRoute: typeof ApiPublicSitemapIndexDotxmlRoute
   ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
   ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
@@ -3458,6 +3472,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicStatusDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sitemap-index.xml': {
+      id: '/api/public/sitemap-index.xml'
+      path: '/api/public/sitemap-index.xml'
+      fullPath: '/api/public/sitemap-index.xml'
+      preLoaderRoute: typeof ApiPublicSitemapIndexDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/health': {
       id: '/api/public/health'
       path: '/api/public/health'
@@ -4083,6 +4104,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAiAssistenteRoute: ApiAiAssistenteRoute,
   ApiAiSugestaoChamadoRoute: ApiAiSugestaoChamadoRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicSitemapIndexDotxmlRoute: ApiPublicSitemapIndexDotxmlRoute,
   ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
   ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
