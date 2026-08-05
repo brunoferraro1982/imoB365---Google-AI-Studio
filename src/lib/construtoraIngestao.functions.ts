@@ -143,6 +143,11 @@ const UnidadeSchema = z.object({
   preco: z.number().nullable().optional(),
 });
 
+const DestinoSchema = z.object({
+  tenantId: z.string().uuid(),
+  corretorId: z.string().uuid().nullable().optional(),
+});
+
 // Copia as fotos aprovadas do Drive (resolução real, não o thumbnail usado
 // só pra pontuação) pro bucket público imovel-fotos — só as efetivamente
 // selecionadas na revisão, nunca todo o lote. Retorna as public URLs, na
@@ -182,20 +187,30 @@ async function copiarMidiasParaBucket(
   return resultado;
 }
 
-// Aprova um lote: cria o rascunho real (empreendimento ou imóvel avulso,
-// conforme tipo_alvo da fonte) já com as fotos escolhidas na revisão, mas
-// SEMPRE publicado=false — quem decide publicar é o fluxo normal já
-// existente em /app/empreendimentos ou /app/imoveis, nunca este endpoint.
-// Preços/unidades extraídos por IA (dados_extraidos) são só o ponto de
-// partida — o super_admin edita antes de aprovar (unidades vêm já
-// editadas do client, não são relidas de dados_extraidos aqui).
+// Aprova um lote pra um ou mais destinos ao mesmo tempo (imobiliária e/ou
+// corretor individual) — cada destino selecionado vira um rascunho
+// independente (empreendimento ou imóvel avulso, conforme tipo_alvo da
+// fonte), já com as fotos escolhidas na revisão, mas SEMPRE
+// publicado=false — quem decide publicar é o fluxo normal já existente em
+// /app/empreendimentos ou /app/imoveis, nunca este endpoint. Preços/
+// unidades extraídos por IA (dados_extraidos) são só o ponto de partida —
+// o super_admin edita antes de aprovar (unidades vêm já editadas do
+// client, não são relidas de dados_extraidos aqui).
+//
+// Um destino falhando (ex.: tenant inválido) não impede os demais — cada
+// um roda isolado, e o resultado por destino volta na resposta pra UI
+// reportar exatamente o que deu certo/errado. Não bloqueia reaprovar um
+// lote já aprovado antes: o pedido explícito foi poder atribuir a MAIS
+// destinos depois, não só na primeira aprovação — só o par exato
+// (tenant+corretor) já usado antes é que fica bloqueado, pela constraint
+// de unicidade de construtora_ingestao_aprovacoes.
 export const aprovarLote = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
     z
       .object({
         loteId: z.string().uuid(),
-        tenantId: z.string().uuid(),
+        destinos: z.array(DestinoSchema).min(1),
         midiaIds: z.array(z.string().uuid()),
         nome: z.string().min(1),
         unidades: z.array(UnidadeSchema).optional(),
@@ -220,7 +235,6 @@ export const aprovarLote = createServerFn({ method: "POST" })
       .eq("id", data.loteId)
       .maybeSingle();
     if (loteErr || !lote) throw new Error("Lote não encontrado.");
-    if (lote.status === "aprovado") throw new Error("Este lote já foi aprovado.");
 
     const { data: fonte } = await supabaseAdmin
       .from("construtora_fontes_ingestao")
@@ -237,89 +251,162 @@ export const aprovarLote = createServerFn({ method: "POST" })
         data.midiaIds.length > 0 ? data.midiaIds : ["00000000-0000-0000-0000-000000000000"],
       );
 
-    let empreendimentoId: string | null = null;
-    let imovelId: string | null = null;
+    // Checa destinos já aprovados ANTES de criar qualquer rascunho — achado
+    // real testando: sem esse check, tentar aprovar o mesmo destino duas
+    // vezes criava um empreendimento/imóvel órfão (a constraint de
+    // unicidade só barra depois, no insert em construtora_ingestao_aprovacoes,
+    // quando o rascunho duplicado já foi criado).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: aprovacoesExistentes } = await (supabaseAdmin as any)
+      .from("construtora_ingestao_aprovacoes")
+      .select("tenant_id,corretor_id")
+      .eq("lote_id", data.loteId);
+    const jaAprovado = new Set(
+      (aprovacoesExistentes ?? []).map(
+        (a: { tenant_id: string; corretor_id: string | null }) =>
+          `${a.tenant_id}:${a.corretor_id ?? ""}`,
+      ),
+    );
 
-    if (tipoAlvo === "empreendimento") {
-      const { data: emp, error: empErr } = await supabaseAdmin
-        .from("empreendimentos")
-        .insert({
-          tenant_id: data.tenantId,
-          nome: data.nome,
-          slug: slugifyLote(data.nome),
-          construtora_id: lote.construtora_id,
-          publicado: false,
-          fotos_urls: [],
-        })
-        .select("id")
-        .single();
-      if (empErr || !emp) throw new Error(empErr?.message ?? "Erro ao criar empreendimento.");
-      empreendimentoId = emp.id;
+    const resultados: {
+      tenantId: string;
+      corretorId: string | null;
+      empreendimentoId: string | null;
+      imovelId: string | null;
+      erro?: string;
+    }[] = [];
+    let ultimoEmpreendimentoId: string | null = null;
+    let ultimoImovelId: string | null = null;
 
-      const copiadas = await copiarMidiasParaBucket(
-        midiasSelecionadas ?? [],
-        `${data.tenantId}/emp-${emp.id}`,
-      );
-      if (copiadas.length > 0) {
-        await supabaseAdmin
-          .from("empreendimentos")
-          .update({ fotos_urls: copiadas.map((c) => c.publicUrl) })
-          .eq("id", emp.id);
-        for (const c of copiadas) {
-          await supabaseAdmin
-            .from("construtora_ingestao_midias")
-            .update({ storage_path: c.path, aprovada: true })
-            .eq("id", c.midiaId);
+    for (const destino of data.destinos) {
+      if (jaAprovado.has(`${destino.tenantId}:${destino.corretorId ?? ""}`)) {
+        resultados.push({
+          tenantId: destino.tenantId,
+          corretorId: destino.corretorId ?? null,
+          empreendimentoId: null,
+          imovelId: null,
+          erro: "Este lote já foi aprovado pra este destino.",
+        });
+        continue;
+      }
+      let empreendimentoId: string | null = null;
+      let imovelId: string | null = null;
+      try {
+        if (tipoAlvo === "empreendimento") {
+          const { data: emp, error: empErr } = await supabaseAdmin
+            .from("empreendimentos")
+            .insert({
+              tenant_id: destino.tenantId,
+              nome: data.nome,
+              slug: slugifyLote(data.nome),
+              construtora_id: lote.construtora_id,
+              publicado: false,
+              fotos_urls: [],
+            })
+            .select("id")
+            .single();
+          if (empErr || !emp) throw new Error(empErr?.message ?? "Erro ao criar empreendimento.");
+          empreendimentoId = emp.id;
+
+          const copiadas = await copiarMidiasParaBucket(
+            midiasSelecionadas ?? [],
+            `${destino.tenantId}/emp-${emp.id}`,
+          );
+          if (copiadas.length > 0) {
+            await supabaseAdmin
+              .from("empreendimentos")
+              .update({ fotos_urls: copiadas.map((c) => c.publicUrl) })
+              .eq("id", emp.id);
+            for (const c of copiadas) {
+              await supabaseAdmin
+                .from("construtora_ingestao_midias")
+                .update({ storage_path: c.path, aprovada: true })
+                .eq("id", c.midiaId);
+            }
+          }
+
+          for (const u of data.unidades ?? []) {
+            await supabaseAdmin.from("empreendimento_unidades").insert({
+              empreendimento_id: emp.id,
+              tenant_id: destino.tenantId,
+              numero: u.numero,
+              bloco: u.bloco ?? null,
+              andar: u.andar ?? null,
+              tipo_planta: u.tipo_planta ?? null,
+              area: u.area ?? null,
+              preco: u.preco ?? null,
+            });
+          }
+        } else {
+          const { data: imovel, error: imovelErr } = await supabaseAdmin
+            .from("imoveis")
+            .insert({
+              tenant_id: destino.tenantId,
+              titulo: data.nome,
+              slug: slugifyLote(data.nome),
+              publicado: false,
+              corretor_responsavel_id: destino.corretorId ?? undefined,
+              preco: data.imovel?.preco ?? undefined,
+              area_total: data.imovel?.area_total ?? undefined,
+              quartos: data.imovel?.quartos ?? undefined,
+              descricao: data.imovel?.descricao ?? undefined,
+            })
+            .select("id")
+            .single();
+          if (imovelErr || !imovel) throw new Error(imovelErr?.message ?? "Erro ao criar imóvel.");
+          imovelId = imovel.id;
+
+          const copiadas = await copiarMidiasParaBucket(
+            midiasSelecionadas ?? [],
+            `${destino.tenantId}/${imovel.id}`,
+          );
+          for (let i = 0; i < copiadas.length; i++) {
+            const c = copiadas[i];
+            await supabaseAdmin.from("imovel_fotos").insert({
+              imovel_id: imovel.id,
+              tenant_id: destino.tenantId,
+              storage_path: c.path,
+              ordem: i,
+              capa: i === 0,
+            });
+            await supabaseAdmin
+              .from("construtora_ingestao_midias")
+              .update({ storage_path: c.path, aprovada: true })
+              .eq("id", c.midiaId);
+          }
         }
-      }
 
-      for (const u of data.unidades ?? []) {
-        await supabaseAdmin.from("empreendimento_unidades").insert({
-          empreendimento_id: emp.id,
-          tenant_id: data.tenantId,
-          numero: u.numero,
-          bloco: u.bloco ?? null,
-          andar: u.andar ?? null,
-          tipo_planta: u.tipo_planta ?? null,
-          area: u.area ?? null,
-          preco: u.preco ?? null,
-        });
-      }
-    } else {
-      const { data: imovel, error: imovelErr } = await supabaseAdmin
-        .from("imoveis")
-        .insert({
-          tenant_id: data.tenantId,
-          titulo: data.nome,
-          slug: slugifyLote(data.nome),
-          publicado: false,
-          preco: data.imovel?.preco ?? undefined,
-          area_total: data.imovel?.area_total ?? undefined,
-          quartos: data.imovel?.quartos ?? undefined,
-          descricao: data.imovel?.descricao ?? undefined,
-        })
-        .select("id")
-        .single();
-      if (imovelErr || !imovel) throw new Error(imovelErr?.message ?? "Erro ao criar imóvel.");
-      imovelId = imovel.id;
+        // construtora_ingestao_aprovacoes ainda não está em types.ts (tabela
+        // nova, requer regenerar os tipos) — mesmo cast já usado em outros
+        // pontos do projeto pra tabela nova sem regeneração de tipos ainda.
+        const { error: aprovacaoErr } = await (supabaseAdmin as any)
+          .from("construtora_ingestao_aprovacoes")
+          .insert({
+            lote_id: data.loteId,
+            tenant_id: destino.tenantId,
+            corretor_id: destino.corretorId ?? null,
+            empreendimento_id: empreendimentoId,
+            imovel_id: imovelId,
+            aprovado_por: userId,
+          });
 
-      const copiadas = await copiarMidiasParaBucket(
-        midiasSelecionadas ?? [],
-        `${data.tenantId}/${imovel.id}`,
-      );
-      for (let i = 0; i < copiadas.length; i++) {
-        const c = copiadas[i];
-        await supabaseAdmin.from("imovel_fotos").insert({
-          imovel_id: imovel.id,
-          tenant_id: data.tenantId,
-          storage_path: c.path,
-          ordem: i,
-          capa: i === 0,
+        resultados.push({
+          tenantId: destino.tenantId,
+          corretorId: destino.corretorId ?? null,
+          empreendimentoId,
+          imovelId,
+          erro: aprovacaoErr?.message,
         });
-        await supabaseAdmin
-          .from("construtora_ingestao_midias")
-          .update({ storage_path: c.path, aprovada: true })
-          .eq("id", c.midiaId);
+        ultimoEmpreendimentoId = empreendimentoId ?? ultimoEmpreendimentoId;
+        ultimoImovelId = imovelId ?? ultimoImovelId;
+      } catch (err) {
+        resultados.push({
+          tenantId: destino.tenantId,
+          corretorId: destino.corretorId ?? null,
+          empreendimentoId,
+          imovelId,
+          erro: err instanceof Error ? err.message : "Erro desconhecido",
+        });
       }
     }
 
@@ -327,14 +414,14 @@ export const aprovarLote = createServerFn({ method: "POST" })
       .from("construtora_ingestao_lotes")
       .update({
         status: "aprovado",
-        empreendimento_id: empreendimentoId,
-        imovel_id: imovelId,
+        empreendimento_id: ultimoEmpreendimentoId,
+        imovel_id: ultimoImovelId,
         revisado_por: userId,
         revisado_em: new Date().toISOString(),
       })
       .eq("id", data.loteId);
 
-    return { empreendimentoId, imovelId };
+    return { resultados };
   });
 
 export const rejeitarLote = createServerFn({ method: "POST" })
