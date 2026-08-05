@@ -10,13 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NumberInput } from "@/components/ui/number-input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -34,6 +27,9 @@ import {
   ImageOff,
   FileText,
   Video,
+  Search,
+  Building2,
+  User,
 } from "lucide-react";
 import {
   aprovarLote,
@@ -79,11 +75,20 @@ type UnidadeEditavel = {
   preco: number | null;
 };
 
-type Parceria = { tenant_id: string; tenant_nome: string };
+// tenantId + corretorId=null → destino é a imobiliária como um todo;
+// corretorId preenchido → destino é aquele corretor específico (dentro
+// do tenant dele) — só faz sentido pra revendas (tipo_alvo=imovel),
+// empreendimentos não têm campo de corretor responsável.
+type Destino = { tenantId: string; corretorId: string | null; label: string };
+
+type Aprovacao = { tenantId: string; corretorId: string | null; label: string };
 
 type EstadoLote = {
   nome: string;
-  tenantId: string;
+  destinos: Destino[];
+  buscaDestino: string;
+  resultadosBuscaDestino: Destino[];
+  aprovacoesExistentes: Aprovacao[] | null;
   unidades: (UnidadeEditavel & { key: string })[];
   imovelPreco: number | null;
   imovelArea: number | null;
@@ -118,6 +123,10 @@ function novaUnidade(): UnidadeEditavel & { key: string } {
   };
 }
 
+function chaveDestino(d: { tenantId: string; corretorId: string | null }) {
+  return `${d.tenantId}:${d.corretorId ?? ""}`;
+}
+
 function IngestaoRevisaoPage() {
   const { id } = Route.useParams();
   const { confirmDialog, ConfirmDialog } = useConfirm();
@@ -128,36 +137,23 @@ function IngestaoRevisaoPage() {
   const [nomeConstrutora, setNomeConstrutora] = useState("");
   const [fontes, setFontes] = useState<Map<string, Fonte>>(new Map());
   const [lotes, setLotes] = useState<Lote[]>([]);
-  const [parcerias, setParcerias] = useState<Parceria[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtro, setFiltro] = useState<"pendentes" | "todos">("pendentes");
   const [estados, setEstados] = useState<Record<string, EstadoLote>>({});
 
   async function load() {
     setLoading(true);
-    const [{ data: construtora }, { data: fontesData }, { data: parceriasData }] =
-      await Promise.all([
-        supabase.from("construtoras").select("nome").eq("id", id).maybeSingle(),
-        supabase
-          .from("construtora_fontes_ingestao")
-          .select("id,nome,tipo_alvo")
-          .eq("construtora_id", id),
-        supabase
-          .from("construtora_tenant_parceria")
-          .select("tenant_id,tenants(nome)")
-          .eq("construtora_id", id),
-      ]);
+    const [{ data: construtora }, { data: fontesData }] = await Promise.all([
+      supabase.from("construtoras").select("nome").eq("id", id).maybeSingle(),
+      supabase
+        .from("construtora_fontes_ingestao")
+        .select("id,nome,tipo_alvo")
+        .eq("construtora_id", id),
+    ]);
     setNomeConstrutora((construtora as { nome: string } | null)?.nome ?? "");
     const mapaFontes = new Map<string, Fonte>();
     for (const f of (fontesData ?? []) as Fonte[]) mapaFontes.set(f.id, f);
     setFontes(mapaFontes);
-    setParcerias(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ((parceriasData ?? []) as any[]).map((p) => ({
-        tenant_id: p.tenant_id,
-        tenant_nome: p.tenants?.nome ?? "—",
-      })),
-    );
 
     const fonteIds = Array.from(mapaFontes.keys());
     if (fonteIds.length === 0) {
@@ -183,7 +179,6 @@ function IngestaoRevisaoPage() {
 
   async function abrirLote(lote: Lote) {
     if (estados[lote.id]) return; // já inicializado
-    const parceriaUnica = parcerias.length === 1 ? parcerias[0].tenant_id : "";
     const unidadesBase = (lote.dados_extraidos?.unidades ?? []).map((u) => ({
       ...u,
       key: crypto.randomUUID(),
@@ -193,7 +188,10 @@ function IngestaoRevisaoPage() {
       ...prev,
       [lote.id]: {
         nome: lote.nome_bruto,
-        tenantId: parceriaUnica,
+        destinos: [],
+        buscaDestino: "",
+        resultadosBuscaDestino: [],
+        aprovacoesExistentes: null,
         unidades: unidadesBase,
         imovelPreco: primeira?.preco ?? null,
         imovelArea: primeira?.area ?? null,
@@ -204,6 +202,39 @@ function IngestaoRevisaoPage() {
         salvando: false,
       },
     }));
+
+    if (lote.status === "aprovado") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: aprovacoesData } = await (supabase as any)
+        .from("construtora_ingestao_aprovacoes")
+        .select("tenant_id,corretor_id")
+        .eq("lote_id", lote.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const linhas = (aprovacoesData ?? []) as any[];
+      const tenantIds = [...new Set(linhas.map((a) => a.tenant_id))];
+      const corretorIds = linhas.map((a) => a.corretor_id).filter(Boolean);
+      const [{ data: tenantsData }, { data: corretoresData }] = await Promise.all([
+        tenantIds.length > 0
+          ? supabase.from("tenants").select("id,nome").in("id", tenantIds)
+          : Promise.resolve({ data: [] as { id: string; nome: string }[] }),
+        corretorIds.length > 0
+          ? supabase.from("corretores").select("id,nome").in("id", corretorIds)
+          : Promise.resolve({ data: [] as { id: string; nome: string }[] }),
+      ]);
+      const nomeTenant = new Map((tenantsData ?? []).map((t) => [t.id, t.nome]));
+      const nomeCorretor = new Map((corretoresData ?? []).map((c) => [c.id, c.nome]));
+      const aprovacoes: Aprovacao[] = linhas.map((a) => ({
+        tenantId: a.tenant_id,
+        corretorId: a.corretor_id,
+        label: a.corretor_id
+          ? `${nomeCorretor.get(a.corretor_id) ?? "Corretor"} — ${nomeTenant.get(a.tenant_id) ?? "?"}`
+          : (nomeTenant.get(a.tenant_id) ?? "?"),
+      }));
+      setEstados((prev) => ({
+        ...prev,
+        [lote.id]: { ...prev[lote.id], aprovacoesExistentes: aprovacoes },
+      }));
+    }
 
     const { data: midiasData } = await supabase
       .from("construtora_ingestao_midias")
@@ -236,6 +267,79 @@ function IngestaoRevisaoPage() {
 
   function patchEstado(loteId: string, patch: Partial<EstadoLote>) {
     setEstados((prev) => ({ ...prev, [loteId]: { ...prev[loteId], ...patch } }));
+  }
+
+  async function buscarDestinos(lote: Lote, termo: string) {
+    patchEstado(lote.id, { buscaDestino: termo });
+    if (termo.trim().length < 2) {
+      patchEstado(lote.id, { resultadosBuscaDestino: [] });
+      return;
+    }
+    const fonte = fontes.get(lote.fonte_id);
+    const [{ data: tenantsData }, corretoresRes] = await Promise.all([
+      supabase.from("tenants").select("id,nome").ilike("nome", `%${termo}%`).limit(8),
+      fonte?.tipo_alvo === "imovel"
+        ? supabase
+            .from("corretores")
+            .select("id,nome,tenant_id")
+            .ilike("nome", `%${termo}%`)
+            .eq("ativo", true)
+            .limit(8)
+        : Promise.resolve({ data: [] as { id: string; nome: string; tenant_id: string }[] }),
+    ]);
+    const corretoresData = corretoresRes.data ?? [];
+
+    const nomePorTenant = new Map((tenantsData ?? []).map((t) => [t.id, t.nome]));
+    const tenantIdsFaltando = [...new Set(corretoresData.map((c) => c.tenant_id))].filter(
+      (tid) => !nomePorTenant.has(tid),
+    );
+    if (tenantIdsFaltando.length > 0) {
+      const { data: extras } = await supabase
+        .from("tenants")
+        .select("id,nome")
+        .in("id", tenantIdsFaltando);
+      for (const t of extras ?? []) nomePorTenant.set(t.id, t.nome);
+    }
+
+    const resultados: Destino[] = [
+      ...(tenantsData ?? []).map((t) => ({
+        tenantId: t.id,
+        corretorId: null,
+        label: t.nome,
+      })),
+      ...corretoresData.map((c) => ({
+        tenantId: c.tenant_id,
+        corretorId: c.id,
+        label: `${c.nome} — ${nomePorTenant.get(c.tenant_id) ?? "?"}`,
+      })),
+    ];
+    patchEstado(lote.id, { resultadosBuscaDestino: resultados });
+  }
+
+  function adicionarDestino(loteId: string, destino: Destino) {
+    setEstados((prev) => {
+      const atual = prev[loteId];
+      if (atual.destinos.some((d) => chaveDestino(d) === chaveDestino(destino))) return prev;
+      return {
+        ...prev,
+        [loteId]: {
+          ...atual,
+          destinos: [...atual.destinos, destino],
+          buscaDestino: "",
+          resultadosBuscaDestino: [],
+        },
+      };
+    });
+  }
+
+  function removerDestino(loteId: string, destino: Destino) {
+    setEstados((prev) => ({
+      ...prev,
+      [loteId]: {
+        ...prev[loteId],
+        destinos: prev[loteId].destinos.filter((d) => chaveDestino(d) !== chaveDestino(destino)),
+      },
+    }));
   }
 
   function toggleMidia(loteId: string, midiaId: string) {
@@ -279,8 +383,8 @@ function IngestaoRevisaoPage() {
     const estado = estados[lote.id];
     const fonte = fontes.get(lote.fonte_id);
     if (!estado || !fonte) return;
-    if (!estado.tenantId) {
-      toast.error("Selecione a imobiliária dona deste rascunho.");
+    if (estado.destinos.length === 0) {
+      toast.error("Selecione ao menos uma imobiliária ou corretor.");
       return;
     }
     patchEstado(lote.id, { salvando: true });
@@ -288,7 +392,10 @@ function IngestaoRevisaoPage() {
       const resultado = await fnAprovar({
         data: {
           loteId: lote.id,
-          tenantId: estado.tenantId,
+          destinos: estado.destinos.map((d) => ({
+            tenantId: d.tenantId,
+            corretorId: d.corretorId,
+          })),
           midiaIds: Array.from(estado.midiasSelecionadas),
           nome: estado.nome.trim() || lote.nome_bruto,
           unidades:
@@ -306,13 +413,21 @@ function IngestaoRevisaoPage() {
               : undefined,
         },
       });
-      toast.success(
-        fonte.tipo_alvo === "empreendimento"
-          ? "Rascunho de empreendimento criado — publicado=false, revise em /app/empreendimentos."
-          : "Rascunho de imóvel criado — publicado=false, revise em /app/imoveis.",
-      );
-      void resultado;
+      const sucesso = resultado.resultados.filter((r) => !r.erro).length;
+      const falhas = resultado.resultados.filter((r) => r.erro);
+      if (sucesso > 0) {
+        toast.success(
+          `${sucesso} rascunho(s) criado(s) — publicado=false, revise em ${fonte.tipo_alvo === "empreendimento" ? "/app/empreendimentos" : "/app/imoveis"}.`,
+        );
+      }
+      for (const f of falhas) {
+        toast.error(`Falhou pra um destino: ${f.erro}`);
+      }
       await load();
+      setEstados((prev) => {
+        const { [lote.id]: _removido, ...resto } = prev;
+        return resto;
+      });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao aprovar lote");
     } finally {
@@ -355,8 +470,8 @@ function IngestaoRevisaoPage() {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Lotes descobertos automaticamente (Linktree/Drive/PDF). Nada aqui publica sozinho —
-          aprovar só cria um rascunho (<code>publicado=false</code>), revisável no fluxo normal de
-          empreendimentos/imóveis.
+          aprovar só cria um rascunho por imobiliária/corretor selecionado (
+          <code>publicado=false</code>), revisável no fluxo normal de empreendimentos/imóveis.
         </p>
       </div>
 
@@ -392,7 +507,7 @@ function IngestaoRevisaoPage() {
             variant: "outline" as const,
           };
           const estado = estados[lote.id];
-          const podeRevisar = lote.status === "pronto_revisao";
+          const podeRevisar = lote.status === "pronto_revisao" || lote.status === "aprovado";
 
           return (
             <AccordionItem key={lote.id} value={lote.id}>
@@ -427,10 +542,22 @@ function IngestaoRevisaoPage() {
                     )}
 
                     {lote.status === "aprovado" && (
-                      <p className="flex items-center gap-1.5 rounded-md bg-secondary/50 px-3 py-2 text-xs">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Aprovado — rascunho criado (
-                        {lote.empreendimento_id ? "empreendimento" : "imóvel"}), publicado=false.
-                      </p>
+                      <div className="rounded-md bg-secondary/50 px-3 py-2 text-xs">
+                        <p className="flex items-center gap-1.5 font-medium">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Aprovado, publicado=false.
+                          {estado.destinos.length === 0 && " Pode atribuir a mais destinos abaixo."}
+                        </p>
+                        {estado.aprovacoesExistentes === null && (
+                          <p className="mt-1 text-muted-foreground">Carregando destinos...</p>
+                        )}
+                        {estado.aprovacoesExistentes && estado.aprovacoesExistentes.length > 0 && (
+                          <ul className="mt-1 list-inside list-disc text-muted-foreground">
+                            {estado.aprovacoesExistentes.map((a) => (
+                              <li key={chaveDestino(a)}>{a.label}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     )}
                     {lote.status === "rejeitado" && (
                       <p className="flex items-center gap-1.5 rounded-md bg-muted px-3 py-2 text-xs">
@@ -452,23 +579,62 @@ function IngestaoRevisaoPage() {
                           </div>
                           <div>
                             <Label className="mb-1 block text-xs uppercase text-muted-foreground">
-                              Imobiliária (rascunho vai pra este tenant)
+                              Imobiliária(s)/corretor(es) — um rascunho pra cada
                             </Label>
-                            <Select
-                              value={estado.tenantId}
-                              onValueChange={(v) => patchEstado(lote.id, { tenantId: v })}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione a imobiliária" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {parcerias.map((p) => (
-                                  <SelectItem key={p.tenant_id} value={p.tenant_id}>
-                                    {p.tenant_nome}
-                                  </SelectItem>
+                            <div className="relative">
+                              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                              <Input
+                                className="pl-8"
+                                placeholder="Buscar imobiliária ou corretor pelo nome..."
+                                value={estado.buscaDestino}
+                                onChange={(e) => buscarDestinos(lote, e.target.value)}
+                              />
+                            </div>
+                            {estado.resultadosBuscaDestino.length > 0 && (
+                              <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto rounded-md border border-border bg-card p-1">
+                                {estado.resultadosBuscaDestino.map((r) => (
+                                  <li key={chaveDestino(r)}>
+                                    <button
+                                      type="button"
+                                      onClick={() => adicionarDestino(lote.id, r)}
+                                      className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-left text-xs hover:bg-muted"
+                                    >
+                                      {r.corretorId ? (
+                                        <User className="h-3 w-3 shrink-0" />
+                                      ) : (
+                                        <Building2 className="h-3 w-3 shrink-0" />
+                                      )}
+                                      {r.label}
+                                    </button>
+                                  </li>
                                 ))}
-                              </SelectContent>
-                            </Select>
+                              </ul>
+                            )}
+                            {estado.destinos.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {estado.destinos.map((d) => (
+                                  <Badge
+                                    key={chaveDestino(d)}
+                                    variant="secondary"
+                                    className="flex items-center gap-1 pr-1 text-[11px]"
+                                  >
+                                    {d.corretorId ? (
+                                      <User className="h-3 w-3" />
+                                    ) : (
+                                      <Building2 className="h-3 w-3" />
+                                    )}
+                                    {d.label}
+                                    <button
+                                      type="button"
+                                      onClick={() => removerDestino(lote.id, d)}
+                                      className="ml-0.5 rounded hover:bg-black/10"
+                                    >
+                                      <XCircle className="h-3 w-3" />
+                                    </button>
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -679,7 +845,11 @@ function IngestaoRevisaoPage() {
                             disabled={estado.salvando}
                             onClick={() => aprovar(lote)}
                           >
-                            {estado.salvando ? "Salvando..." : "Aprovar e criar rascunho"}
+                            {estado.salvando
+                              ? "Salvando..."
+                              : lote.status === "aprovado"
+                                ? "Aprovar pra mais destinos"
+                                : "Aprovar e criar rascunho"}
                           </Button>
                         </div>
                       </>
