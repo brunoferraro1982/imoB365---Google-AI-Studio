@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/public/meta/oauth/callback")({
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
         const appUrl = process.env.APP_URL ?? url.origin;
-        const settingsUrl = `${appUrl}/app/portais`;
+        const settingsUrl = `${appUrl}/app/portais/meta`;
 
         if (!code || !state) {
           return Response.redirect(`${settingsUrl}?meta_error=parametros_ausentes`, 302);
@@ -27,10 +27,18 @@ export const Route = createFileRoute("/api/public/meta/oauth/callback")({
           return Response.redirect(`${settingsUrl}?meta_error=state_invalido`, 302);
         }
 
-        const clientId = process.env.META_APP_ID;
-        const clientSecret = process.env.META_APP_SECRET;
+        // App por tenant (não mais um app único da plataforma) — busca as
+        // credenciais que o próprio tenant colou no Passo 1 do wizard
+        // (ver app.portais.meta.tsx / salvarMetaAppCredentials).
+        const { data: conexao } = await (supabaseAdmin as any)
+          .from("tenant_meta_connections")
+          .select("app_id,app_secret")
+          .eq("tenant_id", verified.tenantId)
+          .maybeSingle();
+        const clientId = conexao?.app_id;
+        const clientSecret = conexao?.app_secret;
         if (!clientId || !clientSecret) {
-          console.error("[meta-oauth-callback] client_id/secret não configurados");
+          console.error("[meta-oauth-callback] tenant sem App configurado", verified.tenantId);
           return Response.redirect(`${settingsUrl}?meta_error=integracao_nao_configurada`, 302);
         }
 

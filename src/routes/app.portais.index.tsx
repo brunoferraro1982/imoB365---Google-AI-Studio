@@ -1,32 +1,23 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { Globe2, Copy, Check, AlertCircle, Info, Facebook, CheckCircle2 } from "lucide-react";
+import { Globe2, Copy, Check, AlertCircle, Info, Facebook, ChevronRight } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PORTAIS } from "@/lib/portais";
-import {
-  getMetaConnectionStatus,
-  getMetaAuthorizeUrl,
-  disconnectMeta,
-} from "@/lib/metaOAuth.functions";
 import { toast } from "sonner";
 
-const META_ERROR_LABEL: Record<string, string> = {
-  parametros_ausentes: "A Meta não retornou os parâmetros esperados.",
-  state_invalido: "A conexão expirou ou é inválida — tente novamente.",
-  integracao_nao_configurada: "Integração com a Meta ainda não configurada.",
-  token_exchange_falhou: "A Meta recusou a autorização — tente novamente.",
-  nenhuma_pagina: "Nenhuma Página do Facebook encontrada nessa conta.",
-  erro_ao_salvar: "Falha ao salvar a conexão. Tente novamente.",
-  erro_inesperado: "Erro inesperado ao conectar. Tente novamente.",
-};
-
-export const Route = createFileRoute("/app/portais")({
+// Precisa ser app.portais.index.tsx (não app.portais.tsx) — no roteamento
+// por arquivo do TanStack Router, ter um app.portais.tsx bare JUNTO com
+// app.portais.meta.tsx cria automaticamente uma relação pai/layout entre os
+// dois (o "pai" precisaria de <Outlet/> pra renderizar o filho, que nunca
+// aparecia — foi um bug real testado ao vivo). Mesmo padrão já usado em
+// app.configuracoes.integracoes-bancarias.index.tsx +
+// .../mercadopago.tsx: dois arquivos .index/.filho são rotas irmãs de
+// verdade, sem nenhum layout implícito entre eles.
+export const Route = createFileRoute("/app/portais/")({
   component: PortaisPage,
 });
 
@@ -42,60 +33,11 @@ type Feed = {
 
 function PortaisPage() {
   const { tenantId, isAdmin } = useAuth();
-  const search = useSearch({ strict: false }) as { meta_connected?: string; meta_error?: string };
   const [feeds, setFeeds] = useState<Record<string, Feed>>({});
   const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [imoveisAtivos, setImoveisAtivos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
-  const [metaConnecting, setMetaConnecting] = useState(false);
-  const [metaDisconnecting, setMetaDisconnecting] = useState(false);
-
-  const fetchMetaStatus = useServerFn(getMetaConnectionStatus);
-  const fetchMetaAuthorizeUrl = useServerFn(getMetaAuthorizeUrl);
-  const metaDisconnect = useServerFn(disconnectMeta);
-  const {
-    data: metaStatus,
-    isLoading: metaLoading,
-    refetch: refetchMeta,
-  } = useQuery({
-    queryKey: ["meta-connection-status"],
-    queryFn: () => fetchMetaStatus(),
-  });
-
-  useEffect(() => {
-    if (search.meta_connected) {
-      toast.success("Conta da Meta conectada com sucesso!");
-      refetchMeta();
-    } else if (search.meta_error) {
-      toast.error(META_ERROR_LABEL[search.meta_error] ?? "Não foi possível conectar à Meta.");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function conectarMeta() {
-    setMetaConnecting(true);
-    try {
-      const { url } = await fetchMetaAuthorizeUrl();
-      window.location.href = url;
-    } catch (e: any) {
-      toast.error(e?.message ?? "Não foi possível iniciar a conexão");
-      setMetaConnecting(false);
-    }
-  }
-
-  async function desconectarMeta() {
-    setMetaDisconnecting(true);
-    try {
-      await metaDisconnect();
-      toast.success("Conta da Meta desconectada");
-      refetchMeta();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Não foi possível desconectar");
-    } finally {
-      setMetaDisconnecting(false);
-    }
-  }
 
   async function load() {
     if (!tenantId) return;
@@ -274,47 +216,17 @@ function PortaisPage() {
                 )}
 
                 {p.slug === "meta" && (
-                  <div className="mt-4 space-y-3 border-t border-border pt-4">
-                    <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      <Facebook className="h-3.5 w-3.5" /> Conexão com sua conta Meta
-                    </div>
-                    {metaLoading ? (
-                      <div className="text-sm text-muted-foreground">Carregando…</div>
-                    ) : metaStatus?.connected ? (
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                          <span>
-                            Conectado à página <strong>{metaStatus.pageName ?? "—"}</strong>
-                          </span>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={desconectarMeta}
-                          disabled={metaDisconnecting}
-                        >
-                          {metaDisconnecting ? "Desconectando…" : "Desconectar"}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs text-muted-foreground">
-                          Conectar sua Página do Facebook permite (numa próxima etapa) receber de
-                          volta os leads gerados por campanhas — opcional, o feed acima já funciona
-                          sem conectar.
-                        </p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={conectarMeta}
-                          disabled={metaConnecting}
-                          className="shrink-0"
-                        >
-                          {metaConnecting ? "Redirecionando…" : "Conectar Facebook"}
-                        </Button>
-                      </div>
-                    )}
+                  <div className="mt-4 border-t border-border pt-4">
+                    <Link
+                      to="/app/portais/meta"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:bg-muted/40"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Facebook className="h-4 w-4 text-muted-foreground" />
+                        Conectar sua conta Meta pra receber de volta os leads de campanhas
+                      </span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    </Link>
                   </div>
                 )}
               </div>
