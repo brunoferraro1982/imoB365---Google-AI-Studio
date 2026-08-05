@@ -1,20 +1,34 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-// Conexão OAuth por tenant com a Meta (Facebook/Instagram) — cada tenant
-// conecta a PRÓPRIA conta Meta via OAuth, contra um único Meta App
-// registrado uma vez pelo imoB365 (META_APP_ID/META_APP_SECRET). Usado pra
-// alimentar o catálogo de produtos (Dynamic Ads/Marketplace, ver
-// api.public.feeds.$tenantSlug.meta-catalog.csv.ts) e, numa fase seguinte,
-// receber de volta os leads de campanhas via Lead Ads webhook — ver
-// supabase/migrations/20260805171000_tenant_meta_connections.sql.
+// Conexão OAuth por tenant com a Meta (Facebook/Instagram) — CADA TENANT
+// TEM O PRÓPRIO META APP (App ID + App Secret, criado pelo próprio tenant
+// no Business Manager dele, colado na tela app.portais.meta.tsx), não um
+// app único compartilhado pelo imoB365. Motivo: leads_retrieval/
+// catalog_management só funcionam em "Standard Access" pra Páginas que o
+// próprio app já possui — um app único gerenciando Páginas de terceiros
+// exigiria App Review + Business Verification da Meta (semanas, sem
+// garantia), inviável de operar centralizado. Usado pra alimentar o
+// catálogo de produtos (ver api.public.feeds.$tenantSlug.meta-catalog.csv.ts)
+// e receber de volta os leads de campanhas via Lead Ads webhook — ver
+// supabase/migrations/20260805190000_tenant_meta_connections_byo_app.sql.
 //
-// Espelha mercadopagoOAuth.functions.ts propositalmente (mesma técnica de
-// state assinado, mesmo split app-único/conexão-por-tenant).
+// Espelha mercadopagoOAuth.functions.ts na técnica (state assinado via
+// HMAC), mas diverge no split app/conexão: lá o app é único da plataforma,
+// aqui o app também é por tenant (mesmo princípio BYO já usado em
+// atendimentoEmail.functions.ts/atendimentoWhatsApp.functions.ts).
 
 const STATE_TTL_MS = 10 * 60 * 1000;
 const META_GRAPH_VERSION = "v21.0";
+
+// Valor único e fixo (não é segredo por-tenant, não precisa vir de env var)
+// que instruímos todo tenant a colar no campo "Token de verificação" do
+// próprio Webhook dele — só prova que quem configurou pegou o valor das
+// instruções do imoB365. A segurança de verdade é a assinatura HMAC do POST
+// (ver api.public.webhooks.meta.ts), essa sim por-tenant.
+export const META_WEBHOOK_VERIFY_TOKEN = "imob365-meta-webhook";
 
 // HMAC via Web Crypto (crypto.subtle) em vez de node:crypto — este arquivo é
 // um *.functions.ts, bundlado pro client também; node:crypto não existe no
@@ -104,6 +118,7 @@ async function resolveTenantId(supabase: any, userId: string): Promise<string> {
 }
 
 export type MetaConnectionStatus = {
+  appConfigured: boolean;
   connected: boolean;
   pageName: string | null;
   connectedAt: string | null;
@@ -117,15 +132,63 @@ export const getMetaConnectionStatus = createServerFn({ method: "POST" })
 
     const { data } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .select("page_name,connected_at")
+      .select("app_id,app_secret,page_name,connected_at")
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
     return {
-      connected: !!data,
+      appConfigured: !!data?.app_id && !!data?.app_secret,
+      connected: !!data?.page_name,
       pageName: data?.page_name ?? null,
       connectedAt: data?.connected_at ?? null,
     };
+  });
+
+const salvarMetaAppCredentialsSchema = z.object({
+  appId: z.string().trim().min(5, "ID do aplicativo inválido").max(40),
+  appSecret: z.string().trim().min(10, "Chave secreta do aplicativo inválida").max(80),
+});
+
+// Passo 1 do wizard (app.portais.meta.tsx): o tenant cola o App ID + App
+// Secret do PRÓPRIO Meta App (criado no próprio Business Manager dele) —
+// ainda não conecta nenhuma Página, só registra as credenciais que o
+// getMetaAuthorizeUrl abaixo vai usar.
+export const salvarMetaAppCredentials = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => salvarMetaAppCredentialsSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+    const tenantId = await resolveTenantId(supabase, userId);
+    await requireTenantAdmin(supabase, userId, tenantId);
+
+    const { error } = await (supabaseAdmin as any)
+      .from("tenant_meta_connections")
+      .upsert(
+        { tenant_id: tenantId, app_id: data.appId, app_secret: data.appSecret },
+        { onConflict: "tenant_id" },
+      );
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
+  });
+
+// Reinício completo — apaga app_id/app_secret junto com qualquer conexão de
+// Página existente. Diferente de disconnectMeta (que só desconecta a
+// Página, preservando o App já configurado).
+export const removerMetaAppCredentials = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+    const tenantId = await resolveTenantId(supabase, userId);
+    await requireTenantAdmin(supabase, userId, tenantId);
+
+    const { error } = await (supabaseAdmin as any)
+      .from("tenant_meta_connections")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
   });
 
 export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
@@ -135,16 +198,22 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     const tenantId = await resolveTenantId(supabase, userId);
     await requireTenantAdmin(supabase, userId, tenantId);
 
-    const clientId = process.env.META_APP_ID;
     const appUrl = process.env.APP_URL;
-    if (!clientId || !appUrl) {
-      throw new Error("Integração com a Meta não configurada (META_APP_ID/APP_URL ausentes)");
+    if (!appUrl) throw new Error("APP_URL não configurada");
+
+    const { data: conexao } = await (supabaseAdmin as any)
+      .from("tenant_meta_connections")
+      .select("app_id")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+    if (!conexao?.app_id) {
+      throw new Error("Configure seu App da Meta (App ID/App Secret) antes de conectar a Página");
     }
 
     const redirectUri = `${appUrl}/api/public/meta/oauth/callback`;
     const state = await signState(tenantId);
     const url = new URL(`https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth`);
-    url.searchParams.set("client_id", clientId);
+    url.searchParams.set("client_id", conexao.app_id);
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set(
       "scope",
@@ -155,6 +224,9 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     return { url: url.toString() };
   });
 
+// Desconecta só a Página (volta pro estado "App configurado, sem Página
+// conectada") — preserva app_id/app_secret pra não obrigar o tenant a
+// redigitar tudo só pra reconectar.
 export const disconnectMeta = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<{ ok: true }> => {
@@ -164,7 +236,7 @@ export const disconnectMeta = createServerFn({ method: "POST" })
 
     const { error } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .delete()
+      .update({ meta_user_id: null, page_id: null, page_name: null, page_access_token: null })
       .eq("tenant_id", tenantId);
     if (error) throw new Error(error.message);
 
