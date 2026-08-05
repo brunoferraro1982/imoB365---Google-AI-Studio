@@ -3,6 +3,9 @@ Allow: /
 Disallow: /app
 Disallow: /admin
 Disallow: /api
+Allow: /api/sitemap.xml
+Allow: /api/public/sitemap-index.xml
+Allow: /api/public/sitemap/
 Disallow: /conta
 
 Sitemap: https://portal.imob365.com.br/api/public/sitemap-index.xml
