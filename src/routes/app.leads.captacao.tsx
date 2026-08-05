@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Radar, Plus, Trash2, Sparkles, Clock, Building2, RefreshCw } from "lucide-react";
+import { Radar, Plus, Trash2, Sparkles, Clock, Building2, RefreshCw, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
   Select,
@@ -28,8 +29,35 @@ import {
   removerCaptacao,
   toggleCaptacao,
   sincronizarCaptacaoAgora,
+  importarMarketplaceManual,
 } from "@/lib/captacao.functions";
 import { toast } from "sonner";
+
+// Facebook Marketplace não tem API pública de leitura e proíbe expressamente
+// coleta automatizada de dados (robots.txt do próprio facebook.com) — ao
+// contrário da Chaves na Mão, não dá pra ter um robô igual pra lá. Em vez
+// disso, o corretor navega o Marketplace no próprio login (uso humano normal,
+// 100% permitido) e cola aqui o link + o texto do anúncio — o parsing abaixo
+// é local (regex sobre texto que o próprio usuário colou), sem nenhuma
+// requisição ao Facebook.
+function parseTextoMarketplace(texto: string): {
+  titulo: string;
+  preco: number | null;
+  descricao: string;
+} {
+  const linhas = texto
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const titulo = (linhas[0] ?? "").slice(0, 200);
+  const precoMatch = texto.match(/R\$\s?([\d.,]+)/);
+  let preco: number | null = null;
+  if (precoMatch) {
+    const num = Number(precoMatch[1].replace(/\./g, "").replace(",", "."));
+    if (!Number.isNaN(num)) preco = num;
+  }
+  return { titulo, preco, descricao: linhas.slice(1).join("\n") };
+}
 
 export const Route = createFileRoute("/app/leads/captacao")({
   component: CaptacaoPage,
@@ -75,6 +103,20 @@ function CaptacaoPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [sincronizando, setSincronizando] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importando, setImportando] = useState(false);
+
+  const [importForm, setImportForm] = useState({
+    url: "",
+    texto_colado: "",
+    titulo: "",
+    preco: "",
+    descricao: "",
+    nome_contato: "",
+    telefone: "",
+    cidade: "",
+    bairro: "",
+  });
 
   const [form, setForm] = useState({
     nome: "",
@@ -93,6 +135,7 @@ function CaptacaoPage() {
   const fnRemover = useServerFn(removerCaptacao);
   const fnToggle = useServerFn(toggleCaptacao);
   const fnSincronizar = useServerFn(sincronizarCaptacaoAgora);
+  const fnImportar = useServerFn(importarMarketplaceManual);
 
   async function load() {
     if (!tenantId) return;
@@ -195,6 +238,64 @@ function CaptacaoPage() {
     if (!confirm("Remover esta busca de captação?")) return;
     await fnRemover({ data: { id } });
     load();
+  }
+
+  function onColarTexto(texto: string) {
+    const { titulo, preco, descricao } = parseTextoMarketplace(texto);
+    setImportForm((f) => ({
+      ...f,
+      texto_colado: texto,
+      titulo: titulo || f.titulo,
+      preco: preco != null ? String(preco) : f.preco,
+      descricao: descricao || f.descricao,
+    }));
+  }
+
+  async function onImportar() {
+    if (!tenantId) return;
+    if (!importForm.url || !importForm.titulo) {
+      toast.error("Preencha ao menos o link e o título do anúncio.");
+      return;
+    }
+    setImportando(true);
+    try {
+      const resultado = await fnImportar({
+        data: {
+          tenant_id: tenantId,
+          url: importForm.url,
+          texto_colado: importForm.texto_colado || null,
+          titulo: importForm.titulo,
+          preco: importForm.preco ? Number(importForm.preco) : null,
+          descricao: importForm.descricao || null,
+          nome_contato: importForm.nome_contato || null,
+          telefone: importForm.telefone || null,
+          cidade: importForm.cidade || null,
+          bairro: importForm.bairro || null,
+        },
+      });
+      if (resultado.duplicado) {
+        toast.info("Esse anúncio já tinha sido importado antes — nenhum lead novo criado.");
+      } else {
+        toast.success("Lead criado a partir do anúncio do Marketplace.");
+      }
+      setImportDialogOpen(false);
+      setImportForm({
+        url: "",
+        texto_colado: "",
+        titulo: "",
+        preco: "",
+        descricao: "",
+        nome_contato: "",
+        telefone: "",
+        cidade: "",
+        bairro: "",
+      });
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erro ao importar anúncio");
+    } finally {
+      setImportando(false);
+    }
   }
 
   if (loading) {
@@ -399,6 +500,113 @@ function CaptacaoPage() {
           ))}
         </div>
       )}
+
+      <section className="mt-8 rounded-xl border border-border bg-card p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Facebook className="h-5 w-5 text-primary" />
+            <div>
+              <h2 className="font-semibold">Importação manual (Facebook Marketplace)</h2>
+              <p className="text-xs text-muted-foreground">
+                O Marketplace não permite robôs — navegue lá no seu próprio login, cole o link e o
+                texto do anúncio aqui pra virar lead no seu funil.
+              </p>
+            </div>
+          </div>
+          <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="mr-1.5 h-4 w-4" /> Importar anúncio
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Importar anúncio do Marketplace</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Link do anúncio *</Label>
+                  <Input
+                    value={importForm.url}
+                    onChange={(e) => setImportForm((f) => ({ ...f, url: e.target.value }))}
+                    placeholder="https://www.facebook.com/marketplace/item/..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Colar o texto do anúncio (opcional)</Label>
+                  <Textarea
+                    rows={4}
+                    value={importForm.texto_colado}
+                    onChange={(e) => onColarTexto(e.target.value)}
+                    placeholder="Selecione tudo que aparece no anúncio (título, preço, descrição) e cole aqui — os campos abaixo são preenchidos automaticamente, mas você pode editar."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Título *</Label>
+                  <Input
+                    value={importForm.titulo}
+                    onChange={(e) => setImportForm((f) => ({ ...f, titulo: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label>Preço (R$)</Label>
+                    <Input
+                      type="number"
+                      value={importForm.preco}
+                      onChange={(e) => setImportForm((f) => ({ ...f, preco: e.target.value }))}
+                    />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <Label>Cidade / bairro</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={importForm.cidade}
+                        onChange={(e) => setImportForm((f) => ({ ...f, cidade: e.target.value }))}
+                        placeholder="Cidade"
+                      />
+                      <Input
+                        value={importForm.bairro}
+                        onChange={(e) => setImportForm((f) => ({ ...f, bairro: e.target.value }))}
+                        placeholder="Bairro"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição</Label>
+                  <Textarea
+                    rows={3}
+                    value={importForm.descricao}
+                    onChange={(e) => setImportForm((f) => ({ ...f, descricao: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label>Nome do contato (se aparecer)</Label>
+                    <Input
+                      value={importForm.nome_contato}
+                      onChange={(e) =>
+                        setImportForm((f) => ({ ...f, nome_contato: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Telefone (se aparecer)</Label>
+                    <Input
+                      value={importForm.telefone}
+                      onChange={(e) => setImportForm((f) => ({ ...f, telefone: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <Button onClick={onImportar} disabled={importando} className="w-full">
+                  {importando ? "Importando..." : "Criar lead a partir do anúncio"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
     </div>
   );
 }
