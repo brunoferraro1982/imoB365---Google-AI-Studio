@@ -197,9 +197,11 @@ import { Route as AdminConstrutorasIdIngestaoRouteImport } from './routes/admin.
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
+import { Route as ApiPublicMetaOauthCallbackRouteImport } from './routes/api.public.meta.oauth.callback'
 import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/api.public.mercadopago.oauth.callback'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
+import { Route as ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport } from './routes/api.public.feeds.$tenantSlug.meta-catalog[.]csv'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -1183,6 +1185,12 @@ const ApiPublicSitemapTenantSlugSitemapDotxmlRoute =
     path: '/api/public/sitemap/$tenantSlug/sitemap.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicMetaOauthCallbackRoute =
+  ApiPublicMetaOauthCallbackRouteImport.update({
+    id: '/api/public/meta/oauth/callback',
+    path: '/api/public/meta/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicMercadopagoOauthCallbackRoute =
   ApiPublicMercadopagoOauthCallbackRouteImport.update({
     id: '/api/public/mercadopago/oauth/callback',
@@ -1199,6 +1207,12 @@ const ApiPublicFeedsTenantSlugOlxDotxmlRoute =
   ApiPublicFeedsTenantSlugOlxDotxmlRouteImport.update({
     id: '/api/public/feeds/$tenantSlug/olx.xml',
     path: '/api/public/feeds/$tenantSlug/olx.xml',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute =
+  ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport.update({
+    id: '/api/public/feeds/$tenantSlug/meta-catalog.csv',
+    path: '/api/public/feeds/$tenantSlug/meta-catalog.csv',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -1388,9 +1402,11 @@ export interface FileRoutesByFullPath {
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
+  '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
   '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
@@ -1576,9 +1592,11 @@ export interface FileRoutesByTo {
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
+  '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
   '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
@@ -1770,9 +1788,11 @@ export interface FileRoutesById {
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
+  '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   '/api/public/v1/imoveis/$slug': typeof ApiPublicV1ImoveisSlugRoute
   '/api/public/webhooks/assinatura/$provider': typeof ApiPublicWebhooksAssinaturaProviderRoute
@@ -1965,9 +1985,11 @@ export interface FileRouteTypes {
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
+    | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/mercadopago/oauth/callback'
+    | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
     | '/api/public/webhooks/assinatura/$provider'
@@ -2153,9 +2175,11 @@ export interface FileRouteTypes {
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias'
     | '/app/locacao/repasses'
+    | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/mercadopago/oauth/callback'
+    | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
     | '/api/public/webhooks/assinatura/$provider'
@@ -2346,9 +2370,11 @@ export interface FileRouteTypes {
     | '/site/$slug_/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
+    | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/mercadopago/oauth/callback'
+    | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
     | '/api/public/v1/imoveis/$slug'
     | '/api/public/webhooks/assinatura/$provider'
@@ -2434,9 +2460,11 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   SiteSlugBlogPostSlugRoute: typeof SiteSlugBlogPostSlugRoute
   SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
+  ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   ApiPublicMercadopagoOauthCallbackRoute: typeof ApiPublicMercadopagoOauthCallbackRoute
+  ApiPublicMetaOauthCallbackRoute: typeof ApiPublicMetaOauthCallbackRoute
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
   ApiPublicWebhooksAssinaturaProviderRoute: typeof ApiPublicWebhooksAssinaturaProviderRoute
 }
@@ -3759,6 +3787,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/meta/oauth/callback': {
+      id: '/api/public/meta/oauth/callback'
+      path: '/api/public/meta/oauth/callback'
+      fullPath: '/api/public/meta/oauth/callback'
+      preLoaderRoute: typeof ApiPublicMetaOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/mercadopago/oauth/callback': {
       id: '/api/public/mercadopago/oauth/callback'
       path: '/api/public/mercadopago/oauth/callback'
@@ -3778,6 +3813,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/feeds/$tenantSlug/olx.xml'
       fullPath: '/api/public/feeds/$tenantSlug/olx.xml'
       preLoaderRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/feeds/$tenantSlug/meta-catalog.csv': {
+      id: '/api/public/feeds/$tenantSlug/meta-catalog.csv'
+      path: '/api/public/feeds/$tenantSlug/meta-catalog.csv'
+      fullPath: '/api/public/feeds/$tenantSlug/meta-catalog.csv'
+      preLoaderRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -4135,12 +4177,15 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   SiteSlugBlogPostSlugRoute: SiteSlugBlogPostSlugRoute,
   SiteSlugPPageSlugRoute: SiteSlugPPageSlugRoute,
+  ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute:
+    ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute,
   ApiPublicFeedsTenantSlugOlxDotxmlRoute:
     ApiPublicFeedsTenantSlugOlxDotxmlRoute,
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute:
     ApiPublicFeedsTenantSlugVrsyncDotxmlRoute,
   ApiPublicMercadopagoOauthCallbackRoute:
     ApiPublicMercadopagoOauthCallbackRoute,
+  ApiPublicMetaOauthCallbackRoute: ApiPublicMetaOauthCallbackRoute,
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute:
     ApiPublicSitemapTenantSlugSitemapDotxmlRoute,
   ApiPublicWebhooksAssinaturaProviderRoute:

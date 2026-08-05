@@ -1,7 +1,7 @@
 export type PortalDef = {
   slug: string;
   nome: string;
-  formato: "vrsync" | "olx";
+  formato: "vrsync" | "olx" | "meta";
   feedSuffix: string; // ex.: "vrsync.xml"
   descricao: string;
   disponivel: boolean;
@@ -62,6 +62,15 @@ export const PORTAIS: PortalDef[] = [
     formato: "olx",
     feedSuffix: "olx.xml",
     descricao: "Adapter dedicado OLX Realty XML para classificados.",
+    disponivel: true,
+  },
+  {
+    slug: "meta",
+    nome: "Facebook & Instagram (Meta)",
+    formato: "meta",
+    feedSuffix: "meta-catalog.csv",
+    descricao:
+      "Catálogo de imóveis pro Commerce Manager da Meta — alimenta Dynamic Ads e Marketplace. Conectar sua conta (abaixo) também permite receber de volta os leads gerados por lá.",
     disponivel: true,
   },
 ];
