@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { META_WEBHOOK_VERIFY_TOKEN } from "@/lib/metaOAuth.functions";
 
 const META_GRAPH_VERSION = "v21.0";
 
@@ -13,8 +14,10 @@ const META_GRAPH_VERSION = "v21.0";
 // quando alguém preenche o formulário de um anúncio.
 //
 // Verificação da assinatura: X-Hub-Signature-256: sha256=<hmac hex>, HMAC
-// sobre o corpo CRU da requisição, chave META_APP_SECRET (mesma chave do
-// Meta App único registrado pelo imoB365 — não é por tenant).
+// sobre o corpo CRU da requisição. Como cada tenant tem o PRÓPRIO Meta App
+// (não um único app compartilhado), o secret usado varia por Página — o
+// handler POST abaixo resolve qual usar (via page_id) antes de chamar esta
+// função.
 function verifySignature(rawBody: string, signatureHeader: string | null, secret: string): boolean {
   if (!signatureHeader?.startsWith("sha256=")) return false;
   const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
@@ -101,33 +104,52 @@ export const Route = createFileRoute("/api/public/webhooks/meta")({
         const token = url.searchParams.get("hub.verify_token");
         const challenge = url.searchParams.get("hub.challenge");
 
-        const verifyToken = process.env.META_WEBHOOK_VERIFY_TOKEN;
-        if (mode === "subscribe" && verifyToken && token === verifyToken && challenge) {
+        if (mode === "subscribe" && token === META_WEBHOOK_VERIFY_TOKEN && challenge) {
           return new Response(challenge, { status: 200 });
         }
         return new Response("Forbidden", { status: 403 });
       },
 
       POST: async ({ request }) => {
-        const secret = process.env.META_APP_SECRET;
-        if (!secret) {
-          console.error("META_APP_SECRET não configurada");
-          return Response.json({ error: "Server configuration error" }, { status: 500 });
-        }
-
         const rawBody = await request.text();
-        const valid = verifySignature(rawBody, request.headers.get("x-hub-signature-256"), secret);
-        if (!valid) {
-          console.error("Assinatura inválida no webhook da Meta");
-          return Response.json({ error: "Invalid signature" }, { status: 401 });
-        }
 
+        // JSON.parse não executa nada — seguro fazer antes de verificar a
+        // assinatura. O que NÃO é seguro é AGIR sobre esse conteúdo antes
+        // de verificar; usamos aqui só o page_id (entry[0].id) pra decidir
+        // qual App Secret checar, já que cada tenant tem o próprio Meta App
+        // (não existe mais um META_APP_SECRET único/global).
         let payload: any = null;
         try {
           payload = JSON.parse(rawBody);
         } catch {
           return Response.json({ error: "Corpo inválido" }, { status: 400 });
         }
+
+        const pageId = payload?.entry?.[0]?.id;
+        if (!pageId) {
+          return Response.json({ error: "Payload sem page_id" }, { status: 400 });
+        }
+
+        const { data: conexao } = await (supabaseAdmin as any)
+          .from("tenant_meta_connections")
+          .select("app_secret")
+          .eq("page_id", pageId)
+          .maybeSingle();
+        if (!conexao?.app_secret) {
+          console.error("Nenhuma conexão/App Secret encontrado pra page_id", pageId);
+          return Response.json({ error: "Conexão não encontrada" }, { status: 401 });
+        }
+
+        const valid = verifySignature(
+          rawBody,
+          request.headers.get("x-hub-signature-256"),
+          conexao.app_secret,
+        );
+        if (!valid) {
+          console.error("Assinatura inválida no webhook da Meta", pageId);
+          return Response.json({ error: "Invalid signature" }, { status: 401 });
+        }
+        // Só a partir daqui o payload é confiável.
 
         const resultados: { leadgenId: string; duplicate?: boolean; erro?: string | null }[] = [];
 

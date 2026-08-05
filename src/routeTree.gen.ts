@@ -69,7 +69,6 @@ import { Route as AppTarefasRouteImport } from './routes/app.tarefas'
 import { Route as AppSiteRouteImport } from './routes/app.site'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppQrCodeRouteImport } from './routes/app.qr-code'
-import { Route as AppPortaisRouteImport } from './routes/app.portais'
 import { Route as AppParceriasRouteImport } from './routes/app.parcerias'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
@@ -89,6 +88,7 @@ import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
+import { Route as AppPortaisIndexRouteImport } from './routes/app.portais.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
 import { Route as AppLeadsIndexRouteImport } from './routes/app.leads.index'
 import { Route as AppImoveisIndexRouteImport } from './routes/app.imoveis.index'
@@ -108,6 +108,7 @@ import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.wi
 import { Route as AppSitePreviaRouteImport } from './routes/app.site.previa'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
+import { Route as AppPortaisMetaRouteImport } from './routes/app.portais.meta'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
@@ -505,11 +506,6 @@ const AppQrCodeRoute = AppQrCodeRouteImport.update({
   path: '/qr-code',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPortaisRoute = AppPortaisRouteImport.update({
-  id: '/portais',
-  path: '/portais',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppParceriasRoute = AppParceriasRouteImport.update({
   id: '/parcerias',
   path: '/parcerias',
@@ -605,6 +601,11 @@ const AppSiteIndexRoute = AppSiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppSiteRoute,
 } as any)
+const AppPortaisIndexRoute = AppPortaisIndexRouteImport.update({
+  id: '/portais/',
+  path: '/portais/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLocacaoIndexRoute = AppLocacaoIndexRouteImport.update({
   id: '/locacao/',
   path: '/locacao/',
@@ -699,6 +700,11 @@ const AppSiteAssistenteRoute = AppSiteAssistenteRouteImport.update({
   id: '/assistente',
   path: '/assistente',
   getParentRoute: () => AppSiteRoute,
+} as any)
+const AppPortaisMetaRoute = AppPortaisMetaRouteImport.update({
+  id: '/portais/meta',
+  path: '/portais/meta',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppLocacaoPrestacaoContasRoute =
   AppLocacaoPrestacaoContasRouteImport.update({
@@ -1274,7 +1280,6 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
-  '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
@@ -1354,6 +1359,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1373,6 +1379,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
+  '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
@@ -1466,7 +1473,6 @@ export interface FileRoutesByTo {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
-  '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/tarefas': typeof AppTarefasRoute
@@ -1545,6 +1551,7 @@ export interface FileRoutesByTo {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1564,6 +1571,7 @@ export interface FileRoutesByTo {
   '/app/imoveis': typeof AppImoveisIndexRoute
   '/app/leads': typeof AppLeadsIndexRoute
   '/app/locacao': typeof AppLocacaoIndexRoute
+  '/app/portais': typeof AppPortaisIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
@@ -1662,7 +1670,6 @@ export interface FileRoutesById {
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
-  '/app/portais': typeof AppPortaisRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
   '/app/site': typeof AppSiteRouteWithChildren
@@ -1742,6 +1749,7 @@ export interface FileRoutesById {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
   '/app/site/previa': typeof AppSitePreviaRoute
@@ -1761,6 +1769,7 @@ export interface FileRoutesById {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
+  '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
@@ -1860,7 +1869,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/parcerias'
-    | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
     | '/app/site'
@@ -1940,6 +1948,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -1959,6 +1968,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
+    | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
     | '/admin/construtoras/$id/ingestao'
@@ -2052,7 +2062,6 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/contratacao'
     | '/app/parcerias'
-    | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
     | '/app/tarefas'
@@ -2131,6 +2140,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -2150,6 +2160,7 @@ export interface FileRouteTypes {
     | '/app/imoveis'
     | '/app/leads'
     | '/app/locacao'
+    | '/app/portais'
     | '/app/site'
     | '/conta/chat'
     | '/admin/construtoras/$id/ingestao'
@@ -2247,7 +2258,6 @@ export interface FileRouteTypes {
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/parcerias'
-    | '/app/portais'
     | '/app/qr-code'
     | '/app/relatorios'
     | '/app/site'
@@ -2327,6 +2337,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
     | '/app/site/previa'
@@ -2346,6 +2357,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
+    | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
     | '/admin/construtoras_/$id/ingestao'
@@ -2904,13 +2916,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppQrCodeRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/portais': {
-      id: '/app/portais'
-      path: '/portais'
-      fullPath: '/app/portais'
-      preLoaderRoute: typeof AppPortaisRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/parcerias': {
       id: '/app/parcerias'
       path: '/parcerias'
@@ -3044,6 +3049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteIndexRouteImport
       parentRoute: typeof AppSiteRoute
     }
+    '/app/portais/': {
+      id: '/app/portais/'
+      path: '/portais'
+      fullPath: '/app/portais/'
+      preLoaderRoute: typeof AppPortaisIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/locacao/': {
       id: '/app/locacao/'
       path: '/locacao'
@@ -3176,6 +3188,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/site/assistente'
       preLoaderRoute: typeof AppSiteAssistenteRouteImport
       parentRoute: typeof AppSiteRoute
+    }
+    '/app/portais/meta': {
+      id: '/app/portais/meta'
+      path: '/portais/meta'
+      fullPath: '/app/portais/meta'
+      preLoaderRoute: typeof AppPortaisMetaRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/locacao/prestacao-contas': {
       id: '/app/locacao/prestacao-contas'
@@ -3967,7 +3986,6 @@ interface AppRouteChildren {
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
   AppParceriasRoute: typeof AppParceriasRoute
-  AppPortaisRoute: typeof AppPortaisRoute
   AppQrCodeRoute: typeof AppQrCodeRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
   AppSiteRoute: typeof AppSiteRouteWithChildren
@@ -4002,6 +4020,7 @@ interface AppRouteChildren {
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
+  AppPortaisMetaRoute: typeof AppPortaisMetaRoute
   AppAtendimentoIndexRoute: typeof AppAtendimentoIndexRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
   AppComissoesIndexRoute: typeof AppComissoesIndexRoute
@@ -4013,6 +4032,7 @@ interface AppRouteChildren {
   AppImoveisIndexRoute: typeof AppImoveisIndexRoute
   AppLeadsIndexRoute: typeof AppLeadsIndexRoute
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
+  AppPortaisIndexRoute: typeof AppPortaisIndexRoute
   AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
   AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
   AppLocacaoRepassesIdRoute: typeof AppLocacaoRepassesIdRoute
@@ -4024,7 +4044,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
   AppParceriasRoute: AppParceriasRoute,
-  AppPortaisRoute: AppPortaisRoute,
   AppQrCodeRoute: AppQrCodeRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
   AppSiteRoute: AppSiteRouteWithChildren,
@@ -4059,6 +4078,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
+  AppPortaisMetaRoute: AppPortaisMetaRoute,
   AppAtendimentoIndexRoute: AppAtendimentoIndexRoute,
   AppChatIndexRoute: AppChatIndexRoute,
   AppComissoesIndexRoute: AppComissoesIndexRoute,
@@ -4070,6 +4090,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisIndexRoute: AppImoveisIndexRoute,
   AppLeadsIndexRoute: AppLeadsIndexRoute,
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
+  AppPortaisIndexRoute: AppPortaisIndexRoute,
   AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
   AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
   AppLocacaoRepassesIdRoute: AppLocacaoRepassesIdRoute,
