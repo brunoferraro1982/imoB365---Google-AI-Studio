@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ImovelForm, type ImovelFormData } from "@/components/imoveis/ImovelForm";
 import { ImovelHistorico } from "@/components/imoveis/ImovelHistorico";
 import { FotosManager, type Foto } from "@/components/imoveis/FotosManager";
+import { aplicarMarcaDagua } from "@/lib/watermark";
 import { useServerFn } from "@tanstack/react-start";
 import { geocodeAddress } from "@/lib/geocode.functions";
 import { slugify } from "@/lib/format";
@@ -27,7 +28,20 @@ function EditarImovel() {
   const [uploading, setUploading] = useState(false);
   const [imovel, setImovel] = useState<any>(null);
   const [geoLoading, setGeoLoading] = useState(false);
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
   const geocode = useServerFn(geocodeAddress);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase
+      .from("tenants")
+      .select("tema")
+      .eq("id", tenantId)
+      .maybeSingle()
+      .then(({ data: t }) => {
+        setTenantLogoUrl((t?.tema as { logo_url?: string } | null)?.logo_url ?? null);
+      });
+  }, [tenantId]);
 
   async function load() {
     setLoading(true);
@@ -76,9 +90,10 @@ function EditarImovel() {
       aceita_permuta: imovel.aceita_permuta,
       publicado: imovel.publicado,
       corretor_responsavel_id: imovel.corretor_responsavel_id,
+      marca_dagua_ativa: !!(imovel as any).marca_dagua_ativa,
       custom_data: (imovel as any).custom_data ?? {},
     });
-    setFotos((fotosData as Foto[]) ?? []);
+    setFotos((fotosData as unknown as Foto[]) ?? []);
     setLoading(false);
   }
 
@@ -98,7 +113,7 @@ function EditarImovel() {
         status: data.status as never,
         slug: newSlug,
         publicado_em: data.publicado ? new Date().toISOString() : null,
-      })
+      } as any)
       .eq("id", id);
     setSaving(false);
     if (error) {
@@ -121,29 +136,77 @@ function EditarImovel() {
     e.target.value = "";
     if (!files.length || !tenantId) return;
     setUploading(true);
+
+    // Nunca confia no toggle em memória do form (pode ter sido alterado mas
+    // ainda não salvo) — sempre reconsulta o valor persistido no banco.
+    const { data: imovelRow } = await (supabase as any)
+      .from("imoveis")
+      .select("marca_dagua_ativa")
+      .eq("id", id)
+      .maybeSingle();
+    const marcaAtiva = !!imovelRow?.marca_dagua_ativa;
+    if (marcaAtiva && !tenantLogoUrl) {
+      toast.error(
+        "Marca d'água ativada, mas nenhuma logo configurada em Site → Marca — fotos serão enviadas sem marca.",
+      );
+    }
+
     let nextOrdem = fotos.length;
     let hasCapa = fotos.some((f) => f.capa);
     for (const file of files) {
-      const ext = file.name.split(".").pop() || "jpg";
-      const fname = `${crypto.randomUUID()}.${ext}`;
-      const path = `${tenantId}/${id}/${fname}`;
-      const { error: upErr } = await supabase.storage.from("imovel-fotos").upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type,
-      });
+      let uploadFile: File = file;
+      let originalFile: File | null = null;
+      if (marcaAtiva && tenantLogoUrl) {
+        const res = await aplicarMarcaDagua(file, tenantLogoUrl);
+        if (res.watermarked) {
+          uploadFile = res.file;
+          originalFile = file;
+        }
+      }
+
+      const ext = uploadFile.name.split(".").pop() || "jpg";
+      const path = `${tenantId}/${id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("imovel-fotos")
+        .upload(path, uploadFile, {
+          cacheControl: "3600",
+          contentType: uploadFile.type,
+        });
       if (upErr) {
         toast.error("Upload falhou: " + upErr.message);
         continue;
       }
-      const { error: insErr } = await supabase.from("imovel_fotos").insert({
+
+      let originalPath: string | null = null;
+      if (originalFile) {
+        const origExt = originalFile.name.split(".").pop() || "jpg";
+        const origPath = `${tenantId}/${id}/${crypto.randomUUID()}.${origExt}`;
+        const { error: origErr } = await supabase.storage
+          .from("imovel-fotos")
+          .upload(origPath, originalFile, { cacheControl: "3600", contentType: originalFile.type });
+        if (origErr) {
+          await supabase.storage.from("imovel-fotos").remove([path]);
+          toast.error("Upload do original falhou, foto não registrada: " + origErr.message);
+          continue;
+        }
+        originalPath = origPath;
+      }
+
+      const { error: insErr } = await (supabase as any).from("imovel_fotos").insert({
         imovel_id: id,
         tenant_id: tenantId,
         storage_path: path,
+        storage_path_original: originalPath,
         ordem: nextOrdem++,
         capa: !hasCapa,
       });
-      if (insErr) toast.error("Erro ao registrar foto: " + insErr.message);
-      else hasCapa = true;
+      if (insErr) {
+        toast.error("Erro ao registrar foto: " + insErr.message);
+        const toRemove = [path, ...(originalPath ? [originalPath] : [])];
+        await supabase.storage.from("imovel-fotos").remove(toRemove);
+      } else {
+        hasCapa = true;
+      }
     }
     setUploading(false);
     load();
@@ -217,7 +280,14 @@ function EditarImovel() {
             />
           </label>
         </div>
-        <FotosManager fotos={fotos} imovelId={id} onChange={load} />
+        <FotosManager
+          fotos={fotos}
+          imovelId={id}
+          tenantId={tenantId ?? ""}
+          marcaDaguaAtiva={!!(imovel as any)?.marca_dagua_ativa}
+          logoUrl={tenantLogoUrl}
+          onChange={load}
+        />
       </section>
 
       <section className="mb-8 rounded-xl border border-border bg-card p-6">
