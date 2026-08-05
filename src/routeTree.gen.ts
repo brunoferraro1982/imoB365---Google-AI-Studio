@@ -172,6 +172,7 @@ import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.r
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
 import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
+import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
 import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
 import { Route as ApiPublicWebhooksEvolutionRouteImport } from './routes/api.public.webhooks.evolution'
@@ -1040,6 +1041,11 @@ const AppConfiguracoesIntegracoesBancariasMercadopagoRoute =
     path: '/integracoes-bancarias/mercadopago',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
+const ApiPublicWebhooksMetaRoute = ApiPublicWebhooksMetaRouteImport.update({
+  id: '/api/public/webhooks/meta',
+  path: '/api/public/webhooks/meta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksMercadopagoMarketplaceRoute =
   ApiPublicWebhooksMercadopagoMarketplaceRouteImport.update({
     id: '/api/public/webhooks/mercadopago-marketplace',
@@ -1391,6 +1397,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1581,6 +1588,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1777,6 +1785,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
+  '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1974,6 +1983,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
+    | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
@@ -2164,6 +2174,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
+    | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/modelos/biblioteca'
@@ -2359,6 +2370,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
+    | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/modelos_/biblioteca'
@@ -2455,6 +2467,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksEvolutionRoute: typeof ApiPublicWebhooksEvolutionRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   ApiPublicWebhooksMercadopagoMarketplaceRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
+  ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -3612,6 +3625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
+    '/api/public/webhooks/meta': {
+      id: '/api/public/webhooks/meta'
+      path: '/api/public/webhooks/meta'
+      fullPath: '/api/public/webhooks/meta'
+      preLoaderRoute: typeof ApiPublicWebhooksMetaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/mercadopago-marketplace': {
       id: '/api/public/webhooks/mercadopago-marketplace'
       path: '/api/public/webhooks/mercadopago-marketplace'
@@ -4172,6 +4192,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   ApiPublicWebhooksMercadopagoMarketplaceRoute:
     ApiPublicWebhooksMercadopagoMarketplaceRoute,
+  ApiPublicWebhooksMetaRoute: ApiPublicWebhooksMetaRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
