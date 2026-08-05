@@ -138,3 +138,121 @@ export const toggleCaptacao = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// Facebook Marketplace não tem API pública de leitura, a busca exige login e
+// os anúncios não têm dado estruturado público (ao contrário da Chaves na
+// Mão) — o robots.txt do próprio facebook.com proíbe expressamente coleta
+// automatizada de dados. Por isso esta é uma importação ASSISTIDA: o
+// corretor navega o Marketplace no próprio login (uso humano normal) e cola
+// o link + o texto do anúncio aqui — nenhum fetch do servidor bate no
+// Facebook em nenhum momento deste fluxo.
+const importarMarketplaceSchema = z.object({
+  tenant_id: z.string().uuid(),
+  url: z.string().url().max(500),
+  texto_colado: z.string().max(4000).nullable().optional(),
+  titulo: z.string().min(1).max(200),
+  preco: z.number().nonnegative().nullable().optional(),
+  descricao: z.string().max(4000).nullable().optional(),
+  nome_contato: z.string().max(120).nullable().optional(),
+  telefone: z.string().max(30).nullable().optional(),
+  cidade: z.string().max(120).nullable().optional(),
+  bairro: z.string().max(120).nullable().optional(),
+});
+
+// Anúncios do Marketplace têm um ID numérico no próprio path da URL
+// (facebook.com/marketplace/item/<id>/) — extrair isso é só string parsing
+// sobre um link que o usuário já colou, não é uma requisição a lugar nenhum.
+// Quando o formato não bate (usuário colou outro tipo de link), cai pra usar
+// a própria URL como chave de dedupe — ainda cobre o caso mais comum de
+// duplicidade acidental (colar o mesmo link duas vezes).
+function extrairExternalIdMarketplace(url: string): string {
+  const match = url.match(/\/item\/(\d+)/);
+  return match ? match[1] : url.trim();
+}
+
+export const importarMarketplaceManual = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => importarMarketplaceSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await garantirPlanoPermitido(supabase, data.tenant_id);
+
+    // captacao_listings só tem policy de escrita pro service role (mesma
+    // nota de sincronizarCaptacaoAgora acima) — checa admin/broker do tenant
+    // aqui e segue com supabaseAdmin pros dois inserts (leads + captacao_listings).
+    const { data: isAdmin } = await supabase.rpc("has_role_in_tenant", {
+      _user_id: userId,
+      _tenant_id: data.tenant_id,
+      _role: "admin",
+    });
+    const { data: isBroker } = await supabase.rpc("has_role_in_tenant", {
+      _user_id: userId,
+      _tenant_id: data.tenant_id,
+      _role: "broker",
+    });
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
+    if (!isAdmin && !isBroker && !isSuper) {
+      throw new Error("Sem permissão para importar leads nesta imobiliária.");
+    }
+
+    const externalId = extrairExternalIdMarketplace(data.url);
+
+    const { data: existente } = await supabaseAdmin
+      .from("captacao_listings")
+      .select("lead_id")
+      .eq("tenant_id", data.tenant_id)
+      .eq("fonte", "facebook_manual")
+      .eq("external_id", externalId)
+      .maybeSingle();
+    if (existente) {
+      return { ok: true, duplicado: true, leadId: existente.lead_id as string | null };
+    }
+
+    const mensagem = [
+      data.preco != null ? `Preço anunciado: R$ ${data.preco.toLocaleString("pt-BR")}` : null,
+      data.descricao || null,
+      `Anúncio original: ${data.url}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    // 'captacao_manual' (lead_origem) e config_id nullable (captacao_listings)
+    // ainda não estão em types.ts até a migration ser aplicada e os tipos
+    // regenerados (fluxo manual de sempre) — cast pontual, mesmo padrão já
+    // usado em outras features novas deste projeto.
+    const { data: lead, error: leadErr } = await supabaseAdmin
+      .from("leads")
+      .insert({
+        tenant_id: data.tenant_id,
+        nome: data.nome_contato || data.titulo,
+        telefone: data.telefone || null,
+        origem: "captacao_manual",
+        mensagem,
+      } as any)
+      .select("id")
+      .single();
+    if (leadErr) throw new Error(leadErr.message);
+
+    const { error: listingErr } = await (supabaseAdmin as any).from("captacao_listings").insert({
+      tenant_id: data.tenant_id,
+      config_id: null,
+      fonte: "facebook_manual",
+      external_id: externalId,
+      url: data.url,
+      dados_brutos: {
+        titulo: data.titulo,
+        preco: data.preco ?? null,
+        descricao: data.descricao ?? null,
+        texto_colado: data.texto_colado ?? null,
+        cidade: data.cidade ?? null,
+        bairro: data.bairro ?? null,
+      },
+      lead_id: (lead as any)!.id,
+    });
+    if (listingErr) throw new Error(listingErr.message);
+
+    return { ok: true, duplicado: false, leadId: lead!.id as string };
+  });

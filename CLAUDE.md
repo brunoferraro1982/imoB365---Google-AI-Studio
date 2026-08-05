@@ -173,6 +173,7 @@ Usuários que entram via Google OAuth ou e-mail são redirecionados para `/auth/
 | `mercadopago.functions.ts`    | `createMercadoPagoCheckout`: generates a dynamic checkout URL (preapproval or Checkout Pro) per tenant |
 | `mercadopagoOAuth.functions.ts` | Per-tenant Mercado Pago Marketplace OAuth connection (Fase 3 parte 1 — distinto do `MERCADOPAGO_ACCESS_TOKEN` da própria plataforma) |
 | `cobrancaMercadoPago.functions.ts` | Mercado Pago Marketplace: cobrança real do tenant pro próprio cliente final (Fase 3 parte 2) |
+| `metaOAuth.functions.ts`      | Per-tenant Meta (Facebook/Instagram) OAuth connection — mesmo padrão do `mercadopagoOAuth.functions.ts` (um único Meta App do imoB365, cada tenant conecta a própria Página) |
 | `atendimento.functions.ts`    | Central de Atendimento: criar/atribuir/listar chamados (ticketing)           |
 | `atendimentoEmail.functions.ts` | Envia e-mail de chamado usando as credenciais SMTP do próprio tenant (BYO)  |
 | `atendimentoWhatsApp.functions.ts` | Envia WhatsApp de chamado usando as credenciais Evolution API do próprio tenant (BYO) |
@@ -215,6 +216,9 @@ MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→clie
 HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
 HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
 GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote
+META_APP_ID                          # Meta App (Facebook/Instagram) registrado uma vez pelo imoB365 — OAuth por tenant (catálogo + Lead Ads)
+META_APP_SECRET                      # Idem — client secret do Meta App
+META_WEBHOOK_VERIFY_TOKEN            # String escolhida pelo imoB365, usada no desafio GET do webhook de Lead Ads
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.

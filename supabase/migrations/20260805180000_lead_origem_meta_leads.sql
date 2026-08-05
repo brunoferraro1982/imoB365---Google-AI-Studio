@@ -1,0 +1,12 @@
+-- Leads reais capturados via Lead Ads da Meta (Fase 3 da integração
+-- Facebook/Instagram — ver src/routes/api.public.webhooks.meta.ts) precisam
+-- de um valor de origem próprio, distinto de 'captacao_manual' (importação
+-- assistida do Marketplace) e de 'captacao_automatica' (robô da Chaves na
+-- Mão) — este aqui é o único vindo de uma API oficial da Meta, sem nenhuma
+-- questão de ToS envolvida.
+--
+-- Migration própria e separada: Postgres não permite usar um valor novo de
+-- enum na mesma transação em que ele foi adicionado (mesma restrição já
+-- documentada em 20260724192053_add_lead_origem_captacao_automatica.sql e
+-- 20260805170000_lead_origem_captacao_manual.sql).
+ALTER TYPE public.lead_origem ADD VALUE IF NOT EXISTS 'meta_leads';
