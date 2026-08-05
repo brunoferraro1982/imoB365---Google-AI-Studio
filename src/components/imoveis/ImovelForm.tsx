@@ -13,9 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL, slugify } from "@/lib/format";
-import { CheckCircle2, FileText, Globe } from "lucide-react";
-import { useEffect } from "react";
+import { CheckCircle2, FileText, Globe, Droplets } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { aplicarMarcaDagua } from "@/lib/watermark";
 import { AiImovelPanel } from "./AiImovelPanel";
 
 export type ImovelFormData = {
@@ -47,6 +49,7 @@ export type ImovelFormData = {
   aceita_permuta: boolean;
   publicado: boolean;
   corretor_responsavel_id: string | null;
+  marca_dagua_ativa: boolean;
   custom_data: Record<string, any>;
 };
 
@@ -79,6 +82,7 @@ export const emptyImovel: ImovelFormData = {
   aceita_permuta: false,
   publicado: false,
   corretor_responsavel_id: null,
+  marca_dagua_ativa: false,
   custom_data: {},
 };
 
@@ -98,10 +102,12 @@ export function ImovelForm({
   submitting?: boolean;
   mode?: "create" | "edit";
 }) {
+  const { tenantId } = useAuth();
   const [data, setData] = useState<ImovelFormData>({ ...emptyImovel, ...initial });
   const [pendingAction, setPendingAction] = useState<"save" | "publish" | "unpublish" | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
   const [customFields, setCustomFields] = useState<any[]>([]);
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -120,6 +126,19 @@ export function ImovelForm({
       setCustomFields(cf ?? []);
     })();
   }, []);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase
+      .from("tenants")
+      .select("tema")
+      .eq("id", tenantId)
+      .maybeSingle()
+      .then(({ data: t }) => {
+        const logo = (t?.tema as { logo_url?: string } | null)?.logo_url ?? null;
+        setTenantLogoUrl(logo || null);
+      });
+  }, [tenantId]);
 
   function update<K extends keyof ImovelFormData>(k: K, v: ImovelFormData[K]) {
     setData((d) => ({ ...d, [k]: v }));
@@ -356,6 +375,31 @@ export function ImovelForm({
         </Field>
       </Section>
 
+      <Section title="Marca d'água">
+        {tenantLogoUrl ? (
+          <>
+            <Toggle
+              label="Aplicar a logo da imobiliária sobre as fotos deste imóvel"
+              checked={data.marca_dagua_ativa}
+              onChange={(v) => update("marca_dagua_ativa", v)}
+            />
+            <p className="text-xs text-muted-foreground">
+              Protege as fotos contra cópia por concorrentes. Pode ser ligada/desligada a qualquer
+              momento, inclusive depois de publicado — as fotos originais nunca são perdidas.
+            </p>
+            {data.marca_dagua_ativa && <WatermarkPreview logoUrl={tenantLogoUrl} />}
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Configure a logo da imobiliária em{" "}
+            <a href="/app/site" className="font-medium text-primary underline underline-offset-2">
+              Site → Marca
+            </a>{" "}
+            para poder aplicar marca d'água nas fotos deste imóvel.
+          </p>
+        )}
+      </Section>
+
       {customFields.length > 0 && (
         <Section title="Campos personalizados">
           <div className="grid gap-4 md:grid-cols-2">
@@ -509,6 +553,98 @@ function Toggle({
     <div className="flex items-center justify-between rounded-lg border border-border bg-background px-3 py-2">
       <span className="text-sm">{label}</span>
       <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
+  );
+}
+
+// Gera uma foto de exemplo (gradiente + "janelas") direto via canvas — não há
+// nenhuma foto de imóvel genérica no bundle pra reaproveitar — e roda o mesmo
+// aplicarMarcaDagua() usado no upload real, garantindo que a prévia nunca
+// diverge do resultado real em produção.
+function criarFotoExemplo(): Promise<File> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 480;
+  canvas.height = 320;
+  const ctx = canvas.getContext("2d")!;
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+  gradient.addColorStop(0, "#7dd3fc");
+  gradient.addColorStop(1, "#e0f2fe");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillRect(0, canvas.height * 0.55, canvas.width, canvas.height * 0.45);
+  ctx.fillStyle = "#94a3b8";
+  for (let i = 0; i < 4; i++) {
+    ctx.fillRect(60 + i * 100, canvas.height * 0.62, 50, 50);
+  }
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      resolve(new File([blob!], "exemplo.webp", { type: "image/webp" }));
+    }, "image/webp");
+  });
+}
+
+function WatermarkPreview({ logoUrl }: { logoUrl: string }) {
+  const [antes, setAntes] = useState<string | null>(null);
+  const [depois, setDepois] = useState<string | null>(null);
+  const [status, setStatus] = useState<"loading" | "ok" | "sem-marca">("loading");
+  const objectUrls = useRef<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    (async () => {
+      const original = await criarFotoExemplo();
+      const antesUrl = URL.createObjectURL(original);
+      objectUrls.current.push(antesUrl);
+      const { file, watermarked } = await aplicarMarcaDagua(original, logoUrl);
+      if (cancelled) return;
+      const depoisUrl = URL.createObjectURL(file);
+      objectUrls.current.push(depoisUrl);
+      setAntes(antesUrl);
+      setDepois(depoisUrl);
+      setStatus(watermarked ? "ok" : "sem-marca");
+    })();
+    return () => {
+      cancelled = true;
+      objectUrls.current.forEach((u) => URL.revokeObjectURL(u));
+      objectUrls.current = [];
+    };
+  }, [logoUrl]);
+
+  return (
+    <div className="rounded-lg border border-border bg-background p-3">
+      <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+        <Droplets className="h-3.5 w-3.5" /> Prévia (imagem de exemplo)
+      </p>
+      {status === "loading" ? (
+        <p className="text-xs text-muted-foreground">Gerando prévia…</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <img
+              src={antes ?? undefined}
+              alt="Antes"
+              className="w-full rounded-md border border-border"
+            />
+            <p className="mt-1 text-center text-xs text-muted-foreground">Original</p>
+          </div>
+          <div>
+            <img
+              src={depois ?? undefined}
+              alt="Depois"
+              className="w-full rounded-md border border-border"
+            />
+            <p className="mt-1 text-center text-xs text-muted-foreground">Com marca d'água</p>
+          </div>
+        </div>
+      )}
+      {status === "sem-marca" && (
+        <p className="mt-2 text-xs text-amber-600">
+          Não foi possível carregar a logo para a prévia agora (ex.: bloqueio de CORS) — o mesmo
+          pode acontecer no upload real, que sobe a foto sem marca nesse caso.
+        </p>
+      )}
     </div>
   );
 }

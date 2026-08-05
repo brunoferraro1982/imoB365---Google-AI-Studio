@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ImagePlus, Check, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ImovelForm, type ImovelFormData } from "@/components/imoveis/ImovelForm";
 import { FotosManager, type Foto } from "@/components/imoveis/FotosManager";
+import { aplicarMarcaDagua } from "@/lib/watermark";
 import { slugify } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -20,7 +21,21 @@ function NovoImovel() {
   const [savedId, setSavedId] = useState<string | null>(null);
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [marcaDaguaAtiva, setMarcaDaguaAtiva] = useState(false);
+  const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase
+      .from("tenants")
+      .select("tema")
+      .eq("id", tenantId)
+      .maybeSingle()
+      .then(({ data: t }) => {
+        setTenantLogoUrl((t?.tema as { logo_url?: string } | null)?.logo_url ?? null);
+      });
+  }, [tenantId]);
 
   async function save(data: ImovelFormData, action: "save" | "publish" | "unpublish" = "save") {
     if (!tenantId || !user) {
@@ -40,13 +55,14 @@ function NovoImovel() {
           status: data.status as never,
           slug,
           publicado_em: data.publicado ? new Date().toISOString() : null,
-        })
+        } as any)
         .eq("id", savedId);
       setSaving(false);
       if (error) {
         toast.error("Erro ao salvar: " + error.message);
         return;
       }
+      setMarcaDaguaAtiva(data.marca_dagua_ativa);
       toast.success(action === "publish" ? "Imóvel publicado no site" : "Alterações salvas");
       return;
     }
@@ -62,7 +78,7 @@ function NovoImovel() {
         status: data.status as never,
         slug,
         publicado_em: data.publicado ? new Date().toISOString() : null,
-      })
+      } as any)
       .select("id")
       .single();
     setSaving(false);
@@ -71,6 +87,7 @@ function NovoImovel() {
       return;
     }
     setSavedId(inserted!.id);
+    setMarcaDaguaAtiva(data.marca_dagua_ativa);
     toast.success("Imóvel criado! Adicione as fotos acima.");
   }
 
@@ -82,7 +99,7 @@ function NovoImovel() {
       .eq("imovel_id", savedId)
       .order("ordem")
       .order("created_at");
-    setFotos((data as Foto[]) ?? []);
+    setFotos((data as unknown as Foto[]) ?? []);
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -90,29 +107,77 @@ function NovoImovel() {
     e.target.value = "";
     if (!files.length || !tenantId || !savedId) return;
     setUploading(true);
+
+    // Nunca confia no toggle em memória do form (pode ter sido alterado mas
+    // ainda não salvo) — sempre reconsulta o valor persistido no banco.
+    const { data: imovelRow } = await (supabase as any)
+      .from("imoveis")
+      .select("marca_dagua_ativa")
+      .eq("id", savedId)
+      .maybeSingle();
+    const marcaAtiva = !!imovelRow?.marca_dagua_ativa;
+    if (marcaAtiva && !tenantLogoUrl) {
+      toast.error(
+        "Marca d'água ativada, mas nenhuma logo configurada em Site → Marca — fotos serão enviadas sem marca.",
+      );
+    }
+
     let nextOrdem = fotos.length;
     let hasCapa = fotos.some((f) => f.capa);
     for (const file of files) {
-      const ext = file.name.split(".").pop() || "jpg";
-      const fname = `${crypto.randomUUID()}.${ext}`;
-      const path = `${tenantId}/${savedId}/${fname}`;
-      const { error: upErr } = await supabase.storage.from("imovel-fotos").upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type,
-      });
+      let uploadFile: File = file;
+      let originalFile: File | null = null;
+      if (marcaAtiva && tenantLogoUrl) {
+        const res = await aplicarMarcaDagua(file, tenantLogoUrl);
+        if (res.watermarked) {
+          uploadFile = res.file;
+          originalFile = file;
+        }
+      }
+
+      const ext = uploadFile.name.split(".").pop() || "jpg";
+      const path = `${tenantId}/${savedId}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("imovel-fotos")
+        .upload(path, uploadFile, {
+          cacheControl: "3600",
+          contentType: uploadFile.type,
+        });
       if (upErr) {
         toast.error("Upload falhou: " + upErr.message);
         continue;
       }
-      const { error: insErr } = await supabase.from("imovel_fotos").insert({
+
+      let originalPath: string | null = null;
+      if (originalFile) {
+        const origExt = originalFile.name.split(".").pop() || "jpg";
+        const origPath = `${tenantId}/${savedId}/${crypto.randomUUID()}.${origExt}`;
+        const { error: origErr } = await supabase.storage
+          .from("imovel-fotos")
+          .upload(origPath, originalFile, { cacheControl: "3600", contentType: originalFile.type });
+        if (origErr) {
+          await supabase.storage.from("imovel-fotos").remove([path]);
+          toast.error("Upload do original falhou, foto não registrada: " + origErr.message);
+          continue;
+        }
+        originalPath = origPath;
+      }
+
+      const { error: insErr } = await (supabase as any).from("imovel_fotos").insert({
         imovel_id: savedId,
         tenant_id: tenantId,
         storage_path: path,
+        storage_path_original: originalPath,
         ordem: nextOrdem++,
         capa: !hasCapa,
       });
-      if (insErr) toast.error("Erro ao registrar foto: " + insErr.message);
-      else hasCapa = true;
+      if (insErr) {
+        toast.error("Erro ao registrar foto: " + insErr.message);
+        const toRemove = [path, ...(originalPath ? [originalPath] : [])];
+        await supabase.storage.from("imovel-fotos").remove(toRemove);
+      } else {
+        hasCapa = true;
+      }
     }
     setUploading(false);
     loadFotos();
@@ -150,7 +215,14 @@ function NovoImovel() {
           )}
         </div>
         {savedId ? (
-          <FotosManager fotos={fotos} imovelId={savedId} onChange={loadFotos} />
+          <FotosManager
+            fotos={fotos}
+            imovelId={savedId}
+            tenantId={tenantId ?? ""}
+            marcaDaguaAtiva={marcaDaguaAtiva}
+            logoUrl={tenantLogoUrl}
+            onChange={loadFotos}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-12 text-center">
             <Camera className="mb-3 h-10 w-10 text-muted-foreground/50" />
