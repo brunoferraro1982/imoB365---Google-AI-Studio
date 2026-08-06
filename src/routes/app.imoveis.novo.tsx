@@ -190,7 +190,8 @@ function NovoImovel() {
           <ChevronLeft className="mr-1 h-4 w-4" /> Voltar
         </Link>
       </Button>
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">Novo imóvel</h1>
+      <h1 className="mb-1 text-3xl font-bold tracking-tight">Novo imóvel</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Cadastre imóveis para venda e locação</p>
 
       {/* FOTOS — primeira seção da jornada */}
       <section className="mb-8 rounded-xl border border-border bg-card p-6">

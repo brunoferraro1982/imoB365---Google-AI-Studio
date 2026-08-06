@@ -1,9 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Mail, Phone, MessageCircle, MapPin, BadgeCheck } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MessageCircle,
+  MapPin,
+  BadgeCheck,
+  Instagram,
+  Facebook,
+  Linkedin,
+  Globe,
+  Download,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { waLink } from "@/lib/whatsapp";
+import { baixarVCard } from "@/lib/vcard";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/corretor/$slug")({
   component: CorretorPublic,
@@ -21,6 +35,10 @@ type Corretor = {
   bio: string | null;
   foto_url: string | null;
   tenant_id: string;
+  instagram: string | null;
+  facebook: string | null;
+  linkedin: string | null;
+  site: string | null;
 };
 
 type Imovel = {
@@ -90,11 +108,6 @@ function CorretorPublic() {
     })();
   }, [slug]);
 
-  function waLink(num: string) {
-    const clean = num.replace(/\D/g, "");
-    return `https://wa.me/${clean.startsWith("55") ? clean : "55" + clean}`;
-  }
-
   if (loading)
     return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
   if (!corretor)
@@ -137,9 +150,9 @@ function CorretorPublic() {
               </p>
             )}
             <div className="mt-6 space-y-2 text-left text-sm">
-              {corretor.whatsapp && (
+              {corretor.whatsapp && waLink(corretor.whatsapp) && (
                 <a
-                  href={waLink(corretor.whatsapp)}
+                  href={waLink(corretor.whatsapp)!}
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2 rounded-md bg-primary px-3 py-2 font-medium text-primary-foreground hover:opacity-90"
@@ -163,7 +176,76 @@ function CorretorPublic() {
                   <Mail className="h-4 w-4" /> {corretor.email}
                 </a>
               )}
+              <Button
+                variant="outline"
+                className="w-full justify-center gap-2"
+                onClick={() =>
+                  baixarVCard(
+                    {
+                      nome: corretor.nome,
+                      telefone: corretor.telefone,
+                      whatsapp: corretor.whatsapp,
+                      email: corretor.email,
+                      cargo: corretor.cargo,
+                      site: corretor.site,
+                      creci: corretor.creci,
+                      creci_uf: corretor.creci_uf,
+                    },
+                    tenantNome,
+                  )
+                }
+              >
+                <Download className="h-4 w-4" /> Salvar contato
+              </Button>
             </div>
+            {(corretor.instagram || corretor.facebook || corretor.linkedin || corretor.site) && (
+              <div className="mt-4 flex items-center justify-center gap-3">
+                {corretor.instagram && (
+                  <a
+                    href={corretor.instagram}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Instagram"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Instagram className="h-4 w-4" />
+                  </a>
+                )}
+                {corretor.facebook && (
+                  <a
+                    href={corretor.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Facebook"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                )}
+                {corretor.linkedin && (
+                  <a
+                    href={corretor.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="LinkedIn"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                )}
+                {corretor.site && (
+                  <a
+                    href={corretor.site}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Site pessoal"
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+            )}
             {tenantNome && (
               <p className="mt-6 border-t border-border pt-4 text-xs text-muted-foreground">
                 Equipe da <span className="font-medium text-foreground">{tenantNome}</span>

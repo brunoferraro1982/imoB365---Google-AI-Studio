@@ -51,6 +51,10 @@ function EditarCorretor() {
       comissao_padrao: data.comissao_padrao,
       ativo: data.ativo,
       publico: data.publico,
+      instagram: data.instagram ?? "",
+      facebook: data.facebook ?? "",
+      linkedin: data.linkedin ?? "",
+      site: data.site ?? "",
     });
     setLoading(false);
   }
