@@ -91,7 +91,7 @@ const tenantModules: Module[] = [
       { to: "/app/locacao", label: "Locação", icon: Home },
       { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
-      { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
+      { to: "/app/leads", label: "Leads", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },

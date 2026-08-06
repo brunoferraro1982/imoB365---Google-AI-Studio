@@ -13,6 +13,9 @@ import {
   Sparkles,
   FileSignature,
   Link2,
+  Route as RouteIcon,
+  Plus,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +89,7 @@ function LeadDetail() {
   const [contrato, setContrato] = useState<{ id: string; numero: string | null } | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
   const [interacoes, setInteracoes] = useState<any[]>([]);
+  const [visitas, setVisitas] = useState<any[]>([]);
   const [nota, setNota] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -142,7 +146,7 @@ function LeadDetail() {
       return;
     }
     setLead(l);
-    const [{ data: imo }, { data: cors }, { data: inter }, { data: contratoData }] =
+    const [{ data: imo }, { data: cors }, { data: inter }, { data: contratoData }, { data: vis }] =
       await Promise.all([
         l.imovel_id
           ? (supabase as any)
@@ -174,8 +178,19 @@ function LeadDetail() {
           .eq("lead_id", id)
           .order("created_at", { ascending: false })
           .limit(1),
+        // Roteiro de Visitas — achado de QA: a relação com o lead existia
+        // no banco (visitas.lead_id) mas não aparecia em nenhum lugar
+        // visível pro corretor a partir do próprio lead.
+        (supabase as any)
+          .from("visitas")
+          .select(
+            "id,data_hora,roteiro_etapa_id,imovel:imoveis(id,titulo),etapa:roteiro_visita_etapas(id,nome)",
+          )
+          .eq("lead_id", id)
+          .order("data_hora", { ascending: false }),
       ]);
     setImovel(imo);
+    setVisitas(vis ?? []);
     setCorretores(cors ?? []);
     setInteracoes(inter ?? []);
     setContrato(contratoData?.[0] ?? null);
@@ -303,6 +318,56 @@ function LeadDetail() {
               <div className="mt-4 rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap">
                 {linkifyText(lead.mensagem)}
               </div>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Visitas
+              </h2>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/app/roteiro-visitas" search={{ leadId: lead.id }}>
+                  <Plus className="mr-1.5 h-3.5 w-3.5" /> Agendar visita
+                </Link>
+              </Button>
+            </div>
+            {visitas.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhuma visita agendada com este lead.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {visitas.map((v) => (
+                  <li
+                    key={v.id}
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border p-3 text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-mono text-xs">
+                        {new Date(v.data_hora).toLocaleString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <span className="text-muted-foreground">{v.imovel?.titulo ?? "—"}</span>
+                    </div>
+                    <Badge variant="outline">{v.etapa?.nome ?? "Sem etapa"}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {visitas.length > 0 && (
+              <Link
+                to="/app/roteiro-visitas"
+                search={{ leadId: undefined }}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
+              >
+                <RouteIcon className="h-3.5 w-3.5" /> Ver no Roteiro de Visitas
+              </Link>
             )}
           </section>
 

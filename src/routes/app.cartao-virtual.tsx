@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
 import {
   IdCard,
@@ -10,21 +11,19 @@ import {
   FileText,
   Upload,
   Trash2,
+  UserPlus,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { baixarVCard } from "@/lib/vcard";
+import { slugify } from "@/lib/format";
+import { listTenantMembers } from "@/lib/team.functions";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/cartao-virtual")({
   head: () => ({ meta: [{ title: "Cartão Virtual — imob365" }] }),
@@ -49,6 +48,8 @@ type Corretor = {
   cirp_enviado_em: string | null;
   user_id: string | null;
 };
+
+type Membro = { user_id: string; nome: string | null; email: string | null };
 
 const BUCKET = "corretor-documentos";
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB
@@ -84,8 +85,15 @@ async function comprimirSePossivel(file: File): Promise<File> {
 }
 
 function CartaoVirtualPage() {
-  const { tenantId, user, isAdmin } = useAuth();
-  const [lista, setLista] = useState<{ id: string; nome: string; user_id: string | null }[]>([]);
+  const { tenantId, user, isAdmin, profile } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
+  const listMembers = useServerFn(listTenantMembers);
+
+  const [membros, setMembros] = useState<Membro[]>([]);
+  const [corretoresPorUser, setCorretoresPorUser] = useState<
+    Record<string, { id: string; nome: string }>
+  >({});
+  const [meuCorretorId, setMeuCorretorId] = useState<string | null>(null);
   const [selecionadoId, setSelecionadoId] = useState<string | null>(null);
   const [corretor, setCorretor] = useState<Corretor | null>(null);
   const [tenantNome, setTenantNome] = useState<string | null>(null);
@@ -95,6 +103,15 @@ function CartaoVirtualPage() {
   const [cirpUrl, setCirpUrl] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [linkCopiado, setLinkCopiado] = useState(false);
+
+  // Cadastro direto (self-service ou admin criando pra um membro da equipe)
+  const [criandoPara, setCriandoPara] = useState<{
+    userId: string;
+    nome: string;
+    email: string;
+  } | null>(null);
+  const [novoTelefone, setNovoTelefone] = useState("");
+  const [criando, setCriando] = useState(false);
 
   const [form, setForm] = useState({
     telefone: "",
@@ -106,20 +123,43 @@ function CartaoVirtualPage() {
     site: "",
   });
 
+  async function carregarListaBase() {
+    if (!tenantId) return;
+    setLoading(true);
+    const [{ data: t }, { data: cors }] = await Promise.all([
+      supabase.from("tenants").select("nome").eq("id", tenantId).maybeSingle(),
+      (supabase as any).from("corretores").select("id,nome,user_id").eq("tenant_id", tenantId),
+    ]);
+    setTenantNome(t?.nome ?? null);
+    const corretoresList = (cors as { id: string; nome: string; user_id: string | null }[]) ?? [];
+    const porUser: Record<string, { id: string; nome: string }> = {};
+    corretoresList.forEach((c) => {
+      if (c.user_id) porUser[c.user_id] = { id: c.id, nome: c.nome };
+    });
+    setCorretoresPorUser(porUser);
+    const proprio = corretoresList.find((c) => c.user_id === user?.id);
+    setMeuCorretorId(proprio?.id ?? null);
+
+    if (isAdmin) {
+      try {
+        const res = await listMembers({ data: { tenantId } });
+        setMembros((res?.members as Membro[]) ?? []);
+      } catch {
+        setMembros([]);
+      }
+    }
+
+    if (proprio) {
+      setSelecionadoId(proprio.id);
+    } else {
+      setSelecionadoId(null);
+      setCorretor(null);
+    }
+    setLoading(false);
+  }
+
   useEffect(() => {
-    (async () => {
-      if (!tenantId) return;
-      const [{ data: t }, { data: cors }] = await Promise.all([
-        supabase.from("tenants").select("nome").eq("id", tenantId).maybeSingle(),
-        (supabase as any).from("corretores").select("id,nome,user_id").eq("tenant_id", tenantId),
-      ]);
-      setTenantNome(t?.nome ?? null);
-      const corretores = (cors as { id: string; nome: string; user_id: string | null }[]) ?? [];
-      setLista(corretores);
-      const proprio = corretores.find((c) => c.user_id === user?.id);
-      setSelecionadoId(proprio?.id ?? (isAdmin ? null : null));
-      setLoading(false);
-    })();
+    carregarListaBase();
   }, [tenantId, user?.id, isAdmin]);
 
   async function carregarCorretor(id: string) {
@@ -220,7 +260,7 @@ function CartaoVirtualPage() {
 
   async function removerCirp() {
     if (!corretor?.cirp_storage_path) return;
-    if (!confirm("Remover o CIRP enviado?")) return;
+    if (!(await confirmDialog("Remover o CIRP enviado?"))) return;
     const path = corretor.cirp_storage_path;
     await (supabase as any)
       .from("corretores")
@@ -247,20 +287,143 @@ function CartaoVirtualPage() {
     a.click();
   }
 
-  if (loading && !corretor) {
+  async function abrirCriacao(userId: string, nomeSugerido: string, emailSugerido: string) {
+    setCriandoPara({ userId, nome: nomeSugerido, email: emailSugerido });
+    let telefonePre = "";
+    if (userId === user?.id) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("telefone")
+        .eq("id", userId)
+        .maybeSingle();
+      telefonePre = (data as any)?.telefone ?? "";
+    }
+    setNovoTelefone(telefonePre);
+  }
+
+  async function confirmarCriacao() {
+    if (!criandoPara || !tenantId) return;
+    if (!criandoPara.nome.trim()) {
+      toast.error("Informe o nome");
+      return;
+    }
+    setCriando(true);
+    const slugBase = slugify(criandoPara.nome) || `corretor-${Date.now()}`;
+    let slug = slugBase;
+    let novoId: string | null = null;
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
+      const { data, error } = await (supabase as any)
+        .from("corretores")
+        .insert({
+          tenant_id: tenantId,
+          user_id: criandoPara.userId,
+          nome: criandoPara.nome.trim(),
+          email: criandoPara.email || null,
+          telefone: novoTelefone || null,
+          slug,
+          ativo: true,
+          publico: true,
+        })
+        .select("id")
+        .single();
+      if (!error) {
+        novoId = data.id;
+        break;
+      }
+      if (error.code === "23505" || /duplicate|unique/i.test(error.message)) {
+        slug = `${slugBase}-${tentativa + 2}`;
+        continue;
+      }
+      toast.error(error.message);
+      setCriando(false);
+      return;
+    }
+    setCriando(false);
+    if (!novoId) {
+      toast.error("Não foi possível criar o cartão. Tente novamente.");
+      return;
+    }
+    toast.success("Cartão virtual criado");
+    setCriandoPara(null);
+    await carregarListaBase();
+    setSelecionadoId(novoId);
+  }
+
+  if (loading && !corretor && !criandoPara) {
     return <div className="p-8 text-sm text-muted-foreground">Carregando…</div>;
   }
 
-  if (!selecionadoId && !isAdmin) {
+  if (criandoPara) {
+    return (
+      <div className="mx-auto max-w-lg p-8">
+        <header className="mb-6">
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+            <IdCard className="h-7 w-7 text-primary" />
+            Criar Cartão Virtual
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Confirme os dados abaixo — já preenchemos com o que já sabemos da conta.
+          </p>
+        </header>
+        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
+          <div>
+            <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Nome completo *
+            </Label>
+            <Input
+              value={criandoPara.nome}
+              onChange={(e) => setCriandoPara((c) => (c ? { ...c, nome: e.target.value } : c))}
+            />
+          </div>
+          <div>
+            <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              E-mail
+            </Label>
+            <Input
+              type="email"
+              value={criandoPara.email}
+              onChange={(e) => setCriandoPara((c) => (c ? { ...c, email: e.target.value } : c))}
+            />
+          </div>
+          <div>
+            <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Telefone
+            </Label>
+            <Input
+              value={novoTelefone}
+              onChange={(e) => setNovoTelefone(e.target.value)}
+              placeholder="(11) 99999-9999"
+            />
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setCriandoPara(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={confirmarCriacao} disabled={criando}>
+              {criando ? "Criando…" : "Criar Cartão Virtual"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin && !meuCorretorId && !corretor) {
     return (
       <div className="p-8">
         <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-8 text-center">
           <IdCard className="mx-auto h-8 w-8 text-primary" />
           <h1 className="mt-4 text-xl font-bold">Cartão Virtual</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Você ainda não tem um perfil de corretor vinculado à sua conta. Peça pro administrador
-            da imobiliária vincular seu usuário em Configurações → Equipe.
+            Você ainda não tem um cartão virtual. Crie o seu agora — é rápido, já aproveitamos os
+            dados da sua conta.
           </p>
+          <Button
+            className="mt-4"
+            onClick={() => abrirCriacao(user!.id, profile?.nome ?? "", user?.email ?? "")}
+          >
+            <UserPlus className="mr-2 h-4 w-4" /> Criar meu Cartão Virtual
+          </Button>
         </div>
       </div>
     );
@@ -274,30 +437,56 @@ function CartaoVirtualPage() {
           Cartão Virtual
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Seus dados de contato, redes sociais e o link público que você pode compartilhar com
+          Dados de contato, redes sociais e o link público que podem ser compartilhados com
           clientes.
         </p>
       </header>
 
-      {isAdmin && lista.length > 0 && (
-        <div className="mb-6 max-w-sm">
-          <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Editando o cartão de
-          </Label>
-          <Select value={selecionadoId ?? undefined} onValueChange={setSelecionadoId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione um corretor" />
-            </SelectTrigger>
-            <SelectContent>
-              {lista.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.nome}
-                  {c.user_id === user?.id ? " (você)" : ""}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {isAdmin && (
+        <section className="mb-6 rounded-xl border border-border bg-card p-4">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Equipe ({membros.length})
+          </h2>
+          <ul className="divide-y divide-border">
+            {membros.map((m) => {
+              const card = corretoresPorUser[m.user_id];
+              const isSelf = m.user_id === user?.id;
+              return (
+                <li key={m.user_id} className="flex items-center justify-between gap-3 py-2.5">
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">
+                      {m.nome ?? m.email ?? "—"}
+                      {isSelf ? " (você)" : ""}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">{m.email}</div>
+                  </div>
+                  {card ? (
+                    <Button
+                      size="sm"
+                      variant={selecionadoId === card.id ? "default" : "outline"}
+                      onClick={() => setSelecionadoId(card.id)}
+                    >
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar cartão
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => abrirCriacao(m.user_id, m.nome ?? "", m.email ?? "")}
+                    >
+                      <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Criar cartão
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+            {membros.length === 0 && (
+              <li className="py-2.5 text-sm text-muted-foreground">
+                Nenhum membro na equipe ainda.
+              </li>
+            )}
+          </ul>
+        </section>
       )}
 
       {corretor && (
@@ -307,7 +496,7 @@ function CartaoVirtualPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Button variant="outline" asChild>
                 <a href={`/corretor/${corretor.slug}`} target="_blank" rel="noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" /> Ver meu cartão público
+                  <ExternalLink className="mr-2 h-4 w-4" /> Ver cartão público
                 </a>
               </Button>
               <Button variant="outline" onClick={copiarLink}>
@@ -339,7 +528,7 @@ function CartaoVirtualPage() {
                   )
                 }
               >
-                <Download className="mr-2 h-4 w-4" /> Baixar meu contato (.vcf)
+                <Download className="mr-2 h-4 w-4" /> Baixar contato (.vcf)
               </Button>
             </div>
             {qrDataUrl && (
@@ -440,7 +629,7 @@ function CartaoVirtualPage() {
             <h2 className="mb-1 text-lg font-semibold">CIRP (carteira do CRECI)</h2>
             <p className="mb-4 text-sm text-muted-foreground">
               Documento pessoal, visível só pra você e pra administração da imobiliária — nunca
-              aparece na sua página pública.
+              aparece na página pública.
             </p>
             {corretor.cirp_storage_path ? (
               <div className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
@@ -479,7 +668,7 @@ function CartaoVirtualPage() {
             ) : (
               <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border py-8 text-center text-sm text-muted-foreground hover:bg-muted/40">
                 <Upload className="h-6 w-6" />
-                {uploading ? "Enviando…" : "Clique pra enviar uma foto ou PDF do seu CIRP"}
+                {uploading ? "Enviando…" : "Clique pra enviar uma foto ou PDF do CIRP"}
                 <input
                   type="file"
                   accept="image/*,.pdf"
@@ -492,6 +681,7 @@ function CartaoVirtualPage() {
           </section>
         </div>
       )}
+      <ConfirmDialog />
     </div>
   );
 }

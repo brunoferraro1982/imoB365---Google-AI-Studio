@@ -26,6 +26,9 @@ import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/roteiro-visitas")({
   head: () => ({ meta: [{ title: "Roteiro de Visitas — imob365" }] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    leadId: typeof search.leadId === "string" ? search.leadId : undefined,
+  }),
   component: RoteiroVisitasPage,
 });
 
@@ -63,6 +66,7 @@ function inicioFim() {
 
 function RoteiroVisitasPage() {
   const { tenantId, user, isAdmin } = useAuth();
+  const { leadId } = Route.useSearch();
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [meuCorretorId, setMeuCorretorId] = useState<string | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
@@ -143,6 +147,29 @@ function RoteiroVisitasPage() {
   useEffect(() => {
     load();
   }, [tenantId]);
+
+  // Chegou aqui a partir de "Agendar visita" no detalhe de um lead
+  // (app.leads.$id.tsx) — pré-preenche e já abre o formulário de nova
+  // visita com o lead (e imóvel/corretor dele, se já atribuídos).
+  useEffect(() => {
+    if (!leadId || !tenantId) return;
+    (async () => {
+      const { data: lead } = await (supabase as any)
+        .from("leads")
+        .select("id,nome,imovel_id,corretor_id")
+        .eq("id", leadId)
+        .maybeSingle();
+      if (!lead) return;
+      setLeads((prev) => (prev.some((l) => l.id === lead.id) ? prev : [lead, ...prev]));
+      setForm((f) => ({
+        ...f,
+        lead_id: lead.id,
+        imovel_id: lead.imovel_id ?? f.imovel_id,
+        corretor_id: lead.corretor_id ?? f.corretor_id,
+      }));
+      setShowForm(true);
+    })();
+  }, [leadId, tenantId]);
 
   const escopoCorretorId = isAdmin ? filtroCorretorId : (meuCorretorId ?? "");
   const visitasEscopo = useMemo(() => {
