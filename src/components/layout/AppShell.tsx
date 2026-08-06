@@ -49,6 +49,8 @@ import {
   PenTool,
   Headset,
   Factory,
+  Route,
+  IdCard,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -85,16 +87,18 @@ const tenantModules: Module[] = [
     label: "Imobiliário",
     icon: Building,
     items: [
-      { to: "/app/imoveis", label: "Imóveis", icon: Building2 },
+      { to: "/app/imoveis", label: "Publicar Imóveis", icon: Building2 },
+      { to: "/app/locacao", label: "Locação", icon: Home },
       { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
-      { to: "/app/locacao", label: "Locação", icon: Home },
-      { to: "/app/leads", label: "Clientes & oportunidades", icon: Users },
+      { to: "/app/leads", label: "Leads", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
+      { to: "/app/roteiro-visitas", label: "Roteiro de Visitas", icon: Route },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
+      { to: "/app/cartao-virtual", label: "Cartão Virtual", icon: IdCard },
     ],
   },
   {

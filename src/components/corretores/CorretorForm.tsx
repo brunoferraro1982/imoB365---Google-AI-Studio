@@ -19,6 +19,10 @@ export type CorretorFormData = {
   comissao_padrao: number | null;
   ativo: boolean;
   publico: boolean;
+  instagram: string;
+  facebook: string;
+  linkedin: string;
+  site: string;
 };
 
 export const emptyCorretor: CorretorFormData = {
@@ -34,6 +38,10 @@ export const emptyCorretor: CorretorFormData = {
   comissao_padrao: null,
   ativo: true,
   publico: true,
+  instagram: "",
+  facebook: "",
+  linkedin: "",
+  site: "",
 };
 
 export function CorretorForm({
@@ -137,6 +145,39 @@ export function CorretorForm({
             placeholder="Breve descrição que aparece na página pública do corretor"
           />
         </Field>
+      </Section>
+
+      <Section title="Redes sociais">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Instagram">
+            <Input
+              value={data.instagram}
+              onChange={(e) => update("instagram", e.target.value)}
+              placeholder="https://instagram.com/seuusuario"
+            />
+          </Field>
+          <Field label="Facebook">
+            <Input
+              value={data.facebook}
+              onChange={(e) => update("facebook", e.target.value)}
+              placeholder="https://facebook.com/suapagina"
+            />
+          </Field>
+          <Field label="LinkedIn">
+            <Input
+              value={data.linkedin}
+              onChange={(e) => update("linkedin", e.target.value)}
+              placeholder="https://linkedin.com/in/seuusuario"
+            />
+          </Field>
+          <Field label="Site pessoal">
+            <Input
+              value={data.site}
+              onChange={(e) => update("site", e.target.value)}
+              placeholder="https://seusite.com.br"
+            />
+          </Field>
+        </div>
       </Section>
 
       <Section title="Status">
