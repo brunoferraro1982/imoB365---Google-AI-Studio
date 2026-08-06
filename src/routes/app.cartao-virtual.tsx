@@ -12,11 +12,17 @@ import {
   Upload,
   Trash2,
   UserPlus,
-  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { baixarVCard } from "@/lib/vcard";
@@ -442,51 +448,43 @@ function CartaoVirtualPage() {
         </p>
       </header>
 
-      {isAdmin && (
-        <section className="mb-6 rounded-xl border border-border bg-card p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Equipe ({membros.length})
-          </h2>
-          <ul className="divide-y divide-border">
-            {membros.map((m) => {
-              const card = corretoresPorUser[m.user_id];
-              const isSelf = m.user_id === user?.id;
-              return (
-                <li key={m.user_id} className="flex items-center justify-between gap-3 py-2.5">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">
-                      {m.nome ?? m.email ?? "—"}
-                      {isSelf ? " (você)" : ""}
-                    </div>
-                    <div className="truncate text-xs text-muted-foreground">{m.email}</div>
-                  </div>
-                  {card ? (
-                    <Button
-                      size="sm"
-                      variant={selecionadoId === card.id ? "default" : "outline"}
-                      onClick={() => setSelecionadoId(card.id)}
-                    >
-                      <Pencil className="mr-1.5 h-3.5 w-3.5" /> Editar cartão
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => abrirCriacao(m.user_id, m.nome ?? "", m.email ?? "")}
-                    >
-                      <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Criar cartão
-                    </Button>
-                  )}
-                </li>
+      {isAdmin && membros.length > 0 && (
+        <div className="mb-6 max-w-sm">
+          <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Selecionar cartão
+          </Label>
+          <Select
+            value={selecionadoId ?? undefined}
+            onValueChange={(v) => {
+              const membro = membros.find(
+                (m) => (corretoresPorUser[m.user_id]?.id ?? m.user_id) === v,
               );
-            })}
-            {membros.length === 0 && (
-              <li className="py-2.5 text-sm text-muted-foreground">
-                Nenhum membro na equipe ainda.
-              </li>
-            )}
-          </ul>
-        </section>
+              const card = membro ? corretoresPorUser[membro.user_id] : undefined;
+              if (card) {
+                setSelecionadoId(card.id);
+              } else if (membro) {
+                abrirCriacao(membro.user_id, membro.nome ?? "", membro.email ?? "");
+              }
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um cartão" />
+            </SelectTrigger>
+            <SelectContent>
+              {membros.map((m) => {
+                const card = corretoresPorUser[m.user_id];
+                const isSelf = m.user_id === user?.id;
+                return (
+                  <SelectItem key={m.user_id} value={card?.id ?? m.user_id}>
+                    {m.nome ?? m.email ?? "—"}
+                    {isSelf ? " (você)" : ""}
+                    {!card ? " — criar cartão" : ""}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
       )}
 
       {corretor && (
