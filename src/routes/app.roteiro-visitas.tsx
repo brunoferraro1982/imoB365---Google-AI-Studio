@@ -22,6 +22,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/roteiro-visitas")({
   head: () => ({ meta: [{ title: "Roteiro de Visitas — imob365" }] }),
@@ -62,6 +63,7 @@ function inicioFim() {
 
 function RoteiroVisitasPage() {
   const { tenantId, user, isAdmin } = useAuth();
+  const { confirmDialog, ConfirmDialog } = useConfirm();
   const [meuCorretorId, setMeuCorretorId] = useState<string | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
   const [filtroCorretorId, setFiltroCorretorId] = useState<string>("");
@@ -200,7 +202,8 @@ function RoteiroVisitasPage() {
   }
 
   async function excluirEtapa(id: string) {
-    if (!confirm('Excluir esta coluna? As visitas nela vão para "Sem etapa".')) return;
+    if (!(await confirmDialog('Excluir esta coluna? As visitas nela vão para "Sem etapa".')))
+      return;
     await (supabase as any).from("roteiro_visita_etapas").delete().eq("id", id);
     load();
   }
@@ -523,6 +526,7 @@ function RoteiroVisitasPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmDialog />
     </div>
   );
 }
