@@ -51,6 +51,7 @@ import {
   Factory,
   Route,
   IdCard,
+  Briefcase,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -94,6 +95,7 @@ const tenantModules: Module[] = [
       { to: "/app/leads", label: "Leads", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
       { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
+      { to: "/app/parceiros-comerciais", label: "Parceiros Comerciais", icon: Briefcase },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
       { to: "/app/roteiro-visitas", label: "Roteiro de Visitas", icon: Route },
