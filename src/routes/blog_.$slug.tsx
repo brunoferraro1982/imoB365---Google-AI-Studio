@@ -195,9 +195,15 @@ function BlogPostPage() {
               </nav>
 
               {/* ── Categoria ── */}
+              {/* Azul (não laranja) de propósito: laranja já identifica
+                  "imóvel" na coluna 1 — a categoria do artigo usa a mesma
+                  cor de conteúdo/editorial das demais badges do blog. */}
               {post.categoria && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  <Badge variant="secondary" className="gap-1 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="gap-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300"
+                  >
                     <Tag className="w-3 h-3" />
                     {post.categoria}
                   </Badge>
@@ -262,7 +268,7 @@ function BlogPostPage() {
                           key={r.id}
                           to="/blog/$slug"
                           params={{ slug: r.slug }}
-                          className="group rounded-xl border border-border/60 bg-card overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
+                          className="group rounded-xl border border-border/60 bg-card overflow-hidden hover:border-blue-400/50 hover:shadow-md transition-all"
                         >
                           {r.imagem_url && (
                             <img
@@ -272,7 +278,7 @@ function BlogPostPage() {
                             />
                           )}
                           <div className="p-3">
-                            <h3 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                            <h3 className="text-sm font-semibold leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                               {r.titulo}
                             </h3>
                           </div>
@@ -298,7 +304,9 @@ function BlogPostPage() {
           </BlogColumnsLayout>
         </div>
       </div>
-      <SiteFooter />
+      {/* Construtoras Parceiras já aparece na coluna 3 (BlogParceirosColumn)
+          — suprime a faixa duplicada que o SiteFooter mostra por padrão. */}
+      <SiteFooter hideConstrutorasMarquee />
     </>
   );
 }

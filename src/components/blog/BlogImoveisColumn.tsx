@@ -64,7 +64,8 @@ export function BlogImoveisColumn({ onHasContent }: { onHasContent?: (has: boole
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+      <h2 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
         Imóveis à venda e locação
       </h2>
       <div className="space-y-3">
