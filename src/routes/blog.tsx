@@ -5,6 +5,7 @@ import { getCorporateTenantId } from "@/lib/corporateTenant";
 import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
 import { Calendar, Tag } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { BlogColumnsLayout } from "@/components/blog/BlogColumnsLayout";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -128,9 +129,9 @@ export default function BlogPage() {
           </div>
         )}
 
-        {/* Posts grid */}
-        <section className="py-10 px-4">
-          <div className="container max-w-4xl mx-auto">
+        {/* Posts grid + colunas de imóveis à venda/locação e parceiros */}
+        <section className="py-10">
+          <BlogColumnsLayout>
             {loading ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -185,7 +186,7 @@ export default function BlogPage() {
                 ))}
               </div>
             )}
-          </div>
+          </BlogColumnsLayout>
         </section>
 
         {/* Newsletter */}
