@@ -5,6 +5,7 @@ import { getCorporateTenantId } from "@/lib/corporateTenant";
 import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
 import { Calendar, Tag } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { BlogColumnsLayout } from "@/components/blog/BlogColumnsLayout";
 
 export const Route = createFileRoute("/blog")({
   head: () => ({
@@ -128,9 +129,16 @@ export default function BlogPage() {
           </div>
         )}
 
-        {/* Posts grid */}
-        <section className="py-10 px-4">
-          <div className="container max-w-4xl mx-auto">
+        {/* Posts grid + colunas de imóveis à venda/locação e parceiros */}
+        <section className="py-10">
+          <BlogColumnsLayout>
+            {/* Eyebrow espelhando o rótulo das colunas laterais — junto com o
+                badge azul (em vez do laranja usado pelos cards de imóvel),
+                deixa claro de longe o que é conteúdo editorial x anúncio. */}
+            <h2 className="mb-4 flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden />
+              Artigos do Blog
+            </h2>
             {loading ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -148,7 +156,7 @@ export default function BlogPage() {
                     key={p.id}
                     to="/blog/$slug"
                     params={{ slug: p.slug }}
-                    className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
+                    className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-blue-400/50 hover:shadow-md transition-all"
                   >
                     {p.imagem_url && (
                       <img
@@ -160,13 +168,13 @@ export default function BlogPage() {
                     <div className="p-4 space-y-2">
                       {p.categoria && (
                         <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full">
                             <Tag className="h-2.5 w-2.5" />
                             {p.categoria}
                           </span>
                         </div>
                       )}
-                      <h2 className="font-bold text-sm leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                      <h2 className="font-bold text-sm leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
                         {p.titulo}
                       </h2>
                       {p.resumo && (
@@ -185,7 +193,7 @@ export default function BlogPage() {
                 ))}
               </div>
             )}
-          </div>
+          </BlogColumnsLayout>
         </section>
 
         {/* Newsletter */}
@@ -201,7 +209,9 @@ export default function BlogPage() {
           </div>
         </section>
       </div>
-      <SiteFooter />
+      {/* Construtoras Parceiras já aparece na coluna 3 (BlogParceirosColumn)
+          — suprime a faixa duplicada que o SiteFooter mostra por padrão. */}
+      <SiteFooter hideConstrutorasMarquee />
     </>
   );
 }

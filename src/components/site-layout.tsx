@@ -394,12 +394,14 @@ export function ConstrutorasMarquee() {
   );
 }
 
-export function SiteFooter() {
+export function SiteFooter({
+  hideConstrutorasMarquee,
+}: { hideConstrutorasMarquee?: boolean } = {}) {
   const year = new Date().getFullYear();
 
   return (
     <>
-      <ConstrutorasMarquee />
+      {!hideConstrutorasMarquee && <ConstrutorasMarquee />}
       <footer className="border-t border-border bg-secondary text-secondary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">
