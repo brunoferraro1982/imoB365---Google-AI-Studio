@@ -28,6 +28,7 @@ export const Route = createFileRoute("/app/roteiro-visitas")({
   head: () => ({ meta: [{ title: "Roteiro de Visitas — imob365" }] }),
   validateSearch: (search: Record<string, unknown>) => ({
     leadId: typeof search.leadId === "string" ? search.leadId : undefined,
+    taskId: typeof search.taskId === "string" ? search.taskId : undefined,
   }),
   component: RoteiroVisitasPage,
 });
@@ -66,7 +67,7 @@ function inicioFim() {
 
 function RoteiroVisitasPage() {
   const { tenantId, user, isAdmin } = useAuth();
-  const { leadId } = Route.useSearch();
+  const { leadId, taskId } = Route.useSearch();
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [meuCorretorId, setMeuCorretorId] = useState<string | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
@@ -170,6 +171,35 @@ function RoteiroVisitasPage() {
       setShowForm(true);
     })();
   }, [leadId, tenantId]);
+
+  // Chegou aqui a partir de "Gerar visita" numa tarefa (app.tarefas.tsx ou
+  // o dialog de um parceiro comercial) — pré-preenche a observação com o
+  // título/descrição da tarefa e o lead, se a tarefa tiver um. Diferente do
+  // efeito de leadId acima: uma tarefa não carrega imovel_id/corretor_id,
+  // então esses campos ficam por conta do usuário escolher.
+  useEffect(() => {
+    if (!taskId || !tenantId) return;
+    (async () => {
+      const { data: tarefa } = await (supabase as any)
+        .from("lead_tarefas")
+        .select("id,titulo,descricao,lead_id,lead:leads(id,nome)")
+        .eq("id", taskId)
+        .maybeSingle();
+      if (!tarefa) return;
+      if (tarefa.lead) {
+        setLeads((prev) =>
+          prev.some((l) => l.id === tarefa.lead.id) ? prev : [tarefa.lead, ...prev],
+        );
+      }
+      const observacoes = [tarefa.titulo, tarefa.descricao].filter(Boolean).join(" — ");
+      setForm((f) => ({
+        ...f,
+        lead_id: tarefa.lead_id ?? f.lead_id,
+        observacoes: observacoes || f.observacoes,
+      }));
+      setShowForm(true);
+    })();
+  }, [taskId, tenantId]);
 
   const escopoCorretorId = isAdmin ? filtroCorretorId : (meuCorretorId ?? "");
   const visitasEscopo = useMemo(() => {

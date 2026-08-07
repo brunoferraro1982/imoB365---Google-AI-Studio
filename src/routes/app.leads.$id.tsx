@@ -327,7 +327,7 @@ function LeadDetail() {
                 Visitas
               </h2>
               <Button size="sm" variant="outline" asChild>
-                <Link to="/app/roteiro-visitas" search={{ leadId: lead.id }}>
+                <Link to="/app/roteiro-visitas" search={{ leadId: lead.id, taskId: undefined }}>
                   <Plus className="mr-1.5 h-3.5 w-3.5" /> Agendar visita
                 </Link>
               </Button>
@@ -363,7 +363,7 @@ function LeadDetail() {
             {visitas.length > 0 && (
               <Link
                 to="/app/roteiro-visitas"
-                search={{ leadId: undefined }}
+                search={{ leadId: undefined, taskId: undefined }}
                 className="mt-3 inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
               >
                 <RouteIcon className="h-3.5 w-3.5" /> Ver no Roteiro de Visitas

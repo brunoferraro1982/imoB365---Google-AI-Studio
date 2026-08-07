@@ -71,6 +71,7 @@ import { Route as AppRoteiroVisitasRouteImport } from './routes/app.roteiro-visi
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppQrCodeRouteImport } from './routes/app.qr-code'
 import { Route as AppParceriasRouteImport } from './routes/app.parcerias'
+import { Route as AppParceirosComerciaisRouteImport } from './routes/app.parceiros-comerciais'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
@@ -516,6 +517,11 @@ const AppQrCodeRoute = AppQrCodeRouteImport.update({
 const AppParceriasRoute = AppParceriasRouteImport.update({
   id: '/parcerias',
   path: '/parcerias',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppParceirosComerciaisRoute = AppParceirosComerciaisRouteImport.update({
+  id: '/parceiros-comerciais',
+  path: '/parceiros-comerciais',
   getParentRoute: () => AppRoute,
 } as any)
 const AppContratacaoRoute = AppContratacaoRouteImport.update({
@@ -1292,6 +1298,7 @@ export interface FileRoutesByFullPath {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parceiros-comerciais': typeof AppParceirosComerciaisRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1487,6 +1494,7 @@ export interface FileRoutesByTo {
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parceiros-comerciais': typeof AppParceirosComerciaisRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1686,6 +1694,7 @@ export interface FileRoutesById {
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
+  '/app/parceiros-comerciais': typeof AppParceirosComerciaisRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
@@ -1887,6 +1896,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/parceiros-comerciais'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -2082,6 +2092,7 @@ export interface FileRouteTypes {
     | '/app/cartao-virtual'
     | '/app/cartorios'
     | '/app/contratacao'
+    | '/app/parceiros-comerciais'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -2280,6 +2291,7 @@ export interface FileRouteTypes {
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
+    | '/app/parceiros-comerciais'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
@@ -2952,6 +2964,13 @@ declare module '@tanstack/react-router' {
       path: '/parcerias'
       fullPath: '/app/parcerias'
       preLoaderRoute: typeof AppParceriasRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/parceiros-comerciais': {
+      id: '/app/parceiros-comerciais'
+      path: '/parceiros-comerciais'
+      fullPath: '/app/parceiros-comerciais'
+      preLoaderRoute: typeof AppParceirosComerciaisRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/contratacao': {
@@ -4024,6 +4043,7 @@ interface AppRouteChildren {
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
+  AppParceirosComerciaisRoute: typeof AppParceirosComerciaisRoute
   AppParceriasRoute: typeof AppParceriasRoute
   AppQrCodeRoute: typeof AppQrCodeRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
@@ -4084,6 +4104,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
+  AppParceirosComerciaisRoute: AppParceirosComerciaisRoute,
   AppParceriasRoute: AppParceriasRoute,
   AppQrCodeRoute: AppQrCodeRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
