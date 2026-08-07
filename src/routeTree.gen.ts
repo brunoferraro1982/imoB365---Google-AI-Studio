@@ -67,12 +67,14 @@ import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AppVisitasRouteImport } from './routes/app.visitas'
 import { Route as AppTarefasRouteImport } from './routes/app.tarefas'
 import { Route as AppSiteRouteImport } from './routes/app.site'
+import { Route as AppRoteiroVisitasRouteImport } from './routes/app.roteiro-visitas'
 import { Route as AppRelatoriosRouteImport } from './routes/app.relatorios'
 import { Route as AppQrCodeRouteImport } from './routes/app.qr-code'
 import { Route as AppParceriasRouteImport } from './routes/app.parcerias'
 import { Route as AppContratacaoRouteImport } from './routes/app.contratacao'
 import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes'
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
+import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
@@ -496,6 +498,11 @@ const AppSiteRoute = AppSiteRouteImport.update({
   path: '/site',
   getParentRoute: () => AppRoute,
 } as any)
+const AppRoteiroVisitasRoute = AppRoteiroVisitasRouteImport.update({
+  id: '/roteiro-visitas',
+  path: '/roteiro-visitas',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppRelatoriosRoute = AppRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
@@ -524,6 +531,11 @@ const AppConfiguracoesRoute = AppConfiguracoesRouteImport.update({
 const AppCartoriosRoute = AppCartoriosRouteImport.update({
   id: '/cartorios',
   path: '/cartorios',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCartaoVirtualRoute = AppCartaoVirtualRouteImport.update({
+  id: '/cartao-virtual',
+  path: '/cartao-virtual',
   getParentRoute: () => AppRoute,
 } as any)
 const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
@@ -1276,12 +1288,14 @@ export interface FileRoutesByFullPath {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
+  '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/roteiro-visitas': typeof AppRoteiroVisitasRoute
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
@@ -1470,11 +1484,13 @@ export interface FileRoutesByTo {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
+  '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/roteiro-visitas': typeof AppRoteiroVisitasRoute
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -1666,12 +1682,14 @@ export interface FileRoutesById {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
+  '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
   '/app/configuracoes': typeof AppConfiguracoesRouteWithChildren
   '/app/contratacao': typeof AppContratacaoRoute
   '/app/parcerias': typeof AppParceriasRoute
   '/app/qr-code': typeof AppQrCodeRoute
   '/app/relatorios': typeof AppRelatoriosRoute
+  '/app/roteiro-visitas': typeof AppRoteiroVisitasRoute
   '/app/site': typeof AppSiteRouteWithChildren
   '/app/tarefas': typeof AppTarefasRoute
   '/app/visitas': typeof AppVisitasRoute
@@ -1865,12 +1883,14 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
+    | '/app/cartao-virtual'
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
+    | '/app/roteiro-visitas'
     | '/app/site'
     | '/app/tarefas'
     | '/app/visitas'
@@ -2059,11 +2079,13 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
+    | '/app/cartao-virtual'
     | '/app/cartorios'
     | '/app/contratacao'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
+    | '/app/roteiro-visitas'
     | '/app/tarefas'
     | '/app/visitas'
     | '/auth/callback'
@@ -2254,12 +2276,14 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/api/sitemap.xml'
+    | '/app/cartao-virtual'
     | '/app/cartorios'
     | '/app/configuracoes'
     | '/app/contratacao'
     | '/app/parcerias'
     | '/app/qr-code'
     | '/app/relatorios'
+    | '/app/roteiro-visitas'
     | '/app/site'
     | '/app/tarefas'
     | '/app/visitas'
@@ -2902,6 +2926,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/roteiro-visitas': {
+      id: '/app/roteiro-visitas'
+      path: '/roteiro-visitas'
+      fullPath: '/app/roteiro-visitas'
+      preLoaderRoute: typeof AppRoteiroVisitasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/relatorios': {
       id: '/app/relatorios'
       path: '/relatorios'
@@ -2942,6 +2973,13 @@ declare module '@tanstack/react-router' {
       path: '/cartorios'
       fullPath: '/app/cartorios'
       preLoaderRoute: typeof AppCartoriosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/cartao-virtual': {
+      id: '/app/cartao-virtual'
+      path: '/cartao-virtual'
+      fullPath: '/app/cartao-virtual'
+      preLoaderRoute: typeof AppCartaoVirtualRouteImport
       parentRoute: typeof AppRoute
     }
     '/api/sitemap.xml': {
@@ -3982,12 +4020,14 @@ const AppSiteRouteWithChildren =
   AppSiteRoute._addFileChildren(AppSiteRouteChildren)
 
 interface AppRouteChildren {
+  AppCartaoVirtualRoute: typeof AppCartaoVirtualRoute
   AppCartoriosRoute: typeof AppCartoriosRoute
   AppConfiguracoesRoute: typeof AppConfiguracoesRouteWithChildren
   AppContratacaoRoute: typeof AppContratacaoRoute
   AppParceriasRoute: typeof AppParceriasRoute
   AppQrCodeRoute: typeof AppQrCodeRoute
   AppRelatoriosRoute: typeof AppRelatoriosRoute
+  AppRoteiroVisitasRoute: typeof AppRoteiroVisitasRoute
   AppSiteRoute: typeof AppSiteRouteWithChildren
   AppTarefasRoute: typeof AppTarefasRoute
   AppVisitasRoute: typeof AppVisitasRoute
@@ -4040,12 +4080,14 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppCartaoVirtualRoute: AppCartaoVirtualRoute,
   AppCartoriosRoute: AppCartoriosRoute,
   AppConfiguracoesRoute: AppConfiguracoesRouteWithChildren,
   AppContratacaoRoute: AppContratacaoRoute,
   AppParceriasRoute: AppParceriasRoute,
   AppQrCodeRoute: AppQrCodeRoute,
   AppRelatoriosRoute: AppRelatoriosRoute,
+  AppRoteiroVisitasRoute: AppRoteiroVisitasRoute,
   AppSiteRoute: AppSiteRouteWithChildren,
   AppTarefasRoute: AppTarefasRoute,
   AppVisitasRoute: AppVisitasRoute,
