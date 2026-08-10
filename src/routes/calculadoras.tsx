@@ -110,6 +110,12 @@ function ItbiCalc() {
           <span className="text-muted-foreground">ITBI estimado:</span>{" "}
           <span className="font-semibold">{brl(total)}</span>
         </div>
+        <Link
+          to="/calculadora-itbi"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+        >
+          Abrir calculadora completa <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </Card>
   );
@@ -176,6 +182,12 @@ function FinanciamentoCalc() {
             Total pago: <span className="font-semibold">{brl(r.total)}</span>
           </div>
         </div>
+        <Link
+          to="/calculadora-financiamento"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+        >
+          Abrir simulador completo <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </Card>
   );
@@ -217,6 +229,12 @@ function MudancaCalc() {
         <p className="text-[10px] text-muted-foreground">
           Valor de referência. Solicite orçamento a uma transportadora parceira.
         </p>
+        <Link
+          to="/calculadora-mudanca"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+        >
+          Abrir calculadora completa <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
     </Card>
   );
