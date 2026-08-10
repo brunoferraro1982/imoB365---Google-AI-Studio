@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { comprimirImagem } from "@/lib/imageCompress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,7 +128,10 @@ function EmpDetail() {
     if (!files.length || !emp?.tenant_id) return;
     setUploading(true);
     const urls: string[] = [...(emp.fotos_urls ?? [])];
-    for (const file of files) {
+    for (const original of files) {
+      // Comprime no cliente antes do upload — evita o 413/"Failed to fetch" do
+      // nginx com foto crua >10MB.
+      const file = await comprimirImagem(original);
       const ext = file.name.split(".").pop() || "jpg";
       const fname = `${crypto.randomUUID()}.${ext}`;
       const path = `${emp.tenant_id}/emp-${id}/${fname}`;

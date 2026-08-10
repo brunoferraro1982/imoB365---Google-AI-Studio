@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { FileText, Upload, Trash2, ExternalLink, History } from "lucide-react";
+import { comprimirImagem } from "@/lib/imageCompress";
 
 // Primeira gestão documental real do contrato — hoje nem bucket, nem tabela,
 // nem compressão existiam (arquivo_path em contratos é coluna morta).
@@ -27,7 +28,6 @@ const CATEGORIAS = [
 const CATEGORIA_LABEL = Object.fromEntries(CATEGORIAS.map((c) => [c.value, c.label]));
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB
-const MAX_DIM = 1920;
 
 type Documento = {
   id: string;
@@ -40,37 +40,8 @@ type Documento = {
   created_at: string;
 };
 
-// Resize + conversão pra WebP no client via <canvas>, só pra imagens — PDF e
-// outros formatos passam direto. Sem isso, foto de celular (comum >5MB) ia
-// direto pro storage sem nenhum limite de fato.
-async function comprimirImagem(file: File): Promise<File> {
-  let bitmap: ImageBitmap;
-  try {
-    bitmap = await createImageBitmap(file);
-  } catch {
-    // Formato que o navegador não sabe decodificar (ex. HEIC em alguns
-    // browsers) ou arquivo corrompido — envia o original em vez de bloquear.
-    return file;
-  }
-  let { width, height } = bitmap;
-  if (width > MAX_DIM || height > MAX_DIM) {
-    const scale = MAX_DIM / Math.max(width, height);
-    width = Math.round(width * scale);
-    height = Math.round(height * scale);
-  }
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return file;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.82),
-  );
-  if (!blob) return file;
-  const nome = file.name.replace(/\.[^.]+$/, "") + ".webp";
-  return new File([blob], nome, { type: "image/webp" });
-}
+// Resize/compressão de imagem (comprimirImagem) vive em @/lib/imageCompress —
+// mesma lógica reaproveitada pelos uploads de foto de imóvel/corretor.
 
 export function DocumentoUpload({ contratoId }: { contratoId: string }) {
   const { tenantId } = useAuth();
