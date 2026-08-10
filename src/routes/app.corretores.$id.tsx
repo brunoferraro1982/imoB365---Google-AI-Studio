@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { CorretorForm, type CorretorFormData } from "@/components/corretores/CorretorForm";
 import { slugify } from "@/lib/format";
+import { comprimirImagem } from "@/lib/imageCompress";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -80,10 +81,13 @@ function EditarCorretor() {
   }
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const original = e.target.files?.[0];
     e.target.value = "";
-    if (!file || !tenantId) return;
+    if (!original || !tenantId) return;
     setUploading(true);
+    // Comprime no cliente antes do upload — evita o 413/"Failed to fetch" do
+    // nginx com foto crua >10MB.
+    const file = await comprimirImagem(original);
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${tenantId}/${id}/${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("corretor-fotos").upload(path, file, {
