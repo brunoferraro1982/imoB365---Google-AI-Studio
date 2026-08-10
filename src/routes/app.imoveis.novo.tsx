@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ImovelForm, type ImovelFormData } from "@/components/imoveis/ImovelForm";
 import { FotosManager, type Foto } from "@/components/imoveis/FotosManager";
 import { aplicarMarcaDagua } from "@/lib/watermark";
+import { comprimirImagem } from "@/lib/imageCompress";
 import { slugify } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -125,13 +126,17 @@ function NovoImovel() {
     let nextOrdem = fotos.length;
     let hasCapa = fotos.some((f) => f.capa);
     for (const file of files) {
-      let uploadFile: File = file;
+      // Comprime/redimensiona no cliente ANTES do upload — foto de celular crua
+      // (>10MB) estourava o client_max_body_size do nginx e virava
+      // "Failed to fetch". aplicarMarcaDagua já devolve WebP comprimido; o
+      // caminho sem marca (e o original guardado) precisam ser comprimidos aqui.
+      let uploadFile: File = await comprimirImagem(file);
       let originalFile: File | null = null;
       if (marcaAtiva && tenantLogoUrl) {
         const res = await aplicarMarcaDagua(file, tenantLogoUrl);
         if (res.watermarked) {
           uploadFile = res.file;
-          originalFile = file;
+          originalFile = await comprimirImagem(file);
         }
       }
 
