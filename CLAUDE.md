@@ -615,6 +615,70 @@ Pedido do usuário: trazer pro `/app/leads/captacao` uma fonte de Facebook Marke
 | **Deploy** | PR #253 (Fase 1) → PR #254 (Fase 2) → PR #255 (Fase 3), todas mergeadas em `develop` e promovidas a produção no mesmo dia (PR #256). Acompanhado do rework de arquitetura (PR #257 → `develop`, depois PR #258 `develop→main`) ainda no mesmo dia — nenhum tenant real chegou a conectar sob o modelo antigo (app único), então a promoção do rework foi de baixo risco. 6 migrations aplicadas manualmente na VPS via SSH ao longo do dia, todas confirmadas contra o schema real de produção depois (`\d` nas tabelas afetadas) |
 | **Pendente** | Testado em dev tudo que dá pra testar sem um Meta App real (parser, dedupe, feed CSV parseável, erro de configuração ausente, redirect OAuth usando o App ID certo do tenant — confirmado via erro real `PLATFORM__INVALID_APP_ID` da própria Meta). O teste de ponta a ponta de verdade (Business Manager real, App real, catálogo sendo lido pela Meta, uma campanha real de Lead Ads) só acontece quando um corretor/imobiliária passar pelo wizard com credenciais reais — nenhuma ação de código pendente até lá |
 
+### 🔧 Autosserviço de Cartão Virtual + Roteiro de Visitas ↔ Leads (2026-08-07)
+
+| Arquivo | Correção |
+| :--- | :--- |
+| `src/routes/app.cartao-virtual.tsx` | Removido o dropdown de seleção de corretor: criação self-service do próprio cartão (cap de 1 por acesso via índice único + policy RLS de self-insert em `corretores`, migration `20260807100000_corretores_self_insert.sql`). Depois unificado num **dropdown de cartões existentes** → ao selecionar, abre em modo edição. `removerCirp()` trocou `window.confirm()` nativo por `useConfirm()` (o nativo trava a sessão de navegador automatizada) |
+| `src/routes/app.roteiro-visitas.tsx`, `src/routes/app.leads.$id.tsx` | Vínculo visível entre Roteiro de Visitas e Leads: a rota passou a aceitar `?leadId` e `?taskId` (dois `useEffect` separados); nova seção "Visitas" na página do lead. `excluirEtapa()` também migrou pra `useConfirm()` |
+| `src/components/layout/AppShell.tsx` | Grupo de menu "Clientes & oportunidades" → "Leads" |
+
+### 🤝 Parceiros Comerciais (CRM B2B) + "Nova Tarefa" (2026-08-07)
+
+Pedido estratégico (plan/strategic mode): o corretor foca em venda, então registrar interações com parceiros (construtoras, incorporadoras, financeiras) precisa virar fluxo de sistema. Baseado num exemplo real de outreach fornecido pelo usuário.
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `supabase/migrations/20260807110000_parceiros_comerciais.sql` | Novas tabelas `parceiro_etapas` (Kanban por tenant, mesmo padrão de `roteiro_visita_etapas`) e `parceiros_comerciais`; coluna `lead_tarefas.parceiro_id` (5ª FK opcional da tabela polimórfica); **`lead_tarefas_origem_check` removido** (não re-adicionado com `parceiro_id`) pra permitir tarefa avulsa sem nenhum vínculo |
+| `src/routes/app.parceiros-comerciais.tsx` (novo) | Kanban de parceiros comerciais; item "Parceiros Comerciais" no `AppShell` (ícone `Briefcase`) |
+| `src/routes/app.tarefas.tsx` | Botão "Nova Tarefa" (campos derivados do exemplo de outreach), coluna/join de parceiro, ação "Gerar visita" a partir de uma tarefa |
+| **Regra registrada (memória do projeto)** | Promoção `develop→main` **sempre com merge commit, nunca squash/rebase** — squash na PR de promoção quebra o grafo de ancestralidade do `main` (todo construído por merge commits) e faz a promoção seguinte reportar `CONFLICTING` falso via merge-base velho. Descoberto e corrigido ao promover as PRs #261/#263 |
+
+### 📰 Blog `/blog` — redesign em 3 colunas (2026-08-07)
+
+Pedido: aproveitar o tráfego orgânico (ADS) que cai no blog pra também expor imóveis e parceiros, sem perder o foco no conteúdo. Investigado em plan mode (3 Explore + 1 Plan de validação, que pegou 2 bugs antes de codar).
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `src/components/blog/BlogColumnsLayout.tsx` (novo) | Shell de 3 colunas (imóveis à venda/locação · conteúdo · parceiros/construtoras). Coluna vazia não reserva espaço; `grid`/`grid-cols-1` **sempre ativos** (gatear o grid atrás de `lg:` quebraria o `order-*` no mobile — bug pego na validação) |
+| `src/components/blog/BlogImoveisColumn.tsx` (novo) | Coluna 1: imóveis publicados **cross-tenant** (sem filtro de tenant — a imoB365 é operadora do SaaS, não tem imóveis próprios; filtrar pelo tenant corporativo deixaria a coluna vazia — outro bug pego na validação), espelhando a home |
+| `src/components/blog/BlogParceirosColumn.tsx` (novo) | Coluna 3: imobiliárias parceiras (`exibir_na_home`) + construtoras (`exibir_no_rodape`) + CTA fixo pra `/consultoria` |
+| `src/routes/blog_.$slug.tsx` | **Bug real corrigido**: o artigo (e o `errorComponent`) estava **sem `SiteHeader`/`SiteFooter`** — ex.: `/blog/analise-mercado-imobiliario-2026`. Além do shell: breadcrumb visível, tempo de leitura estimado e seção "Artigos relacionados" (mesma categoria) |
+| Diferenciação visual imóvel × blog + rodapé | Badges/hover de artigo passaram de laranja (cor de "imóvel" em todo o app) pra **azul** (tom de info/status já usado no projeto), com eyebrow "Artigos do Blog" e dots coloridos (laranja/azul) — o usuário relatou que estava difícil distinguir card de imóvel de card de post. `SiteFooter` ganhou prop opcional `hideConstrutorasMarquee` — suprime a faixa duplicada de Construtoras em `/blog` (já aparece na coluna 3), sem afetar as outras páginas. PRs #264 → #265 (produção) |
+
+### 🔎 SEO técnico — sitemap corporativo + páginas institucionais + links das calculadoras (2026-08-10)
+
+Atuação como especialista em tráfego/SEO. PRs #266 → #267 (produção).
+
+| Arquivo | Correção |
+| :--- | :--- |
+| `src/routes/api/sitemap.xml.ts` | (1) Domínio derivado do `origin` do request — estava hardcoded `imob365.com.br` (produção é `portal.imob365.com.br`). (2) **Bug grave**: a query do blog filtrava por `published_at`/`status="published"`/`tenant_id IS NULL` — nada disso existe no schema (é `publicado_em`/`"publicado"`/tenant corporativo), então **o sitemap nunca listou nenhum artigo**; corrigido via `getCorporateTenantId()`. (3) Páginas institucionais/calculadoras adicionadas — `/a-imob365` (canônica; `/sobre` é 307→não entra), `/contato`, `/atendimento`, `/calculadoras`, `/calculadora-{avaliacao,financiamento,itbi,mudanca}`, `/termos`, `/privacidade` (todas confirmadas 200 antes de entrar) |
+| `src/routes/calculadoras.tsx` | Link direto pras páginas dedicadas `/calculadora-mudanca`, `/calculadora-itbi` e `/calculadora-financiamento` — antes só a de avaliação era linkada; as outras 3 eram **órfãs** (ruim pra crawl/indexação) |
+
+### 🤖 robots.txt — rota fallback alinhada ao arquivo estático (2026-08-10)
+
+Correção de diagnóstico: **não havia drift real nem edição manual na VPS** — o `robots.txt` correto sempre esteve versionado em `public/robots.txt` (servido como estático, publicado no rsync do deploy). O único resíduo era a rota `robots[.]txt.ts` do TanStack (código morto que o estático vence), que ainda emitia `Sitemap: /sitemap.xml` (404). Alinhada ao estático (aponta pro `sitemap-index.xml` canônico) como fallback seguro — no-op no que produção serve. PRs #268 → #269. **Pendente (com o usuário)**: reenviar o sitemap no Google Search Console (exige a conta Google).
+
+### 🖼️ Upload de foto — compressão no cliente + `client_max_body_size` (2026-08-10)
+
+Relato de produção: "Upload falhou: Failed to fetch" ao publicar imóvel. **Causa raiz confirmada por teste black-box** no endpoint de storage: corpo ~11MB → **413** no nginx (`client_max_body_size 10m`), ~2MB → passa. O app enviava a foto **crua**; foto de celular passa fácil de 10MB → nginx corta a conexão no meio → o navegador reporta o genérico "Failed to fetch" (não um 413 legível, porque a resposta de erro do nginx não carrega CORS).
+
+| Camada | O que foi feito |
+| :--- | :--- |
+| Durável (código) | `src/lib/imageCompress.ts` (novo, `comprimirImagem` — canvas→WebP, máx 1920px, q0.82) centraliza a lógica que já existia duplicada em `watermark.ts`/`DocumentoUpload.tsx`. Aplicado nos 4 fluxos de upload (imóvel novo/edição, empreendimento, corretor). Foto de 12MP cai pra ~0,3–1,5MB. Bônus de LCP/SEO. PRs #270 → #271 |
+| Rede de segurança (VPS) | `client_max_body_size` **10m → 25m** nos dois blocos do nginx (via SSH, backup + `nginx -t` + reload). Validado por probe (11MB/20MB passam a chegar no storage). Registrado na memória do projeto. Cobre o caso raro de HEIC que o navegador não decodifica (aí a compressão devolve o cru) |
+
+### 🏠 Home "Imóveis em destaque" — vitrine dinâmica + nginx GeoIP2 (2026-08-11)
+
+Pedido em plan/strategic mode: a seção mostrava imóveis por recência pura (`order updated_at desc limit 8`) — "na ordem em que os corretores cadastram". Agora é **composta por visitante**. Decisões do usuário: região via **nginx GeoIP2** (IP não sai do servidor); preferência = **boost leve/desempate**. PRs #272 → #273 (produção).
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `src/lib/featuredImoveis.ts` (novo) | `comporDestaques()` — função **pura e testável**: ordena por região (UF/cidade do visitante) → preferência → recência, e intercala corretor × imobiliária **um a um** (zip que drena sem deixar buraco no grid). `PREFERRED_HOME_TENANT_SLUGS = [imob365, bruno-ferraro]` (preferência **só no desempate** — nunca supera a região). 5 testes unitários (via esbuild+node) cobrindo intercalação, região liderando, Bruno vencendo empate, região > preferência, e drenagem |
+| `src/lib/geo.functions.ts` (novo) | `getVisitorRegion()` lê os headers `X-Geo-City/Region/Country` que o nginx GeoIP2 injeta; só personaliza dentro do BR; **degrada graciosamente** (sem header → fallback sem geo, intercalação+preferência seguem valendo) |
+| `src/routes/index.tsx` | Fetch vira pool(40)+`tenant_id`+região em paralelo; 2ª query `tenants(slug,tipo_tenant)`; compõe via `comporDestaques`; render dos cards inalterado |
+| **Infra GeoIP2 na VPS** (não versionado; registrado na memória) | `libnginx-mod-http-geoip2` + base `GeoLite2-City.mmdb` (via `geoipupdate`, credenciais MaxMind em `/etc/GeoIP.conf` chmod 600, auto-update via `geoipupdate.timer`); bloco `geoip2` em `/etc/nginx/conf.d/geoip2.conf`; `proxy_set_header X-Geo-*` só no `location` do portal. Validado: `mmdblookup` (200.160.2.3 → BR/SP/São Paulo), `nginx -t` OK com o bloco geoip2 |
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
