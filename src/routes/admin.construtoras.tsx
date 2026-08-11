@@ -569,11 +569,6 @@ function AdminConstrutorasPage() {
                         Inativa
                       </Badge>
                     )}
-                    {c.exibir_no_rodape && (
-                      <Badge variant="secondary" className="text-[10px]">
-                        Rodapé
-                      </Badge>
-                    )}
                   </div>
                   <div className="truncate text-xs text-muted-foreground">
                     {[c.endereco_cidade, c.endereco_uf].filter(Boolean).join("/") || "—"} ·{" "}
@@ -632,13 +627,11 @@ function AdminConstrutorasPage() {
                       onCheckedChange={(v) => patchConstrutora({ ativo: v })}
                     />
                   </label>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                    Exibir no rodapé
-                    <Switch
-                      checked={selecionada.exibir_no_rodape}
-                      onCheckedChange={(v) => patchConstrutora({ exibir_no_rodape: v })}
-                    />
-                  </label>
+                  {/* A exibição na faixa de logos da home agora é gerida em
+                      Admin → Vitrine de Parceiros (tabela vitrine_parceiros),
+                      que mistura imobiliárias e construtoras com ordem e
+                      velocidade próprias — o antigo toggle "Exibir no rodapé"
+                      foi removido daqui pra não haver dois controles. */}
                   <Button
                     size="sm"
                     variant="ghost"

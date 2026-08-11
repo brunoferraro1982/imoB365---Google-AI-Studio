@@ -1,4 +1,4 @@
-import { SiteHeader, ConstrutorasMarquee } from "@/components/site-layout";
+import { SiteHeader, ParceirosMarquee } from "@/components/site-layout";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -928,7 +928,7 @@ export function SiteFooter() {
 
   return (
     <>
-      <ConstrutorasMarquee />
+      <ParceirosMarquee />
       <footer className="border-t border-border bg-secondary text-secondary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">
