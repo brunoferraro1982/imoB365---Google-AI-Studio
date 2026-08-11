@@ -116,6 +116,20 @@ function ImovelDetail() {
     slug: string;
   } | null>(null);
 
+  // Tracking first-party de visualização (métrica real do relatório do
+  // corretor). Dedupe por sessão do navegador — refresh/renavegação não
+  // recontam. Fire-and-forget, não bloqueia a renderização.
+  useEffect(() => {
+    if (typeof window === "undefined" || !imovel?.id) return;
+    const key = `iv:${imovel.id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void (supabase as any).rpc("public_record_imovel_evento", {
+      _imovel_id: imovel.id,
+      _tipo: "view",
+    });
+  }, [imovel?.id]);
+
   useEffect(() => {
     (async () => {
       const results = await Promise.allSettled([
@@ -304,6 +318,12 @@ function ImovelDetail() {
                     href={link}
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() =>
+                      void (supabase as any).rpc("public_record_imovel_evento", {
+                        _imovel_id: imovel.id,
+                        _tipo: "whatsapp_click",
+                      })
+                    }
                     className="mt-4 flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
                   >
                     <MessageCircle className="h-4 w-4" /> Falar com {corretor.nome.split(" ")[0]} no

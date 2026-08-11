@@ -451,8 +451,9 @@ function RelatoriosPage() {
                 Performance & Desempenho dos Anúncios
               </h2>
               <p className="text-xs text-muted-foreground">
-                Monitoramento orgânico de visualizações, contatos via WhatsApp e favoritação por
-                anúncio ativo
+                Visualizações da página do anúncio, cliques no botão de WhatsApp e favoritações —
+                contabilizados a partir da ativação do rastreamento (números baixos no início são
+                normais).
               </p>
             </div>
 
