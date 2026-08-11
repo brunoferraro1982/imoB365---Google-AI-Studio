@@ -501,14 +501,14 @@ export function ParceirosMarquee() {
   );
 }
 
-export function SiteFooter({
-  hideConstrutorasMarquee,
-}: { hideConstrutorasMarquee?: boolean } = {}) {
+export function SiteFooter() {
   const year = new Date().getFullYear();
 
+  // A Vitrine de Parceiros (ParceirosMarquee) aparece SÓ na home — o footer
+  // local de routes/index.tsx a renderiza. Aqui, no footer compartilhado das
+  // demais páginas públicas, ela não entra.
   return (
     <>
-      {!hideConstrutorasMarquee && <ParceirosMarquee />}
       <footer className="border-t border-border bg-secondary text-secondary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">
