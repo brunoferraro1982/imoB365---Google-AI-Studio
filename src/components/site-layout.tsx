@@ -347,7 +347,7 @@ type VitrineItem = {
 };
 
 const CHIP_CLASS =
-  "flex h-16 shrink-0 items-center justify-center rounded-xl border border-border/60 bg-white px-6 shadow-sm transition hover:scale-105 hover:shadow-md";
+  "flex h-16 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-white px-6 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:shadow-lg";
 
 function VitrineChip({ it }: { it: VitrineItem }) {
   const inner = it.logoUrl ? (
@@ -475,31 +475,28 @@ export function ParceirosMarquee() {
 
   if (itens.length === 0) return null;
 
-  // Só anima (e duplica pro loop) quando há itens suficientes pra transbordar;
-  // com poucos, estático e centralizado — some a "duplicação" percebida.
-  const animar = itens.length > 6;
+  // Sempre anima (carrossel contínuo). Pra o loop ser suave mesmo com poucos
+  // logos, repete a base até ter largura suficiente e duplica esse grupo 2x —
+  // o keyframe marquee percorre translateX(-50%), exatamente 1 grupo, sem
+  // costura. Antes, com poucos itens, ficava estático (parecia "duplicado" e
+  // sem movimento). A velocidade vem de global_settings (super_admin).
+  const vezes = Math.max(2, Math.ceil(12 / itens.length));
+  const base = Array.from({ length: vezes }, () => itens).flat();
+  const track = [...base, ...base];
 
   return (
     <div className="overflow-hidden border-b border-border bg-muted/30 py-8">
       <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
         Imobiliárias e Construtoras Parceiras
       </p>
-      {animar ? (
-        <div
-          className="flex w-max items-center gap-8"
-          style={{ animation: `marquee ${speed}s linear infinite` }}
-        >
-          {[...itens, ...itens].map((it, i) => (
-            <VitrineChip key={`${it.key}-${i}`} it={it} />
-          ))}
-        </div>
-      ) : (
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-6 px-6">
-          {itens.map((it) => (
-            <VitrineChip key={it.key} it={it} />
-          ))}
-        </div>
-      )}
+      <div
+        className="flex w-max items-center gap-8"
+        style={{ animation: `marquee ${speed}s linear infinite` }}
+      >
+        {track.map((it, i) => (
+          <VitrineChip key={`${it.key}-${i}`} it={it} />
+        ))}
+      </div>
     </div>
   );
 }
