@@ -679,6 +679,28 @@ Pedido em plan/strategic mode: a seção mostrava imóveis por recência pura (`
 | `src/routes/index.tsx` | Fetch vira pool(40)+`tenant_id`+região em paralelo; 2ª query `tenants(slug,tipo_tenant)`; compõe via `comporDestaques`; render dos cards inalterado |
 | **Infra GeoIP2 na VPS** (não versionado; registrado na memória) | `libnginx-mod-http-geoip2` + base `GeoLite2-City.mmdb` (via `geoipupdate`, credenciais MaxMind em `/etc/GeoIP.conf` chmod 600, auto-update via `geoipupdate.timer`); bloco `geoip2` em `/etc/nginx/conf.d/geoip2.conf`; `proxy_set_header X-Geo-*` só no `location` do portal. Validado: `mmdblookup` (200.160.2.3 → BR/SP/São Paulo), `nginx -t` OK com o bloco geoip2 |
 
+### 🏠 Home B2B — trial 30 dias + seções de produto em "bento por jornada" (2026-08-11)
+
+Pedido em plan/strategic mode: home mais atrativa e focada em produto/serviço B2B, **preservando 100% a identidade visual** (só layout/ícones/efeitos). PRs #276 → #277 (produção).
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `src/routes/index.tsx` (CTA final) | "Teste grátis por **14 dias**, sem fidelidade" → "**30 dias**. Sem cartão de crédito" (o 14d era inconsistente com o Trial Business real de 30d) + obs: "após os 30 dias, seus dados continuam na plataforma; para seguir usando, basta escolher um plano" |
+| `src/routes/index.tsx` (seções) | "Como ajudamos" + "Tudo o que sua imobiliária precisa" reestruturadas num **bento por jornada** (6 grupos: Captação & Leads · Atendimento & Relacionamento · Marketing & Presença · Contratos & Jurídico · Financeiro · Plataforma & IA), cards com icon tile + hover. Inclui as features novas (cartão virtual, roteiro de visitas, parceiros comerciais, captação automática, análise de risco, central de atendimento, QR code, IA, ERP) e atualiza a copy dos módulos com upgrade. Títulos **centralizados**; fundo cinza da seção de recursos trocado por **gradiente quente da marca** (`from-primary/15 via-primary/5 to-background`), `id="recursos"` preservado |
+| **Regra de copy (memória `imob365_home_sem_nome_concorrente`)** | Na home/marketing público **não citar nome de concorrente/portal/terceiro** (Chaves na Mão, OLX, VivaReal, DocuSign, Mercado Pago…) — sempre genérico ("principais portais do mercado", "principais provedores") |
+
+### 🖼️ Vitrine de Parceiros — imobiliárias + construtoras, curada pelo super_admin (2026-08-11)
+
+A faixa "Construtoras Parceiras" (marquee do rodapé) estava sem destaque, com logos "duplicados" (o loop 2x aparecia estático com poucos itens) e só mostrava construtoras. Virou uma **Vitrine de Parceiros** curada. PRs #278 → #279 (produção); 2 migrations aplicadas em prod via SSH+psql.
+
+| Item | O que foi feito |
+| :--- | :--- |
+| `supabase/migrations/20260811120000_vitrine_parceiros.sql` | Nova tabela `vitrine_parceiros` (`tipo` imobiliaria/construtora, `ref_id`, `ordem`, `ativo`) — lista **única e ordenável** que mistura os dois tipos; RLS (leitura pública `USING(true)`, escrita super_admin) + GRANT nos 3 roles + backfill das construtoras que estavam no rodapé |
+| `supabase/migrations/20260811120100_global_settings_vitrine.sql` | `global_settings` (key/value, existia sem uso): leitura pública **só** da chave `vitrine_marquee` (não expõe outras chaves), escrita super_admin; seed velocidade 28s |
+| `src/components/site-layout.tsx` (`ConstrutorasMarquee`→`ParceirosMarquee`) | Chamada **"Imobiliárias e Construtoras Parceiras"**; **fundo neutro** + cada logo num **chip branco** com contorno/sombra definidos (clareza, inclusive no tema escuro); mistura os dois tipos; **carrossel sempre em movimento** (repete a base pra o loop ser contínuo mesmo com poucos logos — some a "duplicação" estática); velocidade lida de `global_settings` via `animationDuration` inline |
+| `src/routes/admin.vitrine-parceiros.tsx` (novo) + menu no `AppShell` | Tela super_admin: adicionar imobiliária (`tipo_tenant='imobiliaria'`, só imobiliárias — não corretores) ou construtora, **reordenar ↑/↓**, ativar/desativar, remover, e **velocidade** (Lenta/Média/Rápida). `admin.construtoras` perdeu o toggle/badge "Exibir no rodapé" (superado) |
+| **Só na home** | O `ParceirosMarquee` saiu do `SiteFooter` compartilhado (todas as páginas) — agora aparece apenas na home (footer local de `index.tsx`); prop `hideConstrutorasMarquee` (usado no blog) removido |
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
