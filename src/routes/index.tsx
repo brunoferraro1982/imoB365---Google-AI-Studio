@@ -32,6 +32,14 @@ import {
   Plug,
   BookOpen,
   Headset,
+  QrCode,
+  Briefcase,
+  Radar,
+  Gauge,
+  MessageCircle,
+  FileSignature,
+  Wallet,
+  Route as RouteIcon,
 } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -789,18 +797,21 @@ function Landing() {
         </div>
       </section>
 
-      {/* COMO AJUDAMOS */}
+      {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-          Como ajudamos a sua imobiliária
+          Como o imob365 trabalha por você
         </h2>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          Tecnologia simples de usar, pensada para quem vende e aluga imóveis no dia a dia — sem
-          termos técnicos, sem complicação.
+          Uma plataforma completa para captar, atender, fechar e administrar — do primeiro lead ao
+          pós-venda, sem precisar de equipe de TI.
         </p>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {servicos.map((s) => (
-            <div key={s.title} className="rounded-2xl border border-border bg-card p-6">
+          {valores.map((s) => (
+            <div
+              key={s.title}
+              className="rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
+            >
               <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <s.icon className="h-5 w-5" />
               </div>
@@ -811,25 +822,43 @@ function Landing() {
         </div>
       </section>
 
-      {/* MÓDULOS / RECURSOS */}
+      {/* MÓDULOS / RECURSOS — bento por jornada */}
       <section id="recursos" className="border-t border-border bg-secondary/40">
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Tudo o que sua imobiliária precisa
+            Tudo o que sua imobiliária precisa, num só lugar
           </h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Ative apenas os recursos que você precisa hoje e adicione novos conforme cresce.
+            Organizado pela jornada do corretor — ative só o que precisa hoje e adicione novos
+            recursos conforme cresce.
           </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {modulos.map((m) => (
-              <div key={m.title} className="rounded-xl border border-border bg-card p-5">
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {grupos.map((g) => (
+              <div
+                key={g.title}
+                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <m.icon className="h-4 w-4" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                    <g.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="text-sm font-semibold">{m.title}</h3>
+                  <h3 className="text-base font-bold tracking-tight">{g.title}</h3>
                 </div>
-                <p className="mt-3 text-sm text-muted-foreground">{m.desc}</p>
+                <ul className="mt-5 space-y-4">
+                  {g.items.map((it) => (
+                    <li key={it.title} className="flex gap-3">
+                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                        <it.icon className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-snug">{it.title}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {it.desc}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -843,7 +872,11 @@ function Landing() {
             Pronto para vender e alugar mais, com menos esforço?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Teste grátis por 14 dias. Sem cartão de crédito, sem fidelidade.
+            Teste grátis por 30 dias. Sem cartão de crédito.
+          </p>
+          <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground">
+            Após os 30 dias, seus dados continuam salvos na plataforma — para seguir usando, basta
+            escolher um plano de assinatura.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link to="/signup">
@@ -1060,63 +1093,182 @@ function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   );
 }
 
-const servicos = [
+const valores = [
   {
     icon: Sparkles,
     title: "Tecnologia simples",
-    desc: "Cadastre imóveis, envie fotos e publique nos principais portais sem precisar de equipe de TI. Tudo num único lugar.",
+    desc: "Cadastre imóveis, envie fotos e publique sem precisar de equipe de TI. Tudo num único lugar.",
   },
   {
     icon: HeartHandshake,
     title: "Atendimento que converte",
-    desc: "Receba contatos de clientes interessados, organize seu funil de vendas e responda no WhatsApp sem perder oportunidade.",
+    desc: "Receba contatos interessados, organize seu funil e responda no WhatsApp sem perder oportunidade.",
   },
   {
     icon: ShieldCheck,
     title: "Segurança e conformidade",
-    desc: "Dados protegidos, contratos digitais e total conformidade com a LGPD — para você focar no que faz melhor: vender imóveis.",
+    desc: "Dados protegidos, contratos digitais e conformidade com a LGPD — para você focar em vender imóveis.",
   },
 ];
 
-const modulos = [
+// Bento por jornada do corretor. Regra de copy: nada de nome de
+// concorrente/portal/terceiro na home — sempre genérico ("principais portais",
+// "principais provedores"). Ver memória imob365_home_sem_nome_concorrente.
+const grupos = [
   {
-    icon: Building2,
-    title: "Gestão completa de imóveis e leads",
-    desc: "Cadastre imóveis, acompanhe cada lead em um funil visual e feche mais negócios sem perder nada no caminho.",
+    icon: Radar,
+    title: "Captação & Leads",
+    items: [
+      {
+        icon: Radar,
+        title: "Captação automática",
+        desc: "Varre portais e marketplaces e traz imóveis novos direto pro seu funil, com importação manual assistida.",
+      },
+      {
+        icon: Users,
+        title: "Funil de leads",
+        desc: "Kanban visual com leads de todos os canais num só lugar, do primeiro contato ao fechamento.",
+      },
+      {
+        icon: Gauge,
+        title: "Análise de risco",
+        desc: "Score por CPF pra apresentar ao proprietário e decidir a locação com mais segurança.",
+      },
+      {
+        icon: Briefcase,
+        title: "Parceiros comerciais",
+        desc: "CRM pra organizar o relacionamento com construtoras, incorporadoras e demais parceiros.",
+      },
+    ],
   },
   {
-    icon: DollarSign,
-    title: "Comissões calculadas, não adivinhadas",
-    desc: "Da comissão ao fechamento contábil, com relatórios que mostram o que realmente importa.",
+    icon: Headset,
+    title: "Atendimento & Relacionamento",
+    items: [
+      {
+        icon: Headset,
+        title: "Central de Atendimento",
+        desc: "Chamados organizados, com e-mail e WhatsApp usando suas próprias credenciais e controle de SLA.",
+      },
+      {
+        icon: CreditCard,
+        title: "Cartão virtual do corretor",
+        desc: "Cartão de visita digital com QR, pronto pra compartilhar e captar novos contatos.",
+      },
+      {
+        icon: RouteIcon,
+        title: "Roteiro de visitas",
+        desc: "Agenda e rota de visitas conectadas aos leads, sem planilha paralela.",
+      },
+      {
+        icon: MessageCircle,
+        title: "WhatsApp",
+        desc: "Fale com o cliente em um clique, direto do imóvel ou do lead.",
+      },
+    ],
   },
   {
     icon: Globe2,
-    title: "Um anúncio, todos os portais",
-    desc: "Publique no seu site e nos 7 principais portais do mercado — VivaReal, ZAP, Wimóveis, Chaves na Mão, Imovelweb, Mercado Livre e OLX — ao mesmo tempo, tudo sincronizado automaticamente.",
+    title: "Marketing & Presença",
+    items: [
+      {
+        icon: SlidersHorizontal,
+        title: "Site próprio",
+        desc: "Site profissional com seu domínio e sua identidade visual, pronto em minutos.",
+      },
+      {
+        icon: BookOpen,
+        title: "Blog com SEO",
+        desc: "Publique conteúdo que atrai clientes pela busca do Google.",
+      },
+      {
+        icon: QrCode,
+        title: "Gerador de QR Code",
+        desc: "QR codes pros seus imóveis e materiais, levando o offline pro online.",
+      },
+      {
+        icon: Globe2,
+        title: "Publicação em portais",
+        desc: "Um anúncio publicado nos principais portais do mercado, tudo sincronizado automaticamente.",
+      },
+      {
+        icon: Building,
+        title: "Parcerias entre imobiliárias",
+        desc: "Ganhe vitrine na home do imob365 e conecte-se a outras imobiliárias parceiras.",
+      },
+    ],
   },
   {
     icon: Scale,
-    title: "Contratos sem risco",
-    desc: "Modelos prontos, versionamento e assinatura digital, do rascunho à assinatura, com rastreabilidade total.",
+    title: "Contratos & Jurídico",
+    items: [
+      {
+        icon: Scale,
+        title: "Ciclo de vida do contrato",
+        desc: "Da minuta à ativação com garantias, checklist e etapas controladas, com rastreabilidade total.",
+      },
+      {
+        icon: FileSignature,
+        title: "Assinatura eletrônica",
+        desc: "Integração com os principais provedores, usando a sua própria conta.",
+      },
+      {
+        icon: Calendar,
+        title: "Alertas de SLA",
+        desc: "Avisos automáticos de cartório parado, garantias e contratos a vencer.",
+      },
+    ],
   },
   {
-    icon: GraduationCap,
-    title: "Corretores mais preparados, credenciados pelo mercado",
-    desc: "Cursos e certificações para sua equipe hoje, e um caminho para o credenciamento formal ao CRECI (curso de TTI) diretamente pela plataforma, em breve.",
+    icon: DollarSign,
+    title: "Financeiro",
+    items: [
+      {
+        icon: DollarSign,
+        title: "Comissões e repasses",
+        desc: "Comissões calculadas e repasses de locação ao proprietário, sem adivinhação.",
+      },
+      {
+        icon: Wallet,
+        title: "Inadimplência",
+        desc: "Detecção automática de lançamentos vencidos e cobrança organizada.",
+      },
+      {
+        icon: CreditCard,
+        title: "Pagamentos online",
+        desc: "Assinaturas e cobranças online integradas ao fluxo financeiro.",
+      },
+      {
+        icon: Plug,
+        title: "Conciliação & ERP",
+        desc: "Conciliação bancária e integração com o seu ERP.",
+      },
+    ],
   },
   {
-    icon: SlidersHorizontal,
-    title: "Seu site, sua marca",
-    desc: "Um site profissional com seu domínio e sua identidade visual, pronto em minutos.",
-  },
-  {
-    icon: Plug,
-    title: "Conecte com o que você já usa",
-    desc: "API REST e webhooks para integrar o imob365 ao seu ecossistema, sem depender de suporte manual.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Seus dados, isolados e protegidos",
-    desc: "Isolamento total entre imobiliárias, LGPD nativa e auditoria de cada ação sensível.",
+    icon: Sparkles,
+    title: "Plataforma & IA",
+    items: [
+      {
+        icon: Sparkles,
+        title: "Assistente de IA",
+        desc: "Pesquisa e ajuda especializada em mercado imobiliário, direto na plataforma.",
+      },
+      {
+        icon: ShieldCheck,
+        title: "Multi-tenant + LGPD",
+        desc: "Isolamento total dos seus dados, LGPD nativa e auditoria de cada ação sensível.",
+      },
+      {
+        icon: Plug,
+        title: "API & webhooks",
+        desc: "Conecte o imob365 ao que você já usa, sem depender de suporte manual.",
+      },
+      {
+        icon: GraduationCap,
+        title: "Treinamentos",
+        desc: "Cursos e certificações pra deixar sua equipe mais preparada.",
+      },
+    ],
   },
 ];
