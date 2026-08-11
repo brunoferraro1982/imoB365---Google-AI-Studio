@@ -338,70 +338,177 @@ function SiteHeaderImpl() {
   return <MegaNavHeader config={config} />;
 }
 
-type ConstrutoraRodape = { id: string; slug: string; nome: string; logo_url: string | null };
+type VitrineItem = {
+  key: string;
+  tipo: "imobiliaria" | "construtora";
+  slug: string;
+  nome: string;
+  logoUrl: string | null;
+};
 
-// Slider infinito de logos das construtoras curadas — compartilhado entre
-// o SiteFooter deste arquivo e o duplicado em routes/index.tsx (ver nota
-// de débito técnico lá) pra não triplicar a mesma lógica de novo. Fundo
-// branco (destaque real contra o bloco escuro do rodapé logo abaixo,
-// mesmo padrão de "trusted by" com logos bem visíveis, sem esmaecer) —
-// o strip fica ACIMA do bloco escuro do rodapé, não dentro dele.
-export function ConstrutorasMarquee() {
-  const [construtoras, setConstrutoras] = useState<ConstrutoraRodape[]>([]);
+const CHIP_CLASS =
+  "flex h-16 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-white px-6 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:shadow-lg";
+
+function VitrineChip({ it }: { it: VitrineItem }) {
+  const inner = it.logoUrl ? (
+    <img src={it.logoUrl} alt={it.nome} className="h-9 w-auto object-contain" />
+  ) : (
+    <span className="flex items-center gap-1.5 text-sm font-semibold text-neutral-700">
+      {it.tipo === "construtora" ? (
+        <Factory className="h-4 w-4" />
+      ) : (
+        <Building2 className="h-4 w-4" />
+      )}
+      {it.nome}
+    </span>
+  );
+  // Dois branches (em vez de `to` ternário) pra satisfazer o tipo estrito do
+  // Link do TanStack — ambas as rotas usam o param `slug`.
+  if (it.tipo === "construtora") {
+    return (
+      <Link
+        to="/construtora/$slug"
+        params={{ slug: it.slug }}
+        title={it.nome}
+        className={CHIP_CLASS}
+      >
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <Link to="/site/$slug" params={{ slug: it.slug }} title={it.nome} className={CHIP_CLASS}>
+      {inner}
+    </Link>
+  );
+}
+
+// Vitrine de Parceiros: faixa de logos de imobiliárias + construtoras, curada e
+// ordenada pelo super_admin (tabela `vitrine_parceiros`; velocidade em
+// `global_settings.vitrine_marquee`). Fundo neutro + cada logo num chip branco
+// pra clareza (logos coloridos sempre sobre branco, inclusive no tema escuro).
+// Com poucos itens, renderiza estático e centralizado (sem a 2ª cópia do loop,
+// que fazia os logos "duplicarem" na tela). Compartilhado entre o SiteFooter
+// deste arquivo e o SiteFooter local de routes/index.tsx.
+export function ParceirosMarquee() {
+  const [itens, setItens] = useState<VitrineItem[]>([]);
+  const [speed, setSpeed] = useState(28);
 
   useEffect(() => {
-    supabase
-      .from("construtoras")
-      .select("id,slug,nome,logo_url")
-      .eq("ativo", true)
-      .eq("exibir_no_rodape", true)
-      .order("nome")
-      .then(({ data }) => setConstrutoras((data ?? []) as ConstrutoraRodape[]));
+    let cancelled = false;
+    (async () => {
+      const [{ data: vp }, { data: cfg }] = await Promise.all([
+        // vitrine_parceiros ainda não está em types.ts (tabela nova) — cast
+        // (supabase as any), mesmo padrão já usado no projeto pra tabela recém-criada.
+        (supabase as any)
+          .from("vitrine_parceiros")
+          .select("tipo,ref_id,ordem")
+          .eq("ativo", true)
+          .order("ordem"),
+        supabase.from("global_settings").select("value").eq("key", "vitrine_marquee").maybeSingle(),
+      ]);
+      if (cancelled) return;
+
+      const rows = (vp ?? []) as { tipo: string; ref_id: string; ordem: number }[];
+      const construtoraIds = rows.filter((r) => r.tipo === "construtora").map((r) => r.ref_id);
+      const imobIds = rows.filter((r) => r.tipo === "imobiliaria").map((r) => r.ref_id);
+
+      const [cs, ts] = await Promise.all([
+        construtoraIds.length
+          ? supabase
+              .from("construtoras")
+              .select("id,slug,nome,logo_url")
+              .in("id", construtoraIds)
+              .eq("ativo", true)
+              .then(({ data }) => data ?? [])
+          : Promise.resolve([]),
+        imobIds.length
+          ? supabase
+              .from("tenants")
+              .select("id,slug,nome,tema")
+              .in("id", imobIds)
+              .in("status", ["active", "trial"])
+              .then(({ data }) => data ?? [])
+          : Promise.resolve([]),
+      ]);
+      if (cancelled) return;
+
+      const cMap = new Map((cs as { id: string }[]).map((c) => [c.id, c]));
+      const tMap = new Map((ts as { id: string }[]).map((t) => [t.id, t]));
+      const mapped: VitrineItem[] = [];
+      for (const r of rows) {
+        if (r.tipo === "construtora") {
+          const c = cMap.get(r.ref_id) as
+            | { id: string; slug: string; nome: string; logo_url: string | null }
+            | undefined;
+          if (c)
+            mapped.push({
+              key: `c-${c.id}`,
+              tipo: "construtora",
+              slug: c.slug,
+              nome: c.nome,
+              logoUrl: c.logo_url,
+            });
+        } else {
+          const t = tMap.get(r.ref_id) as
+            | { id: string; slug: string; nome: string; tema: unknown }
+            | undefined;
+          if (t)
+            mapped.push({
+              key: `i-${t.id}`,
+              tipo: "imobiliaria",
+              slug: t.slug,
+              nome: t.nome,
+              logoUrl: (t.tema as { logo_url?: string } | null)?.logo_url ?? null,
+            });
+        }
+      }
+      setItens(mapped);
+
+      const s = Number((cfg?.value as { speedSeconds?: number } | null)?.speedSeconds);
+      if (s > 0) setSpeed(s);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (construtoras.length === 0) return null;
+  if (itens.length === 0) return null;
 
-  // Duplicado 2x — a animação translateX(-50%) percorre exatamente a
-  // primeira cópia, criando o loop infinito sem costura.
-  const itens = [...construtoras, ...construtoras];
+  // Sempre anima (carrossel contínuo). Pra o loop ser suave mesmo com poucos
+  // logos, repete a base até ter largura suficiente e duplica esse grupo 2x —
+  // o keyframe marquee percorre translateX(-50%), exatamente 1 grupo, sem
+  // costura. Antes, com poucos itens, ficava estático (parecia "duplicado" e
+  // sem movimento). A velocidade vem de global_settings (super_admin).
+  const vezes = Math.max(2, Math.ceil(12 / itens.length));
+  const base = Array.from({ length: vezes }, () => itens).flat();
+  const track = [...base, ...base];
 
   return (
-    <div className="overflow-hidden border-b border-border bg-white py-8">
-      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-neutral-500">
-        Construtoras Parceiras
+    <div className="overflow-hidden border-b border-border bg-muted/30 py-8">
+      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        Imobiliárias e Construtoras Parceiras
       </p>
-      <div className="flex w-max animate-marquee items-center gap-16">
-        {itens.map((c, i) => (
-          <Link
-            key={`${c.id}-${i}`}
-            to="/construtora/$slug"
-            params={{ slug: c.slug }}
-            title={c.nome}
-            className="flex shrink-0 items-center gap-2 transition hover:scale-105"
-          >
-            {c.logo_url ? (
-              <img src={c.logo_url} alt={c.nome} className="h-10 w-auto object-contain" />
-            ) : (
-              <span className="flex items-center gap-1.5 text-base font-semibold text-neutral-700">
-                <Factory className="h-5 w-5" />
-                {c.nome}
-              </span>
-            )}
-          </Link>
+      <div
+        className="flex w-max items-center gap-8"
+        style={{ animation: `marquee ${speed}s linear infinite` }}
+      >
+        {track.map((it, i) => (
+          <VitrineChip key={`${it.key}-${i}`} it={it} />
         ))}
       </div>
     </div>
   );
 }
 
-export function SiteFooter({
-  hideConstrutorasMarquee,
-}: { hideConstrutorasMarquee?: boolean } = {}) {
+export function SiteFooter() {
   const year = new Date().getFullYear();
 
+  // A Vitrine de Parceiros (ParceirosMarquee) aparece SÓ na home — o footer
+  // local de routes/index.tsx a renderiza. Aqui, no footer compartilhado das
+  // demais páginas públicas, ela não entra.
   return (
     <>
-      {!hideConstrutorasMarquee && <ConstrutorasMarquee />}
       <footer className="border-t border-border bg-secondary text-secondary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">

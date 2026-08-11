@@ -304,9 +304,7 @@ function BlogPostPage() {
           </BlogColumnsLayout>
         </div>
       </div>
-      {/* Construtoras Parceiras já aparece na coluna 3 (BlogParceirosColumn)
-          — suprime a faixa duplicada que o SiteFooter mostra por padrão. */}
-      <SiteFooter hideConstrutorasMarquee />
+      <SiteFooter />
     </>
   );
 }

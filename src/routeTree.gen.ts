@@ -77,6 +77,7 @@ import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
+import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
@@ -548,6 +549,11 @@ const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
   id: '/api/sitemap.xml',
   path: '/api/sitemap.xml',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVitrineParceirosRoute = AdminVitrineParceirosRouteImport.update({
+  id: '/vitrine-parceiros',
+  path: '/vitrine-parceiros',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminTenantsRoute = AdminTenantsRouteImport.update({
   id: '/tenants',
@@ -1293,6 +1299,7 @@ export interface FileRoutesByFullPath {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1490,6 +1497,7 @@ export interface FileRoutesByTo {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1689,6 +1697,7 @@ export interface FileRoutesById {
   '/admin/planos': typeof AdminPlanosRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
+  '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1891,6 +1900,7 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/status'
     | '/admin/tenants'
+    | '/admin/vitrine-parceiros'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2088,6 +2098,7 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/status'
     | '/admin/tenants'
+    | '/admin/vitrine-parceiros'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2286,6 +2297,7 @@ export interface FileRouteTypes {
     | '/admin/planos'
     | '/admin/status'
     | '/admin/tenants'
+    | '/admin/vitrine-parceiros'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -3007,6 +3019,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/sitemap.xml'
       preLoaderRoute: typeof ApiSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/vitrine-parceiros': {
+      id: '/admin/vitrine-parceiros'
+      path: '/vitrine-parceiros'
+      fullPath: '/admin/vitrine-parceiros'
+      preLoaderRoute: typeof AdminVitrineParceirosRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/tenants': {
       id: '/admin/tenants'
@@ -3934,6 +3953,7 @@ interface AdminRouteChildren {
   AdminPlanosRoute: typeof AdminPlanosRoute
   AdminStatusRoute: typeof AdminStatusRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
+  AdminVitrineParceirosRoute: typeof AdminVitrineParceirosRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
@@ -3953,6 +3973,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminPlanosRoute: AdminPlanosRoute,
   AdminStatusRoute: AdminStatusRoute,
   AdminTenantsRoute: AdminTenantsRoute,
+  AdminVitrineParceirosRoute: AdminVitrineParceirosRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
