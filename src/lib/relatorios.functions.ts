@@ -310,25 +310,39 @@ export const getRelatorios = createServerFn({ method: "POST" })
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
 
-    // Desempenho e Performance de Imóveis (Pageviews, WhatsApp Clicks, Favoritado)
+    // Desempenho e Performance de Imóveis — métricas REAIS: views e cliques de
+    // WhatsApp vêm da tabela imovel_eventos (tracking first-party na página
+    // pública); favoritos da tabela favoritos. Tudo agregado pela RPC
+    // relatorio_metricas_imoveis (tenant resolvido do próprio auth.uid()).
     const activeListings = imoveis.filter((x) => x.status === "ativo" && x.publicado);
+    const { data: metricasRows } = await (supabase as any).rpc("relatorio_metricas_imoveis");
+    const metricasMap = new Map<
+      string,
+      { views: number; whatsapp_clicks: number; favoritos: number }
+    >(
+      ((metricasRows ?? []) as any[]).map((m) => [
+        m.imovel_id,
+        {
+          views: Number(m.views) || 0,
+          whatsapp_clicks: Number(m.whatsapp_clicks) || 0,
+          favoritos: Number(m.favoritos) || 0,
+        },
+      ]),
+    );
     const ranking_imoveis = activeListings
-      .map((im, idx) => {
-        // Calcular índices estáveis derivados realisticamente
-        const hash = im.titulo.length + idx * 7;
-        const pageviews = 85 + (hash % 190) + Math.round(Number(im.preco || 400000) / 120000);
-        const whatsapp_clicks = Math.max(5, Math.round(pageviews * 0.08 + (hash % 11)));
-        const favorited = Math.max(2, Math.round(pageviews * 0.05 + (hash % 7)));
-        const conversion_rate = pageviews > 0 ? Math.round((whatsapp_clicks / pageviews) * 100) : 0;
+      .map((im) => {
+        const met = metricasMap.get(im.id) ?? { views: 0, whatsapp_clicks: 0, favoritos: 0 };
+        const conversion_rate =
+          met.views > 0 ? Math.round((met.whatsapp_clicks / met.views) * 100) : 0;
         return {
           id: im.id,
           titulo: im.titulo || "Sem título",
           bairro: im.endereco_bairro || "Centro",
           tipo: im.tipo,
           preco: Number(im.preco || 0),
-          pageviews,
-          whatsapp_clicks,
-          favorited,
+          pageviews: met.views,
+          whatsapp_clicks: met.whatsapp_clicks,
+          favorited: met.favoritos,
           conversion_rate,
         };
       })
