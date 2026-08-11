@@ -40,6 +40,8 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
+import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
+import { getVisitorRegion } from "@/lib/geo.functions";
 import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
@@ -81,6 +83,9 @@ type ImovelCard = {
   endereco_uf: string | null;
   endereco_bairro: string | null;
   capa: string | null;
+  // usados pela composição da vitrine (região/intercalação/preferência)
+  tenant_id: string | null;
+  updated_at: string | null;
 };
 
 type TenantCard = {
@@ -171,22 +176,44 @@ function Landing() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("imoveis")
-        .select(
-          "id,slug,titulo,finalidade,tipo,preco,quartos,banheiros,area_util,endereco_cidade,endereco_uf,endereco_bairro,imovel_fotos(storage_path,capa,ordem)",
-        )
-        .eq("publicado", true)
-        .eq("status", "ativo")
-        .order("updated_at", { ascending: false })
-        .limit(8);
-      const mapped: ImovelCard[] = (data ?? []).map((d: any) => {
+      const [{ data }, region] = await Promise.all([
+        supabase
+          .from("imoveis")
+          .select(
+            "id,slug,titulo,finalidade,tipo,preco,quartos,banheiros,area_util,endereco_cidade,endereco_uf,endereco_bairro,tenant_id,updated_at,imovel_fotos(storage_path,capa,ordem)",
+          )
+          .eq("publicado", true)
+          .eq("status", "ativo")
+          // Pool maior que os 8 exibidos — a vitrine final é COMPOSTA em JS
+          // (região do visitante + intercalação corretor/imobiliária +
+          // preferência Bruno/imob365), não é mais só recência.
+          .order("updated_at", { ascending: false })
+          .limit(40),
+        getVisitorRegion().catch(() => null),
+      ]);
+      const pool: ImovelCard[] = (data ?? []).map((d: any) => {
         const fotos = (d.imovel_fotos ?? [])
           .slice()
           .sort((a: any, b: any) => (b.capa ? 1 : 0) - (a.capa ? 1 : 0) || a.ordem - b.ordem);
         return { ...d, capa: fotos[0]?.storage_path ?? null };
       });
-      setImoveis(mapped);
+      // Metadados do tenant (slug/tipo) pra classificar corretor×imobiliária e
+      // identificar os preferidos — segunda query por ids, mesmo padrão do
+      // bloco `counts` logo abaixo (não depende de embed do PostgREST).
+      const tIds = Array.from(
+        new Set(pool.map((p) => p.tenant_id).filter((x): x is string => !!x)),
+      );
+      let tenantMeta: Record<string, TenantMeta | undefined> = {};
+      if (tIds.length) {
+        const { data: tm } = await supabase
+          .from("tenants")
+          .select("id,slug,tipo_tenant")
+          .in("id", tIds);
+        tenantMeta = Object.fromEntries(
+          (tm ?? []).map((t: any) => [t.id, { slug: t.slug, tipo_tenant: t.tipo_tenant }]),
+        );
+      }
+      setImoveis(comporDestaques(pool, tenantMeta, region, { limit: 8 }));
 
       const { data: ts } = await supabase
         .from("tenants")
