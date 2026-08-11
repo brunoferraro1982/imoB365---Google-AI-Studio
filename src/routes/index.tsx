@@ -799,10 +799,10 @@ function Landing() {
 
       {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+        <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
           Como o imob365 trabalha por você
         </h2>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
           Uma plataforma completa para captar, atender, fechar e administrar — do primeiro lead ao
           pós-venda, sem precisar de equipe de TI.
         </p>
@@ -823,12 +823,18 @@ function Landing() {
       </section>
 
       {/* MÓDULOS / RECURSOS — bento por jornada */}
-      <section id="recursos" className="border-t border-border bg-secondary/40">
+      {/* Fundo: calor sutil da marca (primary/5 → background) em vez do cinza
+          bg-secondary/40 — destaca a seção sem competir com os cards; funciona
+          em tema claro e escuro (tokens primary/background existem nos dois). */}
+      <section
+        id="recursos"
+        className="border-t border-border bg-gradient-to-b from-primary/5 via-background to-background"
+      >
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
             Tudo o que sua imobiliária precisa, num só lugar
           </h2>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
+          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
             Organizado pela jornada do corretor — ative só o que precisa hoje e adicione novos
             recursos conforme cresce.
           </p>
