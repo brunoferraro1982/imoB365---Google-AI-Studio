@@ -823,13 +823,13 @@ function Landing() {
       </section>
 
       {/* MÓDULOS / RECURSOS — bento por jornada */}
-      {/* Fundo: gradiente quente da marca (primary/10 → primary/5 → background)
+      {/* Fundo: gradiente quente da marca (primary/15 → primary/5 → background)
           em vez do cinza bg-secondary/40 — calor visível no topo descendo pro
           fundo, destaca a seção sem competir com os cards; funciona em tema
           claro e escuro (tokens primary/background existem nos dois). */}
       <section
         id="recursos"
-        className="border-t border-border bg-gradient-to-b from-primary/10 via-primary/5 to-background"
+        className="border-t border-border bg-gradient-to-b from-primary/15 via-primary/5 to-background"
       >
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
