@@ -200,6 +200,7 @@ import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.pub
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
 import { Route as AdminConstrutorasIdIngestaoRouteImport } from './routes/admin.construtoras_.$id.ingestao'
+import { Route as AdminConstrutorasIdAssistenteRouteImport } from './routes/admin.construtoras_.$id.assistente'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -1204,6 +1205,12 @@ const AdminConstrutorasIdIngestaoRoute =
     path: '/construtoras/$id/ingestao',
     getParentRoute: () => AdminRoute,
   } as any)
+const AdminConstrutorasIdAssistenteRoute =
+  AdminConstrutorasIdAssistenteRouteImport.update({
+    id: '/construtoras_/$id/assistente',
+    path: '/construtoras/$id/assistente',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
     id: '/api/public/webhooks/assinatura/$provider',
@@ -1410,6 +1417,7 @@ export interface FileRoutesByFullPath {
   '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -1606,6 +1614,7 @@ export interface FileRoutesByTo {
   '/app/portais': typeof AppPortaisIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
+  '/admin/construtoras/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -1808,6 +1817,7 @@ export interface FileRoutesById {
   '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
+  '/admin/construtoras_/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -2011,6 +2021,7 @@ export interface FileRouteTypes {
     | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras/$id/assistente'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -2207,6 +2218,7 @@ export interface FileRouteTypes {
     | '/app/portais'
     | '/app/site'
     | '/conta/chat'
+    | '/admin/construtoras/$id/assistente'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -2408,6 +2420,7 @@ export interface FileRouteTypes {
     | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
+    | '/admin/construtoras_/$id/assistente'
     | '/admin/construtoras_/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -3881,6 +3894,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConstrutorasIdIngestaoRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/construtoras_/$id/assistente': {
+      id: '/admin/construtoras_/$id/assistente'
+      path: '/construtoras/$id/assistente'
+      fullPath: '/admin/construtoras/$id/assistente'
+      preLoaderRoute: typeof AdminConstrutorasIdAssistenteRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
       path: '/api/public/webhooks/assinatura/$provider'
@@ -3957,6 +3977,7 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
+  AdminConstrutorasIdAssistenteRoute: typeof AdminConstrutorasIdAssistenteRoute
   AdminConstrutorasIdIngestaoRoute: typeof AdminConstrutorasIdIngestaoRoute
 }
 
@@ -3977,6 +3998,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
+  AdminConstrutorasIdAssistenteRoute: AdminConstrutorasIdAssistenteRoute,
   AdminConstrutorasIdIngestaoRoute: AdminConstrutorasIdIngestaoRoute,
 }
 
