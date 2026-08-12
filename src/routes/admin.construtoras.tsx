@@ -804,8 +804,8 @@ function AdminConstrutorasPage() {
               </div>
 
               <Link
-                to="/admin/construtoras/$id/assistente"
-                params={{ id: selecionada.id }}
+                to="/admin/importar-imoveis"
+                search={{ construtora: selecionada.id }}
                 className="mb-4 block"
               >
                 <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 transition hover:border-primary/50 hover:shadow-sm">
@@ -813,8 +813,9 @@ function AdminConstrutorasPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-semibold">Assistente de importação</p>
                     <p className="text-xs text-muted-foreground">
-                      Passo a passo guiado: fontes → importar → revisar fotos/capa/dados → publicar
-                      vários imóveis de uma vez.
+                      Passo a passo guiado: construtora → fontes → importar (Linktree/Drive ou link
+                      de anúncio) → revisar → publicar vários imóveis de uma vez. Abre já com esta
+                      construtora selecionada.
                     </p>
                   </div>
                   <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />

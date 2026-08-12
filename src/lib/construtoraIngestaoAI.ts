@@ -194,6 +194,52 @@ export async function extrairTabelaPdf(
   }
 }
 
+// Fallback de IA da Fase 2: quando o dado estruturado (JSON-LD/OpenGraph) do
+// anúncio da construtora não trouxe os campos-chave, o Gemini lê o texto
+// visível da página e extrai o que der. Best-effort — a revisão humana no
+// wizard sempre vem depois. Retorna só os campos que conseguiu; nunca lança
+// (falha vira objeto vazio, o super_admin preenche à mão).
+export type ImovelExtraidoIA = {
+  preco: number | null;
+  area_total: number | null;
+  quartos: number | null;
+  suites: number | null;
+  banheiros: number | null;
+  vagas: number | null;
+  descricao: string | null;
+  tipo: string | null;
+  endereco_cidade: string | null;
+  endereco_uf: string | null;
+  endereco_bairro: string | null;
+};
+
+export async function extrairImovelDeTexto(texto: string): Promise<Partial<ImovelExtraidoIA>> {
+  if (!texto.trim()) return {};
+  const ai = getAI();
+  const prompt =
+    `O texto abaixo foi extraído de uma página de anúncio de um imóvel no site de uma ` +
+    `construtora/imobiliária. Extraia os dados do imóvel. Responda SOMENTE em JSON com as ` +
+    `chaves: {"preco": number|null (em reais, só número), "area_total": number|null (m²), ` +
+    `"quartos": number|null, "suites": number|null, "banheiros": number|null, "vagas": ` +
+    `number|null, "tipo": string|null (ex.: apartamento, casa, terreno, cobertura, sala ` +
+    `comercial), "descricao": string|null (um resumo comercial em 1-2 frases), ` +
+    `"endereco_cidade": string|null, "endereco_uf": string|null (sigla de 2 letras), ` +
+    `"endereco_bairro": string|null}. Use null para o que não encontrar com confiança. ` +
+    `Não invente valores.\n\nTEXTO:\n` +
+    texto;
+  try {
+    const response = await ai.models.generateContent({
+      model: DEFAULT_MODEL,
+      contents: createUserContent([createPartFromText(prompt)]),
+      config: { responseMimeType: "application/json" },
+    });
+    const parsed = JSON.parse(response.text ?? "{}") as Partial<ImovelExtraidoIA>;
+    return parsed ?? {};
+  } catch {
+    return {};
+  }
+}
+
 function normalizarNome(nome: string): string {
   return nome
     .toLowerCase()
