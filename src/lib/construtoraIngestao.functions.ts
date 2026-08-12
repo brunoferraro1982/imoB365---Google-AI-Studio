@@ -233,6 +233,11 @@ export const aprovarLote = createServerFn({ method: "POST" })
         // Foto de capa escolhida na revisão (item 4 do wizard). Se ausente,
         // cai no comportamento antigo (primeira foto copiada = capa).
         capaMidiaId: z.string().uuid().nullable().optional(),
+        // Publicar imediatamente (aparece no site do destino) em vez de criar
+        // como rascunho. Default false — o comportamento seguro/histórico da
+        // pipeline é sempre criar rascunho pro destino revisar antes. O wizard
+        // expõe isso como um opt-in explícito no passo Publicar.
+        publicar: z.boolean().optional(),
         nome: z.string().min(1),
         unidades: z.array(UnidadeSchema).optional(),
         // Conjunto completo de campos do imóvel (paridade com /app/imoveis/novo).
@@ -308,6 +313,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
     }[] = [];
     let ultimoEmpreendimentoId: string | null = null;
     let ultimoImovelId: string | null = null;
+    const publicado = data.publicar === true;
 
     for (const destino of data.destinos) {
       if (jaAprovado.has(`${destino.tenantId}:${destino.corretorId ?? ""}`)) {
@@ -331,7 +337,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
               nome: data.nome,
               slug: slugifyLote(data.nome),
               construtora_id: lote.construtora_id,
-              publicado: false,
+              publicado,
               fotos_urls: [],
             })
             .select("id")
@@ -379,7 +385,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
               tenant_id: destino.tenantId,
               titulo: data.nome,
               slug: slugifyLote(data.nome),
-              publicado: false,
+              publicado,
               corretor_responsavel_id: destino.corretorId ?? undefined,
               // finalidade/tipo são enums — passados só quando informados
               // (senão vale o default do banco).

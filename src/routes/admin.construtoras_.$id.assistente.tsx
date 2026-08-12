@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { NumberInput } from "@/components/ui/number-input";
@@ -142,6 +143,9 @@ function AssistenteImportacaoPage() {
   const [resultados, setResultados] = useState<Destino[]>([]);
   const [destinos, setDestinos] = useState<Destino[]>([]);
   const [publicando, setPublicando] = useState(false);
+  // Opt-in explícito: por padrão cria rascunho (seguro); marcado, já publica
+  // no site do destino sem precisar do passo manual em /app/imoveis.
+  const [publicaImediato, setPublicaImediato] = useState(false);
 
   async function carregarBase() {
     const [{ data: c }, { data: fs }] = await Promise.all([
@@ -297,17 +301,22 @@ function AssistenteImportacaoPage() {
     if (selecionadosLotes.length === 0)
       return toast.error("Marque ao menos um imóvel para publicar.");
     setPublicando(true);
-    let ok = 0;
+    // Conta destinos que de fato deram certo (não lotes) — aprovarLote roda
+    // cada destino isolado e devolve um `erro` por destino sem lançar
+    // exceção, então contar só "não lançou" reportaria sucesso falso.
+    let okDestinos = 0;
+    let erroDestinos = 0;
     for (const lote of selecionadosLotes) {
       const e = estadoDe(lote);
       try {
-        await fnAprovar({
+        const resp = await fnAprovar({
           data: {
             loteId: lote.id,
             tipoAlvo: e.tipo,
             destinos: destinos.map((d) => ({ tenantId: d.tenantId, corretorId: d.corretorId })),
             midiaIds: Array.from(e.selecionadas),
             capaMidiaId: e.capaMidiaId,
+            publicar: publicaImediato,
             nome: e.nome,
             unidades: e.tipo === "empreendimento" ? e.unidades : undefined,
             imovel:
@@ -333,16 +342,31 @@ function AssistenteImportacaoPage() {
                 : undefined,
           },
         });
-        ok++;
+        const rs = (resp as { resultados?: { erro?: string }[] })?.resultados ?? [];
+        for (const r of rs) {
+          if (r.erro) {
+            erroDestinos++;
+            toast.error(`"${e.nome}": ${r.erro}`);
+          } else {
+            okDestinos++;
+          }
+        }
       } catch (err) {
+        erroDestinos += destinos.length;
         toast.error(`Falha em "${e.nome}": ${err instanceof Error ? err.message : "erro"}`);
       }
     }
     setPublicando(false);
-    if (ok > 0)
+    if (okDestinos > 0) {
+      const alvo = `${okDestinos} publicação(ões) em ${destinos.length} destino(s)`;
       toast.success(
-        `${ok} rascunho(s) criado(s) para ${destinos.length} destino(s). Publique em /app/imoveis ou /app/empreendimentos.`,
+        publicaImediato
+          ? `${alvo} publicada(s) — já aparecem no site do destino.`
+          : `${alvo} criada(s) como rascunho. Para aparecerem no site, publique em /app/imoveis (ou /app/empreendimentos), ou marque "Publicar imediatamente".`,
       );
+    } else if (erroDestinos > 0) {
+      toast.error("Nenhuma publicação concluída — veja os erros acima.");
+    }
     carregarLotes();
   }
 
@@ -785,8 +809,9 @@ function AssistenteImportacaoPage() {
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
             Escolha para quais imobiliárias e/ou corretores os {selecionadosLotes.length} imóvel(is)
-            marcado(s) serão criados (cada destino recebe um rascunho independente, sempre como
-            <strong> não publicado</strong> — a publicação final é feita por cada um em /app).
+            marcado(s) serão criados (cada destino recebe um registro independente). Por padrão são
+            criados como <strong>rascunho</strong> — não aparecem no site até serem publicados em
+            /app/imoveis (ou /app/empreendimentos). Marque a opção abaixo para publicar já.
           </p>
           <div className="relative">
             <Input
@@ -838,13 +863,26 @@ function AssistenteImportacaoPage() {
               ))}
             </div>
           )}
+          <label className="flex items-start gap-2 rounded-lg border border-border bg-muted/40 p-3 text-sm">
+            <Checkbox
+              checked={publicaImediato}
+              onCheckedChange={(v) => setPublicaImediato(v === true)}
+              className="mt-0.5"
+            />
+            <span>
+              <strong>Publicar imediatamente</strong> — os imóveis já aparecem no site do destino,
+              sem o passo manual de publicação. Deixe desmarcado para criar como rascunho e revisar
+              antes.
+            </span>
+          </label>
           <Button onClick={publicar} disabled={publicando} size="lg" className="gap-1.5">
             {publicando ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Check className="h-4 w-4" />
             )}
-            Publicar {selecionadosLotes.length} imóvel(is) para {destinos.length} destino(s)
+            {publicaImediato ? "Publicar" : "Criar rascunho de"} {selecionadosLotes.length}{" "}
+            imóvel(is) para {destinos.length} destino(s)
           </Button>
         </div>
       )}
