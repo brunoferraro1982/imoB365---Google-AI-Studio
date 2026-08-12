@@ -227,6 +227,7 @@ const adminNav: Item[] = [
   { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
   { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
   { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
+  { to: "/admin/importar-imoveis", label: "Assistente de importação", icon: Sparkles },
   { to: "/admin/vitrine-parceiros", label: "Vitrine de Parceiros", icon: GalleryHorizontalEnd },
   { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
   { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },

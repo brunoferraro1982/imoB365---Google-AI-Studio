@@ -84,6 +84,7 @@ import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
 import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
 import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes'
+import { Route as AdminImportarImoveisRouteImport } from './routes/admin.importar-imoveis'
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
@@ -200,7 +201,6 @@ import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.pub
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
 import { Route as AdminConstrutorasIdIngestaoRouteImport } from './routes/admin.construtoras_.$id.ingestao'
-import { Route as AdminConstrutorasIdAssistenteRouteImport } from './routes/admin.construtoras_.$id.assistente'
 import { Route as ApiPublicWebhooksAssinaturaProviderRouteImport } from './routes/api.public.webhooks.assinatura.$provider'
 import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.v1.imoveis.$slug'
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
@@ -584,6 +584,11 @@ const AdminLimitesRoute = AdminLimitesRouteImport.update({
 const AdminIntegracoesRoute = AdminIntegracoesRouteImport.update({
   id: '/integracoes',
   path: '/integracoes',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminImportarImoveisRoute = AdminImportarImoveisRouteImport.update({
+  id: '/importar-imoveis',
+  path: '/importar-imoveis',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminFlagsRoute = AdminFlagsRouteImport.update({
@@ -1205,12 +1210,6 @@ const AdminConstrutorasIdIngestaoRoute =
     path: '/construtoras/$id/ingestao',
     getParentRoute: () => AdminRoute,
   } as any)
-const AdminConstrutorasIdAssistenteRoute =
-  AdminConstrutorasIdAssistenteRouteImport.update({
-    id: '/construtoras_/$id/assistente',
-    path: '/construtoras/$id/assistente',
-    getParentRoute: () => AdminRoute,
-  } as any)
 const ApiPublicWebhooksAssinaturaProviderRoute =
   ApiPublicWebhooksAssinaturaProviderRouteImport.update({
     id: '/api/public/webhooks/assinatura/$provider',
@@ -1300,6 +1299,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
@@ -1417,7 +1417,6 @@ export interface FileRoutesByFullPath {
   '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
-  '/admin/construtoras/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -1499,6 +1498,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
@@ -1614,7 +1614,6 @@ export interface FileRoutesByTo {
   '/app/portais': typeof AppPortaisIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
-  '/admin/construtoras/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -1700,6 +1699,7 @@ export interface FileRoutesById {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
@@ -1817,7 +1817,6 @@ export interface FileRoutesById {
   '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
-  '/admin/construtoras_/$id/assistente': typeof AdminConstrutorasIdAssistenteRoute
   '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
@@ -1904,6 +1903,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
     | '/admin/modulos'
@@ -2021,7 +2021,6 @@ export interface FileRouteTypes {
     | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
-    | '/admin/construtoras/$id/assistente'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -2103,6 +2102,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
     | '/admin/modulos'
@@ -2218,7 +2218,6 @@ export interface FileRouteTypes {
     | '/app/portais'
     | '/app/site'
     | '/conta/chat'
-    | '/admin/construtoras/$id/assistente'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -2303,6 +2302,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
     | '/admin/modulos'
@@ -2420,7 +2420,6 @@ export interface FileRouteTypes {
     | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
-    | '/admin/construtoras_/$id/assistente'
     | '/admin/construtoras_/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
@@ -3080,6 +3079,13 @@ declare module '@tanstack/react-router' {
       path: '/integracoes'
       fullPath: '/admin/integracoes'
       preLoaderRoute: typeof AdminIntegracoesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/importar-imoveis': {
+      id: '/admin/importar-imoveis'
+      path: '/importar-imoveis'
+      fullPath: '/admin/importar-imoveis'
+      preLoaderRoute: typeof AdminImportarImoveisRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/flags': {
@@ -3894,13 +3900,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConstrutorasIdIngestaoRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/construtoras_/$id/assistente': {
-      id: '/admin/construtoras_/$id/assistente'
-      path: '/construtoras/$id/assistente'
-      fullPath: '/admin/construtoras/$id/assistente'
-      preLoaderRoute: typeof AdminConstrutorasIdAssistenteRouteImport
-      parentRoute: typeof AdminRoute
-    }
     '/api/public/webhooks/assinatura/$provider': {
       id: '/api/public/webhooks/assinatura/$provider'
       path: '/api/public/webhooks/assinatura/$provider'
@@ -3967,6 +3966,7 @@ interface AdminRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
+  AdminImportarImoveisRoute: typeof AdminImportarImoveisRoute
   AdminIntegracoesRoute: typeof AdminIntegracoesRoute
   AdminLimitesRoute: typeof AdminLimitesRoute
   AdminModulosRoute: typeof AdminModulosRoute
@@ -3977,7 +3977,6 @@ interface AdminRouteChildren {
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
-  AdminConstrutorasIdAssistenteRoute: typeof AdminConstrutorasIdAssistenteRoute
   AdminConstrutorasIdIngestaoRoute: typeof AdminConstrutorasIdIngestaoRoute
 }
 
@@ -3988,6 +3987,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminFlagsRoute: AdminFlagsRoute,
+  AdminImportarImoveisRoute: AdminImportarImoveisRoute,
   AdminIntegracoesRoute: AdminIntegracoesRoute,
   AdminLimitesRoute: AdminLimitesRoute,
   AdminModulosRoute: AdminModulosRoute,
@@ -3998,7 +3998,6 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
-  AdminConstrutorasIdAssistenteRoute: AdminConstrutorasIdAssistenteRoute,
   AdminConstrutorasIdIngestaoRoute: AdminConstrutorasIdIngestaoRoute,
 }
 
