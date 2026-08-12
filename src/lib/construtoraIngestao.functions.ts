@@ -6,6 +6,7 @@ import {
   processarIngestao,
   baixarArquivoDrive,
   obterArquivoDrive,
+  coletarMidiasDePastaDrive,
   DRIVE_TIMEOUT_MS,
 } from "@/lib/construtoraIngestao";
 import { extrairImovelDeHtml, type ImovelExtraido } from "@/lib/construtoraUrlExtract";
@@ -763,4 +764,102 @@ export const extrairImovelDeUrl = createServerFn({ method: "POST" })
       imagens: imagens.length,
       origens: usouIA ? [...origens, "ia" as const] : origens,
     };
+  });
+
+// ─────────────────── Fase 3 — importar por pasta do Google Drive ───────────────────
+
+// Importa um lote (empreendimento/imóvel) a partir do link direto de uma PASTA
+// do Google Drive, sem precisar de um Linktree na frente. Cai na MESMA revisão
+// da Fase 1/2. As mídias vêm do Drive (origem_drive_id), então a cópia pro
+// bucket e o thumbnail reusam o caminho de Drive já existente.
+export const importarPastaDrive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        construtoraId: z.string().uuid(),
+        driveUrl: z.string().url().max(2000),
+        nome: z.string().min(1).max(160),
+        tipoAlvo: z.enum(["empreendimento", "imovel"]),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await exigirSuperAdmin(supabase, userId);
+
+    // 1) Crawl da pasta (recursivo, mesmo motor do Linktree→Drive).
+    const midias = await coletarMidiasDePastaDrive(data.driveUrl);
+
+    // 2) Persiste como lote pronto_revisao (dedupe por link_origem), na mesma
+    //    fonte sintética de imports manuais da construtora.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = supabaseAdmin as any;
+    const fonteId = await obterOuCriarFonteUrl(data.construtoraId);
+    const nome = data.nome.trim().slice(0, 160);
+
+    const { data: loteExistente } = await admin
+      .from("construtora_ingestao_lotes")
+      .select("id")
+      .eq("fonte_id", fonteId)
+      .eq("link_origem", data.driveUrl)
+      .maybeSingle();
+
+    let loteId: string;
+    if (loteExistente?.id) {
+      loteId = loteExistente.id as string;
+      await admin
+        .from("construtora_ingestao_lotes")
+        .update({ nome_bruto: nome, status: "pronto_revisao", tipo_alvo_override: data.tipoAlvo })
+        .eq("id", loteId);
+      // Re-import: descarta as mídias do Drive antigas (não as já copiadas
+      // pro bucket, que têm storage_path preenchido).
+      await admin
+        .from("construtora_ingestao_midias")
+        .delete()
+        .eq("lote_id", loteId)
+        .is("storage_path", null)
+        .not("origem_drive_id", "is", null);
+    } else {
+      let tentativa = nome;
+      let inserido: { id: string } | null = null;
+      for (let i = 0; i < 3 && !inserido; i++) {
+        const { data: novo, error } = await admin
+          .from("construtora_ingestao_lotes")
+          .insert({
+            fonte_id: fonteId,
+            construtora_id: data.construtoraId,
+            nome_bruto: tentativa,
+            link_origem: data.driveUrl,
+            status: "pronto_revisao",
+            tipo_alvo_override: data.tipoAlvo,
+          })
+          .select("id")
+          .single();
+        if (novo) inserido = novo;
+        else if (error?.code === "23505")
+          tentativa = `${nome} (${Math.random().toString(36).slice(2, 5)})`;
+        else throw new Error(error?.message ?? "Falha ao criar o lote.");
+      }
+      if (!inserido) throw new Error("Falha ao criar o lote (nome duplicado).");
+      loteId = inserido.id;
+    }
+
+    // 3) Grava as mídias do Drive (origem_drive_id). recomendada só pras fotos
+    //    (não pra PDF/vídeo) — mesmo espírito da descoberta via Linktree.
+    if (midias.length > 0) {
+      const { error: midiaErr } = await admin.from("construtora_ingestao_midias").insert(
+        midias.map((m) => ({
+          lote_id: loteId,
+          tipo: m.tipo,
+          origem_drive_id: m.id,
+          thumbnail_url: m.thumbnailLink,
+          recomendada: m.tipo.startsWith("foto_"),
+        })),
+      );
+      if (midiaErr) throw new Error(`Falha ao salvar as mídias da pasta: ${midiaErr.message}`);
+    }
+
+    const fotos = midias.filter((m) => m.tipo.startsWith("foto_")).length;
+    return { loteId, titulo: nome, midias: midias.length, fotos };
   });

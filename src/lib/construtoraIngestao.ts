@@ -239,6 +239,37 @@ async function coletarArquivosDePasta(
   return resultado;
 }
 
+export type MidiaDrivePasta = {
+  id: string;
+  name: string;
+  mimeType: string;
+  tipo: TipoMidia;
+  thumbnailLink: string | null;
+};
+
+// Fase 3: importar direto de uma PASTA do Google Drive (sem Linktree na frente).
+// Reusa o mesmo crawl recursivo (coletarArquivosDePasta) já usado quando a
+// pasta é descoberta via Linktree — só entra pela URL da pasta em vez do
+// __NEXT_DATA__ do Linktree. Lança erro claro se o link não for de pasta ou se
+// a GOOGLE_DRIVE_API_KEY não estiver configurada (listarPastaDrive falha).
+export async function coletarMidiasDePastaDrive(folderUrl: string): Promise<MidiaDrivePasta[]> {
+  if (!isDriveFolderUrl(folderUrl)) {
+    throw new Error(
+      "O link não é de uma pasta do Google Drive (esperado drive.google.com/drive/folders/...).",
+    );
+  }
+  const folderId = extractDriveId(folderUrl);
+  if (!folderId) throw new Error("Não consegui extrair o ID da pasta a partir do link do Drive.");
+  const arquivos = await coletarArquivosDePasta(folderId, "outro", 0);
+  return arquivos.map(({ arquivo, tipo }) => ({
+    id: arquivo.id,
+    name: arquivo.name,
+    mimeType: arquivo.mimeType,
+    tipo,
+    thumbnailLink: arquivo.thumbnailLink ?? null,
+  }));
+}
+
 const BATCH_SIZE_FONTES = 20;
 
 export type ProcessarIngestaoOpcoes = {
