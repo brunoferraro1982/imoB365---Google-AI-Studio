@@ -187,6 +187,19 @@ async function copiarMidiasParaBucket(
   return resultado;
 }
 
+// Coloca a foto de capa escolhida em primeiro — assim `capa=true` (imóvel) e
+// `fotos_urls[0]` (empreendimento) apontam pra ela sem lógica extra. Se não
+// houver capa escolhida (ou ela não estiver entre as copiadas), mantém a ordem.
+function ordenarComCapaPrimeiro<T extends { midiaId: string }>(
+  copiadas: T[],
+  capaMidiaId: string | null | undefined,
+): T[] {
+  if (!capaMidiaId) return copiadas;
+  const idx = copiadas.findIndex((c) => c.midiaId === capaMidiaId);
+  if (idx <= 0) return copiadas;
+  return [copiadas[idx], ...copiadas.slice(0, idx), ...copiadas.slice(idx + 1)];
+}
+
 // Aprova um lote pra um ou mais destinos ao mesmo tempo (imobiliária e/ou
 // corretor individual) — cada destino selecionado vira um rascunho
 // independente (empreendimento ou imóvel avulso, conforme tipo_alvo da
@@ -217,13 +230,36 @@ export const aprovarLote = createServerFn({ method: "POST" })
         tipoAlvo: z.enum(["empreendimento", "imovel"]),
         destinos: z.array(DestinoSchema).min(1),
         midiaIds: z.array(z.string().uuid()),
+        // Foto de capa escolhida na revisão (item 4 do wizard). Se ausente,
+        // cai no comportamento antigo (primeira foto copiada = capa).
+        capaMidiaId: z.string().uuid().nullable().optional(),
+        // Publicar imediatamente (aparece no site do destino) em vez de criar
+        // como rascunho. Default false — o comportamento seguro/histórico da
+        // pipeline é sempre criar rascunho pro destino revisar antes. O wizard
+        // expõe isso como um opt-in explícito no passo Publicar.
+        publicar: z.boolean().optional(),
         nome: z.string().min(1),
         unidades: z.array(UnidadeSchema).optional(),
+        // Conjunto completo de campos do imóvel (paridade com /app/imoveis/novo).
+        // finalidade/tipo são enums no banco — passados só quando informados
+        // (senão vale o default do insert).
         imovel: z
           .object({
+            finalidade: z.string().nullable().optional(),
+            tipo: z.string().nullable().optional(),
             preco: z.number().nullable().optional(),
+            condominio: z.number().nullable().optional(),
+            iptu: z.number().nullable().optional(),
             area_total: z.number().nullable().optional(),
+            area_util: z.number().nullable().optional(),
             quartos: z.number().nullable().optional(),
+            suites: z.number().nullable().optional(),
+            banheiros: z.number().nullable().optional(),
+            vagas: z.number().nullable().optional(),
+            endereco_cidade: z.string().nullable().optional(),
+            endereco_uf: z.string().nullable().optional(),
+            endereco_bairro: z.string().nullable().optional(),
+            endereco_logradouro: z.string().nullable().optional(),
             descricao: z.string().nullable().optional(),
           })
           .optional(),
@@ -277,6 +313,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
     }[] = [];
     let ultimoEmpreendimentoId: string | null = null;
     let ultimoImovelId: string | null = null;
+    const publicado = data.publicar === true;
 
     for (const destino of data.destinos) {
       if (jaAprovado.has(`${destino.tenantId}:${destino.corretorId ?? ""}`)) {
@@ -300,7 +337,7 @@ export const aprovarLote = createServerFn({ method: "POST" })
               nome: data.nome,
               slug: slugifyLote(data.nome),
               construtora_id: lote.construtora_id,
-              publicado: false,
+              publicado,
               fotos_urls: [],
             })
             .select("id")
@@ -308,9 +345,12 @@ export const aprovarLote = createServerFn({ method: "POST" })
           if (empErr || !emp) throw new Error(empErr?.message ?? "Erro ao criar empreendimento.");
           empreendimentoId = emp.id;
 
-          const copiadas = await copiarMidiasParaBucket(
-            midiasSelecionadas ?? [],
-            `${destino.tenantId}/emp-${emp.id}`,
+          const copiadas = ordenarComCapaPrimeiro(
+            await copiarMidiasParaBucket(
+              midiasSelecionadas ?? [],
+              `${destino.tenantId}/emp-${emp.id}`,
+            ),
+            data.capaMidiaId,
           );
           if (copiadas.length > 0) {
             await supabaseAdmin
@@ -338,27 +378,45 @@ export const aprovarLote = createServerFn({ method: "POST" })
             });
           }
         } else {
+          const im = data.imovel ?? {};
           const { data: imovel, error: imovelErr } = await supabaseAdmin
             .from("imoveis")
             .insert({
               tenant_id: destino.tenantId,
               titulo: data.nome,
               slug: slugifyLote(data.nome),
-              publicado: false,
+              publicado,
               corretor_responsavel_id: destino.corretorId ?? undefined,
-              preco: data.imovel?.preco ?? undefined,
-              area_total: data.imovel?.area_total ?? undefined,
-              quartos: data.imovel?.quartos ?? undefined,
-              descricao: data.imovel?.descricao ?? undefined,
+              // finalidade/tipo são enums — passados só quando informados
+              // (senão vale o default do banco).
+              finalidade: (im.finalidade ?? undefined) as never,
+              tipo: (im.tipo ?? undefined) as never,
+              preco: im.preco ?? undefined,
+              condominio: im.condominio ?? undefined,
+              iptu: im.iptu ?? undefined,
+              area_total: im.area_total ?? undefined,
+              area_util: im.area_util ?? undefined,
+              quartos: im.quartos ?? undefined,
+              suites: im.suites ?? undefined,
+              banheiros: im.banheiros ?? undefined,
+              vagas: im.vagas ?? undefined,
+              endereco_cidade: im.endereco_cidade ?? undefined,
+              endereco_uf: im.endereco_uf ?? undefined,
+              endereco_bairro: im.endereco_bairro ?? undefined,
+              endereco_logradouro: im.endereco_logradouro ?? undefined,
+              descricao: im.descricao ?? undefined,
             })
             .select("id")
             .single();
           if (imovelErr || !imovel) throw new Error(imovelErr?.message ?? "Erro ao criar imóvel.");
           imovelId = imovel.id;
 
-          const copiadas = await copiarMidiasParaBucket(
-            midiasSelecionadas ?? [],
-            `${destino.tenantId}/${imovel.id}`,
+          const copiadas = ordenarComCapaPrimeiro(
+            await copiarMidiasParaBucket(
+              midiasSelecionadas ?? [],
+              `${destino.tenantId}/${imovel.id}`,
+            ),
+            data.capaMidiaId,
           );
           for (let i = 0; i < copiadas.length; i++) {
             const c = copiadas[i];
