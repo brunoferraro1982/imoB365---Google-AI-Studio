@@ -34,6 +34,8 @@ import {
   RefreshCw,
   Link2,
   ClipboardList,
+  Sparkles,
+  ChevronRight,
 } from "lucide-react";
 import { sincronizarIngestaoAgora } from "@/lib/construtoraIngestao.functions";
 
@@ -801,10 +803,31 @@ function AdminConstrutorasPage() {
                 )}
               </div>
 
+              <Link
+                to="/admin/construtoras/$id/assistente"
+                params={{ id: selecionada.id }}
+                className="mb-4 block"
+              >
+                <div className="flex items-center gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 transition hover:border-primary/50 hover:shadow-sm">
+                  <Sparkles className="h-5 w-5 shrink-0 text-primary" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">Assistente de importação</p>
+                    <p className="text-xs text-muted-foreground">
+                      Passo a passo guiado: fontes → importar → revisar fotos/capa/dados → publicar
+                      vários imóveis de uma vez.
+                    </p>
+                  </div>
+                  <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
+                </div>
+              </Link>
+
               <div className="rounded-lg border border-border bg-muted/20 p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <h3 className="flex items-center gap-1.5 text-sm font-semibold">
                     <Link2 className="h-4 w-4" /> Fontes de ingestão ({fontes.length})
+                    <Badge variant="outline" className="ml-1 text-[10px] font-normal">
+                      modo avançado
+                    </Badge>
                   </h3>
                   <div className="flex items-center gap-2">
                     <Link to="/admin/construtoras/$id/ingestao" params={{ id: selecionada.id }}>
