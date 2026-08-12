@@ -442,6 +442,11 @@ export const aprovarLote = createServerFn({ method: "POST" })
               titulo: data.nome,
               slug: slugifyLote(data.nome),
               publicado,
+              // O site público filtra por publicado=true E status='ativo' (ver
+              // index.tsx/buscar.tsx/imovel.$slug.tsx). Só setar publicado=true
+              // deixava o imóvel invisível e marcado "rascunho" no /app —
+              // mesmo par que o fluxo normal usa ao publicar (ImovelForm).
+              status: publicado ? "ativo" : "rascunho",
               corretor_responsavel_id: destino.corretorId ?? undefined,
               // finalidade/tipo são enums — passados só quando informados
               // (senão vale o default do banco).
