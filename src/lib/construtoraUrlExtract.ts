@@ -230,12 +230,20 @@ function resolverUrl(src: string, base: string): string | null {
   }
 }
 
-// Padrões que quase nunca são a foto do imóvel (ícones, logos, sprites,
-// pixels de rastreamento, badges). Evita encher a revisão de lixo.
+// Padrões que quase nunca são a foto do imóvel — ícones, logos, sprites,
+// pixels de rastreamento, badges e, principalmente, "chrome" de site (header/
+// footer/tema/template/banner/ilustrações). Achado real testando com a Cury:
+// o scraping de <img> trazia /website/images/facelift... (arte de layout)
+// junto das fotos reais. Evita encher a revisão de lixo.
 const IMG_IGNORAR =
-  /(sprite|logo|icon|favicon|pixel|placeholder|avatar|badge|whatsapp|facebook|instagram|selo|banner-?ad|\.svg($|\?))/i;
+  /(sprite|logo|icon|favicon|pixel|placeholder|avatar|badge|whatsapp|facebook|instagram|selo|banner|\/website\/|\/theme|\/template|\/assets?\/|header|footer|背景|background|\bbg[-_]|facelift|ofereca|\.svg($|\?))/i;
 
 const MAX_IMAGENS = 15;
+// A partir de quantas imagens estruturadas (og:image/JSON-LD) paramos de
+// recorrer ao scraping de <img> — as estruturadas são as fotos que o próprio
+// site publica pra SEO/compartilhamento, quase sempre as reais; o scraping de
+// <img> só entra pra COMPLETAR quando o site mal expõe imagem estruturada.
+const MIN_ESTRUTURADAS = 4;
 
 function imagensDeJsonLd(html: string): string[] {
   const out: string[] = [];
@@ -254,32 +262,50 @@ function imagensDeJsonLd(html: string): string[] {
   return out;
 }
 
-export function extrairImagens(html: string, baseUrl: string): string[] {
-  const brutas = [
-    ...extrairMeta(html, "og:image"),
-    ...extrairMeta(html, "og:image:secure_url"),
-    ...imagensDeJsonLd(html),
-  ];
-  // <img> da página como reforço (capado) — só src plausível de foto grande.
+// Coleta os <img> da página (com lazy-load), na ordem em que aparecem.
+function imagensDeImgTags(html: string): string[] {
+  const out: string[] = [];
   for (const tag of html.matchAll(/<img[^>]+>/gi)) {
     const src =
       tag[0].match(/(?:data-src|data-lazy-src|src)=["']([^"']+)["']/i)?.[1] ??
       tag[0].match(/(?:data-srcset|srcset)=["']([^"'\s]+)/i)?.[1];
-    if (src) brutas.push(src);
-  }
-
-  const vistas = new Set<string>();
-  const out: string[] = [];
-  for (const bruta of brutas) {
-    if (!bruta || bruta.startsWith("data:")) continue;
-    if (IMG_IGNORAR.test(bruta)) continue;
-    const abs = resolverUrl(bruta, baseUrl);
-    if (!abs || vistas.has(abs)) continue;
-    vistas.add(abs);
-    out.push(abs);
-    if (out.length >= MAX_IMAGENS) break;
+    if (src) out.push(src);
   }
   return out;
+}
+
+export function extrairImagens(html: string, baseUrl: string): string[] {
+  // Normaliza (absolutiza + filtra lixo + dedupe), preservando a ordem.
+  const normalizar = (brutas: string[], vistas: Set<string>): string[] => {
+    const out: string[] = [];
+    for (const bruta of brutas) {
+      if (!bruta || bruta.startsWith("data:")) continue;
+      if (IMG_IGNORAR.test(bruta)) continue;
+      const abs = resolverUrl(bruta, baseUrl);
+      if (!abs || vistas.has(abs)) continue;
+      vistas.add(abs);
+      out.push(abs);
+    }
+    return out;
+  };
+
+  const vistas = new Set<string>();
+  // 1) Estruturadas primeiro — og:image/JSON-LD são as fotos que o site
+  //    publica de propósito (as reais).
+  const estruturadas = normalizar(
+    [
+      ...extrairMeta(html, "og:image"),
+      ...extrairMeta(html, "og:image:secure_url"),
+      ...imagensDeJsonLd(html),
+    ],
+    vistas,
+  );
+  // 2) <img> só COMPLETA quando o site quase não expõe imagem estruturada —
+  //    é o que mais traz lixo de layout, então é o último recurso.
+  const doImg =
+    estruturadas.length >= MIN_ESTRUTURADAS ? [] : normalizar(imagensDeImgTags(html), vistas);
+
+  return [...estruturadas, ...doImg].slice(0, MAX_IMAGENS);
 }
 
 export function textoVisivel(html: string, max = 6000): string {
