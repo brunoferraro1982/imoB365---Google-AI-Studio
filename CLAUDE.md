@@ -701,6 +701,19 @@ A faixa "Construtoras Parceiras" (marquee do rodapé) estava sem destaque, com l
 | `src/routes/admin.vitrine-parceiros.tsx` (novo) + menu no `AppShell` | Tela super_admin: adicionar imobiliária (`tipo_tenant='imobiliaria'`, só imobiliárias — não corretores) ou construtora, **reordenar ↑/↓**, ativar/desativar, remover, e **velocidade** (Lenta/Média/Rápida). `admin.construtoras` perdeu o toggle/badge "Exibir no rodapé" (superado) |
 | **Só na home** | O `ParceirosMarquee` saiu do `SiteFooter` compartilhado (todas as páginas) — agora aparece apenas na home (footer local de `index.tsx`); prop `hideConstrutorasMarquee` (usado no blog) removido |
 
+### 🧭 Construtoras — Assistente de importação (wizard didático), Fase 1 (2026-08-12)
+
+Pedido estratégico (plan/strategic mode): a ingestão de construtoras funcionava mas era fragmentada e manual (cadastrar fonte numa tela, revisar/publicar em outra). Novo **wizard único** que conduz o fluxo inteiro. Decisões via pergunta ao usuário: (1) o wizard **unifica tudo** — as telas antigas viram "modo avançado"; (2) extração por URL do site da construtora = best-effort estruturado (JSON-LD/OG) + IA (Gemini) com **sempre revisão humana**; (3) entrega **faseada**. Reaproveita 100% da infra madura de ingestão já em produção (`construtora_fontes_ingestao`/`_lotes`/`_midias`/`_aprovacoes`, engine `construtoraIngestao.ts`, server fns `sincronizarIngestaoAgora`/`obterThumbnailsFrescos`/`aprovarLote`) — **sem migration na Fase 1**.
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `src/routes/admin.construtoras_.$id.assistente.tsx` (novo) | Wizard de 4 passos (Fontes → Importar → Revisar → Publicar). Revisar: grid de fotos com seleção + **escolha de foto de capa** (⭐), campos completos do imóvel (paridade com `/app/imoveis/novo`: finalidade, tipo, preço, condomínio, IPTU, área total/útil, quartos, suítes, banheiros, vagas, cidade/UF/bairro/logradouro, descrição), prefill do `dados_extraidos`. Publicar: destinos multi-select (imobiliárias/corretores) + **publicação em massa** de vários lotes de uma vez. Gotcha de rota (underscore obrigatório no sibling flat): `admin.construtoras_.$id.assistente.tsx` → `/admin/construtoras/$id/assistente` |
+| `src/lib/construtoraIngestao.functions.ts` | `aprovarLote` estendido: aceita `capaMidiaId` (define a capa escolhida, `ordenarComCapaPrimeiro`) e o **conjunto completo de campos** do imóvel (antes só gravava preço/área/quartos/descrição). Nova flag `publicar` (default `false`) — ver correção pós-teste abaixo |
+| `src/routes/admin.construtoras.tsx` | Botão de destaque "Assistente de importação" por construtora; a seção de fontes ganhou badge "modo avançado" |
+| **Correção pós-teste do usuário** ("wizard concluiu mas não apareceu na home") | Diagnóstico: **funcionava como projetado** — a pipeline sempre cria **rascunho** (`publicado=false`), que não aparece no site até ser publicado em `/app/imoveis`. Como "publicação" estava no escopo pedido, adicionada a opção **"Publicar imediatamente"** no passo Publicar (checkbox opt-in, default desligado = rascunho seguro; a flag `publicar` do `aprovarLote` acima). Junto, dois ajustes de robustez: (1) a mensagem final passou a distinguir "rascunho criado — publique em /app/imoveis" de "publicado — já aparece no site"; (2) o `publicar()` do wizard passou a **inspecionar `resultados[].erro`** por destino (o `aprovarLote` devolve erro por destino sem lançar exceção — antes contava sucesso sem checar, podendo reportar sucesso falso). Validado ao vivo em dev pelo usuário |
+
+**Fases seguintes (backlog, PRs próprias):** Fase 2 — extração por URL do anúncio no site da construtora (`fetch` + JSON-LD/OG + fallback Gemini, cai na mesma revisão humana); Fase 3 — link direto de pasta do Google Drive (sem Linktree) e upload de CSV de tabela de preços/unidades.
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
