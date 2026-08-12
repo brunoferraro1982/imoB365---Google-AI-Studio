@@ -712,7 +712,7 @@ Pedido estratégico (plan/strategic mode): a ingestão de construtoras funcionav
 | `src/routes/admin.construtoras.tsx` | Botão de destaque "Assistente de importação" por construtora; a seção de fontes ganhou badge "modo avançado" |
 | **Correção pós-teste do usuário** ("wizard concluiu mas não apareceu na home") | Diagnóstico: **funcionava como projetado** — a pipeline sempre cria **rascunho** (`publicado=false`), que não aparece no site até ser publicado em `/app/imoveis`. Como "publicação" estava no escopo pedido, adicionada a opção **"Publicar imediatamente"** no passo Publicar (checkbox opt-in, default desligado = rascunho seguro; a flag `publicar` do `aprovarLote` acima). Junto, dois ajustes de robustez: (1) a mensagem final passou a distinguir "rascunho criado — publique em /app/imoveis" de "publicado — já aparece no site"; (2) o `publicar()` do wizard passou a **inspecionar `resultados[].erro`** por destino (o `aprovarLote` devolve erro por destino sem lançar exceção — antes contava sucesso sem checar, podendo reportar sucesso falso). Validado ao vivo em dev pelo usuário |
 
-**Fases seguintes (backlog, PRs próprias):** ~~Fase 2 — extração por URL do anúncio~~ concluída (abaixo); Fase 3 — link direto de pasta do Google Drive (sem Linktree) e upload de CSV de tabela de preços/unidades.
+**Fases seguintes:** ~~Fase 2 — extração por URL do anúncio~~ e ~~Fase 3 — pasta do Drive + CSV de unidades~~ concluídas (blocos abaixo). Programa de importação de construtoras completo.
 
 ### 🧭 Construtoras — wizard Fase 2 (importar por link do anúncio) + reestruturação standalone (2026-08-12)
 
@@ -727,7 +727,20 @@ Fase 2 do Assistente de importação: extrair um imóvel a partir do **link do a
 | `supabase/migrations/20260812130000_construtora_ingestao_origem_url.sql` | `construtora_fontes_ingestao.origem` (`'linktree'`/`'url'`) + `construtora_ingestao_midias.origem_url` + índice único parcial `(lote_id, origem_url)`. Só `ALTER` — grants/RLS existentes já cobrem |
 | Bugs achados testando ao vivo (dev, contra a Cury) | (1) **upsert de mídia dava 400** — índice único **parcial** (`WHERE origem_url IS NOT NULL`) não serve pra inferência de `ON CONFLICT` no Postgres; revertido pra insert simples (o re-import já apaga as antigas antes + o extrator deduplica) e o erro do insert agora é **exibido** em vez de engolido. (2) **"0 fotos" transitório** — HMR do extrator em estado intermediário enquanto o arquivo era editado; resolvido reiniciando o dev server. (3) Roteamento: mover a rota resolveu de vez a associação errada (link da Cury acabava filed sob GMV) |
 
-**Validação (dev, contra dado real da Cury):** parser coberto por testes unitários; caminho de escrita (fonte `origem='url'` → lote → mídia `origem_url`) validado por REST; extração ao vivo de `cury.net` trouxe 5 fotos reais (descartando logo/svg/banner), imóvel publicado com `status='ativo'` e corretor correto (validado pelo usuário com a imobiliária "BF imoveis"). **Pendente**: promoção a produção com a migration aplicada manualmente na VPS.
+**Validação (dev, contra dado real da Cury):** parser coberto por testes unitários; caminho de escrita (fonte `origem='url'` → lote → mídia `origem_url`) validado por REST; extração ao vivo de `cury.net` trouxe 5 fotos reais (descartando logo/svg/banner), imóvel publicado com `status='ativo'` e corretor correto (validado pelo usuário com a imobiliária "BF imoveis"). **Promovido a produção** (PR #288, migration `20260812130000` aplicada manualmente na VPS via SSH).
+
+### 🧭 Construtoras — wizard Fase 3 (pasta do Google Drive + CSV de unidades) (2026-08-12)
+
+Fase 3 (final) do Assistente de importação: duas fontes novas de ingestão, ambas caindo na **mesma revisão** das Fases 1/2. Sem migration (reusa a fonte sintética de imports manuais da Fase 2 e as colunas existentes). PR #289 → `develop`.
+
+| Arquivo | O que foi feito |
+| :--- | :--- |
+| `src/lib/construtoraIngestao.ts` | `coletarMidiasDePastaDrive(folderUrl)` (novo, exportado): importar direto de uma **pasta do Google Drive** sem Linktree na frente — reusa o crawl recursivo `coletarArquivosDePasta` já provado em produção, só entra pela URL da pasta em vez do `__NEXT_DATA__` do Linktree |
+| `src/lib/construtoraIngestao.functions.ts` | `importarPastaDrive` (server fn, super_admin): crawl da pasta → cria lote `pronto_revisao` (dedupe por `link_origem`, `tipo_alvo_override` do tipo escolhido) com mídias do Drive (`origem_drive_id`, recomendadas só as fotos). Reusa a fonte sintética de imports manuais da Fase 2 (mesma `obterOuCriarFonteUrl`) |
+| `src/lib/csvUnidades.ts` (novo) | Parser **puro** de CSV de tabela de unidades: separador `,` ou `;`, cabeçalho flexível/acento-tolerante (`numero`/unidade, `bloco`/torre, `andar`/pavimento, `tipo`/planta, `area`/m2, `preco`/valor), números BR. Coberto por testes unitários (esbuild+node) |
+| `src/routes/admin.importar-imoveis.tsx` | Passo Fontes: card **"Importar de uma pasta do Google Drive"** (link + nome + tipo). Passo Revisar (empreendimento): **upload de CSV de unidades** (`parseCsvUnidades` → substitui as unidades do lote, com prévia). Tipo `Unidade` estendido pra incluir `andar`/`tipo_planta` (aproveitado também pela extração de PDF da Fase 1) |
+
+**Validação (dev):** parsers (CSV + número BR) cobertos por testes unitários (todos passam); `tsc`/`eslint`/`prettier` limpos; build `DEPLOY_TARGET=node` OK. A crawl de pasta do Drive reusa infra já validada em produção — o teste ao vivo contra as pastas do GMV no dev retornou 0 (a API key do Drive no dev só enxerga pastas com compartilhamento "qualquer pessoa com o link", limitação de dev, não de código). **Pendente**: teste ponta-a-ponta com uma pasta do Drive real acessível + um CSV real, e promoção a produção.
 
 ### 📋 Backlog (próximas versões)
 
