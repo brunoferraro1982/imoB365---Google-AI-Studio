@@ -422,19 +422,43 @@ function AssistenteImportacaoPage() {
     }
     const [{ data: ts }, { data: cs }] = await Promise.all([
       supabase.from("tenants").select("id,nome").ilike("nome", `%${termo}%`).limit(6),
-      supabase.from("corretores").select("id,nome,tenant_id").ilike("nome", `%${termo}%`).limit(6),
+      supabase
+        .from("corretores")
+        .select("id,nome,email,tenant_id")
+        .ilike("nome", `%${termo}%`)
+        .limit(8),
     ]);
+    const corretores = (cs ?? []) as {
+      id: string;
+      nome: string;
+      email: string | null;
+      tenant_id: string;
+    }[];
+    // Resolve o nome da imobiliária de cada corretor (não há FK embed) — sem
+    // isso o rótulo mostra só o nome e fica ambíguo (ex.: existem vários
+    // "Bruno Ferraro"; o super_admin precisa ver e-mail + imobiliária pra
+    // escolher o certo).
+    const tenantIds = [...new Set(corretores.map((c) => c.tenant_id))];
+    const { data: nomesTenants } = tenantIds.length
+      ? await supabase.from("tenants").select("id,nome").in("id", tenantIds)
+      : { data: [] };
+    const nomeTenant = new Map(
+      ((nomesTenants ?? []) as { id: string; nome: string }[]).map((t) => [t.id, t.nome]),
+    );
     const res: Destino[] = [
       ...((ts ?? []) as { id: string; nome: string }[]).map((t) => ({
         tenantId: t.id,
         corretorId: null,
         label: `${t.nome} (imobiliária)`,
       })),
-      ...((cs ?? []) as { id: string; nome: string; tenant_id: string }[]).map((c) => ({
-        tenantId: c.tenant_id,
-        corretorId: c.id,
-        label: `${c.nome} (corretor)`,
-      })),
+      ...corretores.map((c) => {
+        const detalhe = [c.email, nomeTenant.get(c.tenant_id)].filter(Boolean).join(" · ");
+        return {
+          tenantId: c.tenant_id,
+          corretorId: c.id,
+          label: `${c.nome}${detalhe ? ` — ${detalhe}` : ""} (corretor)`,
+        };
+      }),
     ];
     setResultados(res);
   }
