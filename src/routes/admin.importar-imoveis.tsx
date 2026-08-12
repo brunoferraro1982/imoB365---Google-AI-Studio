@@ -18,11 +18,13 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
+import { parseCsvUnidades, type UnidadeCsv } from "@/lib/csvUnidades";
 import {
   sincronizarIngestaoAgora,
   obterThumbnailsFrescos,
   aprovarLote,
   extrairImovelDeUrl,
+  importarPastaDrive,
 } from "@/lib/construtoraIngestao.functions";
 import {
   ChevronLeft,
@@ -62,7 +64,8 @@ type Fonte = {
   intervalo_horas: number;
   origem: string;
 };
-type Unidade = { numero: string; bloco: string | null; area: number | null; preco: number | null };
+type Unidade = UnidadeCsv;
+
 // dados_extraidos carrega tanto as unidades (empreendimento, extraídas de PDF)
 // quanto os campos de imóvel (Fase 2, extraídos do link do anúncio) — o wizard
 // pré-preenche a revisão a partir daí.
@@ -222,6 +225,15 @@ function AssistenteImportacaoPage() {
   const fnExtrair = useServerFn(extrairImovelDeUrl);
   const [urlAnuncio, setUrlAnuncio] = useState("");
   const [extraindo, setExtraindo] = useState(false);
+
+  // Passo 1 — importar por pasta do Google Drive (Fase 3)
+  const fnPastaDrive = useServerFn(importarPastaDrive);
+  const [drive, setDrive] = useState({
+    url: "",
+    nome: "",
+    tipo: "empreendimento" as Tipo,
+  });
+  const [importandoDrive, setImportandoDrive] = useState(false);
   // A fonte sintética de imports por URL (origem='url') não é uma fonte
   // periódica — some da lista, mas seu id continua em `fontes` pros lotes dela
   // aparecerem na revisão (carregarLotes usa fontes.map).
@@ -340,6 +352,34 @@ function AssistenteImportacaoPage() {
     }
   }
 
+  async function importarDrive() {
+    const url = drive.url.trim();
+    if (!/drive\.google\.com\/drive\/(u\/\d+\/)?folders\//.test(url)) {
+      toast.error("Cole o link de uma pasta do Google Drive (drive.google.com/drive/folders/...).");
+      return;
+    }
+    if (!drive.nome.trim()) {
+      toast.error("Dê um nome ao empreendimento/imóvel (ex.: o nome do lançamento).");
+      return;
+    }
+    setImportandoDrive(true);
+    try {
+      const r = (await fnPastaDrive({
+        data: { construtoraId: id, driveUrl: url, nome: drive.nome.trim(), tipoAlvo: drive.tipo },
+      })) as { titulo: string; midias: number; fotos: number };
+      toast.success(
+        `Pasta importada: "${r.titulo}" — ${r.midias} mídia(s), ${r.fotos} foto(s) recomendada(s).`,
+      );
+      setDrive({ url: "", nome: "", tipo: "empreendimento" });
+      await carregarBase();
+      await carregarLotes();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao importar a pasta do Drive.");
+    } finally {
+      setImportandoDrive(false);
+    }
+  }
+
   async function sincronizar() {
     setSincronizando(true);
     try {
@@ -387,6 +427,26 @@ function AssistenteImportacaoPage() {
 
   function patch(loteId: string, p: Partial<EstadoLote>, base: EstadoLote) {
     setEstados((prev) => ({ ...prev, [loteId]: { ...base, ...p } }));
+  }
+
+  // Fase 3 — importar tabela de unidades de um CSV (empreendimento). Substitui
+  // as unidades atuais do lote pelas do arquivo (o super_admin revê/publica).
+  async function importarCsvUnidades(lote: Lote, base: EstadoLote, file: File | null) {
+    if (!file) return;
+    try {
+      const texto = await file.text();
+      const unidades = parseCsvUnidades(texto);
+      if (unidades.length === 0) {
+        toast.error(
+          "Nenhuma unidade reconhecida. Confira o cabeçalho do CSV (numero/bloco/andar/area/preco).",
+        );
+        return;
+      }
+      patch(lote.id, { unidades }, base);
+      toast.success(`${unidades.length} unidade(s) importada(s) do CSV.`);
+    } catch {
+      toast.error("Não consegui ler o CSV.");
+    }
   }
 
   async function carregarFotos(lote: Lote, base: EstadoLote) {
@@ -751,6 +811,68 @@ function AssistenteImportacaoPage() {
               fontes.
             </p>
           </div>
+
+          {/* Fase 3 — importar direto de uma pasta do Google Drive */}
+          <div className="space-y-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
+            <div className="flex items-center gap-2">
+              <Factory className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">Importar de uma pasta do Google Drive</p>
+              <Badge variant="outline" className="text-[10px]">
+                novo
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Cole o link de uma <strong>pasta compartilhada do Google Drive</strong> (fotos,
+              plantas, tabela) — sem precisar de Linktree. O assistente varre a pasta (e subpastas)
+              e traz as mídias pra revisão. Ideal quando a construtora manda o material direto por
+              Drive.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label className="text-xs">Link da pasta do Drive</Label>
+                <Input
+                  value={drive.url}
+                  onChange={(e) => setDrive({ ...drive, url: e.target.value })}
+                  placeholder="https://drive.google.com/drive/folders/..."
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Nome do empreendimento/imóvel</Label>
+                <Input
+                  value={drive.nome}
+                  onChange={(e) => setDrive({ ...drive, nome: e.target.value })}
+                  placeholder="Ex.: Residencial Aurora"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Tipo</Label>
+                <Select
+                  value={drive.tipo}
+                  onValueChange={(v) => setDrive({ ...drive, tipo: v as Tipo })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="empreendimento">Empreendimento / lançamento</SelectItem>
+                    <SelectItem value="imovel">Imóvel avulso</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={importarDrive} disabled={importandoDrive} className="gap-1.5">
+              {importandoDrive ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Importar pasta
+            </Button>
+            <p className="text-[11px] text-muted-foreground">
+              Requer a pasta com compartilhamento público (qualquer pessoa com o link). Aparece na
+              etapa <strong>Revisar</strong>.
+            </p>
+          </div>
         </div>
       )}
 
@@ -1056,18 +1178,54 @@ function AssistenteImportacaoPage() {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Empreendimento: {e.unidades.length} unidade(s) importada(s) serão criadas.
-                          Para editar as unidades em detalhe, use o modo avançado ({" "}
-                          <Link
-                            className="text-primary hover:underline"
-                            to="/admin/construtoras/$id/ingestao"
-                            params={{ id }}
-                          >
-                            revisão detalhada
-                          </Link>
-                          ).
-                        </p>
+                        <div className="space-y-2">
+                          <p className="text-xs text-muted-foreground">
+                            Empreendimento: <strong>{e.unidades.length}</strong> unidade(s) serão
+                            criadas. Para editar em detalhe, use o modo avançado ({" "}
+                            <Link
+                              className="text-primary hover:underline"
+                              to="/admin/construtoras/$id/ingestao"
+                              params={{ id }}
+                            >
+                              revisão detalhada
+                            </Link>
+                            ).
+                          </p>
+                          <div className="rounded-lg border border-dashed border-border bg-muted/20 p-3">
+                            <p className="mb-1 text-xs font-semibold">
+                              Importar tabela de unidades (CSV)
+                            </p>
+                            <p className="mb-2 text-[11px] text-muted-foreground">
+                              Cabeçalho reconhecido: <code>numero</code> (ou unidade),{" "}
+                              <code>bloco</code>, <code>andar</code>, <code>tipo/planta</code>,{" "}
+                              <code>area</code>, <code>preco</code> (ou valor). Separador{" "}
+                              <code>,</code> ou <code>;</code>. Substitui as unidades atuais deste
+                              lote.
+                            </p>
+                            <Input
+                              type="file"
+                              accept=".csv,text/csv"
+                              className="h-8 text-xs"
+                              onChange={(ev) => {
+                                importarCsvUnidades(lote, e, ev.target.files?.[0] ?? null);
+                                ev.target.value = "";
+                              }}
+                            />
+                            {e.unidades.length > 0 && (
+                              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                                Prévia:{" "}
+                                {e.unidades
+                                  .slice(0, 3)
+                                  .map(
+                                    (u) =>
+                                      `${u.bloco ? u.bloco + "-" : ""}${u.numero}${u.area ? ` · ${u.area}m²` : ""}${u.preco ? ` · R$ ${u.preco.toLocaleString("pt-BR")}` : ""}`,
+                                  )
+                                  .join("  |  ")}
+                                {e.unidades.length > 3 ? `  … +${e.unidades.length - 3}` : ""}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
