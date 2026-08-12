@@ -8,6 +8,8 @@ import {
   obterArquivoDrive,
   DRIVE_TIMEOUT_MS,
 } from "@/lib/construtoraIngestao";
+import { extrairImovelDeHtml, type ImovelExtraido } from "@/lib/construtoraUrlExtract";
+import { extrairImovelDeTexto } from "@/lib/construtoraIngestaoAI";
 
 // Botão "Sincronizar agora" (tela de ingestão dentro de /admin/construtoras):
 // força o processamento das fontes de uma construtora ignorando o gate de
@@ -74,25 +76,44 @@ export const obterThumbnailsFrescos = createServerFn({ method: "POST" })
     await exigirSuperAdmin(supabase, userId);
 
     if (data.midiaIds.length === 0) return [];
-    const { data: midias } = await supabaseAdmin
+    // origem_url é coluna nova (Fase 2), ainda não em types.ts — cast.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: midias } = await (supabaseAdmin as any)
       .from("construtora_ingestao_midias")
-      .select("id,origem_drive_id")
+      .select("id,origem_drive_id,origem_url")
       .in("id", data.midiaIds);
 
     return Promise.all(
-      (midias ?? []).map(async (m) => {
-        if (!m.origem_drive_id) return { id: m.id, thumbnailUrl: null as string | null };
+      (
+        (midias ?? []) as {
+          id: string;
+          origem_drive_id: string | null;
+          origem_url: string | null;
+        }[]
+      ).map(async (m) => {
         try {
-          const info = await obterArquivoDrive(m.origem_drive_id);
-          if (!info?.thumbnailLink) return { id: m.id, thumbnailUrl: null };
-          const res = await fetch(info.thumbnailLink, {
-            signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
-          });
-          if (!res.ok) return { id: m.id, thumbnailUrl: null };
-          const buf = await res.arrayBuffer();
-          const base64 = Buffer.from(buf).toString("base64");
-          const mime = res.headers.get("content-type") || "image/jpeg";
-          return { id: m.id, thumbnailUrl: `data:${mime};base64,${base64}` };
+          if (m.origem_drive_id) {
+            const info = await obterArquivoDrive(m.origem_drive_id);
+            if (!info?.thumbnailLink) return { id: m.id, thumbnailUrl: null as string | null };
+            const res = await fetch(info.thumbnailLink, {
+              signal: AbortSignal.timeout(DRIVE_TIMEOUT_MS),
+            });
+            if (!res.ok) return { id: m.id, thumbnailUrl: null };
+            const buf = await res.arrayBuffer();
+            const base64 = Buffer.from(buf).toString("base64");
+            const mime = res.headers.get("content-type") || "image/jpeg";
+            return { id: m.id, thumbnailUrl: `data:${mime};base64,${base64}` };
+          }
+          if (m.origem_url) {
+            // Baixa a imagem externa no servidor e devolve como data URI —
+            // o navegador nunca hotlinka o site da construtora direto
+            // (mesma política do thumbnail do Drive: evita rate-limit/referer).
+            const baixado = await baixarBytesDeUrl(m.origem_url);
+            if (!baixado) return { id: m.id, thumbnailUrl: null };
+            const base64 = Buffer.from(baixado.bytes).toString("base64");
+            return { id: m.id, thumbnailUrl: `data:${baixado.mime};base64,${base64}` };
+          }
+          return { id: m.id, thumbnailUrl: null };
         } catch {
           return { id: m.id, thumbnailUrl: null };
         }
@@ -154,26 +175,36 @@ const DestinoSchema = z.object({
 // mesma ordem de midiaIds, pulando silenciosamente qualquer uma que falhar
 // no download (não trava a aprovação inteira por uma foto problemática).
 async function copiarMidiasParaBucket(
-  midias: { id: string; origem_drive_id: string | null }[],
+  midias: { id: string; origem_drive_id: string | null; origem_url?: string | null }[],
   storagePrefix: string,
 ): Promise<{ midiaId: string; path: string; publicUrl: string }[]> {
   const resultado: { midiaId: string; path: string; publicUrl: string }[] = [];
   for (const midia of midias) {
-    if (!midia.origem_drive_id) continue;
     try {
-      const [info, bytes] = await Promise.all([
-        obterArquivoDrive(midia.origem_drive_id),
-        baixarArquivoDrive(midia.origem_drive_id),
-      ]);
+      let bytes: ArrayBuffer | null = null;
+      let mime = "image/jpeg";
+      if (midia.origem_drive_id) {
+        // Origem 'linktree' — foto no Google Drive (resolução real).
+        const [info, driveBytes] = await Promise.all([
+          obterArquivoDrive(midia.origem_drive_id),
+          baixarArquivoDrive(midia.origem_drive_id),
+        ]);
+        bytes = driveBytes;
+        mime = info?.mimeType || "image/jpeg";
+      } else if (midia.origem_url) {
+        // Origem 'url' (Fase 2) — imagem externa do anúncio da construtora.
+        const baixado = await baixarBytesDeUrl(midia.origem_url);
+        if (baixado) {
+          bytes = baixado.bytes;
+          mime = baixado.mime;
+        }
+      }
       if (!bytes) continue;
-      const ext = (info && EXT_POR_MIME[info.mimeType]) || "jpg";
+      const ext = EXT_POR_MIME[mime] || "jpg";
       const path = `${storagePrefix}/${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabaseAdmin.storage
         .from("imovel-fotos")
-        .upload(path, Buffer.from(bytes), {
-          contentType: info?.mimeType || "image/jpeg",
-          cacheControl: "3600",
-        });
+        .upload(path, Buffer.from(bytes), { contentType: mime, cacheControl: "3600" });
       if (upErr) continue;
       const {
         data: { publicUrl },
@@ -185,6 +216,28 @@ async function copiarMidiasParaBucket(
     }
   }
   return resultado;
+}
+
+// Baixa os bytes de uma imagem por URL externa (mídia de origem 'url' da Fase
+// 2). Timeout explícito — mesmo cuidado do fetch do Drive/Gemini (um servidor
+// lento pendurado não pode travar a aprovação inteira).
+const URL_IMG_TIMEOUT_MS = 15000;
+const URL_IMG_MAX_BYTES = 15 * 1024 * 1024;
+async function baixarBytesDeUrl(url: string): Promise<{ bytes: ArrayBuffer; mime: string } | null> {
+  try {
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(URL_IMG_TIMEOUT_MS),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; imob365-import/1.0)" },
+    });
+    if (!res.ok) return null;
+    const mime = (res.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+    if (!mime.startsWith("image/")) return null;
+    const bytes = await res.arrayBuffer();
+    if (bytes.byteLength === 0 || bytes.byteLength > URL_IMG_MAX_BYTES) return null;
+    return { bytes, mime };
+  } catch {
+    return null;
+  }
 }
 
 // Coloca a foto de capa escolhida em primeiro — assim `capa=true` (imóvel) e
@@ -279,9 +332,12 @@ export const aprovarLote = createServerFn({ method: "POST" })
 
     const tipoAlvo = data.tipoAlvo;
 
-    const { data: midiasSelecionadas } = await supabaseAdmin
+    // origem_url é coluna nova (Fase 2), ainda não em types.ts — cast pra o
+    // select não quebrar o tsc, mesmo padrão já usado nesta feature.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: midiasSelecionadas } = await (supabaseAdmin as any)
       .from("construtora_ingestao_midias")
-      .select("id,origem_drive_id")
+      .select("id,origem_drive_id,origem_url")
       .in(
         "id",
         data.midiaIds.length > 0 ? data.midiaIds : ["00000000-0000-0000-0000-000000000000"],
@@ -507,4 +563,193 @@ export const rejeitarLote = createServerFn({ method: "POST" })
       .eq("id", data.loteId);
 
     return { ok: true };
+  });
+
+// ───────────────────────── Fase 2 — extração por URL ─────────────────────────
+
+const URL_HTML_TIMEOUT_MS = 20000;
+const URL_HTML_MAX_BYTES = 5 * 1024 * 1024;
+
+// Fonte SINTÉTICA por construtora pros imports por link avulso: ativo=false
+// (o cron processarIngestao só varre ativo=true, então nunca a re-sincroniza)
+// e origem='url' (a UI a esconde da lista de fontes periódicas). Reaproveitada
+// entre todos os imports por URL da mesma construtora. Get-or-create.
+async function obterOuCriarFonteUrl(construtoraId: string): Promise<string> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const admin = supabaseAdmin as any;
+  const { data: existente } = await admin
+    .from("construtora_fontes_ingestao")
+    .select("id")
+    .eq("construtora_id", construtoraId)
+    .eq("origem", "url")
+    .maybeSingle();
+  if (existente?.id) return existente.id as string;
+
+  const { data: nova, error } = await admin
+    .from("construtora_fontes_ingestao")
+    .insert({
+      construtora_id: construtoraId,
+      nome: "Importações por link",
+      url: "(interno) importações por link de anúncio",
+      tipo_alvo: "imovel",
+      ativo: false,
+      origem: "url",
+    })
+    .select("id")
+    .single();
+  if (error || !nova) throw new Error(error?.message ?? "Falha ao preparar a fonte de importação.");
+  return nova.id as string;
+}
+
+function nomeDoLote(dados: ImovelExtraido, url: string): string {
+  if (dados.titulo && dados.titulo.trim()) return dados.titulo.trim().slice(0, 160);
+  try {
+    const u = new URL(url);
+    return `${u.hostname}${u.pathname}`.slice(0, 160);
+  } catch {
+    return url.slice(0, 160);
+  }
+}
+
+// Extrai um imóvel a partir do LINK do anúncio no site da construtora e cria
+// um lote pronto_revisao — que cai na MESMA revisão da Fase 1 no wizard. Nunca
+// publica sozinho. Estruturado (JSON-LD/OG) primeiro; IA (Gemini) só preenche
+// o que faltou. As imagens ficam como URLs externas (origem_url) até serem
+// efetivamente copiadas pro bucket na aprovação.
+export const extrairImovelDeUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        construtoraId: z.string().uuid(),
+        url: z.string().url().max(2000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await exigirSuperAdmin(supabase, userId);
+
+    // 1) Baixa o HTML do anúncio (timeout + cap de tamanho + User-Agent de
+    //    navegador — vários sites bloqueiam UA vazio).
+    let html: string;
+    try {
+      const res = await fetch(data.url, {
+        signal: AbortSignal.timeout(URL_HTML_TIMEOUT_MS),
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml",
+        },
+      });
+      if (!res.ok) throw new Error(`A página respondeu ${res.status}.`);
+      const buf = await res.arrayBuffer();
+      if (buf.byteLength > URL_HTML_MAX_BYTES) throw new Error("Página grande demais.");
+      html = new TextDecoder("utf-8").decode(buf);
+    } catch (err) {
+      throw new Error(
+        `Não consegui ler a página: ${err instanceof Error ? err.message : "erro"}. ` +
+          `Confira o link ou preencha os dados manualmente na revisão.`,
+      );
+    }
+
+    // 2) Extração estruturada (pura) + fallback de IA só pro que faltou.
+    const { dados, imagens, origens, textoVisivel } = extrairImovelDeHtml(html, data.url);
+    let usouIA = false;
+    const faltaChave = dados.preco == null && dados.area_total == null && dados.quartos == null;
+    if (faltaChave) {
+      const ia = await extrairImovelDeTexto(textoVisivel);
+      usouIA =
+        ia.preco != null ||
+        ia.area_total != null ||
+        ia.quartos != null ||
+        ia.descricao != null ||
+        ia.tipo != null;
+      dados.preco ??= ia.preco ?? null;
+      dados.area_total ??= ia.area_total ?? null;
+      dados.quartos ??= ia.quartos ?? null;
+      dados.suites ??= ia.suites ?? null;
+      dados.banheiros ??= ia.banheiros ?? null;
+      dados.vagas ??= ia.vagas ?? null;
+      dados.descricao ??= ia.descricao ?? null;
+      dados.tipo ??= ia.tipo ?? null;
+      dados.endereco_cidade ??= ia.endereco_cidade ?? null;
+      dados.endereco_uf ??= ia.endereco_uf ?? null;
+      dados.endereco_bairro ??= ia.endereco_bairro ?? null;
+    }
+
+    // 3) Persiste como lote pronto_revisao (dedupe por link_origem).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const admin = supabaseAdmin as any;
+    const fonteId = await obterOuCriarFonteUrl(data.construtoraId);
+
+    const { data: loteExistente } = await admin
+      .from("construtora_ingestao_lotes")
+      .select("id")
+      .eq("fonte_id", fonteId)
+      .eq("link_origem", data.url)
+      .maybeSingle();
+
+    const nome = nomeDoLote(dados, data.url);
+    let loteId: string;
+    if (loteExistente?.id) {
+      loteId = loteExistente.id as string;
+      await admin
+        .from("construtora_ingestao_lotes")
+        .update({ nome_bruto: nome, status: "pronto_revisao", dados_extraidos: dados })
+        .eq("id", loteId);
+      // Re-extração: descarta as imagens externas antigas (não as já copiadas
+      // pro bucket, essas têm storage_path e não são deste caminho).
+      await admin
+        .from("construtora_ingestao_midias")
+        .delete()
+        .eq("lote_id", loteId)
+        .not("origem_url", "is", null);
+    } else {
+      // nome_bruto tem UNIQUE(fonte_id, nome_bruto) — se colidir com outro
+      // anúncio de mesmo título, desambigua com sufixo curto.
+      let tentativa = nome;
+      let inserido: { id: string } | null = null;
+      for (let i = 0; i < 3 && !inserido; i++) {
+        const { data: novo, error } = await admin
+          .from("construtora_ingestao_lotes")
+          .insert({
+            fonte_id: fonteId,
+            construtora_id: data.construtoraId,
+            nome_bruto: tentativa,
+            link_origem: data.url,
+            status: "pronto_revisao",
+            dados_extraidos: dados,
+          })
+          .select("id")
+          .single();
+        if (novo) inserido = novo;
+        else if (error?.code === "23505")
+          tentativa = `${nome} (${Math.random().toString(36).slice(2, 5)})`;
+        else throw new Error(error?.message ?? "Falha ao criar o lote.");
+      }
+      if (!inserido) throw new Error("Falha ao criar o lote (nome duplicado).");
+      loteId = inserido.id;
+    }
+
+    // 4) Grava as imagens como mídias de origem_url (recomendadas = já
+    //    pré-selecionadas na revisão; a primeira vira capa/fachada).
+    if (imagens.length > 0) {
+      await admin.from("construtora_ingestao_midias").insert(
+        imagens.map((u, i) => ({
+          lote_id: loteId,
+          tipo: i === 0 ? "foto_fachada" : "outro",
+          origem_url: u,
+          recomendada: true,
+        })),
+      );
+    }
+
+    return {
+      loteId,
+      titulo: nome,
+      camposComValor: Object.values(dados).filter((v) => v != null && v !== "").length,
+      imagens: imagens.length,
+      origens: usouIA ? [...origens, "ia" as const] : origens,
+    };
   });

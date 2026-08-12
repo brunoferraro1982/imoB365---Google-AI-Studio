@@ -22,6 +22,7 @@ import {
   sincronizarIngestaoAgora,
   obterThumbnailsFrescos,
   aprovarLote,
+  extrairImovelDeUrl,
 } from "@/lib/construtoraIngestao.functions";
 import {
   ChevronLeft,
@@ -34,6 +35,7 @@ import {
   Building2,
   Factory,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/construtoras_/$id/assistente")({
@@ -48,14 +50,41 @@ export const Route = createFileRoute("/admin/construtoras_/$id/assistente")({
 // site, CSV) entram depois.
 
 type Tipo = "empreendimento" | "imovel";
-type Fonte = { id: string; nome: string; url: string; tipo_alvo: Tipo; intervalo_horas: number };
+type Fonte = {
+  id: string;
+  nome: string;
+  url: string;
+  tipo_alvo: Tipo;
+  intervalo_horas: number;
+  origem: string;
+};
 type Unidade = { numero: string; bloco: string | null; area: number | null; preco: number | null };
+// dados_extraidos carrega tanto as unidades (empreendimento, extraídas de PDF)
+// quanto os campos de imóvel (Fase 2, extraídos do link do anúncio) — o wizard
+// pré-preenche a revisão a partir daí.
+type DadosExtraidos = {
+  unidades?: Unidade[];
+  preco?: number | null;
+  area_total?: number | null;
+  area_util?: number | null;
+  quartos?: number | null;
+  suites?: number | null;
+  banheiros?: number | null;
+  vagas?: number | null;
+  descricao?: string | null;
+  tipo?: string | null;
+  finalidade?: string | null;
+  endereco_cidade?: string | null;
+  endereco_uf?: string | null;
+  endereco_bairro?: string | null;
+  endereco_logradouro?: string | null;
+};
 type Lote = {
   id: string;
   fonte_id: string;
   nome_bruto: string;
   status: string;
-  dados_extraidos: { unidades?: Unidade[] } | null;
+  dados_extraidos: DadosExtraidos | null;
   tipo_alvo_override: Tipo | null;
 };
 type Midia = { id: string; tipo: string; recomendada: boolean; thumbnailUrl: string | null };
@@ -112,6 +141,31 @@ function camposVazios(): CamposImovel {
   };
 }
 
+// Pré-preenche os campos do imóvel a partir do que a ingestão extraiu (Fase 2:
+// link do anúncio; também aproveita qualquer dado já vindo do PDF/IA). Só
+// sobrescreve o default quando há valor — o super_admin sempre confere/edita.
+function camposDeDados(d: DadosExtraidos | null): CamposImovel {
+  const base = camposVazios();
+  if (!d) return base;
+  return {
+    ...base,
+    finalidade: d.finalidade || base.finalidade,
+    tipo: d.tipo || base.tipo,
+    preco: d.preco ?? base.preco,
+    area_total: d.area_total ?? base.area_total,
+    area_util: d.area_util ?? base.area_util,
+    quartos: d.quartos ?? base.quartos,
+    suites: d.suites ?? base.suites,
+    banheiros: d.banheiros ?? base.banheiros,
+    vagas: d.vagas ?? base.vagas,
+    endereco_cidade: d.endereco_cidade || base.endereco_cidade,
+    endereco_uf: d.endereco_uf || base.endereco_uf,
+    endereco_bairro: d.endereco_bairro || base.endereco_bairro,
+    endereco_logradouro: d.endereco_logradouro || base.endereco_logradouro,
+    descricao: d.descricao || base.descricao,
+  };
+}
+
 const PASSOS = ["Fontes", "Importar", "Revisar", "Publicar"];
 
 function AssistenteImportacaoPage() {
@@ -133,6 +187,15 @@ function AssistenteImportacaoPage() {
   });
   const [criando, setCriando] = useState(false);
 
+  // Passo 1 — importar por link de anúncio (Fase 2)
+  const fnExtrair = useServerFn(extrairImovelDeUrl);
+  const [urlAnuncio, setUrlAnuncio] = useState("");
+  const [extraindo, setExtraindo] = useState(false);
+  // A fonte sintética de imports por URL (origem='url') não é uma fonte
+  // periódica — some da lista, mas seu id continua em `fontes` pros lotes dela
+  // aparecerem na revisão (carregarLotes usa fontes.map).
+  const fontesPeriodicas = fontes.filter((f) => f.origem !== "url");
+
   // Passo 2 — importar
   const [sincronizando, setSincronizando] = useState(false);
 
@@ -152,12 +215,12 @@ function AssistenteImportacaoPage() {
       supabase.from("construtoras").select("nome").eq("id", id).maybeSingle(),
       supabase
         .from("construtora_fontes_ingestao")
-        .select("id,nome,url,tipo_alvo,intervalo_horas")
+        .select("id,nome,url,tipo_alvo,intervalo_horas,origem")
         .eq("construtora_id", id)
         .order("created_at"),
     ]);
     setNomeConstrutora((c as { nome: string } | null)?.nome ?? "");
-    setFontes((fs ?? []) as Fonte[]);
+    setFontes((fs ?? []) as unknown as Fonte[]);
   }
 
   useEffect(() => {
@@ -183,6 +246,35 @@ function AssistenteImportacaoPage() {
     toast.success("Fonte cadastrada.");
     setNova({ nome: "", url: "", tipo_alvo: "empreendimento", intervalo_horas: 24 });
     carregarBase();
+  }
+
+  async function importarPorUrl() {
+    const url = urlAnuncio.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      toast.error("Cole o link completo do anúncio (começando com https://).");
+      return;
+    }
+    setExtraindo(true);
+    try {
+      const r = (await fnExtrair({ data: { construtoraId: id, url } })) as {
+        titulo: string;
+        camposComValor: number;
+        imagens: number;
+        origens: string[];
+      };
+      const usouIA = r.origens.includes("ia");
+      toast.success(
+        `Anúncio importado: "${r.titulo}" — ${r.camposComValor} campo(s) e ${r.imagens} foto(s).` +
+          (usouIA ? " (alguns campos vieram da IA — confira na revisão.)" : ""),
+      );
+      setUrlAnuncio("");
+      await carregarBase();
+      await carregarLotes();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao importar o anúncio.");
+    } finally {
+      setExtraindo(false);
+    }
   }
 
   async function sincronizar() {
@@ -224,7 +316,7 @@ function AssistenteImportacaoPage() {
         midias: null,
         selecionadas: new Set(),
         capaMidiaId: null,
-        campos: camposVazios(),
+        campos: camposDeDados(lote.dados_extraidos),
         unidades: lote.dados_extraidos?.unidades ?? [],
       }
     );
@@ -457,12 +549,12 @@ function AssistenteImportacaoPage() {
             <Plus className="h-4 w-4" /> Adicionar fonte
           </Button>
 
-          {fontes.length > 0 && (
+          {fontesPeriodicas.length > 0 && (
             <div className="space-y-2 border-t border-border pt-3">
               <p className="text-xs font-semibold uppercase text-muted-foreground">
-                Fontes cadastradas ({fontes.length})
+                Fontes cadastradas ({fontesPeriodicas.length})
               </p>
-              {fontes.map((f) => (
+              {fontesPeriodicas.map((f) => (
                 <div
                   key={f.id}
                   className="flex items-center gap-2 rounded-lg border border-border bg-background p-2 text-sm"
@@ -477,6 +569,45 @@ function AssistenteImportacaoPage() {
               ))}
             </div>
           )}
+
+          {/* Fase 2 — importar direto de um link de anúncio */}
+          <div className="space-y-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <p className="text-sm font-semibold">Importar de um link de anúncio</p>
+              <Badge variant="outline" className="text-[10px]">
+                novo
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Cole o link de um anúncio no site da construtora. O assistente lê a página e
+              pré-preenche preço, área, descrição e fotos automaticamente (o que não vier
+              estruturado é completado por IA). Você confere tudo na etapa de revisão antes de
+              publicar — nada é publicado sozinho.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={urlAnuncio}
+                onChange={(e) => setUrlAnuncio(e.target.value)}
+                placeholder="https://site-da-construtora.com.br/imovel/..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !extraindo) importarPorUrl();
+                }}
+              />
+              <Button onClick={importarPorUrl} disabled={extraindo} className="gap-1.5">
+                {extraindo ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Link2 className="h-4 w-4" />
+                )}
+                Importar link
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              O imóvel importado aparece na etapa <strong>Revisar</strong>, junto com os das outras
+              fontes.
+            </p>
+          </div>
         </div>
       )}
 
