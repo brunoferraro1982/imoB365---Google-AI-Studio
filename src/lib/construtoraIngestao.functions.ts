@@ -733,20 +733,22 @@ export const extrairImovelDeUrl = createServerFn({ method: "POST" })
     }
 
     // 4) Grava as imagens como mídias de origem_url (recomendadas = já
-    //    pré-selecionadas na revisão; a primeira vira capa/fachada). UPSERT com
-    //    ignoreDuplicates: reimportar o mesmo link é idempotente — sem isso, um
-    //    insert em lote com uma origem_url que já exista (clique duplo, mídia
-    //    que sobreviveu ao delete) estoura 409 e derruba a importação inteira.
+    //    pré-selecionadas na revisão; a primeira vira capa/fachada). Insert
+    //    simples: no re-import as mídias antigas já foram apagadas acima e o
+    //    extrator deduplica as URLs, então não há conflito com o índice único
+    //    parcial de (lote_id, origem_url). (Não dá pra usar upsert/ON CONFLICT
+    //    aqui: índice PARCIAL não serve pra inferência de ON CONFLICT no
+    //    Postgres — tentar isso retorna 400 e zera as fotos.)
     if (imagens.length > 0) {
-      await admin.from("construtora_ingestao_midias").upsert(
+      const { error: midiaErr } = await admin.from("construtora_ingestao_midias").insert(
         imagens.map((u, i) => ({
           lote_id: loteId,
           tipo: i === 0 ? "foto_fachada" : "outro",
           origem_url: u,
           recomendada: true,
         })),
-        { onConflict: "lote_id,origem_url", ignoreDuplicates: true },
       );
+      if (midiaErr) throw new Error(`Falha ao salvar as fotos do anúncio: ${midiaErr.message}`);
     }
 
     return {
