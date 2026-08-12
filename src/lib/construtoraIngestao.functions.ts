@@ -733,15 +733,19 @@ export const extrairImovelDeUrl = createServerFn({ method: "POST" })
     }
 
     // 4) Grava as imagens como mídias de origem_url (recomendadas = já
-    //    pré-selecionadas na revisão; a primeira vira capa/fachada).
+    //    pré-selecionadas na revisão; a primeira vira capa/fachada). UPSERT com
+    //    ignoreDuplicates: reimportar o mesmo link é idempotente — sem isso, um
+    //    insert em lote com uma origem_url que já exista (clique duplo, mídia
+    //    que sobreviveu ao delete) estoura 409 e derruba a importação inteira.
     if (imagens.length > 0) {
-      await admin.from("construtora_ingestao_midias").insert(
+      await admin.from("construtora_ingestao_midias").upsert(
         imagens.map((u, i) => ({
           lote_id: loteId,
           tipo: i === 0 ? "foto_fachada" : "outro",
           origem_url: u,
           recomendada: true,
         })),
+        { onConflict: "lote_id,origem_url", ignoreDuplicates: true },
       );
     }
 

@@ -38,16 +38,20 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export const Route = createFileRoute("/admin/construtoras_/$id/assistente")({
+export const Route = createFileRoute("/admin/importar-imoveis")({
+  validateSearch: (s: Record<string, unknown>): { construtora?: string } => ({
+    construtora: typeof s.construtora === "string" ? s.construtora : undefined,
+  }),
   component: AssistenteImportacaoPage,
 });
 
-// Assistente de importação de construtoras — wizard didático que conduz o
-// fluxo inteiro (fontes → importar → revisar fotos/capa/campos → publicar em
-// massa), reusando as server functions maduras da ingestão. As telas antigas
-// (cadastro de fontes em /admin/construtoras e /admin/construtoras/$id/ingestao)
-// seguem como "modo avançado". Fase 1: fonte Linktree/Drive; Fases 2-3 (URL do
-// site, CSV) entram depois.
+// Assistente de importação de imóveis — wizard didático STANDALONE (área própria
+// em /admin/importar-imoveis, não mais preso a uma construtora pela URL). Passo
+// 0 escolhe/cria a construtora; o resto conduz o fluxo inteiro (fontes →
+// importar → revisar fotos/capa/campos → publicar em massa), reusando as server
+// functions maduras da ingestão. As telas antigas (cadastro de fontes em
+// /admin/construtoras e /admin/construtoras/$id/ingestao) seguem como "modo
+// avançado". Fase 1: Linktree/Drive; Fase 2: link do anúncio (URL); Fase 3: CSV.
 
 type Tipo = "empreendimento" | "imovel";
 type Fonte = {
@@ -166,10 +170,37 @@ function camposDeDados(d: DadosExtraidos | null): CamposImovel {
   };
 }
 
-const PASSOS = ["Fontes", "Importar", "Revisar", "Publicar"];
+const PASSOS = ["Construtora", "Fontes", "Importar", "Revisar", "Publicar"];
+
+type Construtora = { id: string; nome: string };
+
+function slugConstrutora(nome: string): string {
+  return (
+    nome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .slice(0, 60) +
+    "-" +
+    Math.random().toString(36).slice(2, 6)
+  );
+}
 
 function AssistenteImportacaoPage() {
-  const { id } = Route.useParams();
+  // Construtora escolhida no passo 0 (o wizard é standalone, não fica mais
+  // preso a uma construtora pela URL — um import por link pode ser de qualquer
+  // construtora). Aceita ?construtora=<id> pra pré-selecionar (atalho vindo de
+  // /admin/construtoras).
+  const search = Route.useSearch();
+  const [id, setId] = useState<string>(search.construtora ?? "");
+  const [construtoras, setConstrutoras] = useState<Construtora[]>([]);
+  const [novaConstrutora, setNovaConstrutora] = useState("");
+  const [criandoConstrutora, setCriandoConstrutora] = useState(false);
+
   const fnSync = useServerFn(sincronizarIngestaoAgora);
   const fnThumbs = useServerFn(obterThumbnailsFrescos);
   const fnAprovar = useServerFn(aprovarLote);
@@ -210,7 +241,17 @@ function AssistenteImportacaoPage() {
   // no site do destino sem precisar do passo manual em /app/imoveis.
   const [publicaImediato, setPublicaImediato] = useState(false);
 
+  async function carregarConstrutoras() {
+    const { data } = await supabase.from("construtoras").select("id,nome").order("nome");
+    setConstrutoras((data ?? []) as Construtora[]);
+  }
+
   async function carregarBase() {
+    if (!id) {
+      setNomeConstrutora("");
+      setFontes([]);
+      return;
+    }
     const [{ data: c }, { data: fs }] = await Promise.all([
       supabase.from("construtoras").select("nome").eq("id", id).maybeSingle(),
       supabase
@@ -224,9 +265,31 @@ function AssistenteImportacaoPage() {
   }
 
   useEffect(() => {
+    carregarConstrutoras();
+  }, []);
+
+  useEffect(() => {
     carregarBase();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  async function criarConstrutora() {
+    const nome = novaConstrutora.trim();
+    if (!nome) return toast.error("Informe o nome da construtora.");
+    setCriandoConstrutora(true);
+    const slug = slugConstrutora(nome);
+    const { data, error } = await supabase
+      .from("construtoras")
+      .insert({ nome, slug })
+      .select("id,nome")
+      .single();
+    setCriandoConstrutora(false);
+    if (error || !data) return toast.error("Erro ao criar construtora: " + (error?.message ?? ""));
+    toast.success(`Construtora "${nome}" criada.`);
+    setNovaConstrutora("");
+    await carregarConstrutoras();
+    setId(data.id);
+  }
 
   async function criarFonte() {
     if (!nova.nome.trim() || !nova.url.trim()) {
@@ -465,14 +528,11 @@ function AssistenteImportacaoPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div>
-        <Link
-          to="/admin/construtoras"
-          className="text-xs text-muted-foreground hover:text-foreground"
-        >
-          ← Construtoras
+        <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">
+          ← Admin
         </Link>
         <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          Assistente de importação {nomeConstrutora && `— ${nomeConstrutora}`}
+          Assistente de importação de imóveis {nomeConstrutora && `— ${nomeConstrutora}`}
         </h1>
       </div>
 
@@ -497,8 +557,67 @@ function AssistenteImportacaoPage() {
         ))}
       </div>
 
-      {/* Passo 1 — Fontes */}
+      {/* Passo 0 — Construtora */}
       {passo === 0 && (
+        <div className="space-y-4 rounded-xl border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">
+            Escolha a <strong>construtora</strong> à qual os imóveis importados vão pertencer. Todo
+            o resto do assistente (fontes, importação por link, revisão e publicação) fica ligado a
+            ela. Se a construtora ainda não existe, crie aqui mesmo.
+          </p>
+          <div>
+            <Label className="text-xs">Construtora</Label>
+            <Select value={id} onValueChange={setId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma construtora…" />
+              </SelectTrigger>
+              <SelectContent>
+                {construtoras.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2 rounded-lg border border-dashed border-border p-3">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">
+              Ou criar uma nova construtora
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={novaConstrutora}
+                onChange={(e) => setNovaConstrutora(e.target.value)}
+                placeholder="Nome da construtora (ex.: Cury)"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !criandoConstrutora) criarConstrutora();
+                }}
+              />
+              <Button
+                variant="outline"
+                onClick={criarConstrutora}
+                disabled={criandoConstrutora}
+                className="gap-1.5"
+              >
+                {criandoConstrutora ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="h-4 w-4" />
+                )}
+                Criar e usar
+              </Button>
+            </div>
+          </div>
+          {id && (
+            <p className="text-sm text-primary">
+              Construtora selecionada: <strong>{nomeConstrutora}</strong>. Clique em Avançar.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Passo 1 — Fontes */}
+      {passo === 1 && (
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
             Cadastre uma ou mais fontes de onde os imóveis serão importados. Hoje o formato
@@ -612,7 +731,7 @@ function AssistenteImportacaoPage() {
       )}
 
       {/* Passo 2 — Importar */}
-      {passo === 1 && (
+      {passo === 2 && (
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
             Ao importar, o sistema varre as fontes (Linktree → Google Drive), descobre os imóveis e
@@ -644,7 +763,7 @@ function AssistenteImportacaoPage() {
       )}
 
       {/* Passo 3 — Revisar */}
-      {passo === 2 && (
+      {passo === 3 && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Marque os imóveis que quer publicar, escolha as fotos, defina a <strong>capa</strong> e
@@ -936,7 +1055,7 @@ function AssistenteImportacaoPage() {
       )}
 
       {/* Passo 4 — Publicar */}
-      {passo === 3 && (
+      {passo === 4 && (
         <div className="space-y-4 rounded-xl border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">
             Escolha para quais imobiliárias e/ou corretores os {selecionadosLotes.length} imóvel(is)
@@ -1031,9 +1150,10 @@ function AssistenteImportacaoPage() {
         {passo < PASSOS.length - 1 && (
           <Button
             onClick={() => {
-              if (passo === 1) carregarLotes(); // ao entrar em Revisar, carrega os lotes
+              if (passo === 2) carregarLotes(); // ao entrar em Revisar, carrega os lotes
               setPasso((p) => p + 1);
             }}
+            disabled={passo === 0 && !id}
             className="gap-1.5"
           >
             Avançar <ChevronRight className="h-4 w-4" />
