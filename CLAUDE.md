@@ -756,6 +756,8 @@ Ajustes de navegação mobile do `portal.imob365.com.br` (doc de QA do usuário 
 | Home hero | O h1 "Encontre o imóvel certo," usava `text-5xl` no mobile e as frases rotativas quebravam em 3 linhas de tamanhos diferentes, variando a altura do bloco e empurrando o campo de busca — reduzido pra `text-4xl` + `min-h` ampliado (altura estável). Desktop inalterado |
 | PWA polish | `manifest.webmanifest` ganhou `id` + ícone `maskable` (instalável/adaptativo) |
 
+**Super admin (`/admin`) — mesmo tratamento mobile (PR separada, após a #291 em prod):** o `AdminLayout` só tinha a sidebar `hidden md:flex`, então no mobile o `/admin` ficava **sem navegação nenhuma** (nem logo, nem menu, nem sair). Adicionado um **top bar mobile** (`md:hidden`, sticky) com logo + selo Super-admin + sino + **hambúrguer (☰)** que abre um `Sheet` lateral com o **menu admin completo** (mesma lista/estado-ativo da sidebar, com os badges de Aprovações/Faturamento) + "Voltar ao app" + e-mail + Sair. Root virou `flex-col md:flex-row`. Os fixes globais da #291 (overflow, z-index/FAB com safe-area, `pb-24` no `<main>`) já valiam pro `/admin`; só faltava a navegação. Desktop (sidebar) inalterado.
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
