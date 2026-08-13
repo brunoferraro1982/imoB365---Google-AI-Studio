@@ -145,6 +145,16 @@
     border-color: var(--color-border);
   }
 
+  /* Trava o scroll horizontal no mobile — qualquer elemento que estoure a
+     largura do viewport (ex.: um absolute w-[90vw]) não gera mais a faixa
+     em branco/preta à direita. A causa real de cada estouro é corrigida no
+     componente; isto é a rede de segurança global. */
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -161,6 +171,22 @@
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
+}
+
+/* Safe-area (iOS notch / home indicator) — usado pelos FABs e pela bottom-nav
+   mobile pra não ficarem sob a barra de gestos. Requer <meta viewport-fit=cover>.
+   Sintaxe @utility do Tailwind v4 (mesmo padrão de animate-marquee abaixo). */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility bottom-safe-6 {
+  bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+}
+@utility bottom-safe-24 {
+  bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+@utility bottom-safe-40 {
+  bottom: calc(10rem + env(safe-area-inset-bottom, 0px));
 }
 
 /* Slider infinito de logos (construtoras parceiras) — conteúdo duplicado

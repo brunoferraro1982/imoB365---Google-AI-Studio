@@ -234,7 +234,7 @@ export function MegaNavHeader({ config }: { config: MegaNavConfig }) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/85 backdrop-blur-md shadow-xs transition-all duration-300 font-sans">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md shadow-xs transition-all duration-300 font-sans">
       {config.topBar && (
         <div className="bg-neutral-950 text-white text-[11px] font-semibold py-2 px-6 border-b border-white/5">
           <div className="mx-auto max-w-6xl flex flex-col sm:flex-row items-center justify-between gap-2.5">
