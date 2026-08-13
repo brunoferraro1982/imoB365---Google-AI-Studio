@@ -188,7 +188,7 @@ export function HeaderUserMenu() {
             animate={{ opacity: 1, y: 4, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute right-0 top-full z-50 mt-2 w-[90vw] sm:w-[500px] md:w-[760px] max-w-[820px] rounded-2xl border border-border/80 bg-background/98 p-6 shadow-2xl backdrop-blur-md"
+            className="fixed inset-x-3 top-16 z-50 w-auto md:absolute md:inset-x-auto md:right-0 md:top-full md:mt-2 md:w-[760px] md:max-w-[820px] max-h-[calc(100vh-5rem)] overflow-y-auto rounded-2xl border border-border/80 bg-background/98 p-6 shadow-2xl backdrop-blur-md"
           >
             {/* GRID COLUMNS */}
             <div className="grid gap-6 md:grid-cols-12">

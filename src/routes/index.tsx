@@ -305,7 +305,13 @@ function Landing() {
                 (medido: ~1014px de texto em ~1104px disponíveis), então só
                 era um limite artificial mais estreito que o espaço real —
                 não precisou alargar nada além do que já existia. */}
-            <h1 className="mt-8 max-w-4xl md:max-w-none text-5xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[3.6em] sm:min-h-[2.8em]">
+            {/* Mobile: text-5xl fazia as frases rotativas quebrarem em 3 linhas e,
+                como têm comprimentos diferentes, o min-h não cobria a maior —
+                a altura do h1 variava e empurrava o campo de busca (dificultava a
+                navegação). Reduzido pra text-4xl e min-h ampliado pra reservar
+                estável o pior caso (2 linhas do fixo + 2 da frase). Desktop
+                (sm:/md:) inalterado. */}
+            <h1 className="mt-8 max-w-4xl md:max-w-none text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
