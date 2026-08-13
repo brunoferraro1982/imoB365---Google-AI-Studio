@@ -53,6 +53,11 @@ import {
   Route,
   IdCard,
   Briefcase,
+  MoreVertical,
+  MessageCircle,
+  Moon,
+  Sun,
+  Monitor,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -65,6 +70,15 @@ import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { useTheme } from "@/components/theme/ThemeProvider";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
 type Module = {
@@ -251,6 +265,8 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const showForbidden = searchParams.forbidden === "1";
   const navigate = useNavigate();
   const router = useRouterState();
+  const { theme, setTheme } = useTheme();
+  const proximoTema = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
   const [mfaGate, setMfaGate] = useState<"checking" | "ok" | "pending">("checking");
 
   useEffect(() => {
@@ -533,7 +549,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
               );
             })}
           </nav>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
             {isSuperAdmin && (
               <Link
                 to="/admin"
@@ -545,40 +561,104 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
             {atendimentoVisible && (
               <Link
                 to={atendimentoModule.items[0].to}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors duration-250 ${
+                className={`hidden items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors duration-250 md:flex ${
                   activeModule.id === "atendimento"
                     ? "border-primary/30 bg-primary/15 text-primary"
                     : "border-sidebar-border text-sidebar-foreground/80 hover:bg-sidebar-accent/80"
                 }`}
               >
                 <Headset className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline-block">Central de Atendimento</span>
-                <span className="sm:hidden">Atendimento</span>
+                <span>Central de Atendimento</span>
               </Link>
             )}
             <Link
               to="/app/contratacao"
-              className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold tracking-wide text-primary hover:bg-primary/25 transition-all select-none duration-250 hover:scale-[1.01]"
+              className="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold tracking-wide text-primary transition-all duration-250 select-none hover:scale-[1.01] hover:bg-primary/25 md:flex"
             >
-              <Sparkles className="h-3 w-3.5 text-primary stroke-[2.5] animate-pulse" />
-              <span className="hidden sm:inline-block">Planos & Assinatura</span>
-              <span className="sm:hidden">Planos</span>
+              <Sparkles className="h-3 w-3.5 stroke-[2.5] text-primary animate-pulse" />
+              <span>Planos & Assinatura</span>
             </Link>
-            <ChatBadge />
+            <span className="hidden md:inline-flex">
+              <ChatBadge />
+            </span>
+            {/* NotificationBell fica sempre visível — é um dropdown próprio (aninhar
+                no menu "Mais" quebraria seu painel); é compacto e não estoura. */}
             <NotificationBell />
-            <ThemeToggle className="text-sidebar-foreground/80 hover:bg-sidebar-accent/60 rounded-full" />
-            <div className="hidden truncate text-xs font-medium text-sidebar-foreground/70 md:block max-w-[140px] px-2 py-1 bg-sidebar-accent/40 rounded-md">
+            <ThemeToggle className="hidden rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:inline-flex" />
+            <div className="hidden truncate rounded-md bg-sidebar-accent/40 px-2 py-1 text-xs font-medium text-sidebar-foreground/70 md:block max-w-[140px]">
               {user.email}
             </div>
             <Button
               variant="ghost"
               size="icon"
               onClick={signOut}
-              className="text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground rounded-full transition-colors"
+              className="hidden rounded-full text-sidebar-foreground/80 transition-colors hover:bg-destructive/15 hover:text-destructive-foreground md:inline-flex"
               aria-label="Sair"
             >
               <LogOut className="h-4 w-4" />
             </Button>
+
+            {/* Mobile: agrupa as ações secundárias (chat, planos, atendimento,
+                tema, sair, e-mail) num único dropdown pra não estourar o header. */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Mais opções"
+                  className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:hidden"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
+                  {user.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {isSuperAdmin && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">
+                      <ShieldCheck className="mr-2 h-4 w-4" /> Super-admin
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {atendimentoVisible && (
+                  <DropdownMenuItem asChild>
+                    <Link to={atendimentoModule.items[0].to}>
+                      <Headset className="mr-2 h-4 w-4" /> Central de Atendimento
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem asChild>
+                  <Link to="/app/contratacao">
+                    <Sparkles className="mr-2 h-4 w-4" /> Planos & Assinatura
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/app/chat">
+                    <MessageCircle className="mr-2 h-4 w-4" /> Chat
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme(proximoTema)}>
+                  {theme === "light" ? (
+                    <Sun className="mr-2 h-4 w-4" />
+                  ) : theme === "dark" ? (
+                    <Moon className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Monitor className="mr-2 h-4 w-4" />
+                  )}
+                  Alternar tema
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={signOut}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
