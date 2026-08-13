@@ -96,55 +96,68 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   // head() do root e das rotas institucionais leiam via matches/loaderData.
   // Cacheado em memória (TTL) e com fallback pro default — nunca derruba a app.
   loader: async (): Promise<{ seo: SeoConfig }> => ({ seo: await getSeoConfig() }),
-  head: ({ loaderData }) => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "imob365 — Plataforma imobiliária all-in-one" },
-      {
-        name: "description",
-        content:
-          "imob365 é o portal e SaaS para imobiliárias: catálogo, CRM, corretores, integrações com OLX/VivaReal e gestão completa do mercado imobiliário brasileiro.",
-      },
-      { name: "author", content: "imob365" },
-      { property: "og:title", content: "imob365 — Plataforma imobiliária all-in-one" },
-      {
-        property: "og:description",
-        content:
-          "Portal de imóveis + SaaS modular para imobiliárias brasileiras. CRM, corretores, jurídico, financeiro e integração com portais externos.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "theme-color", content: "#0f1e3a" },
-      { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "imob365" },
-      // Verificação do Google Search Console — editável no /admin/seo, sem deploy.
-      ...(loaderData?.seo?.global?.gsc_verification
+  head: ({ loaderData }) => {
+    // Google Analytics 4 — Measurement ID editável no /admin/seo (sem deploy).
+    // Sanitiza pra caracteres seguros (G-XXXX...) antes de entrar no script inline.
+    const ga = (loaderData?.seo?.global?.ga_measurement_id || "").replace(/[^\w-]/g, "");
+    return {
+      meta: [
+        { charSet: "utf-8" },
+        { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+        { title: "imob365 — Plataforma imobiliária all-in-one" },
+        {
+          name: "description",
+          content:
+            "imob365 é o portal e SaaS para imobiliárias: catálogo, CRM, corretores, integrações com OLX/VivaReal e gestão completa do mercado imobiliário brasileiro.",
+        },
+        { name: "author", content: "imob365" },
+        { property: "og:title", content: "imob365 — Plataforma imobiliária all-in-one" },
+        {
+          property: "og:description",
+          content:
+            "Portal de imóveis + SaaS modular para imobiliárias brasileiras. CRM, corretores, jurídico, financeiro e integração com portais externos.",
+        },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+        { name: "theme-color", content: "#0f1e3a" },
+        { name: "apple-mobile-web-app-capable", content: "yes" },
+        { name: "apple-mobile-web-app-title", content: "imob365" },
+        // Verificação do Google Search Console — editável no /admin/seo, sem deploy.
+        ...(loaderData?.seo?.global?.gsc_verification
+          ? [
+              {
+                name: "google-site-verification",
+                content: loaderData.seo.global.gsc_verification,
+              },
+            ]
+          : []),
+      ],
+      links: [
+        { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.png" },
+        { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
+        { rel: "manifest", href: "/manifest.webmanifest" },
+        { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        { rel: "preconnect", href: "https://fonts.googleapis.com" },
+        { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+        {
+          rel: "stylesheet",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800;900&display=swap",
+        },
+        {
+          rel: "stylesheet",
+          href: appCss,
+        },
+      ],
+      scripts: ga
         ? [
+            { src: `https://www.googletagmanager.com/gtag/js?id=${ga}`, async: true },
             {
-              name: "google-site-verification",
-              content: loaderData.seo.global.gsc_verification,
+              children: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${ga}');`,
             },
           ]
-        : []),
-    ],
-    links: [
-      { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.png" },
-      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
-      { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800;900&display=swap",
-      },
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
-    ],
-  }),
+        : [],
+    };
+  },
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -170,29 +183,11 @@ const ORGANIZATION_JSON_LD = {
   },
 };
 
-// Google Analytics 4 — ID público (client-side, não é segredo). Injetado só em
-// produção (mesma guarda do service worker abaixo) pra não sujar a propriedade
-// do GA com tráfego de localhost/dev.
-const GA_MEASUREMENT_ID = "G-53F13KFP4R";
-
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
-        {import.meta.env.PROD && (
-          <>
-            <script
-              async
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}');`,
-              }}
-            />
-          </>
-        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}

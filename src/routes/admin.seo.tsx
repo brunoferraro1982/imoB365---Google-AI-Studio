@@ -36,6 +36,7 @@ type SeoGlobalForm = {
   default_og_image: string;
   search_action_target: string;
   gsc_verification: string;
+  ga_measurement_id: string;
   org_description: string;
 };
 
@@ -46,6 +47,7 @@ function AdminSeoPage() {
     default_og_image: "",
     search_action_target: "",
     gsc_verification: "",
+    ga_measurement_id: "",
     org_description: "",
   });
   const [savingGlobal, setSavingGlobal] = useState(false);
@@ -61,6 +63,7 @@ function AdminSeoPage() {
         default_og_image: res.global.default_og_image ?? "",
         search_action_target: res.global.search_action_target ?? "",
         gsc_verification: res.global.gsc_verification ?? "",
+        ga_measurement_id: res.global.ga_measurement_id ?? "",
         org_description: res.global.org?.description ?? "",
       });
     } catch (e) {
@@ -161,6 +164,19 @@ function AdminSeoPage() {
             <p className="text-[11px] text-muted-foreground">
               No GSC, use a verificação por &ldquo;Tag HTML&rdquo; e cole aqui apenas o valor do
               atributo <code className="rounded bg-muted px-1">content</code>.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Google Analytics (Measurement ID)</Label>
+            <Input
+              value={globalForm.ga_measurement_id}
+              onChange={(e) => setGlobalForm((f) => ({ ...f, ga_measurement_id: e.target.value }))}
+              placeholder="Ex.: G-XXXXXXXXXX"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Cole só o ID <code className="rounded bg-muted px-1">G-XXXXXXXXXX</code> da tag do
+              Google. Deixe em branco para desligar o Analytics.
             </p>
           </div>
 
