@@ -53,7 +53,7 @@ import {
   Route,
   IdCard,
   Briefcase,
-  MoreVertical,
+  Menu,
   MessageCircle,
   Moon,
   Sun,
@@ -608,7 +608,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                   aria-label="Mais opções"
                   className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:hidden"
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
