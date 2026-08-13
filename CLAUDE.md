@@ -742,6 +742,20 @@ Fase 3 (final) do Assistente de importação: duas fontes novas de ingestão, am
 
 **Validação (dev):** parsers (CSV + número BR) cobertos por testes unitários (todos passam); `tsc`/`eslint`/`prettier` limpos; build `DEPLOY_TARGET=node` OK. A crawl de pasta do Drive reusa infra já validada em produção — o teste ao vivo contra as pastas do GMV no dev retornou 0 (a API key do Drive no dev só enxerga pastas com compartilhamento "qualquer pessoa com o link", limitação de dev, não de código). **Pendente**: teste ponta-a-ponta com uma pasta do Drive real acessível + um CSV real, e promoção a produção.
 
+### 📱 Mobile — responsividade + PWA + navegação app-like (2026-08-13)
+
+Ajustes de navegação mobile do `portal.imob365.com.br` (doc de QA do usuário com prints), **sem subdomínio separado** e **sem alterar o desktop** — decisão estratégica: o app já é responsivo (Tailwind + hambúrguer via `Sheet` abaixo de `lg`) e já tinha PWA ~90% pronto; corrige-se os bugs no mesmo código, reforça o PWA e prepara Capacitor (reaproveita 100% do código nos apps nativos). PR #291 (web) validada pelo usuário no mobile e promovida a produção; Capacitor fica na PR #292 (tooling nativo, sem impacto no deploy web).
+
+| Área | O que foi feito |
+| :--- | :--- |
+| Overflow horizontal | `overflow-x: hidden` em `html/body` (`src/styles.css`) + causa real (mega-menu de login era `absolute right-0 w-[90vw]`, vira `fixed inset-x-3` contido no mobile, `md:absolute md:w-[760px]` no desktop) |
+| Z-index (colisão) | Normalizado: **FAB botão z-30, painel z-40, header z-40, modais/mega-menu z-50** (antes header público + mega-menu + os 2 FABs estavam todos em z-50). FABs (`AtendimentoFAB`/`AssistenteIAFAB`) com safe-area (`@utility bottom-safe-*` + `viewport-fit=cover`); `pb-24 lg:pb-0` no `<main>` pro FAB não cobrir o último card |
+| Bottom navigation | `src/components/layout/BottomNav.tsx` (novo): barra inferior estilo app (`lg:hidden`), reusa `visibleModules` (papel/plano), até 4 módulos + "Mais" (Sheet). No mobile a nav superior de módulos (amontoada) é escondida (`hidden lg:flex`) e substituída pela bottom-nav |
+| Header do /app | Ações secundárias (Atendimento, Planos, Chat, Tema, Sair, e-mail, Super-admin) agrupadas num dropdown **hambúrguer (☰)** no mobile (`md:hidden`); só logo + sino de notificações + ☰ ficam visíveis. `NotificationBell` fica de fora do menu (é dropdown próprio, aninhar quebraria). Desktop inline como antes |
+| Submenu do módulo | `src/components/layout/ModuleSubNav.tsx` (novo): no mobile o aside lateral (sub-páginas do módulo ativo) some; um **dropdown de largura total** logo abaixo do header mostra a página atual e lista todas as sub-páginas verticalmente. Começou como barra de sub-abas horizontal, mas estourava a tela com muitos itens (ex.: Imobiliário, 13 páginas) — trocado por dropdown a pedido do usuário |
+| Home hero | O h1 "Encontre o imóvel certo," usava `text-5xl` no mobile e as frases rotativas quebravam em 3 linhas de tamanhos diferentes, variando a altura do bloco e empurrando o campo de busca — reduzido pra `text-4xl` + `min-h` ampliado (altura estável). Desktop inalterado |
+| PWA polish | `manifest.webmanifest` ganhou `id` + ícone `maskable` (instalável/adaptativo) |
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
