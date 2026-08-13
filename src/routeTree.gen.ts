@@ -80,6 +80,7 @@ import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml
 import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
+import { Route as AdminSeoRouteImport } from './routes/admin.seo'
 import { Route as AdminPlanosRouteImport } from './routes/admin.planos'
 import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
 import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
@@ -564,6 +565,11 @@ const AdminTenantsRoute = AdminTenantsRouteImport.update({
 const AdminStatusRoute = AdminStatusRouteImport.update({
   id: '/status',
   path: '/status',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSeoRoute = AdminSeoRouteImport.update({
+  id: '/seo',
+  path: '/seo',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPlanosRoute = AdminPlanosRouteImport.update({
@@ -1304,6 +1310,7 @@ export interface FileRoutesByFullPath {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
@@ -1503,6 +1510,7 @@ export interface FileRoutesByTo {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
@@ -1704,6 +1712,7 @@ export interface FileRoutesById {
   '/admin/limites': typeof AdminLimitesRoute
   '/admin/modulos': typeof AdminModulosRoute
   '/admin/planos': typeof AdminPlanosRoute
+  '/admin/seo': typeof AdminSeoRoute
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
@@ -1908,6 +1917,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/seo'
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
@@ -2107,6 +2117,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/seo'
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
@@ -2307,6 +2318,7 @@ export interface FileRouteTypes {
     | '/admin/limites'
     | '/admin/modulos'
     | '/admin/planos'
+    | '/admin/seo'
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
@@ -3051,6 +3063,13 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/admin/status'
       preLoaderRoute: typeof AdminStatusRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/seo': {
+      id: '/admin/seo'
+      path: '/seo'
+      fullPath: '/admin/seo'
+      preLoaderRoute: typeof AdminSeoRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/planos': {
@@ -3971,6 +3990,7 @@ interface AdminRouteChildren {
   AdminLimitesRoute: typeof AdminLimitesRoute
   AdminModulosRoute: typeof AdminModulosRoute
   AdminPlanosRoute: typeof AdminPlanosRoute
+  AdminSeoRoute: typeof AdminSeoRoute
   AdminStatusRoute: typeof AdminStatusRoute
   AdminTenantsRoute: typeof AdminTenantsRoute
   AdminVitrineParceirosRoute: typeof AdminVitrineParceirosRoute
@@ -3992,6 +4012,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminLimitesRoute: AdminLimitesRoute,
   AdminModulosRoute: AdminModulosRoute,
   AdminPlanosRoute: AdminPlanosRoute,
+  AdminSeoRoute: AdminSeoRoute,
   AdminStatusRoute: AdminStatusRoute,
   AdminTenantsRoute: AdminTenantsRoute,
   AdminVitrineParceirosRoute: AdminVitrineParceirosRoute,

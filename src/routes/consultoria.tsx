@@ -3,18 +3,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Headset } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/consultoria")({
-  head: () => ({
-    meta: [
-      { title: "Consultoria Imobiliária | imoB365" },
-      {
-        name: "description",
-        content:
-          "Administração de imóveis, gestão contratual, lançamentos exclusivos e imóveis de alto padrão em todo o Brasil.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/consultoria",
+      title: "Consultoria Imobiliária | imoB365",
+      description:
+        "Administração de imóveis, gestão contratual, lançamentos exclusivos e imóveis de alto padrão em todo o Brasil.",
+    }),
   component: ConsultoriaPage,
 });
 
