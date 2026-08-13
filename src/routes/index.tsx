@@ -1,5 +1,5 @@
 import { SiteHeader, ParceirosMarquee } from "@/components/site-layout";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Building2,
@@ -50,30 +50,20 @@ import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/fo
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
 import { getVisitorRegion } from "@/lib/geo.functions";
+import { seoHead, readSeoFromMatches, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
 import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro" },
-      {
-        name: "description",
-        content:
-          "Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil. Cadastre-se grátis e comece a divulgar seus imóveis em minutos.",
-      },
-      {
-        property: "og:title",
-        content: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro",
-      },
-      {
-        property: "og:description",
-        content:
-          "Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/",
+      title: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro",
+      description:
+        "Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores parceiros em todo o Brasil. Cadastre-se grátis e comece a divulgar seus imóveis em minutos.",
+    }),
   component: Landing,
 });
 
@@ -132,6 +122,11 @@ function Landing() {
   const [displayText, setDisplayText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [typingSpeed, setTypingSpeed] = useState(100);
+  // Alvo do SearchAction (caixa de busca de sitelinks do Google) editável no
+  // /admin/seo, exposto pelo loader do __root; cai no default do código se vazio.
+  const rootSeo = useLoaderData({ from: "__root__" });
+  const searchActionTarget =
+    rootSeo?.seo?.global?.search_action_target ?? DEFAULT_SEO_GLOBAL.search_action_target;
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -293,7 +288,7 @@ function Landing() {
               "@type": "SearchAction",
               target: {
                 "@type": "EntryPoint",
-                urlTemplate: "https://portal.imob365.com.br/buscar?q={search_term_string}",
+                urlTemplate: searchActionTarget,
               },
               "query-input": "required name=search_term_string",
             },

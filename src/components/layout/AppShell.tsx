@@ -58,6 +58,7 @@ import {
   Moon,
   Sun,
   Monitor,
+  Search,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
@@ -257,6 +258,7 @@ const adminNav: Item[] = [
   { to: "/admin/integracoes", label: "Integrações", icon: Settings },
   { to: "/admin/emails", label: "E-mails", icon: Mail },
   { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
+  { to: "/admin/seo", label: "SEO & Search Console", icon: Search },
   { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
 ];
 

@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { useAuth } from "@/hooks/useAuth";
+import { getSeoConfig, type SeoConfig } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -91,7 +92,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  // SEO Fase 2: config editável (seo_pages + seo_global) exposta pra que o
+  // head() do root e das rotas institucionais leiam via matches/loaderData.
+  // Cacheado em memória (TTL) e com fallback pro default — nunca derruba a app.
+  loader: async (): Promise<{ seo: SeoConfig }> => ({ seo: await getSeoConfig() }),
+  head: ({ loaderData }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
@@ -113,6 +118,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "theme-color", content: "#0f1e3a" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "imob365" },
+      // Verificação do Google Search Console — editável no /admin/seo, sem deploy.
+      ...(loaderData?.seo?.global?.gsc_verification
+        ? [
+            {
+              name: "google-site-verification",
+              content: loaderData.seo.global.gsc_verification,
+            },
+          ]
+        : []),
     ],
     links: [
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.png" },

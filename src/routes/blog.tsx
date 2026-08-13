@@ -6,18 +6,17 @@ import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
 import { Calendar, Tag } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { BlogColumnsLayout } from "@/components/blog/BlogColumnsLayout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/blog")({
-  head: () => ({
-    meta: [
-      { title: "Blog | imoB365 — Notícias do Mercado Imobiliário" },
-      {
-        name: "description",
-        content:
-          "Tenha as principais notícias do mercado imobiliário, análises, tendências e guias de investimento.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/blog",
+      title: "Blog | imoB365 — Notícias do Mercado Imobiliário",
+      description:
+        "Tenha as principais notícias do mercado imobiliário, análises, tendências e guias de investimento.",
+    }),
   component: BlogPage,
 });
 
