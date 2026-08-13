@@ -742,6 +742,16 @@ Fase 3 (final) do Assistente de importação: duas fontes novas de ingestão, am
 
 **Validação (dev):** parsers (CSV + número BR) cobertos por testes unitários (todos passam); `tsc`/`eslint`/`prettier` limpos; build `DEPLOY_TARGET=node` OK. A crawl de pasta do Drive reusa infra já validada em produção — o teste ao vivo contra as pastas do GMV no dev retornou 0 (a API key do Drive no dev só enxerga pastas com compartilhamento "qualquer pessoa com o link", limitação de dev, não de código). **Pendente**: teste ponta-a-ponta com uma pasta do Drive real acessível + um CSV real, e promoção a produção.
 
+### 📱 Mobile — responsividade + PWA + app nativo (Capacitor) (2026-08-13)
+
+Ajustes de navegação mobile do `portal.imob365.com.br` (doc de QA com prints), **sem subdomínio separado** e **sem alterar o desktop** — decisão estratégica: o app já é responsivo (Tailwind + hambúrguer via `Sheet` abaixo de `lg`) e já tinha PWA ~90% pronto; o certo é corrigir os bugs no mesmo código, reforçar o PWA e preparar Capacitor (reaproveita 100% do código nos apps nativos). 3 fases:
+
+- **Fase A (responsividade, PR #291):** `overflow-x: hidden` em `html/body` + causa real (mega-menu `w-[90vw]`); z-index normalizado (**FAB botão z-30, painel z-40, header z-40, modais/mega-menu z-50** — antes header+menu+FABs todos em z-50); FABs com safe-area (`@utility bottom-safe-*` + `viewport-fit=cover`); `pb-24 lg:pb-0` no `<main>` (FAB não cobre o último card); mega-menu "Acessar Portal" vira largura contida no mobile (`fixed inset-x-3`), desktop `md:absolute md:w-[760px]`.
+- **Fase B (bottom-nav + PWA, PR #291):** `src/components/layout/BottomNav.tsx` (novo) — barra inferior estilo app (`lg:hidden`), reusa `visibleModules`, até 4 módulos + "Mais" (Sheet); no mobile a nav superior de módulos (amontoada) é escondida (`hidden lg:flex`) e substituída pela bottom-nav; `manifest.webmanifest` ganhou `id` + ícone `maskable` (instalável/adaptativo).
+- **Fase C (Capacitor, esta PR):** `capacitor.config.ts` + deps `@capacitor/core|cli|android|ios` (v8). App nativo = **shell fino sobre o PWA em produção** (`server.url = https://portal.imob365.com.br`) — SSR mantido, 0 código duplicado. `/android` e `/ios` no `.gitignore` (gerados localmente). **iOS exige Apple Developer Program (US$99/ano)** — mesmo custo declinado pro OAuth em 2026-07-24; Android não tem esse custo.
+
+**App nativo (Capacitor) — passo a passo:** `npm run cap:add:android` (gera `android/`) → `npm run cap:sync` (build web + copia) → `npm run cap:open:android` (abre no Android Studio pra gerar o APK/assinar). iOS análogo (`cap:add:ios`/`cap:open:ios`, precisa de Mac + Xcode + conta Apple). Publicar nas lojas (Play Console US$25 única / App Store US$99/ano), keystore/assinatura e push nativo (FCM/APNs) são passos manuais fora do escopo do setup.
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
