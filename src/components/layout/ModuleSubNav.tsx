@@ -1,15 +1,22 @@
 /**
- * Sub-navegação do módulo ativo no mobile (/app) — barra horizontal de sub-abas
- * logo abaixo do header, só no mobile (`md:hidden`). No desktop, o mesmo
- * conteúdo (`activeModule.items`) vive no aside lateral esquerdo do AppShell,
- * que fica escondido no mobile. Sem esta barra, a bottom-nav só leva ao 1º item
- * de cada módulo e as demais sub-páginas ficam inacessíveis no celular.
+ * Sub-navegação do módulo ativo no mobile (/app) — dropdown com as sub-páginas
+ * do módulo. No desktop, esse conteúdo (`activeModule.items`) vive no aside
+ * lateral esquerdo do AppShell (escondido no mobile). Sem isso, a bottom-nav só
+ * leva ao 1º item de cada módulo e as demais sub-páginas ficam inacessíveis.
  *
- * Fica sticky logo abaixo do header (que é `sticky top-0` com `h-15`), rola na
- * horizontal e destaca a página atual — mesma lógica de "item ativo" do aside.
+ * É um dropdown (não uma barra rolável) de propósito: com muitos itens, a barra
+ * horizontal estourava a tela; o dropdown é largura-total, mostra a página atual
+ * e lista todas as sub-páginas verticalmente (com scroll interno se preciso).
  */
 import { Link } from "@tanstack/react-router";
+import { ChevronDown } from "lucide-react";
 import type { ComponentType } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 type SubItem = { to: string; label: string; icon: ComponentType<{ className?: string }> };
 
@@ -34,31 +41,39 @@ export function ModuleSubNav({ items, current }: { items: SubItem[]; current: st
   // Módulo de item único não precisa de sub-nav.
   if (items.length <= 1) return null;
 
+  const atual = items.find((it) => itemAtivo(it, items, current)) ?? items[0];
+  const IconAtual = atual.icon;
+
   return (
-    // Container EXTERNO: largura travada no viewport (`w-full max-w-full min-w-0`)
-    // + `overflow-x-auto` — é ele quem rola. O conteúdo interno (`w-max`) pode
-    // ser mais largo que a tela sem estourar a página (o flex+overflow no MESMO
-    // elemento, com filhos shrink-0, estourava pra fora em vez de rolar).
-    <div className="scrollbar-none sticky top-15 z-20 w-full min-w-0 max-w-full overflow-x-auto border-b border-sidebar-border/70 bg-sidebar/95 backdrop-blur-md md:hidden print:hidden">
-      <nav className="flex w-max gap-1.5 px-3 py-2 text-sidebar-foreground">
-        {items.map((item) => {
-          const active = itemAtivo(item, items, current);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                active
-                  ? "border border-primary/25 bg-primary/15 text-primary"
-                  : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50"
-              }`}
-            >
-              <item.icon className={`h-3.5 w-3.5 ${active ? "stroke-[2.25px]" : "opacity-85"}`} />
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+    <div className="sticky top-15 z-20 border-b border-sidebar-border/70 bg-sidebar/95 px-3 py-2 backdrop-blur-md md:hidden print:hidden">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border/70 bg-sidebar-accent/30 px-3 py-2 text-sm font-medium text-sidebar-foreground">
+            <IconAtual className="h-4 w-4 shrink-0 text-primary" />
+            <span className="flex-1 truncate text-left">{atual.label}</span>
+            <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          className="max-h-[70vh] w-[calc(100vw-1.5rem)] overflow-y-auto"
+        >
+          {items.map((item) => {
+            const active = itemAtivo(item, items, current);
+            return (
+              <DropdownMenuItem key={item.to} asChild>
+                <Link
+                  to={item.to}
+                  className={active ? "font-semibold text-primary" : "text-foreground"}
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </Link>
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
