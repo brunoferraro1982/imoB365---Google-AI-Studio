@@ -32,6 +32,9 @@ export const Route = createFileRoute("/a-imob365")({
           "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento 365 dias por ano em todo o Brasil.",
       },
     ],
+    // Canonical auto-referente: reforça, junto com o 301 de /sobre, que esta é
+    // a URL oficial do conteúdo institucional "Sobre" (auditoria GSC).
+    links: [{ rel: "canonical", href: "https://portal.imob365.com.br/a-imob365" }],
   }),
   component: AImob365Page,
 });

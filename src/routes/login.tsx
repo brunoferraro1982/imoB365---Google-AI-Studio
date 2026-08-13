@@ -10,7 +10,9 @@ import { getPendingMfaFactorId, verifyMfaChallenge } from "@/lib/mfaGate";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Entrar — imob365" }] }),
+  head: () => ({
+    meta: [{ title: "Entrar — imob365" }, { name: "robots", content: "noindex, follow" }],
+  }),
   component: LoginPage,
 });
 

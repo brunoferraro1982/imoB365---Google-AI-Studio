@@ -758,6 +758,20 @@ Ajustes de navegação mobile do `portal.imob365.com.br` (doc de QA do usuário 
 
 **Super admin (`/admin`) — mesmo tratamento mobile (PR separada, após a #291 em prod):** o `AdminLayout` só tinha a sidebar `hidden md:flex`, então no mobile o `/admin` ficava **sem navegação nenhuma** (nem logo, nem menu, nem sair). Adicionado um **top bar mobile** (`md:hidden`, sticky) com logo + selo Super-admin + sino + **hambúrguer (☰)** que abre um `Sheet` lateral com o **menu admin completo** (mesma lista/estado-ativo da sidebar, com os badges de Aprovações/Faturamento) + "Voltar ao app" + e-mail + Sair. Root virou `flex-col md:flex-row`. Os fixes globais da #291 (overflow, z-index/FAB com safe-area, `pb-24` no `<main>`) já valiam pro `/admin`; só faltava a navegação. Desktop (sidebar) inalterado.
 
+### 🔎 SEO técnico — correções da auditoria GSC (Fase 1) (2026-08-13)
+
+Auditoria de indexação do Google Search Console (doc do usuário, `portal.imob365.com.br`) apontou que a maioria das "não indexadas" já estava indexada (relatório desatualizado), mas restaram problemas técnicos reais no código. Fase 1 corrige os bugs + ganhos rápidos (a Fase 2 — área de SEO editável no super admin — vem em PR separada). Sem migration.
+
+| Correção | Arquivo | O que |
+| :--- | :--- | :--- |
+| 🔴 `/contato` bloqueado pelo robots | `public/robots.txt` + `robots[.]txt.ts` | `Disallow: /conta` bloqueava **por prefixo** e capturava `/contato` (confirmado no GSC). Trocado por `Disallow: /conta$` + `Disallow: /conta/` (rota exata + sub-rotas; nenhum casa `/contato`) |
+| 🟠 duplicidade `/a-imob365` × `/sobre` | `sobre.tsx` + `a-imob365.tsx` | O redirect de `/sobre` saía **307** (temporário) → o Google mantinha `/sobre` canônica e deixava `/a-imob365` fora. Virou **301 permanente** (`redirect({ statusCode: 301 })`) + `link canonical` auto-referente em `/a-imob365` (a versão completa, já no sitemap) |
+| 🟡 structured data de `/planos` | `planos.tsx` | Os `Product` por-card não tinham o campo obrigatório `image` (sem rich results) e `Product` não cabe pra assinatura SaaS. Trocado por **um** `SoftwareApplication` (`applicationCategory: BusinessApplication`, `image`, `offers` = um `Offer` por plano pago) |
+| `noindex` em transacionais | `login`/`signup`/`reset-password`/`onboarding`/`pending-approval`/`auth.callback` | `meta robots: noindex, follow` — tira ruído do foco temático (páginas de auth não agregam busca orgânica) |
+| `WebSite`+`SearchAction` | `index.tsx` | JSON-LD com a caixa de busca de sitelinks do Google (`target: /buscar?q=...`) |
+
+**Validação:** `tsc`/`eslint`/`build` limpos; confirmado no HTML SSR do dev (`grep -a`): robots com `/conta$`+`/conta/`, `/sobre`→301→`/a-imob365`, canonical em `/a-imob365`, `SoftwareApplication` em `/planos`, `SearchAction` na home, `noindex` em `/login`/`/onboarding`. **Pós-deploy (Fase 3, manual no GSC, sem código):** "Testar robots.txt" → Inspeção de URL de `/contato` e `/a-imob365` → "Solicitar indexação" → reenviar o sitemap-index. **Fase 2 (backlog):** área de SEO no super admin (meta por página + globais, editável sem deploy).
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
@@ -812,6 +826,7 @@ Todas as 5 fases do roadmap de evolução do módulo Financeiro estão implement
 - Pin de Actions por SHA em vez de tag (`actions/checkout@v4` → `@<sha>`, etc.) — hardening de supply-chain de baixa prioridade, registrado na auditoria de segurança de 2026-07-21
 - **`deploy.yml` — passo "Configurar chave SSH" instável**: falhou na primeira tentativa em 2 deploys distintos no mesmo dia (2026-07-27, PRs #172 e #174), sempre no mesmo comando (`ssh-keyscan`, stderr suprimido — o log só mostra "exit code 1", nunca o erro real). Nas duas vezes, produção nunca chegou a ser tocada (o passo falha antes do rsync) e um simples re-run do job (`gh run rerun <id> --failed`) resolveu sem nenhuma mudança de código — provável flakiness de rede/DNS entre os runners do GitHub Actions e a VPS, não confirmado. Se acontecer uma terceira vez, vale investigar de verdade (remover o `2>/dev/null` pra ver o erro real, ou adicionar retry no próprio `ssh-keyscan`) em vez de só re-rodar
 - ~~Ollama sem rotina de restart periódico~~ — **concluído em 2026-07-27** (ver changelog "Restart diário automatizado do Ollama" acima): `crontab` do root roda `/opt/imob365/scripts/restart-ollama.sh` diariamente às 5h UTC (madrugada BRT). Falta só monitoramento/alerta de memória de verdade (hoje só o log do próprio script) — baixa prioridade, já que o restart diário evita o acúmulo voltar a ser um problema
+- **Apps nativos Android/iOS (Capacitor) — em espera, por decisão do usuário (2026-08-13)**: o *setup* está pronto e revisado na **PR #292** (draft, off `develop`) — `capacitor.config.ts` (shell fino sobre o PWA em produção via `server.url`), deps `@capacitor/core|cli|android|ios` v8, scripts npm (`cap:add:android/ios`, `cap:sync`, `cap:open:*`) e passo-a-passo no CLAUDE.md. **Gerar e publicar os apps ficou adiado**: quando for a hora, mergear a #292 e rodar `npm run cap:add:android` → `cap:sync` → `cap:open:android` (build/assinatura no Android Studio). **iOS exige Apple Developer Program (US$99/ano)** — o mesmo custo já declinado pro OAuth (ver changelog 2026-07-24); Android não tem esse custo (Play Console US$25 única só pra publicar). O app web/PWA já é instalável ("adicionar à tela inicial") sem depender disso
 
 #### Institucional
 

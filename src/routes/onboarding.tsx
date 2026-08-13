@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, follow" }] }),
   component: Onboarding,
 });
 

@@ -20,7 +20,11 @@ export const Route = createFileRoute("/robots.txt")({
           "Allow: /api/sitemap.xml",
           "Allow: /api/public/sitemap-index.xml",
           "Allow: /api/public/sitemap/",
-          "Disallow: /conta",
+          // /conta$ = a rota exata (minha conta); /conta/ = as sub-rotas. NÃO
+          // usar "Disallow: /conta" puro — casa por prefixo e bloqueia /contato
+          // (achado da auditoria GSC: /contato ficava "Bloqueada pelo robots").
+          "Disallow: /conta$",
+          "Disallow: /conta/",
           "",
           `Sitemap: ${origin}/api/public/sitemap-index.xml`,
         ].join("\n");
