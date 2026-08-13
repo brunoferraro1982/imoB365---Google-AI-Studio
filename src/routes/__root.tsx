@@ -170,11 +170,29 @@ const ORGANIZATION_JSON_LD = {
   },
 };
 
+// Google Analytics 4 — ID público (client-side, não é segredo). Injetado só em
+// produção (mesma guarda do service worker abaixo) pra não sujar a propriedade
+// do GA com tráfego de localhost/dev.
+const GA_MEASUREMENT_ID = "G-53F13KFP4R";
+
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        {import.meta.env.PROD && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}');`,
+              }}
+            />
+          </>
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
