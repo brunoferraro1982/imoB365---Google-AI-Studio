@@ -80,6 +80,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
 type Module = {
@@ -737,9 +738,89 @@ function AdminLayout({
   email: string;
   onSignOut: () => void;
 }) {
-  // placeholder anchor
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <div className="flex min-h-screen bg-muted/15">
+    <div className="flex min-h-screen flex-col bg-muted/15 md:flex-row">
+      {/* Mobile: top bar do admin — a sidebar abaixo é hidden md:flex, então sem
+          isto o /admin ficava sem navegação nenhuma no celular. O hambúrguer
+          abre um Sheet com o menu admin completo + Voltar ao app + Sair. */}
+      <header className="sticky top-0 z-30 flex h-15 items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 text-sidebar-foreground md:hidden print:hidden">
+        <Link to="/" className="inline-flex shrink-0">
+          <Logo className="h-8 w-auto" variant="white" />
+        </Link>
+        <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-primary/35 bg-primary/20 px-2 py-0.5 text-3xs font-semibold uppercase tracking-wider text-primary">
+          Super-admin
+        </span>
+        <div className="ml-auto flex items-center gap-1">
+          <NotificationBell />
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Menu do admin"
+                className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="flex w-[300px] flex-col bg-sidebar p-0 text-sidebar-foreground"
+            >
+              <SheetHeader className="border-b border-sidebar-border/70 px-5 py-4 text-left">
+                <SheetTitle className="text-sidebar-foreground">Super-admin</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
+                {items.map((item) => {
+                  const active =
+                    current === item.to || (item.to !== "/admin" && current.startsWith(item.to));
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                        active
+                          ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+                      }`}
+                    >
+                      <item.icon
+                        className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                      />
+                      {item.label}
+                      {item.label === "Aprovações" && <ApprovalsNavBadge />}
+                      {item.label === "Faturamento" && <FaturamentoNavBadge />}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <div className="border-t border-sidebar-border/70 p-3">
+                <Link
+                  to="/app"
+                  onClick={() => setMenuOpen(false)}
+                  className="mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65"
+                >
+                  ← Voltar ao app
+                </Link>
+                <div className="mb-2 truncate px-3 font-mono text-xs text-sidebar-foreground/60">
+                  {email}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onSignOut}
+                  className="w-full justify-start rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground"
+                >
+                  <LogOut className="mr-2 h-4 w-4" /> Sair
+                </Button>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </header>
+
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-5 text-sidebar-foreground md:flex">
         <div className="flex flex-col gap-3 px-1">
           <Link to="/" className="inline-flex">
