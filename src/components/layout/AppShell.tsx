@@ -491,7 +491,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
     <div className="flex min-h-screen flex-col bg-muted/20">
       {/* TOP MODULE BAR */}
       <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm print:hidden">
-        <div className="flex h-15 items-center gap-6 px-5">
+        <div className="flex h-15 items-center gap-3 px-3 md:gap-6 md:px-5">
           <Link
             to="/"
             className="flex shrink-0 items-center transition-transform hover:scale-[1.02]"
@@ -632,7 +632,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 overflow-x-hidden">
+        <main className="min-w-0 flex-1 overflow-x-hidden pb-24 lg:pb-0">
           <Outlet />
         </main>
       </div>
@@ -712,7 +712,7 @@ function AdminLayout({
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 overflow-x-hidden pb-24 lg:pb-0">
         <Outlet />
       </main>
     </div>
