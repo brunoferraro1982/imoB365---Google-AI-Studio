@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Mail, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/pending-approval")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, follow" }] }),
   component: PendingApproval,
 });
 

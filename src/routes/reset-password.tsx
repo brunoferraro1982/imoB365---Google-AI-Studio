@@ -9,7 +9,9 @@ import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Redefinir senha — imob365" }] }),
+  head: () => ({
+    meta: [{ title: "Redefinir senha — imob365" }, { name: "robots", content: "noindex, follow" }],
+  }),
   component: ResetPasswordPage,
 });
 

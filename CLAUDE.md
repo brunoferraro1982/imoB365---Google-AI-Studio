@@ -758,6 +758,20 @@ Ajustes de navegação mobile do `portal.imob365.com.br` (doc de QA do usuário 
 
 **Super admin (`/admin`) — mesmo tratamento mobile (PR separada, após a #291 em prod):** o `AdminLayout` só tinha a sidebar `hidden md:flex`, então no mobile o `/admin` ficava **sem navegação nenhuma** (nem logo, nem menu, nem sair). Adicionado um **top bar mobile** (`md:hidden`, sticky) com logo + selo Super-admin + sino + **hambúrguer (☰)** que abre um `Sheet` lateral com o **menu admin completo** (mesma lista/estado-ativo da sidebar, com os badges de Aprovações/Faturamento) + "Voltar ao app" + e-mail + Sair. Root virou `flex-col md:flex-row`. Os fixes globais da #291 (overflow, z-index/FAB com safe-area, `pb-24` no `<main>`) já valiam pro `/admin`; só faltava a navegação. Desktop (sidebar) inalterado.
 
+### 🔎 SEO técnico — correções da auditoria GSC (Fase 1) (2026-08-13)
+
+Auditoria de indexação do Google Search Console (doc do usuário, `portal.imob365.com.br`) apontou que a maioria das "não indexadas" já estava indexada (relatório desatualizado), mas restaram problemas técnicos reais no código. Fase 1 corrige os bugs + ganhos rápidos (a Fase 2 — área de SEO editável no super admin — vem em PR separada). Sem migration.
+
+| Correção | Arquivo | O que |
+| :--- | :--- | :--- |
+| 🔴 `/contato` bloqueado pelo robots | `public/robots.txt` + `robots[.]txt.ts` | `Disallow: /conta` bloqueava **por prefixo** e capturava `/contato` (confirmado no GSC). Trocado por `Disallow: /conta$` + `Disallow: /conta/` (rota exata + sub-rotas; nenhum casa `/contato`) |
+| 🟠 duplicidade `/a-imob365` × `/sobre` | `sobre.tsx` + `a-imob365.tsx` | O redirect de `/sobre` saía **307** (temporário) → o Google mantinha `/sobre` canônica e deixava `/a-imob365` fora. Virou **301 permanente** (`redirect({ statusCode: 301 })`) + `link canonical` auto-referente em `/a-imob365` (a versão completa, já no sitemap) |
+| 🟡 structured data de `/planos` | `planos.tsx` | Os `Product` por-card não tinham o campo obrigatório `image` (sem rich results) e `Product` não cabe pra assinatura SaaS. Trocado por **um** `SoftwareApplication` (`applicationCategory: BusinessApplication`, `image`, `offers` = um `Offer` por plano pago) |
+| `noindex` em transacionais | `login`/`signup`/`reset-password`/`onboarding`/`pending-approval`/`auth.callback` | `meta robots: noindex, follow` — tira ruído do foco temático (páginas de auth não agregam busca orgânica) |
+| `WebSite`+`SearchAction` | `index.tsx` | JSON-LD com a caixa de busca de sitelinks do Google (`target: /buscar?q=...`) |
+
+**Validação:** `tsc`/`eslint`/`build` limpos; confirmado no HTML SSR do dev (`grep -a`): robots com `/conta$`+`/conta/`, `/sobre`→301→`/a-imob365`, canonical em `/a-imob365`, `SoftwareApplication` em `/planos`, `SearchAction` na home, `noindex` em `/login`/`/onboarding`. **Pós-deploy (Fase 3, manual no GSC, sem código):** "Testar robots.txt" → Inspeção de URL de `/contato` e `/a-imob365` → "Solicitar indexação" → reenviar o sitemap-index. **Fase 2 (backlog):** área de SEO no super admin (meta por página + globais, editável sem deploy).
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).

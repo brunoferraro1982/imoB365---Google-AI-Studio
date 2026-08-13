@@ -279,6 +279,27 @@ function Landing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in">
+      {/* WebSite + SearchAction: habilita a caixa de busca de sitelinks do Google
+          (aponta pra /buscar?q=...). Complementa o Organization do __root. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "imob365",
+            url: "https://portal.imob365.com.br/",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: "https://portal.imob365.com.br/buscar?q={search_term_string}",
+              },
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        }}
+      />
       <SiteHeader />
 
       {/* HERO + BUSCA */}

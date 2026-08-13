@@ -7,6 +7,7 @@ import { consumeProfessionalSignupIntent } from "@/lib/signupIntent";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth/callback")({
+  head: () => ({ meta: [{ name: "robots", content: "noindex, follow" }] }),
   component: AuthCallback,
 });
 

@@ -151,6 +151,33 @@ function PlanosPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* Um único bloco SoftwareApplication (não Product por card): semanticamente
+          correto pra assinatura SaaS e com o campo image obrigatório — a
+          auditoria GSC apontou os Product sem image (sem rich results). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "imob365",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            image: "https://portal.imob365.com.br/icon-512.png",
+            description:
+              "Plataforma SaaS all-in-one para imobiliárias e corretores: catálogo de imóveis, CRM, financeiro, jurídico, marketing e e-learning.",
+            offers: plans
+              .filter((p) => p.preco_mensal > 0)
+              .map((p) => ({
+                "@type": "Offer",
+                name: `Plano ${p.nome}`,
+                price: p.preco_mensal,
+                priceCurrency: "BRL",
+                availability: "https://schema.org/InStock",
+              })),
+          }),
+        }}
+      />
       <SiteHeader />
 
       {/* Hero */}
@@ -233,24 +260,6 @@ function PlanosPage() {
                       : "border-border"
                 }`}
               >
-                {!isContact && (
-                  <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{
-                      __html: JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "Product",
-                        name: `imob365 — Plano ${p.nome}`,
-                        offers: {
-                          "@type": "Offer",
-                          price: p.preco_mensal,
-                          priceCurrency: "BRL",
-                          availability: "https://schema.org/InStock",
-                        },
-                      }),
-                    }}
-                  />
-                )}
                 {/* Top badge */}
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 flex gap-1 whitespace-nowrap">
                   {marketing.highlight && (
