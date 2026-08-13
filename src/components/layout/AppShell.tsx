@@ -69,6 +69,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { ModuleSubNav } from "@/components/layout/ModuleSubNav";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import {
@@ -662,6 +663,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           </div>
         </div>
       </header>
+
+      {/* Mobile: sub-abas do módulo ativo (no desktop isso vive no aside lateral). */}
+      <ModuleSubNav items={activeModule.items} current={current} />
 
       <div className="flex flex-1">
         {/* SUBMENU LATERAL DO MÓDULO ATIVO */}
