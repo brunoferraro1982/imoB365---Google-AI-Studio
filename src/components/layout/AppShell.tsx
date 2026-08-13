@@ -63,6 +63,7 @@ import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { BottomNav } from "@/components/layout/BottomNav";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type Item = { to: string; label: string; icon: typeof Building2 };
@@ -498,7 +499,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           >
             <Logo className="h-8.5 w-auto" variant="white" />
           </Link>
-          <nav className="flex flex-1 items-center gap-1 overflow-x-auto py-1 scrollbar-none">
+          <nav className="hidden flex-1 items-center gap-1 overflow-x-auto py-1 scrollbar-none lg:flex">
             {visibleModules.map((m) => {
               const active = m.id === activeModule.id;
               const first = m.items[0];
@@ -532,7 +533,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
               );
             })}
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-3">
             {isSuperAdmin && (
               <Link
                 to="/admin"
@@ -636,6 +637,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           <Outlet />
         </main>
       </div>
+      <BottomNav modules={visibleModules} />
     </div>
   );
 }
