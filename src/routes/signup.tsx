@@ -32,7 +32,9 @@ type SearchParams = {
 };
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Criar conta — imob365" }] }),
+  head: () => ({
+    meta: [{ title: "Criar conta — imob365" }, { name: "robots", content: "noindex, follow" }],
+  }),
   validateSearch: (raw: Record<string, unknown>): SearchParams => ({
     plano: typeof raw.plano === "string" ? raw.plano : undefined,
   }),
