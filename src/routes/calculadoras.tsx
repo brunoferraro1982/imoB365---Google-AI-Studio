@@ -4,19 +4,18 @@ import { Calculator, Home, Wallet, TrendingUp, AlertTriangle, ArrowRight } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadoras")({
   component: CalculadorasPage,
-  head: () => ({
-    meta: [
-      { title: "Calculadoras imobiliárias — valor do imóvel, ITBI, financiamento e mudança" },
-      {
-        name: "description",
-        content:
-          "Estime o valor do seu imóvel, simule ITBI, parcelas de financiamento (SAC/Price) e custo de mudança gratuitamente.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/calculadoras",
+      title: "Calculadoras imobiliárias — valor do imóvel, ITBI, financiamento e mudança",
+      description:
+        "Estime o valor do seu imóvel, simule ITBI, parcelas de financiamento (SAC/Price) e custo de mudança gratuitamente.",
+    }),
 });
 
 const brl = (v: number) =>

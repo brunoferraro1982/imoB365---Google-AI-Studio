@@ -14,24 +14,17 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/plataforma")({
-  head: () => ({
-    meta: [
-      { title: "Plataforma e recursos — imob365" },
-      {
-        name: "description",
-        content:
-          "Tudo que sua imobiliária recebe no imob365: gestão de imóveis e leads, financeiro, marketing multi-portal, jurídico e e-learning, numa única plataforma.",
-      },
-      { property: "og:title", content: "Plataforma e recursos — imob365" },
-      {
-        property: "og:description",
-        content:
-          "Do primeiro lead ao contrato assinado, com financeiro, marketing e jurídico integrados numa única plataforma.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/plataforma",
+      title: "Plataforma e recursos — imob365",
+      description:
+        "Tudo que sua imobiliária recebe no imob365: gestão de imóveis e leads, financeiro, marketing multi-portal, jurídico e e-learning, numa única plataforma.",
+    }),
   component: PlataformaPage,
 });
 

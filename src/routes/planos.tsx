@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { useAuth } from "@/hooks/useAuth";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 type PlanRow = {
   slug: string;
@@ -32,22 +33,14 @@ const fetchActivePlans = createServerFn({ method: "GET" }).handler(async () => {
 
 export const Route = createFileRoute("/planos")({
   loader: async () => fetchActivePlans(),
-  head: () => ({
-    meta: [
-      { title: "Planos e preços — imob365" },
-      {
-        name: "description",
-        content:
-          "Escolha o plano ideal para sua imobiliária. De gratuito a Business, com módulos plugáveis para imobiliárias de todos os tamanhos.",
-      },
-      { property: "og:title", content: "Planos e preços — imob365" },
-      {
-        property: "og:description",
-        content:
-          "Planos modulares para imobiliárias de todos os tamanhos. A partir de R$ 99,90/mês.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/planos",
+      title: "Planos e preços — imob365",
+      description:
+        "Escolha o plano ideal para sua imobiliária. De gratuito a Business, com módulos plugáveis para imobiliárias de todos os tamanhos.",
+    }),
   component: PlanosPage,
 });
 

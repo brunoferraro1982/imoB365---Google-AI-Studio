@@ -21,21 +21,19 @@ import {
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { TestimonialsSection } from "@/components/portal/TestimonialsSection";
 import { PartnersSection } from "@/components/portal/PartnersSection";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/a-imob365")({
-  head: () => ({
-    meta: [
-      { title: "A imoB365 | Inteligência Imobiliária de Alto Padrão" },
-      {
-        name: "description",
-        content:
-          "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento 365 dias por ano em todo o Brasil.",
-      },
-    ],
-    // Canonical auto-referente: reforça, junto com o 301 de /sobre, que esta é
-    // a URL oficial do conteúdo institucional "Sobre" (auditoria GSC).
-    links: [{ rel: "canonical", href: "https://portal.imob365.com.br/a-imob365" }],
-  }),
+  // Canonical auto-referente (seoHead gera pra /a-imob365) reforça, junto com o
+  // 301 de /sobre, que esta é a URL oficial do conteúdo "Sobre" (auditoria GSC).
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/a-imob365",
+      title: "A imoB365 | Inteligência Imobiliária de Alto Padrão",
+      description:
+        "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento 365 dias por ano em todo o Brasil.",
+    }),
   component: AImob365Page,
 });
 
