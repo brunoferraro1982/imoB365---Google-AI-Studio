@@ -28,6 +28,8 @@ export type SeoGlobal = {
   search_action_target: string;
   /** Token de verificação do Google Search Console (meta google-site-verification). */
   gsc_verification: string;
+  /** Measurement ID do Google Analytics 4 (ex.: G-XXXXXXXXXX). Vazio = GA desligado. */
+  ga_measurement_id: string;
   org: { url: string; areaServed: string; description: string };
 };
 
@@ -41,6 +43,7 @@ export const DEFAULT_SEO_GLOBAL: SeoGlobal = {
   default_og_image: "",
   search_action_target: `${SITE_URL}/buscar?q={search_term_string}`,
   gsc_verification: "",
+  ga_measurement_id: "",
   org: { url: SITE_URL, areaServed: "BR", description: "" },
 };
 
@@ -82,6 +85,7 @@ export const getSeoConfig = createServerFn({ method: "GET" }).handler(
         search_action_target:
           rawGlobal.search_action_target || DEFAULT_SEO_GLOBAL.search_action_target,
         gsc_verification: rawGlobal.gsc_verification || DEFAULT_SEO_GLOBAL.gsc_verification,
+        ga_measurement_id: rawGlobal.ga_measurement_id || DEFAULT_SEO_GLOBAL.ga_measurement_id,
         org: { ...DEFAULT_SEO_GLOBAL.org, ...(rawGlobal.org ?? {}) },
       };
 
