@@ -37,6 +37,7 @@ type SeoGlobalForm = {
   search_action_target: string;
   gsc_verification: string;
   ga_measurement_id: string;
+  ahrefs_analytics_key: string;
   org_description: string;
 };
 
@@ -48,6 +49,7 @@ function AdminSeoPage() {
     search_action_target: "",
     gsc_verification: "",
     ga_measurement_id: "",
+    ahrefs_analytics_key: "",
     org_description: "",
   });
   const [savingGlobal, setSavingGlobal] = useState(false);
@@ -64,6 +66,7 @@ function AdminSeoPage() {
         search_action_target: res.global.search_action_target ?? "",
         gsc_verification: res.global.gsc_verification ?? "",
         ga_measurement_id: res.global.ga_measurement_id ?? "",
+        ahrefs_analytics_key: res.global.ahrefs_analytics_key ?? "",
         org_description: res.global.org?.description ?? "",
       });
     } catch (e) {
@@ -177,6 +180,22 @@ function AdminSeoPage() {
             <p className="text-[11px] text-muted-foreground">
               Cole só o ID <code className="rounded bg-muted px-1">G-XXXXXXXXXX</code> da tag do
               Google. Deixe em branco para desligar o Analytics.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Ahrefs Web Analytics (data-key)</Label>
+            <Input
+              value={globalForm.ahrefs_analytics_key}
+              onChange={(e) =>
+                setGlobalForm((f) => ({ ...f, ahrefs_analytics_key: e.target.value }))
+              }
+              placeholder="Ex.: PSbPYvE9hFaWKmvrPzDhrg"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              Referência — o script do Ahrefs hoje está fixo no código-fonte, não é lido daqui
+              ainda. Editar este campo não muda o site; é preparação para uma futura migração pro
+              modelo editável, igual ao Google Analytics acima.
             </p>
           </div>
 

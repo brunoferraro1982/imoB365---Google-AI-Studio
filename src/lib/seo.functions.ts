@@ -47,6 +47,8 @@ export const listSeoPages = createServerFn({ method: "GET" })
         rawGlobal.search_action_target || DEFAULT_SEO_GLOBAL.search_action_target,
       gsc_verification: rawGlobal.gsc_verification ?? DEFAULT_SEO_GLOBAL.gsc_verification,
       ga_measurement_id: rawGlobal.ga_measurement_id ?? DEFAULT_SEO_GLOBAL.ga_measurement_id,
+      ahrefs_analytics_key:
+        rawGlobal.ahrefs_analytics_key ?? DEFAULT_SEO_GLOBAL.ahrefs_analytics_key,
       org: { ...DEFAULT_SEO_GLOBAL.org, ...(rawGlobal.org ?? {}) },
     };
 
@@ -117,6 +119,7 @@ export const saveSeoGlobal = createServerFn({ method: "POST" })
       search_action_target: z.string().trim().max(400).default(""),
       gsc_verification: z.string().trim().max(200).default(""),
       ga_measurement_id: z.string().trim().max(40).default(""),
+      ahrefs_analytics_key: z.string().trim().max(60).default(""),
       org_description: z.string().trim().max(320).default(""),
     }),
   )
@@ -134,6 +137,7 @@ export const saveSeoGlobal = createServerFn({ method: "POST" })
       search_action_target: data.search_action_target || DEFAULT_SEO_GLOBAL.search_action_target,
       gsc_verification: data.gsc_verification,
       ga_measurement_id: data.ga_measurement_id,
+      ahrefs_analytics_key: data.ahrefs_analytics_key,
       org: { ...DEFAULT_SEO_GLOBAL.org, description: data.org_description },
     };
 
