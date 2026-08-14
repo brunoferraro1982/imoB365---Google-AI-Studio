@@ -7,6 +7,18 @@ useDefault = true
 # só ignora achados específicos já revisados.
 [allowlist]
 description = "Falsos positivos confirmados"
+# Por VALOR (não por commit): o data-key do Ahrefs Web Analytics
+# (PSbPYvE9hFaWKmvrPzDhrg) é um identificador público de rastreamento —
+# a própria Ahrefs manda colar direto no HTML do site, não é segredo — mas
+# dispara a regra generic-api-key (string alfanumérica de alta entropia
+# atribuída a algo chamado "key"). Allowlist por SHA de commit não é
+# suficiente aqui: PRs pra develop são squash-merged, o commit squashed tem
+# um SHA novo com o mesmo conteúdo e voltaria a disparar na PR seguinte
+# (mesma causa do incidente de signupIntent.ts abaixo, evitada desta vez
+# allowlistando o valor exato em vez do commit).
+regexes = [
+  '''PSbPYvE9hFaWKmvrPzDhrg''',
+]
 commits = [
   # src/lib/signupIntent.ts:6 — constante local com o nome de um item de
   # localStorage, não um segredo; disparava a regra generic-api-key pelo
