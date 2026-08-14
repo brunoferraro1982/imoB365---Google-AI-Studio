@@ -192,6 +192,19 @@ function RootShell({ children }: { children: React.ReactNode }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
         />
+        {/* Ahrefs Web Analytics — fixo no código (avaliação de risco feita,
+            sem bloqueio real; ver plano). Guardado por PROD, mesmo raciocínio
+            já usado no GA4, pra não sujar a conta com tráfego de dev/localhost.
+            O campo espelho em /admin/seo (ahrefs_analytics_key) é só
+            referência/preparo — não aciona este script, pra evitar injeção
+            duplicada caso um dia os dois mecanismos coexistam. */}
+        {import.meta.env.PROD && (
+          <script
+            async
+            src="https://analytics.ahrefs.com/analytics.js"
+            data-key="PSbPYvE9hFaWKmvrPzDhrg"
+          />
+        )}
       </head>
       <body>
         {children}
