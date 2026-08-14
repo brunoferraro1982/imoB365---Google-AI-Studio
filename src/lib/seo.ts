@@ -30,6 +30,9 @@ export type SeoGlobal = {
   gsc_verification: string;
   /** Measurement ID do Google Analytics 4 (ex.: G-XXXXXXXXXX). Vazio = GA desligado. */
   ga_measurement_id: string;
+  /** data-key do Ahrefs Web Analytics — hoje SÓ referência/preparo: o script real
+   * está fixo em __root.tsx (RootShell), este campo não aciona nada ainda. */
+  ahrefs_analytics_key: string;
   org: { url: string; areaServed: string; description: string };
 };
 
@@ -44,6 +47,10 @@ export const DEFAULT_SEO_GLOBAL: SeoGlobal = {
   search_action_target: `${SITE_URL}/buscar?q={search_term_string}`,
   gsc_verification: "",
   ga_measurement_id: "",
+  // Valor de referência pré-preenchido de propósito (não vazio) — o script já
+  // está fixo no código, então o campo em /admin/seo nasce mostrando o mesmo
+  // valor em uso, mesmo antes de qualquer save.
+  ahrefs_analytics_key: "PSbPYvE9hFaWKmvrPzDhrg",
   org: { url: SITE_URL, areaServed: "BR", description: "" },
 };
 
@@ -86,6 +93,10 @@ export const getSeoConfig = createServerFn({ method: "GET" }).handler(
           rawGlobal.search_action_target || DEFAULT_SEO_GLOBAL.search_action_target,
         gsc_verification: rawGlobal.gsc_verification || DEFAULT_SEO_GLOBAL.gsc_verification,
         ga_measurement_id: rawGlobal.ga_measurement_id || DEFAULT_SEO_GLOBAL.ga_measurement_id,
+        // Presente no objeto por completude de tipo — NÃO é lido pelo head() do
+        // root pra renderizar nada (o script do Ahrefs está fixo, ver RootShell).
+        ahrefs_analytics_key:
+          rawGlobal.ahrefs_analytics_key || DEFAULT_SEO_GLOBAL.ahrefs_analytics_key,
         org: { ...DEFAULT_SEO_GLOBAL.org, ...(rawGlobal.org ?? {}) },
       };
 
