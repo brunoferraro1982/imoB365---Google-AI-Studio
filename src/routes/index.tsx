@@ -50,15 +50,15 @@ import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/fo
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
 import { getVisitorRegion } from "@/lib/geo.functions";
-import { seoHead, readSeoFromMatches, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
+import { seoHead, getSeoConfig, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
 import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
 export const Route = createFileRoute("/")({
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/",
       title: "imob365 — Encontre o imóvel certo, com quem entende do seu bairro",
       description:

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { useAuth } from "@/hooks/useAuth";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 type PlanRow = {
   slug: string;
@@ -33,9 +33,9 @@ const fetchActivePlans = createServerFn({ method: "GET" }).handler(async () => {
 
 export const Route = createFileRoute("/planos")({
   loader: async () => fetchActivePlans(),
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/planos",
       title: "Planos e preços — imob365",
       description:

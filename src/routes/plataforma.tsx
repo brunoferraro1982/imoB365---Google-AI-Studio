@@ -14,12 +14,12 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/plataforma")({
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/plataforma",
       title: "Plataforma e recursos — imob365",
       description:

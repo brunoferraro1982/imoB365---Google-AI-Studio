@@ -5,11 +5,22 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // + config global (global_settings chave seo_global) pra montar o <head>, sem
 // precisar de deploy a cada ajuste. O super admin edita em /admin/seo.
 //
-// getSeoConfig roda no loader do __root (isomórfico) — cache em memória com TTL
-// curto (mesmo espírito de rateLimit.ts: SEO muda pouco, uma query a cada N s
-// basta; reinicia a cada deploy/restart do processo). seoHead() mescla o
-// default do código com o override do banco; readSeoFromMatches() puxa o config
-// do loaderData do root dentro do head() de cada rota.
+// getSeoConfig é cacheado em memória com TTL curto (mesmo espírito de
+// rateLimit.ts: SEO muda pouco, uma query a cada N s basta; reinicia a cada
+// deploy/restart do processo). Cada rota institucional chama getSeoConfig()
+// diretamente dentro do próprio head() (head() pode ser assíncrono — o router
+// aguarda a Promise) e passa o resultado pra seoHead(), que mescla com o
+// default do código.
+//
+// Importante: NÃO dá pra ler o SeoConfig do root a partir de `matches` dentro
+// do head() de uma rota filha — `matches` é um snapshot estático (descritores
+// id/routeId) que o router-core passa pra montagem de head, e não carrega o
+// loaderData atualizado de rotas ANCESTRAIS nesse momento (só o loaderData da
+// própria rota corrente é garantidamente fresco). Uma tentativa anterior
+// (`readSeoFromMatches`) dependia disso e falhava silenciosamente sempre
+// (voltava fallback pro título hardcoded do código), sem nunca lançar erro —
+// removida. Chamar getSeoConfig() direto em cada rota é robusto e barato
+// (cache compartilhado entre todas as chamadas dentro do TTL).
 
 export const SITE_URL = "https://portal.imob365.com.br";
 
@@ -109,13 +120,6 @@ export const getSeoConfig = createServerFn({ method: "GET" }).handler(
     }
   },
 );
-
-/** Lê o SeoConfig exposto pelo loader do __root a partir dos matches do head(). */
-export function readSeoFromMatches(matches: Array<{ routeId?: string; loaderData?: unknown }>) {
-  const root = matches.find((m) => m.routeId === "__root__");
-  const seo = (root?.loaderData as { seo?: SeoConfig } | undefined)?.seo;
-  return seo ?? EMPTY_CONFIG;
-}
 
 type MetaEntry = Record<string, unknown>;
 

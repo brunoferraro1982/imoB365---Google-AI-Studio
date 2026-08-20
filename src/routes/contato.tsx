@@ -17,12 +17,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/contato")({
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/contato",
       title: "Contato | imoB365 — Consultoria Imobiliária",
       description: "Entre em contato com a imoB365. Atendimento 365 dias por ano em todo o Brasil.",
