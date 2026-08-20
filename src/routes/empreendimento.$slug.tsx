@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Building, MapPin, Calendar, Landmark, Maximize2, ChevronLeft } from "lucide-react";
 import { createServerFn } from "@tanstack/react-start";
@@ -46,7 +46,10 @@ const fetchEmpreendimentoBySlug = createServerFn({ method: "GET" })
       .eq("publicado", true)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!data) throw new Error("Empreendimento não encontrado");
+    // notFound() vira uma Response 404 de verdade (createServerFn trata isso
+    // nativamente) — ver o mesmo fix em imovel.$slug.tsx, mesmo bug real de
+    // produção (500 em vez de 404 pra slug/publicado inexistente).
+    if (!data) throw notFound();
     return data as Empreendimento;
   });
 
@@ -70,7 +73,7 @@ export const Route = createFileRoute("/empreendimento/$slug")({
     };
   },
   loader: async ({ params }) => fetchEmpreendimentoBySlug({ data: params.slug }),
-  errorComponent: () => (
+  notFoundComponent: () => (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
@@ -78,6 +81,22 @@ export const Route = createFileRoute("/empreendimento/$slug")({
         <h1 className="text-2xl font-bold">Empreendimento não encontrado</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Este empreendimento pode não estar publicado ou o endereço está incorreto.
+        </p>
+        <Link to="/empreendimentos" className="mt-4 text-primary hover:underline">
+          Ver todos os empreendimentos
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
+        <Landmark className="mb-4 h-12 w-12 text-muted-foreground/40" />
+        <h1 className="text-2xl font-bold">Não foi possível carregar este empreendimento</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ocorreu um erro ao buscar os dados. Tente novamente em instantes.
         </p>
         <Link to="/empreendimentos" className="mt-4 text-primary hover:underline">
           Ver todos os empreendimentos

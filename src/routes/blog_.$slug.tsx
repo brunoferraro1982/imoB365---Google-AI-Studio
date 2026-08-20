@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +16,7 @@ const fetchPostBySlug = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
     const tenantId = await getCorporateTenantId();
-    if (!tenantId) throw new Error("Post não encontrado");
+    if (!tenantId) throw notFound();
 
     const { data, error } = await supabase
       .from("blog_posts")
@@ -29,7 +29,10 @@ const fetchPostBySlug = createServerFn({ method: "GET" })
       .maybeSingle();
 
     if (error) throw new Error(error.message);
-    if (!data) throw new Error("Post não encontrado");
+    // notFound() vira uma Response 404 de verdade (createServerFn trata isso
+    // nativamente) — mesmo fix aplicado em imovel.$slug.tsx/empreendimento.$slug.tsx,
+    // mesmo bug real de produção (500 em vez de 404 pra slug inexistente).
+    if (!data) throw notFound();
 
     // Artigos relacionados — mesma categoria, exclui o atual. Mantém o
     // objetivo principal do artigo (o conteúdo) engajando o leitor com mais
@@ -79,14 +82,25 @@ export const Route = createFileRoute("/blog_/$slug")({
 
   loader: async ({ params }) => fetchPostBySlug({ data: params.slug }),
 
-  errorComponent: ({ error }) => (
+  notFoundComponent: () => (
+    <>
+      <SiteHeader />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
+        <p className="text-muted-foreground">Este artigo não foi encontrado ou foi removido.</p>
+        <Button asChild variant="outline">
+          <Link to="/blog">← Voltar ao Blog</Link>
+        </Button>
+      </div>
+      <SiteFooter />
+    </>
+  ),
+
+  errorComponent: () => (
     <>
       <SiteHeader />
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
         <p className="text-muted-foreground">
-          {error.message === "Post não encontrado"
-            ? "Este artigo não foi encontrado ou foi removido."
-            : "Ocorreu um erro ao carregar o artigo."}
+          Ocorreu um erro ao carregar o artigo. Tente novamente.
         </p>
         <Button asChild variant="outline">
           <Link to="/blog">← Voltar ao Blog</Link>

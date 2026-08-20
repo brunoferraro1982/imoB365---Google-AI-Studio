@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Bed, Bath, Car, Maximize2, MapPin, Home, MessageCircle, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +57,11 @@ const fetchImovelBySlug = createServerFn({ method: "GET" })
       .eq("status", "ativo")
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!data) throw new Error("Imóvel não encontrado");
+    // notFound() é tratado nativamente pelo createServerFn (converte pra uma
+    // Response real com status 404) — usar Error genérico aqui fazia o site
+    // responder 500 pra qualquer imóvel não publicado/slug inexistente,
+    // achado real em produção durante a importação Daniela Fonseca (2026-08-19).
+    if (!data) throw notFound();
     return data as unknown as Imovel;
   });
 
@@ -82,7 +86,7 @@ export const Route = createFileRoute("/imovel/$slug")({
     };
   },
   loader: async ({ params }) => fetchImovelBySlug({ data: params.slug }),
-  errorComponent: () => (
+  notFoundComponent: () => (
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
@@ -90,6 +94,22 @@ export const Route = createFileRoute("/imovel/$slug")({
         <h1 className="text-2xl font-bold">Imóvel não encontrado</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Este imóvel pode não estar publicado ou o endereço está incorreto.
+        </p>
+        <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
+          Voltar para a busca
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="flex min-h-[60vh] flex-col items-center justify-center p-16 text-center">
+        <Home className="mb-4 h-12 w-12 text-muted-foreground/40" />
+        <h1 className="text-2xl font-bold">Não foi possível carregar este imóvel</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ocorreu um erro ao buscar os dados. Tente novamente em instantes.
         </p>
         <Link to="/buscar" className="mt-4 inline-block text-primary hover:underline">
           Voltar para a busca
