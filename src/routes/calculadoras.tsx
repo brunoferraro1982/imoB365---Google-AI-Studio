@@ -4,13 +4,13 @@ import { Calculator, Home, Wallet, TrendingUp, AlertTriangle, ArrowRight } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadoras")({
   component: CalculadorasPage,
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/calculadoras",
       title: "Calculadoras imobiliárias — valor do imóvel, ITBI, financiamento e mudança",
       description:

@@ -13,13 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadora-mudanca")({
   component: MudancaPage,
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/calculadora-mudanca",
       title: "Calculadora de Custo de Mudança com Dicas — imob365",
       description:

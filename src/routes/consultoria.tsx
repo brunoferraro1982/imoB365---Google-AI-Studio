@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, Headset } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/consultoria")({
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/consultoria",
       title: "Consultoria Imobiliária | imoB365",
       description:
