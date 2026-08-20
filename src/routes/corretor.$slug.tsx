@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import {
   Mail,
   Phone,
@@ -18,10 +18,6 @@ import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL } from "@/lib/format";
 import { waLink } from "@/lib/whatsapp";
 import { baixarVCard } from "@/lib/vcard";
 import { Button } from "@/components/ui/button";
-
-export const Route = createFileRoute("/corretor/$slug")({
-  component: CorretorPublic,
-});
 
 type Corretor = {
   id: string;
@@ -52,73 +48,123 @@ type Imovel = {
   endereco_uf: string | null;
 };
 
-function CorretorPublic() {
-  const { slug } = Route.useParams();
-  const [corretor, setCorretor] = useState<Corretor | null>(null);
-  const [tenantNome, setTenantNome] = useState<string>("");
-  const [imoveis, setImoveis] = useState<Imovel[]>([]);
-  const [capas, setCapas] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+type CorretorPageData = {
+  corretor: Corretor;
+  tenantNome: string;
+  imoveis: Imovel[];
+  capas: Record<string, string>;
+};
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await (supabase as any)
-        .from("corretores")
-        .select("*")
-        .eq("slug", slug)
-        .eq("ativo", true)
-        .eq("publico", true)
-        .maybeSingle();
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-      setCorretor(data as Corretor);
-      const [{ data: tenant }, { data: imv }] = await Promise.all([
-        supabase.from("tenants").select("nome").eq("id", data.tenant_id).maybeSingle(),
-        supabase
-          .from("imoveis")
-          .select("id,slug,titulo,finalidade,tipo,preco,endereco_cidade,endereco_uf")
-          .eq("corretor_responsavel_id", data.id)
-          .eq("publicado", true)
-          .eq("status", "ativo")
-          .order("updated_at", { ascending: false }),
-      ]);
-      setTenantNome(tenant?.nome ?? "");
-      const imoveisList = (imv as Imovel[]) ?? [];
-      setImoveis(imoveisList);
-      if (imoveisList.length) {
-        const { data: fotos } = await supabase
-          .from("imovel_fotos")
-          .select("imovel_id,storage_path,capa")
-          .in(
-            "imovel_id",
-            imoveisList.map((i) => i.id),
-          )
-          .eq("capa", true);
-        const map: Record<string, string> = {};
-        (fotos ?? []).forEach((f: { imovel_id: string; storage_path: string }) => {
-          map[f.imovel_id] = supabase.storage
-            .from("imovel-fotos")
-            .getPublicUrl(f.storage_path).data.publicUrl;
-        });
-        setCapas(map);
-      }
-      setLoading(false);
-    })();
-  }, [slug]);
+// SSR — antes buscava tudo no client via useEffect, o que deixava a página
+// sem título/description próprios (mesma categoria do bug real corrigido em
+// imovel.$slug/empreendimento.$slug/blog_.$slug: toda página de corretor
+// saía com o <title> genérico do root, duplicidade real em produção).
+const fetchCorretorBySlug = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }): Promise<CorretorPageData> => {
+    const { data, error } = await (supabase as any)
+      .from("corretores")
+      .select("*")
+      .eq("slug", slug)
+      .eq("ativo", true)
+      .eq("publico", true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw notFound();
 
-  if (loading)
-    return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
-  if (!corretor)
-    return (
+    const corretor = data as Corretor;
+    const [{ data: tenant }, { data: imv }] = await Promise.all([
+      supabase.from("tenants").select("nome").eq("id", corretor.tenant_id).maybeSingle(),
+      supabase
+        .from("imoveis")
+        .select("id,slug,titulo,finalidade,tipo,preco,endereco_cidade,endereco_uf")
+        .eq("corretor_responsavel_id", corretor.id)
+        .eq("publicado", true)
+        .eq("status", "ativo")
+        .order("updated_at", { ascending: false }),
+    ]);
+
+    const imoveis = (imv as Imovel[]) ?? [];
+    let capas: Record<string, string> = {};
+    if (imoveis.length) {
+      const { data: fotos } = await supabase
+        .from("imovel_fotos")
+        .select("imovel_id,storage_path,capa")
+        .in(
+          "imovel_id",
+          imoveis.map((i) => i.id),
+        )
+        .eq("capa", true);
+      capas = Object.fromEntries(
+        ((fotos ?? []) as { imovel_id: string; storage_path: string }[]).map((f) => [
+          f.imovel_id,
+          supabase.storage.from("imovel-fotos").getPublicUrl(f.storage_path).data.publicUrl,
+        ]),
+      );
+    }
+
+    return { corretor, tenantNome: tenant?.nome ?? "", imoveis, capas };
+  });
+
+export const Route = createFileRoute("/corretor/$slug")({
+  head: ({ loaderData }) => {
+    const dados = loaderData as CorretorPageData | undefined;
+    if (!dados) return { meta: [] };
+    const { corretor, tenantNome, imoveis } = dados;
+    const creciTxt = corretor.creci
+      ? ` — CRECI ${corretor.creci}${corretor.creci_uf ? "/" + corretor.creci_uf : ""}`
+      : "";
+    const titulo = `${corretor.nome} | Corretor de Imóveis${creciTxt} | imob365`;
+    const descricao = (
+      corretor.bio ||
+      `${corretor.nome}, corretor de imóveis${tenantNome ? ` na ${tenantNome}` : ""}. ${imoveis.length} imóve${imoveis.length === 1 ? "l" : "is"} disponíve${imoveis.length === 1 ? "l" : "is"} para venda e locação.`
+    ).slice(0, 160);
+    return {
+      meta: [
+        { title: titulo },
+        { name: "description", content: descricao },
+        { property: "og:title", content: titulo },
+        { property: "og:description", content: descricao },
+        ...(corretor.foto_url ? [{ property: "og:image", content: corretor.foto_url }] : []),
+      ],
+    };
+  },
+  loader: async ({ params }) => fetchCorretorBySlug({ data: params.slug }),
+  notFoundComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
       <div className="p-16 text-center">
         <h1 className="text-2xl font-bold">Corretor não encontrado</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Este perfil pode não estar ativo ou o endereço está incorreto.
+        </p>
         <Link to="/" className="mt-4 inline-block text-primary hover:underline">
           Voltar
         </Link>
       </div>
-    );
+      <SiteFooter />
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="p-16 text-center">
+        <h1 className="text-2xl font-bold">Não foi possível carregar este perfil</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ocorreu um erro ao buscar os dados. Tente novamente em instantes.
+        </p>
+        <Link to="/" className="mt-4 inline-block text-primary hover:underline">
+          Voltar
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  component: CorretorPublic,
+});
+
+function CorretorPublic() {
+  const { corretor, tenantNome, imoveis, capas } = Route.useLoaderData() as CorretorPageData;
 
   return (
     <div className="min-h-screen bg-background">
