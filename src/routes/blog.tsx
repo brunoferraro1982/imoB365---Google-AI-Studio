@@ -6,12 +6,12 @@ import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
 import { Calendar, Tag } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { BlogColumnsLayout } from "@/components/blog/BlogColumnsLayout";
-import { seoHead, readSeoFromMatches } from "@/lib/seo";
+import { seoHead, getSeoConfig } from "@/lib/seo";
 
 export const Route = createFileRoute("/blog")({
-  head: ({ matches }) =>
+  head: async () =>
     seoHead({
-      seo: readSeoFromMatches(matches),
+      seo: await getSeoConfig(),
       path: "/blog",
       title: "Blog | imoB365 — Notícias do Mercado Imobiliário",
       description:
