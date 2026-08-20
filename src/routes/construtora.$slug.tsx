@@ -1,12 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
 import { Factory, Globe, Mail, MapPin, Phone, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
-
-export const Route = createFileRoute("/construtora/$slug")({
-  component: ConstrutoraPublic,
-});
 
 type Construtora = {
   id: string;
@@ -30,60 +26,107 @@ type Empreendimento = {
   fotos_urls: string[];
 };
 
-function ConstrutoraPublic() {
-  const { slug } = Route.useParams();
-  const [construtora, setConstrutora] = useState<Construtora | null>(null);
-  const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
-  const [parceiras, setParceiras] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+type ConstrutoraPageData = {
+  construtora: Construtora;
+  empreendimentos: Empreendimento[];
+  parceiras: string[];
+};
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("construtoras")
-        .select("id,nome,logo_url,telefone,email,site,endereco_cidade,endereco_uf,descricao")
-        .eq("slug", slug)
-        .eq("ativo", true)
-        .maybeSingle();
-      if (!data) {
-        setLoading(false);
-        return;
-      }
-      setConstrutora(data as Construtora);
-      const [{ data: emps }, { data: parceriasData }] = await Promise.all([
-        supabase
-          .from("empreendimentos")
-          .select("id,slug,nome,fase,endereco_cidade,endereco_uf,fotos_urls")
-          .eq("construtora_id", data.id)
-          .eq("publicado", true)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("construtora_tenant_parceria")
-          .select("tenants(nome)")
-          .eq("construtora_id", data.id)
-          .eq("status", "ativo"),
-      ]);
-      setEmpreendimentos((emps ?? []) as Empreendimento[]);
-      setParceiras(
-        ((parceriasData ?? []) as { tenants: { nome: string } | null }[])
-          .map((p) => p.tenants?.nome)
-          .filter((n): n is string => !!n),
-      );
-      setLoading(false);
-    })();
-  }, [slug]);
+// SSR — antes buscava tudo no client via useEffect, mesma categoria do bug
+// real corrigido em imovel.$slug/empreendimento.$slug/blog_.$slug/corretor.$slug:
+// toda página de construtora saía com o <title> genérico do root.
+const fetchConstrutoraBySlug = createServerFn({ method: "GET" })
+  .validator((slug: string) => slug)
+  .handler(async ({ data: slug }): Promise<ConstrutoraPageData> => {
+    const { data, error } = await supabase
+      .from("construtoras")
+      .select("id,nome,logo_url,telefone,email,site,endereco_cidade,endereco_uf,descricao")
+      .eq("slug", slug)
+      .eq("ativo", true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) throw notFound();
 
-  if (loading)
-    return <div className="p-10 text-center text-sm text-muted-foreground">Carregando…</div>;
-  if (!construtora)
-    return (
+    const construtora = data as Construtora;
+    const [{ data: emps }, { data: parceriasData }] = await Promise.all([
+      supabase
+        .from("empreendimentos")
+        .select("id,slug,nome,fase,endereco_cidade,endereco_uf,fotos_urls")
+        .eq("construtora_id", construtora.id)
+        .eq("publicado", true)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("construtora_tenant_parceria")
+        .select("tenants(nome)")
+        .eq("construtora_id", construtora.id)
+        .eq("status", "ativo"),
+    ]);
+
+    const empreendimentos = (emps ?? []) as Empreendimento[];
+    const parceiras = ((parceriasData ?? []) as { tenants: { nome: string } | null }[])
+      .map((p) => p.tenants?.nome)
+      .filter((n): n is string => !!n);
+
+    return { construtora, empreendimentos, parceiras };
+  });
+
+export const Route = createFileRoute("/construtora/$slug")({
+  head: ({ loaderData }) => {
+    const dados = loaderData as ConstrutoraPageData | undefined;
+    if (!dados) return { meta: [] };
+    const { construtora, empreendimentos } = dados;
+    const local = [construtora.endereco_cidade, construtora.endereco_uf].filter(Boolean).join("/");
+    const titulo = `${construtora.nome} — Construtora${local ? ` em ${local}` : ""} | imob365`;
+    const descricao = (
+      construtora.descricao ||
+      `${construtora.nome}, construtora${local ? ` em ${local}` : ""}. ${empreendimentos.length} empreendimento${empreendimentos.length === 1 ? "" : "s"} disponíve${empreendimentos.length === 1 ? "l" : "is"}.`
+    ).slice(0, 160);
+    return {
+      meta: [
+        { title: titulo },
+        { name: "description", content: descricao },
+        { property: "og:title", content: titulo },
+        { property: "og:description", content: descricao },
+        ...(construtora.logo_url ? [{ property: "og:image", content: construtora.logo_url }] : []),
+      ],
+    };
+  },
+  loader: async ({ params }) => fetchConstrutoraBySlug({ data: params.slug }),
+  notFoundComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
       <div className="p-16 text-center">
         <h1 className="text-2xl font-bold">Construtora não encontrada</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Este perfil pode não estar ativo ou o endereço está incorreto.
+        </p>
         <Link to="/" className="mt-4 inline-block text-primary hover:underline">
           Voltar
         </Link>
       </div>
-    );
+      <SiteFooter />
+    </div>
+  ),
+  errorComponent: () => (
+    <div className="min-h-screen bg-background">
+      <SiteHeader />
+      <div className="p-16 text-center">
+        <h1 className="text-2xl font-bold">Não foi possível carregar esta construtora</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ocorreu um erro ao buscar os dados. Tente novamente em instantes.
+        </p>
+        <Link to="/" className="mt-4 inline-block text-primary hover:underline">
+          Voltar
+        </Link>
+      </div>
+      <SiteFooter />
+    </div>
+  ),
+  component: ConstrutoraPublic,
+});
+
+function ConstrutoraPublic() {
+  const { construtora, empreendimentos, parceiras } = Route.useLoaderData() as ConstrutoraPageData;
 
   return (
     <div className="min-h-screen bg-background">

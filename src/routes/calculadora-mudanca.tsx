@@ -13,19 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadora-mudanca")({
   component: MudancaPage,
-  head: () => ({
-    meta: [
-      { title: "Calculadora de Custo de Mudança com Dicas — imob365" },
-      {
-        name: "description",
-        content:
-          "Estime o custo do frete e logística para sua mudança de imóvel, acompanhe um checklist completo de organização e dicas essenciais para planejar seu novo lar.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/calculadora-mudanca",
+      title: "Calculadora de Custo de Mudança com Dicas — imob365",
+      description:
+        "Estime o custo do frete e logística para sua mudança de imóvel, acompanhe um checklist completo de organização e dicas essenciais para planejar seu novo lar.",
+    }),
 });
 
 const formatBRL = (v: number) => {

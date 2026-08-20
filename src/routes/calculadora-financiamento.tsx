@@ -13,19 +13,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadora-financiamento")({
   component: FinanciamentoPage,
-  head: () => ({
-    meta: [
-      { title: "Calculadora de Financiamento SAC com Dicas — imob365" },
-      {
-        name: "description",
-        content:
-          "Simule as parcelas de financiamento pelo sistema SAC, entenda como funciona a amortização e confira dicas financeiras essenciais para o mercado imobiliário.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/calculadora-financiamento",
+      title: "Calculadora de Financiamento SAC com Dicas — imob365",
+      description:
+        "Simule as parcelas de financiamento pelo sistema SAC, entenda como funciona a amortização e confira dicas financeiras essenciais para o mercado imobiliário.",
+    }),
 });
 
 const formatBRL = (v: number) => {
