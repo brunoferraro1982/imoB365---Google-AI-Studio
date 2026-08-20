@@ -187,11 +187,16 @@ function Landing() {
           )
           .eq("publicado", true)
           .eq("status", "ativo")
-          // Pool maior que os 8 exibidos — a vitrine final é COMPOSTA em JS
-          // (região do visitante + intercalação corretor/imobiliária +
-          // preferência Bruno/imob365), não é mais só recência.
+          // Pool bem maior que os 8 exibidos — a vitrine final é COMPOSTA em JS
+          // (região do visitante + intercalação por tenant/corretor×imobiliária +
+          // preferência Bruno/imob365), não é mais só recência. Precisa ser
+          // generoso o bastante pra sobreviver a uma importação em massa de um
+          // único tenant sem excluir os outros do pool inteiro (achado real:
+          // com limit(40), a importação da Daniela Fonseca — 44 imóveis
+          // recém-ativados — tomou 100% das posições, zerando a vitrine dos
+          // demais corretores/imobiliárias até esse fix).
           .order("updated_at", { ascending: false })
-          .limit(40),
+          .limit(200),
         getVisitorRegion().catch(() => null),
       ]);
       const pool: ImovelCard[] = (data ?? []).map((d: any) => {
