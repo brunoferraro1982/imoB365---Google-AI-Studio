@@ -5,19 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
+import { seoHead, readSeoFromMatches } from "@/lib/seo";
 
 export const Route = createFileRoute("/calculadora-itbi")({
   component: ItbiPage,
-  head: () => ({
-    meta: [
-      { title: "Calculadora de ITBI Completa com Dicas — imob365" },
-      {
-        name: "description",
-        content:
-          "Calcule o Imposto sobre Transmissão de Bens Imóveis (ITBI), entenda como funciona e confira dicas práticas para corretores e imobiliárias.",
-      },
-    ],
-  }),
+  head: ({ matches }) =>
+    seoHead({
+      seo: readSeoFromMatches(matches),
+      path: "/calculadora-itbi",
+      title: "Calculadora de ITBI Completa com Dicas — imob365",
+      description:
+        "Calcule o Imposto sobre Transmissão de Bens Imóveis (ITBI), entenda como funciona e confira dicas práticas para corretores e imobiliárias.",
+    }),
 });
 
 const formatBRL = (v: number) => {
