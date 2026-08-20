@@ -56,6 +56,37 @@ function regionTier(imovel: ImovelComposivel, region: VisitorRegion): 0 | 1 | 2 
 
 type Anotado<T> = { item: T; isCorretor: boolean; tier: number; pref: number; upd: string };
 
+// Intercala por TENANT dentro de um bucket (corretor ou imobiliária), preservando
+// a ordem relativa por tier/pref/recência já aplicada em `anot`. Sem isso, um
+// tenant com muitos imóveis recém-atualizados (ex.: importação em massa de um
+// único corretor) preenche sozinho todas as posições daquele bucket, excluindo
+// outros tenants do mesmo tipo mesmo quando eles têm imóveis ativos —
+// achado real em produção após a importação em massa da Daniela Fonseca
+// (2026-08-19): o bucket de corretores virou 100% dela, zerando a
+// intercalação com o outro corretor cadastrado no sistema.
+function porTenant<T extends ImovelComposivel>(itemsOrdenados: Anotado<T>[]): Anotado<T>[] {
+  const grupos = new Map<string, Anotado<T>[]>();
+  const ordemTenants: string[] = [];
+  itemsOrdenados.forEach((a, idx) => {
+    const chave = a.item.tenant_id ?? `__sem_tenant_${idx}`;
+    let grupo = grupos.get(chave);
+    if (!grupo) {
+      grupo = [];
+      grupos.set(chave, grupo);
+      ordemTenants.push(chave);
+    }
+    grupo.push(a);
+  });
+  const resultado: Anotado<T>[] = [];
+  for (let rodada = 0; resultado.length < itemsOrdenados.length; rodada++) {
+    for (const chave of ordemTenants) {
+      const grupo = grupos.get(chave);
+      if (grupo && rodada < grupo.length) resultado.push(grupo[rodada]);
+    }
+  }
+  return resultado;
+}
+
 // Intercala dois buckets um a um até `limit`; quando um esvazia, drena o outro
 // (o grid nunca fica com buraco). `startA` escolhe quem lidera.
 function zipAlternate<T>(a: Anotado<T>[], b: Anotado<T>[], limit: number, startA: boolean): T[] {
@@ -97,8 +128,11 @@ export function comporDestaques<T extends ImovelComposivel>(
     a.tier - b.tier || a.pref - b.pref || b.upd.localeCompare(a.upd);
   anot.sort(cmp);
 
-  const corretores = anot.filter((x) => x.isCorretor);
-  const outros = anot.filter((x) => !x.isCorretor); // imobiliárias + tipo desconhecido
+  // porTenant() intercala por tenant dentro de cada bucket — sem isso, um
+  // tenant com muito volume recente (ex.: importação em massa) preenche as
+  // posições sozinho, mesmo com outros tenants do mesmo tipo disponíveis.
+  const corretores = porTenant(anot.filter((x) => x.isCorretor));
+  const outros = porTenant(anot.filter((x) => !x.isCorretor)); // imobiliárias + tipo desconhecido
 
   // Lidera o bucket cujo topo tem a melhor chave (região/preferência/recência).
   let startA: boolean;
