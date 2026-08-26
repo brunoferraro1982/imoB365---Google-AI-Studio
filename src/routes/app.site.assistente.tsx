@@ -235,6 +235,15 @@ function SiteWizard() {
 
   async function finish(publicar: boolean) {
     if (!tenantId) return;
+    // Defesa em profundidade: sem slug válido, /site/$slug nunca vai achar o
+    // tenant (busca por slug ANTES de checar publicado) — publicar deixaria
+    // o toast de sucesso mentir sobre uma URL inacessível. Achado real em
+    // produção: tenants.slug='' por bug de provision_trial_business (ver
+    // migration 20260826140000_fix_provision_trial_business_slug_bug.sql).
+    if (publicar && !tenantSlug) {
+      toast.error("Sua conta está sem uma URL de site configurada — contate o suporte.");
+      return;
+    }
     setSaving(true);
 
     try {
