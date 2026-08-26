@@ -22,12 +22,19 @@ export function ImoveisSection({
   imoveis,
   fotosMap,
   compact,
+  totalCount,
+  tenantSlug,
 }: {
   variant: LayoutKey;
   imoveis: ImovelCard[];
   fotosMap: Record<string, string>;
   /** Renderização em 1 coluna, para quando o bloco está numa área lateral estreita (layout 'amplo'). */
   compact?: boolean;
+  /** Contagem real de imóveis publicados do tenant — pode ser maior que
+   * `imoveis.length` (a home só busca uma amostra em destaque). Quando
+   * maior, mostra o link "Ver todos". */
+  totalCount?: number;
+  tenantSlug?: string;
 }) {
   // Container query (@sm/@lg), não breakpoint de viewport (sm/lg) — a
   // seção pode ser renderizada dentro de uma coluna estreita quando há
@@ -139,6 +146,17 @@ export function ImoveisSection({
               </Link>
             );
           })}
+        </div>
+      )}
+      {!compact && tenantSlug && totalCount != null && totalCount > imoveis.length && (
+        <div className="mt-8 text-center">
+          <Link
+            to="/site/$slug/imoveis"
+            params={{ slug: tenantSlug }}
+            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+          >
+            Ver todos os {totalCount} imóveis
+          </Link>
         </div>
       )}
     </div>
