@@ -43,6 +43,7 @@ function TenantHome() {
   const [layout, setLayout] = useState<LayoutKey>("classico");
   const [secoes, setSecoes] = useState<SectionDbItem[]>(DEFAULT_SECOES);
   const [imoveis, setImoveis] = useState<any[]>([]);
+  const [imoveisTotal, setImoveisTotal] = useState(0);
   const [fotosMap, setFotosMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
@@ -71,31 +72,44 @@ function TenantHome() {
         .eq("tenant_id", tenant.id);
       if (!isOwnTenantPreview) settingsQuery = settingsQuery.eq("publicado", true);
 
-      const [{ data: cfg }, { data: pages }, { data: imv }, { count: blogCount }] =
-        await Promise.all([
-          settingsQuery.maybeSingle(),
-          supabase
-            .from("tenant_pages")
-            .select("slug,titulo")
-            .eq("tenant_id", tenant.id)
-            .eq("publicada", true)
-            .order("ordem"),
-          supabase
-            .from("imoveis")
-            .select(
-              "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,area_util,endereco_bairro,endereco_cidade,endereco_uf",
-            )
-            .eq("tenant_id", tenant.id)
-            .eq("publicado", true)
-            .eq("status", "ativo")
-            .order("publicado_em", { ascending: false })
-            .limit(12),
-          supabase
-            .from("blog_posts")
-            .select("id", { count: "exact", head: true })
-            .eq("tenant_id", tenant.id)
-            .eq("status", "publicado"),
-        ]);
+      const [
+        { data: cfg },
+        { data: pages },
+        { data: imv },
+        { count: blogCount },
+        { count: imoveisCount },
+      ] = await Promise.all([
+        settingsQuery.maybeSingle(),
+        supabase
+          .from("tenant_pages")
+          .select("slug,titulo")
+          .eq("tenant_id", tenant.id)
+          .eq("publicada", true)
+          .order("ordem"),
+        supabase
+          .from("imoveis")
+          .select(
+            "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,area_util,endereco_bairro,endereco_cidade,endereco_uf",
+          )
+          .eq("tenant_id", tenant.id)
+          .eq("publicado", true)
+          .eq("status", "ativo")
+          .order("publicado_em", { ascending: false })
+          .limit(12),
+        supabase
+          .from("blog_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", tenant.id)
+          .eq("status", "publicado"),
+        // Contagem real (não a amostra de até 12 em destaque acima) — usada
+        // no stat do hero e pra decidir se mostra o link "Ver todos".
+        supabase
+          .from("imoveis")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", tenant.id)
+          .eq("publicado", true)
+          .eq("status", "ativo"),
+      ]);
       if (!cfg) {
         setNotFoundState(true);
         setLoading(false);
@@ -117,6 +131,7 @@ function TenantHome() {
       setLayout((cfg.layout as LayoutKey) || "classico");
       setSecoes((cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES);
       setImoveis(imv ?? []);
+      setImoveisTotal(imoveisCount ?? imv?.length ?? 0);
       if (imv && imv.length) {
         const { data: fotos } = await supabase
           .from("imovel_fotos")
@@ -141,15 +156,15 @@ function TenantHome() {
     const cidades = new Set(imoveis.map((i) => i.endereco_cidade).filter(Boolean));
     const tipos = new Set(imoveis.map((i) => i.tipo).filter(Boolean));
     return [
-      imoveis.length > 0 && {
+      imoveisTotal > 0 && {
         icon: Building2,
-        label: imoveis.length === 1 ? "imóvel disponível" : "imóveis disponíveis",
-        value: String(imoveis.length),
+        label: imoveisTotal === 1 ? "imóvel disponível" : "imóveis disponíveis",
+        value: String(imoveisTotal),
       },
       cidades.size > 1 && { icon: MapPin, label: "cidades atendidas", value: String(cidades.size) },
       tipos.size > 1 && { icon: Sparkles, label: "tipos de imóvel", value: String(tipos.size) },
     ].filter(Boolean) as { icon: typeof Building2; label: string; value: string }[];
-  }, [imoveis]);
+  }, [imoveis, imoveisTotal]);
 
   const { esquerda, direita } = useSiteWidgets(ctx?.tenantId);
 
@@ -172,6 +187,8 @@ function TenantHome() {
             imoveis={imoveis}
             fotosMap={fotosMap}
             compact={compact}
+            totalCount={imoveisTotal}
+            tenantSlug={slug}
           />
         );
       case "sobre":
@@ -263,7 +280,13 @@ function TenantHome() {
             return (
               <section key={s.key} id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
                 <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
-                  <ImoveisSection variant={layout} imoveis={imoveis} fotosMap={fotosMap} />
+                  <ImoveisSection
+                    variant={layout}
+                    imoveis={imoveis}
+                    fotosMap={fotosMap}
+                    totalCount={imoveisTotal}
+                    tenantSlug={slug}
+                  />
                 </SiteWidgetsLayout>
               </section>
             );
