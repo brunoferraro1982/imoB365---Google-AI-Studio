@@ -108,6 +108,7 @@ import { Route as AppComissoesIndexRouteImport } from './routes/app.comissoes.in
 import { Route as AppChatIndexRouteImport } from './routes/app.chat.index'
 import { Route as AppAtendimentoIndexRouteImport } from './routes/app.atendimento.index'
 import { Route as AdminAtendimentoIndexRouteImport } from './routes/admin.atendimento.index'
+import { Route as SiteSlugImoveisRouteImport } from './routes/site.$slug_.imoveis'
 import { Route as SiteSlugBlogRouteImport } from './routes/site.$slug_.blog'
 import { Route as ContaChatIdRouteImport } from './routes/conta.chat.$id'
 import { Route as AppSiteWidgetsConteudoRouteImport } from './routes/app.site.widgets-conteudo'
@@ -706,6 +707,11 @@ const AdminAtendimentoIndexRoute = AdminAtendimentoIndexRouteImport.update({
   id: '/atendimento/',
   path: '/atendimento/',
   getParentRoute: () => AdminRoute,
+} as any)
+const SiteSlugImoveisRoute = SiteSlugImoveisRouteImport.update({
+  id: '/site/$slug_/imoveis',
+  path: '/site/$slug/imoveis',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SiteSlugBlogRoute = SiteSlugBlogRouteImport.update({
   id: '/site/$slug_/blog',
@@ -1408,6 +1414,7 @@ export interface FileRoutesByFullPath {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/site/$slug/imoveis': typeof SiteSlugImoveisRoute
   '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
   '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
@@ -1606,6 +1613,7 @@ export interface FileRoutesByTo {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug/blog': typeof SiteSlugBlogRoute
+  '/site/$slug/imoveis': typeof SiteSlugImoveisRoute
   '/admin/atendimento': typeof AdminAtendimentoIndexRoute
   '/app/atendimento': typeof AppAtendimentoIndexRoute
   '/app/chat': typeof AppChatIndexRoute
@@ -1810,6 +1818,7 @@ export interface FileRoutesById {
   '/app/site/widgets-conteudo': typeof AppSiteWidgetsConteudoRoute
   '/conta/chat/$id': typeof ContaChatIdRoute
   '/site/$slug_/blog': typeof SiteSlugBlogRoute
+  '/site/$slug_/imoveis': typeof SiteSlugImoveisRoute
   '/admin/atendimento/': typeof AdminAtendimentoIndexRoute
   '/app/atendimento/': typeof AppAtendimentoIndexRoute
   '/app/chat/': typeof AppChatIndexRoute
@@ -2015,6 +2024,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/site/$slug/imoveis'
     | '/admin/atendimento/'
     | '/app/atendimento/'
     | '/app/chat/'
@@ -2213,6 +2223,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug/blog'
+    | '/site/$slug/imoveis'
     | '/admin/atendimento'
     | '/app/atendimento'
     | '/app/chat'
@@ -2416,6 +2427,7 @@ export interface FileRouteTypes {
     | '/app/site/widgets-conteudo'
     | '/conta/chat/$id'
     | '/site/$slug_/blog'
+    | '/site/$slug_/imoveis'
     | '/admin/atendimento/'
     | '/app/atendimento/'
     | '/app/chat/'
@@ -2530,6 +2542,7 @@ export interface RootRouteChildren {
   ApiPublicSitemapIndexDotxmlRoute: typeof ApiPublicSitemapIndexDotxmlRoute
   ApiPublicStatusDotjsonRoute: typeof ApiPublicStatusDotjsonRoute
   SiteSlugBlogRoute: typeof SiteSlugBlogRoute
+  SiteSlugImoveisRoute: typeof SiteSlugImoveisRoute
   ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
   ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
@@ -3260,6 +3273,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/atendimento/'
       preLoaderRoute: typeof AdminAtendimentoIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/site/$slug_/imoveis': {
+      id: '/site/$slug_/imoveis'
+      path: '/site/$slug/imoveis'
+      fullPath: '/site/$slug/imoveis'
+      preLoaderRoute: typeof SiteSlugImoveisRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/site/$slug_/blog': {
       id: '/site/$slug_/blog'
@@ -4316,6 +4336,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSitemapIndexDotxmlRoute: ApiPublicSitemapIndexDotxmlRoute,
   ApiPublicStatusDotjsonRoute: ApiPublicStatusDotjsonRoute,
   SiteSlugBlogRoute: SiteSlugBlogRoute,
+  SiteSlugImoveisRoute: SiteSlugImoveisRoute,
   ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
   ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
