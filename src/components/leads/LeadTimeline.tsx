@@ -27,7 +27,7 @@ export function LeadTimeline({ leadId }: { leadId: string }) {
       const [interacoes, mensagens, visitas, tarefas] = await Promise.all([
         supabase
           .from("lead_interacoes")
-          .select("id, tipo, descricao, created_at")
+          .select("id, tipo, conteudo, created_at")
           .eq("lead_id", leadId)
           .order("created_at", { ascending: false })
           .limit(50),
@@ -39,15 +39,15 @@ export function LeadTimeline({ leadId }: { leadId: string }) {
           .limit(50),
         (supabase as any)
           .from("visitas")
-          .select("id, data_visita, observacoes, status")
+          .select("id, data_hora, observacoes, status")
           .eq("lead_id", leadId)
-          .order("data_visita", { ascending: false })
+          .order("data_hora", { ascending: false })
           .limit(20),
         (supabase as any)
           .from("lead_tarefas")
-          .select("id, titulo, status, deadline")
+          .select("id, titulo, status, prazo")
           .eq("lead_id", leadId)
-          .order("deadline", { ascending: false })
+          .order("prazo", { ascending: false })
           .limit(20),
       ]);
       const evs: Evento[] = [];
@@ -56,7 +56,7 @@ export function LeadTimeline({ leadId }: { leadId: string }) {
           id: `i-${r.id}`,
           tipo: "interacao",
           titulo: r.tipo ?? "Interação",
-          descricao: r.descricao,
+          descricao: r.conteudo,
           data: r.created_at,
         }),
       );
@@ -75,7 +75,7 @@ export function LeadTimeline({ leadId }: { leadId: string }) {
           tipo: "visita",
           titulo: `Visita — ${r.status ?? "agendada"}`,
           descricao: r.observacoes,
-          data: r.data_visita,
+          data: r.data_hora,
         }),
       );
       (tarefas.data ?? []).forEach((r: any) =>
@@ -84,7 +84,7 @@ export function LeadTimeline({ leadId }: { leadId: string }) {
           tipo: "tarefa",
           titulo: r.titulo,
           descricao: r.status,
-          data: r.deadline ?? new Date().toISOString(),
+          data: r.prazo ?? new Date().toISOString(),
         }),
       );
       evs.sort((a, b) => (a.data < b.data ? 1 : -1));

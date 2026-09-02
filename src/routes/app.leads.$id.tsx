@@ -52,6 +52,14 @@ const STATUS = [
   { v: "perdido", label: "Perdido" },
 ];
 
+const VISITA_STATUS_LABEL: Record<string, string> = {
+  agendada: "Agendada",
+  confirmada: "Confirmada",
+  realizada: "Realizada",
+  cancelada: "Cancelada",
+  nao_compareceu: "Não compareceu",
+};
+
 const URL_REGEX = /https?:\/\/[^\s]+/g;
 
 // Torna clicável qualquer URL solta dentro do texto livre de `mensagem` —
@@ -184,7 +192,7 @@ function LeadDetail() {
         (supabase as any)
           .from("visitas")
           .select(
-            "id,data_hora,roteiro_etapa_id,imovel:imoveis(id,titulo),etapa:roteiro_visita_etapas(id,nome)",
+            "id,data_hora,status,roteiro_etapa_id,imovel:imoveis(id,titulo),etapa:roteiro_visita_etapas(id,nome)",
           )
           .eq("lead_id", id)
           .order("data_hora", { ascending: false }),
@@ -355,7 +363,14 @@ function LeadDetail() {
                       </span>
                       <span className="text-muted-foreground">{v.imovel?.titulo ?? "—"}</span>
                     </div>
-                    <Badge variant="outline">{v.etapa?.nome ?? "Sem etapa"}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      {v.status && (
+                        <Badge variant="secondary">
+                          {VISITA_STATUS_LABEL[v.status] ?? v.status}
+                        </Badge>
+                      )}
+                      <Badge variant="outline">{v.etapa?.nome ?? "Sem etapa"}</Badge>
+                    </div>
                   </li>
                 ))}
               </ul>
