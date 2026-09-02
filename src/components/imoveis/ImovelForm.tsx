@@ -12,13 +12,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL, slugify } from "@/lib/format";
-import { CheckCircle2, FileText, Globe, Droplets } from "lucide-react";
+import { CheckCircle2, FileText, Globe, Droplets, Ban, Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { aplicarMarcaDagua } from "@/lib/watermark";
 import { AiImovelPanel } from "./AiImovelPanel";
+
+export type ImovelFormSectionKey =
+  | "principal"
+  | "valores"
+  | "endereco"
+  | "condicoes"
+  | "corretor"
+  | "marca_dagua"
+  | "campos_personalizados"
+  | "situacao";
 
 export type ImovelFormData = {
   titulo: string;
@@ -92,6 +111,9 @@ export function ImovelForm({
   submitLabel,
   submitting,
   mode = "create",
+  activeSection = "all",
+  onDataChange,
+  onCustomFieldsCountChange,
 }: {
   initial?: Partial<ImovelFormData>;
   onSubmit: (
@@ -101,20 +123,29 @@ export function ImovelForm({
   submitLabel: string;
   submitting?: boolean;
   mode?: "create" | "edit";
+  /** Quando informado, renderiza só a seção pedida (uso pelo wizard); default "all" preserva a página clássica com todas as seções + rodapé. */
+  activeSection?: ImovelFormSectionKey | "all";
+  /** Disparado a cada mudança de campo — usado pelo wizard só pra ler `finalidade` sem precisar levantar o estado inteiro do form. */
+  onDataChange?: (data: ImovelFormData) => void;
+  /** Disparado uma vez, ao carregar os campos personalizados do tenant — usado pelo wizard pra decidir se inclui o passo "Campos personalizados" na navegação. */
+  onCustomFieldsCountChange?: (count: number) => void;
 }) {
   const { tenantId } = useAuth();
   const [data, setData] = useState<ImovelFormData>({ ...emptyImovel, ...initial });
   const [pendingAction, setPendingAction] = useState<"save" | "publish" | "unpublish" | null>(null);
   const [corretores, setCorretores] = useState<{ id: string; nome: string }[]>([]);
+  const [corretorOpen, setCorretorOpen] = useState(false);
   const [customFields, setCustomFields] = useState<any[]>([]);
   const [tenantLogoUrl, setTenantLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!tenantId) return;
     (async () => {
       const { data: list } = await (supabase as any)
         .from("corretores")
         .select("id,nome")
         .eq("ativo", true)
+        .eq("tenant_id", tenantId)
         .order("nome");
       setCorretores((list as { id: string; nome: string }[]) ?? []);
       const { data: cf } = await (supabase as any)
@@ -124,8 +155,10 @@ export function ImovelForm({
         .order("ordem")
         .order("created_at");
       setCustomFields(cf ?? []);
+      onCustomFieldsCountChange?.((cf ?? []).length);
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId]);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -141,7 +174,15 @@ export function ImovelForm({
   }, [tenantId]);
 
   function update<K extends keyof ImovelFormData>(k: K, v: ImovelFormData[K]) {
-    setData((d) => ({ ...d, [k]: v }));
+    setData((d) => {
+      const next = { ...d, [k]: v };
+      onDataChange?.(next);
+      return next;
+    });
+  }
+
+  function showSection(key: ImovelFormSectionKey) {
+    return activeSection === "all" || activeSection === key;
   }
 
   async function lookupCep(cep: string) {
@@ -182,225 +223,296 @@ export function ImovelForm({
   }
 
   const isPublished = data.publicado && data.status === "ativo";
+  // 3 estados distintos (não só publicado/rascunho binário) — status comercial
+  // (vendido/alugado/reservado/inativo) é uma decisão de negócio já tomada, não
+  // uma pendência de preenchimento, então não deve usar a mensagem de "rascunho".
+  const statusInfo: { tone: "published" | "draft" | "business"; title: string; desc: string } =
+    isPublished
+      ? {
+          tone: "published",
+          title: "Publicado no site público",
+          desc: "Visível para visitantes em /buscar e na página do imóvel.",
+        }
+      : data.status === "rascunho"
+        ? {
+            tone: "draft",
+            title: "Rascunho — publique para aparecer no site",
+            desc: "Conclua o preenchimento e clique em Publicar para tornar visível.",
+          }
+        : {
+            tone: "business",
+            title: `Marcado como ${STATUS_LABEL[data.status] ?? data.status}`,
+            desc: "Não aparece na busca pública — é um estado comercial já definido, não uma pendência de publicação.",
+          };
 
   return (
     <form
       onSubmit={(e) => submitWith(mode === "create" ? "save" : "save", e)}
       className="space-y-8"
     >
-      <Section title="Informações principais">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Título *">
-            <Input
-              required
-              value={data.titulo}
-              onChange={(e) => update("titulo", e.target.value)}
+      {showSection("principal") && (
+        <Section title="Informações principais">
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Título *">
+              <Input
+                required
+                value={data.titulo}
+                onChange={(e) => update("titulo", e.target.value)}
+              />
+            </Field>
+            <Field label="Código interno">
+              <Input
+                value={data.codigo_interno}
+                onChange={(e) => update("codigo_interno", e.target.value)}
+              />
+            </Field>
+            <Field label="Finalidade">
+              <Select value={data.finalidade} onValueChange={(v) => update("finalidade", v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(FINALIDADE_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Tipo">
+              <Select value={data.tipo} onValueChange={(v) => update("tipo", v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TIPO_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+          <Field label="Descrição">
+            <Textarea
+              rows={5}
+              value={data.descricao}
+              onChange={(e) => update("descricao", e.target.value)}
             />
           </Field>
-          <Field label="Código interno">
-            <Input
-              value={data.codigo_interno}
-              onChange={(e) => update("codigo_interno", e.target.value)}
-            />
-          </Field>
-          <Field label="Finalidade">
-            <Select value={data.finalidade} onValueChange={(v) => update("finalidade", v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(FINALIDADE_LABEL).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>
-                    {v}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field label="Tipo">
-            <Select value={data.tipo} onValueChange={(v) => update("tipo", v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(TIPO_LABEL).map(([k, v]) => (
-                  <SelectItem key={k} value={k}>
-                    {v}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-        </div>
-        <Field label="Descrição">
-          <Textarea
-            rows={5}
-            value={data.descricao}
-            onChange={(e) => update("descricao", e.target.value)}
+          <AiImovelPanel
+            data={data}
+            onApplyDescricao={(t) => update("descricao", t)}
+            onApplyTitulo={(t) => update("titulo", t)}
           />
-        </Field>
-        <AiImovelPanel
-          data={data}
-          onApplyDescricao={(t) => update("descricao", t)}
-          onApplyTitulo={(t) => update("titulo", t)}
-        />
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Valores e medidas">
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Preço (R$) *">
-            <NumberInput required value={data.preco} onChange={(v) => update("preco", v ?? 0)} />
-          </Field>
-          <Field label="Condomínio (R$)">
-            <NumberInput value={data.condominio} onChange={(v) => update("condominio", v)} />
-          </Field>
-          <Field label="IPTU (R$)">
-            <NumberInput value={data.iptu} onChange={(v) => update("iptu", v)} />
-          </Field>
-          <Field label="Área total (m²)">
-            <NumberInput value={data.area_total} onChange={(v) => update("area_total", v)} />
-          </Field>
-          <Field label="Área útil (m²)">
-            <NumberInput value={data.area_util} onChange={(v) => update("area_util", v)} />
-          </Field>
-          <Field label="Quartos">
-            <NumberInput value={data.quartos} onChange={(v) => update("quartos", v)} />
-          </Field>
-          <Field label="Suítes">
-            <NumberInput value={data.suites} onChange={(v) => update("suites", v)} />
-          </Field>
-          <Field label="Banheiros">
-            <NumberInput value={data.banheiros} onChange={(v) => update("banheiros", v)} />
-          </Field>
-          <Field label="Vagas">
-            <NumberInput value={data.vagas} onChange={(v) => update("vagas", v)} />
-          </Field>
-        </div>
-      </Section>
+      {showSection("valores") && (
+        <Section title="Valores e medidas">
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label="Preço (R$) *">
+              <NumberInput required value={data.preco} onChange={(v) => update("preco", v ?? 0)} />
+            </Field>
+            <Field label="Condomínio (R$)">
+              <NumberInput value={data.condominio} onChange={(v) => update("condominio", v)} />
+            </Field>
+            <Field label="IPTU (R$)">
+              <NumberInput value={data.iptu} onChange={(v) => update("iptu", v)} />
+            </Field>
+            <Field label="Área total (m²)">
+              <NumberInput value={data.area_total} onChange={(v) => update("area_total", v)} />
+            </Field>
+            <Field label="Área útil (m²)">
+              <NumberInput value={data.area_util} onChange={(v) => update("area_util", v)} />
+            </Field>
+            <Field label="Quartos">
+              <NumberInput value={data.quartos} onChange={(v) => update("quartos", v)} />
+            </Field>
+            <Field label="Suítes">
+              <NumberInput value={data.suites} onChange={(v) => update("suites", v)} />
+            </Field>
+            <Field label="Banheiros">
+              <NumberInput value={data.banheiros} onChange={(v) => update("banheiros", v)} />
+            </Field>
+            <Field label="Vagas">
+              <NumberInput value={data.vagas} onChange={(v) => update("vagas", v)} />
+            </Field>
+          </div>
+        </Section>
+      )}
 
-      <Section title="Endereço">
-        <div className="grid gap-4 md:grid-cols-6">
-          <Field label="CEP" className="md:col-span-2">
-            <Input
-              value={data.endereco_cep}
-              onChange={(e) => update("endereco_cep", e.target.value)}
-              onBlur={(e) => lookupCep(e.target.value)}
-              placeholder="00000-000"
-            />
-          </Field>
-          <Field label="Logradouro" className="md:col-span-4">
-            <Input
-              value={data.endereco_logradouro}
-              onChange={(e) => update("endereco_logradouro", e.target.value)}
-            />
-          </Field>
-          <Field label="Número" className="md:col-span-1">
-            <Input
-              value={data.endereco_numero}
-              onChange={(e) => update("endereco_numero", e.target.value)}
-            />
-          </Field>
-          <Field label="Complemento" className="md:col-span-2">
-            <Input
-              value={data.endereco_complemento}
-              onChange={(e) => update("endereco_complemento", e.target.value)}
-            />
-          </Field>
-          <Field label="Bairro" className="md:col-span-3">
-            <Input
-              value={data.endereco_bairro}
-              onChange={(e) => update("endereco_bairro", e.target.value)}
-            />
-          </Field>
-          <Field label="Cidade" className="md:col-span-4">
-            <Input
-              value={data.endereco_cidade}
-              onChange={(e) => update("endereco_cidade", e.target.value)}
-            />
-          </Field>
-          <Field label="UF" className="md:col-span-2">
-            <Input
-              maxLength={2}
-              value={data.endereco_uf}
-              onChange={(e) => update("endereco_uf", e.target.value.toUpperCase())}
-            />
-          </Field>
-        </div>
-        <Toggle
-          label="Mostrar endereço completo na página pública"
-          checked={data.mostrar_endereco_publico}
-          onChange={(v) => update("mostrar_endereco_publico", v)}
-        />
-      </Section>
-
-      <Section title="Condições">
-        <div className="grid gap-3 md:grid-cols-2">
+      {showSection("endereco") && (
+        <Section title="Endereço">
+          <div className="grid gap-4 md:grid-cols-6">
+            <Field label="CEP" className="md:col-span-2">
+              <Input
+                value={data.endereco_cep}
+                onChange={(e) => update("endereco_cep", e.target.value)}
+                onBlur={(e) => lookupCep(e.target.value)}
+                placeholder="00000-000"
+              />
+            </Field>
+            <Field label="Logradouro" className="md:col-span-4">
+              <Input
+                value={data.endereco_logradouro}
+                onChange={(e) => update("endereco_logradouro", e.target.value)}
+              />
+            </Field>
+            <Field label="Número" className="md:col-span-1">
+              <Input
+                value={data.endereco_numero}
+                onChange={(e) => update("endereco_numero", e.target.value)}
+              />
+            </Field>
+            <Field label="Complemento" className="md:col-span-2">
+              <Input
+                value={data.endereco_complemento}
+                onChange={(e) => update("endereco_complemento", e.target.value)}
+              />
+            </Field>
+            <Field label="Bairro" className="md:col-span-3">
+              <Input
+                value={data.endereco_bairro}
+                onChange={(e) => update("endereco_bairro", e.target.value)}
+              />
+            </Field>
+            <Field label="Cidade" className="md:col-span-4">
+              <Input
+                value={data.endereco_cidade}
+                onChange={(e) => update("endereco_cidade", e.target.value)}
+              />
+            </Field>
+            <Field label="UF" className="md:col-span-2">
+              <Input
+                maxLength={2}
+                value={data.endereco_uf}
+                onChange={(e) => update("endereco_uf", e.target.value.toUpperCase())}
+              />
+            </Field>
+          </div>
           <Toggle
-            label="Aceita financiamento"
-            checked={data.aceita_financiamento}
-            onChange={(v) => update("aceita_financiamento", v)}
+            label="Mostrar endereço completo na página pública"
+            checked={data.mostrar_endereco_publico}
+            onChange={(v) => update("mostrar_endereco_publico", v)}
           />
-          <Toggle
-            label="Aceita permuta"
-            checked={data.aceita_permuta}
-            onChange={(v) => update("aceita_permuta", v)}
-          />
-        </div>
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Corretor responsável">
-        <Field label="Corretor">
-          <Select
-            value={data.corretor_responsavel_id ?? "__none__"}
-            onValueChange={(v) => update("corretor_responsavel_id", v === "__none__" ? null : v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sem corretor responsável" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">Sem corretor responsável</SelectItem>
-              {corretores.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {corretores.length === 0 && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Nenhum corretor cadastrado ainda. Cadastre em{" "}
-              <span className="font-medium">Corretores</span> para vincular.
+      {showSection("condicoes") && data.finalidade !== "aluguel" && (
+        <Section title="Condições">
+          <div className="grid gap-3 md:grid-cols-2">
+            <Toggle
+              label="Aceita financiamento"
+              checked={data.aceita_financiamento}
+              onChange={(v) => update("aceita_financiamento", v)}
+            />
+            <Toggle
+              label="Aceita permuta"
+              checked={data.aceita_permuta}
+              onChange={(v) => update("aceita_permuta", v)}
+            />
+          </div>
+        </Section>
+      )}
+
+      {showSection("corretor") && (
+        <Section title="Corretor responsável">
+          <Field label="Corretor">
+            <Popover open={corretorOpen} onOpenChange={setCorretorOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={corretorOpen}
+                  className="w-full justify-between font-normal"
+                >
+                  {data.corretor_responsavel_id
+                    ? (corretores.find((c) => c.id === data.corretor_responsavel_id)?.nome ??
+                      "Sem corretor responsável")
+                    : "Sem corretor responsável"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                <Command>
+                  <CommandInput placeholder="Buscar corretor…" />
+                  <CommandList>
+                    <CommandEmpty>Nenhum corretor encontrado.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem
+                        value="__none__"
+                        onSelect={() => {
+                          update("corretor_responsavel_id", null);
+                          setCorretorOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={`mr-2 h-4 w-4 ${data.corretor_responsavel_id ? "opacity-0" : "opacity-100"}`}
+                        />
+                        Sem corretor responsável
+                      </CommandItem>
+                      {corretores.map((c) => (
+                        <CommandItem
+                          key={c.id}
+                          value={c.nome}
+                          onSelect={() => {
+                            update("corretor_responsavel_id", c.id);
+                            setCorretorOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${data.corretor_responsavel_id === c.id ? "opacity-100" : "opacity-0"}`}
+                          />
+                          {c.nome}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {corretores.length === 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Nenhum corretor cadastrado ainda. Cadastre em{" "}
+                <span className="font-medium">Corretores</span> para vincular.
+              </p>
+            )}
+          </Field>
+        </Section>
+      )}
+
+      {showSection("marca_dagua") && (
+        <Section title="Marca d'água">
+          {tenantLogoUrl ? (
+            <>
+              <Toggle
+                label="Aplicar a logo da imobiliária sobre as fotos deste imóvel"
+                checked={data.marca_dagua_ativa}
+                onChange={(v) => update("marca_dagua_ativa", v)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Protege as fotos contra cópia por concorrentes. Pode ser ligada/desligada a qualquer
+                momento, inclusive depois de publicado — as fotos originais nunca são perdidas.
+              </p>
+              {data.marca_dagua_ativa && <WatermarkPreview logoUrl={tenantLogoUrl} />}
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Configure a logo da imobiliária em{" "}
+              <a href="/app/site" className="font-medium text-primary underline underline-offset-2">
+                Site → Marca
+              </a>{" "}
+              para poder aplicar marca d'água nas fotos deste imóvel.
             </p>
           )}
-        </Field>
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Marca d'água">
-        {tenantLogoUrl ? (
-          <>
-            <Toggle
-              label="Aplicar a logo da imobiliária sobre as fotos deste imóvel"
-              checked={data.marca_dagua_ativa}
-              onChange={(v) => update("marca_dagua_ativa", v)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Protege as fotos contra cópia por concorrentes. Pode ser ligada/desligada a qualquer
-              momento, inclusive depois de publicado — as fotos originais nunca são perdidas.
-            </p>
-            {data.marca_dagua_ativa && <WatermarkPreview logoUrl={tenantLogoUrl} />}
-          </>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            Configure a logo da imobiliária em{" "}
-            <a href="/app/site" className="font-medium text-primary underline underline-offset-2">
-              Site → Marca
-            </a>{" "}
-            para poder aplicar marca d'água nas fotos deste imóvel.
-          </p>
-        )}
-      </Section>
-
-      {customFields.length > 0 && (
+      {showSection("campos_personalizados") && customFields.length > 0 && (
         <Section title="Campos personalizados">
           <div className="grid gap-4 md:grid-cols-2">
             {customFields.map((f) => {
@@ -441,73 +553,88 @@ export function ImovelForm({
         </Section>
       )}
 
-      <Section title="Situação do imóvel">
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
-          <div
-            className={`flex h-9 w-9 items-center justify-center rounded-full ${isPublished ? "bg-emerald-500/15 text-emerald-600" : "bg-muted text-muted-foreground"}`}
-          >
-            {isPublished ? <CheckCircle2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+      {showSection("situacao") && (
+        <Section title="Situação do imóvel">
+          <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                statusInfo.tone === "published"
+                  ? "bg-emerald-500/15 text-emerald-600"
+                  : statusInfo.tone === "draft"
+                    ? "bg-muted text-muted-foreground"
+                    : "bg-amber-500/15 text-amber-600"
+              }`}
+            >
+              {statusInfo.tone === "published" ? (
+                <CheckCircle2 className="h-5 w-5" />
+              ) : statusInfo.tone === "draft" ? (
+                <FileText className="h-5 w-5" />
+              ) : (
+                <Ban className="h-5 w-5" />
+              )}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">{statusInfo.title}</p>
+              <p className="text-xs text-muted-foreground">{statusInfo.desc}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">
-              {isPublished ? "Publicado no site público" : "Rascunho — não aparece no site"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {isPublished
-                ? "Visível para visitantes em /buscar e na página do imóvel."
-                : "Conclua o preenchimento e clique em Publicar para tornar visível."}
-            </p>
-          </div>
-        </div>
-        <Field label="Status comercial (avançado)">
-          <Select value={data.status} onValueChange={(v) => update("status", v)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(STATUS_LABEL).map(([k, v]) => (
-                <SelectItem key={k} value={k}>
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Use para marcar como vendido, alugado ou reservado. Imóveis publicados precisam estar
-            com status "Ativo".
-          </p>
-        </Field>
-      </Section>
+          <details className="rounded-lg border border-border bg-background px-3 py-2">
+            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+              Status comercial (avançado)
+            </summary>
+            <div className="mt-2">
+              <Select value={data.status} onValueChange={(v) => update("status", v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(STATUS_LABEL).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Use para marcar como vendido, alugado ou reservado. Imóveis publicados precisam
+                estar com status "Ativo".
+              </p>
+            </div>
+          </details>
+        </Section>
+      )}
 
-      <div className="sticky bottom-4 z-10 flex flex-wrap items-center justify-end gap-3 rounded-xl border border-border bg-card/95 p-4 shadow-lg backdrop-blur">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={submitting}
-          onClick={() => submitWith("save")}
-        >
-          {submitting && pendingAction === "save"
-            ? "Salvando…"
-            : mode === "create"
-              ? "Salvar rascunho"
-              : "Salvar alterações"}
-        </Button>
-        {isPublished ? (
+      {showSection("situacao") && (
+        <div className="sticky bottom-4 z-10 flex flex-wrap items-center justify-end gap-3 rounded-xl border border-border bg-card/95 p-4 shadow-lg backdrop-blur">
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             disabled={submitting}
-            onClick={() => submitWith("unpublish")}
+            onClick={() => submitWith("save")}
           >
-            {submitting && pendingAction === "unpublish" ? "Despublicando…" : "Despublicar"}
+            {submitting && pendingAction === "save"
+              ? "Salvando…"
+              : mode === "create"
+                ? "Salvar rascunho"
+                : "Salvar alterações"}
           </Button>
-        ) : (
-          <Button type="button" disabled={submitting} onClick={() => submitWith("publish")}>
-            <Globe className="mr-2 h-4 w-4" />
-            {submitting && pendingAction === "publish" ? "Publicando…" : "Publicar imóvel"}
-          </Button>
-        )}
-      </div>
+          {isPublished ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={submitting}
+              onClick={() => submitWith("unpublish")}
+            >
+              {submitting && pendingAction === "unpublish" ? "Despublicando…" : "Despublicar"}
+            </Button>
+          ) : (
+            <Button type="button" disabled={submitting} onClick={() => submitWith("publish")}>
+              <Globe className="mr-2 h-4 w-4" />
+              {submitting && pendingAction === "publish" ? "Publicando…" : "Publicar imóvel"}
+            </Button>
+          )}
+        </div>
+      )}
     </form>
   );
 }

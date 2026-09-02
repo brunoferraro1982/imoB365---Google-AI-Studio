@@ -124,6 +124,7 @@ import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
 import { Route as AppImoveisImportarRouteImport } from './routes/app.imoveis.importar'
 import { Route as AppImoveisCompararRouteImport } from './routes/app.imoveis.comparar'
+import { Route as AppImoveisAssistenteRouteImport } from './routes/app.imoveis.assistente'
 import { Route as AppImoveisIdRouteImport } from './routes/app.imoveis.$id'
 import { Route as AppFinanceiroPlanoContasRouteImport } from './routes/app.financeiro.plano-contas'
 import { Route as AppFinanceiroNovoRouteImport } from './routes/app.financeiro.novo'
@@ -789,6 +790,11 @@ const AppImoveisCompararRoute = AppImoveisCompararRouteImport.update({
   path: '/imoveis/comparar',
   getParentRoute: () => AppRoute,
 } as any)
+const AppImoveisAssistenteRoute = AppImoveisAssistenteRouteImport.update({
+  id: '/imoveis/assistente',
+  path: '/imoveis/assistente',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppImoveisIdRoute = AppImoveisIdRouteImport.update({
   id: '/imoveis/$id',
   path: '/imoveis/$id',
@@ -1399,6 +1405,7 @@ export interface FileRoutesByFullPath {
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
+  '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -1598,6 +1605,7 @@ export interface FileRoutesByTo {
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
+  '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -1803,6 +1811,7 @@ export interface FileRoutesById {
   '/app/financeiro/novo': typeof AppFinanceiroNovoRoute
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
+  '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -2009,6 +2018,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
+    | '/app/imoveis/assistente'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -2208,6 +2218,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
+    | '/app/imoveis/assistente'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -2412,6 +2423,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/novo'
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
+    | '/app/imoveis/assistente'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -3386,6 +3398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImoveisCompararRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/imoveis/assistente': {
+      id: '/app/imoveis/assistente'
+      path: '/imoveis/assistente'
+      fullPath: '/app/imoveis/assistente'
+      preLoaderRoute: typeof AppImoveisAssistenteRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/imoveis/$id': {
       id: '/app/imoveis/$id'
       path: '/imoveis/$id'
@@ -4155,6 +4174,7 @@ interface AppRouteChildren {
   AppFinanceiroNovoRoute: typeof AppFinanceiroNovoRoute
   AppFinanceiroPlanoContasRoute: typeof AppFinanceiroPlanoContasRoute
   AppImoveisIdRoute: typeof AppImoveisIdRoute
+  AppImoveisAssistenteRoute: typeof AppImoveisAssistenteRoute
   AppImoveisCompararRoute: typeof AppImoveisCompararRoute
   AppImoveisImportarRoute: typeof AppImoveisImportarRoute
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
@@ -4216,6 +4236,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroNovoRoute: AppFinanceiroNovoRoute,
   AppFinanceiroPlanoContasRoute: AppFinanceiroPlanoContasRoute,
   AppImoveisIdRoute: AppImoveisIdRoute,
+  AppImoveisAssistenteRoute: AppImoveisAssistenteRoute,
   AppImoveisCompararRoute: AppImoveisCompararRoute,
   AppImoveisImportarRoute: AppImoveisImportarRoute,
   AppImoveisNovoRoute: AppImoveisNovoRoute,
