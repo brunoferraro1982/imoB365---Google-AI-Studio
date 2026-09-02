@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Building2, Pencil, Trash2, GitCompare } from "lucide-react";
+import { Plus, Building2, Pencil, Trash2, GitCompare, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,11 @@ function ImoveisList() {
           <Button variant="outline" asChild>
             <Link to="/app/imoveis/comparar">
               <GitCompare className="mr-2 h-4 w-4" /> Comparar
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/app/imoveis/assistente">
+              <Wand2 className="mr-2 h-4 w-4" /> Cadastrar com assistente
             </Link>
           </Button>
           <Button asChild>
