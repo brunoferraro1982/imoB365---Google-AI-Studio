@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { ChevronLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { ImovelForm } from "@/components/imoveis/ImovelForm";
 import { ImovelFotosSection } from "@/components/imoveis/ImovelFotosSection";
+import { ImovelRedesSociaisSection } from "@/components/imoveis/ImovelRedesSociaisSection";
 import { useImovelDraft } from "@/hooks/useImovelDraft";
 
 export const Route = createFileRoute("/app/imoveis/novo")({
@@ -14,6 +16,7 @@ function NovoImovel() {
   const { user, tenantId } = useAuth();
   const navigate = useNavigate();
   const { savedId, saving, hasUserSaved, save } = useImovelDraft(tenantId, user?.id);
+  const [publicado, setPublicado] = useState(false);
 
   return (
     <div className="mx-auto max-w-5xl p-8">
@@ -32,7 +35,14 @@ function NovoImovel() {
         submitLabel={hasUserSaved ? "Salvar alterações" : "Criar imóvel"}
         submitting={saving}
         mode={hasUserSaved ? "edit" : "create"}
+        onDataChange={(d) => setPublicado(d.publicado)}
       />
+
+      {hasUserSaved && savedId && publicado && (
+        <div className="mt-6">
+          <ImovelRedesSociaisSection imovelId={savedId} tenantId={tenantId} />
+        </div>
+      )}
 
       {hasUserSaved && savedId && (
         <div className="mt-6 flex justify-end">
