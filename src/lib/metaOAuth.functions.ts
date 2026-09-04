@@ -250,6 +250,17 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     const url = new URL(`https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth`);
     url.searchParams.set("client_id", conexao.app_id);
     url.searchParams.set("redirect_uri", redirectUri);
+    // Explícito por clareza — já era o comportamento padrão da Meta quando
+    // este parâmetro é omitido (confirmado na doc oficial:
+    // developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow),
+    // e é exatamente o que o callback (api.public.meta.oauth.callback.ts)
+    // já espera: um `code` pra trocar por access_token no servidor com o
+    // App Secret. O requisito de passar "response_type: 'code'" que a Meta
+    // documenta para fluxos com config_id é específico do SDK JavaScript
+    // (FB.login(), popup client-side, cujo padrão implícito é "token") —
+    // não deste redirecionamento direto pro dialog/oauth, que sempre foi
+    // server-side por padrão.
+    url.searchParams.set("response_type", "code");
 
     if (conexao.login_config_id) {
       // Achado real em produção (2026-09-04): apps tipo "Negócios" com o
