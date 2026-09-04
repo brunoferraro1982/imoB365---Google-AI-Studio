@@ -122,6 +122,7 @@ export type MetaConnectionStatus = {
   connected: boolean;
   pageName: string | null;
   connectedAt: string | null;
+  instagramConnected: boolean;
 };
 
 export const getMetaConnectionStatus = createServerFn({ method: "POST" })
@@ -132,7 +133,7 @@ export const getMetaConnectionStatus = createServerFn({ method: "POST" })
 
     const { data } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .select("app_id,app_secret,page_name,connected_at")
+      .select("app_id,app_secret,page_name,connected_at,instagram_business_account_id")
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
@@ -141,6 +142,7 @@ export const getMetaConnectionStatus = createServerFn({ method: "POST" })
       connected: !!data?.page_name,
       pageName: data?.page_name ?? null,
       connectedAt: data?.connected_at ?? null,
+      instagramConnected: !!data?.instagram_business_account_id,
     };
   });
 
@@ -217,7 +219,12 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set(
       "scope",
-      "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management",
+      // pages_manage_posts/pages_read_engagement/instagram_basic/
+      // instagram_business_content_publish são os escopos novos, pra
+      // publicar Post/Story real (ver metaPublish.functions.ts) — mesmo
+      // regime de Standard Access já usado pros escopos originais (BYO: o
+      // próprio tenant tem papel no próprio app).
+      "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_business_content_publish",
     );
     url.searchParams.set("state", state);
 
@@ -236,7 +243,13 @@ export const disconnectMeta = createServerFn({ method: "POST" })
 
     const { error } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .update({ meta_user_id: null, page_id: null, page_name: null, page_access_token: null })
+      .update({
+        meta_user_id: null,
+        page_id: null,
+        page_name: null,
+        page_access_token: null,
+        instagram_business_account_id: null,
+      })
       .eq("tenant_id", tenantId);
     if (error) throw new Error(error.message);
 

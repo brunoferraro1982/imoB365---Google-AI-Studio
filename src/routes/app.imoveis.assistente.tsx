@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import {
   Camera,
   FileText,
@@ -10,6 +11,7 @@ import {
   Droplets,
   ListChecks,
   Globe,
+  Share2,
   Check,
   ArrowLeft,
   ArrowRight,
@@ -23,13 +25,17 @@ import {
   type ImovelFormSectionKey,
 } from "@/components/imoveis/ImovelForm";
 import { ImovelFotosSection } from "@/components/imoveis/ImovelFotosSection";
+import { ImovelRedesSociaisSection } from "@/components/imoveis/ImovelRedesSociaisSection";
 import { useImovelDraft } from "@/hooks/useImovelDraft";
+import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
 
 export const Route = createFileRoute("/app/imoveis/assistente")({
   component: AssistenteImovel,
 });
 
-const ALL_STEPS: { key: ImovelFormSectionKey | "fotos"; label: string; icon: typeof Camera }[] = [
+type StepKey = ImovelFormSectionKey | "fotos" | "redes_sociais";
+
+const ALL_STEPS: { key: StepKey; label: string; icon: typeof Camera }[] = [
   { key: "fotos", label: "Fotos", icon: Camera },
   { key: "principal", label: "Informações", icon: FileText },
   { key: "valores", label: "Valores e medidas", icon: Coins },
@@ -39,32 +45,51 @@ const ALL_STEPS: { key: ImovelFormSectionKey | "fotos"; label: string; icon: typ
   { key: "marca_dagua", label: "Marca d'água", icon: Droplets },
   { key: "campos_personalizados", label: "Campos extras", icon: ListChecks },
   { key: "situacao", label: "Publicar", icon: Globe },
+  { key: "redes_sociais", label: "Redes sociais", icon: Share2 },
 ];
 
 function AssistenteImovel() {
   const { user, tenantId } = useAuth();
   const navigate = useNavigate();
   const { savedId, saving, hasUserSaved, save } = useImovelDraft(tenantId, user?.id);
+  const fetchMetaStatus = useServerFn(getMetaConnectionStatus);
   const [stepIndex, setStepIndex] = useState(0);
   const [finalidade, setFinalidade] = useState("venda");
   const [hasCustomFields, setHasCustomFields] = useState(false);
+  const [metaConectado, setMetaConectado] = useState(false);
+
+  useEffect(() => {
+    fetchMetaStatus()
+      .then((s) => setMetaConectado(s.connected))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const steps = useMemo(
     () =>
-      ALL_STEPS.filter((s) => s.key !== "condicoes" || finalidade !== "aluguel").filter(
-        (s) => s.key !== "campos_personalizados" || hasCustomFields,
-      ),
-    [finalidade, hasCustomFields],
+      ALL_STEPS.filter((s) => s.key !== "condicoes" || finalidade !== "aluguel")
+        .filter((s) => s.key !== "campos_personalizados" || hasCustomFields)
+        .filter((s) => s.key !== "redes_sociais" || metaConectado),
+    [finalidade, hasCustomFields, metaConectado],
   );
 
   const current = steps[Math.min(stepIndex, steps.length - 1)];
   const isFirst = stepIndex === 0;
   const isLast = stepIndex === steps.length - 1;
+  // Na etapa "Publicar", quem avança é o botão "Publicar imóvel" do próprio
+  // ImovelForm (ver handleSubmit) — um "Próximo" genérico aqui só confundiria,
+  // deixando parecer que avança sem de fato publicar.
+  const mostrarProximo = !isLast && current.key !== "situacao";
 
   async function handleSubmit(data: ImovelFormData, action: "save" | "publish" | "unpublish") {
     await save(data, action);
     if (action === "publish" && savedId) {
-      navigate({ to: "/app/imoveis/$id", params: { id: savedId } });
+      const redesIndex = steps.findIndex((s) => s.key === "redes_sociais");
+      if (redesIndex !== -1) {
+        setStepIndex(redesIndex);
+      } else {
+        navigate({ to: "/app/imoveis/$id", params: { id: savedId } });
+      }
     }
   }
 
@@ -126,9 +151,14 @@ function AssistenteImovel() {
       <div hidden={current.key !== "fotos"}>
         <ImovelFotosSection imovelId={savedId} tenantId={tenantId} />
       </div>
-      <div hidden={current.key === "fotos"}>
+      <div hidden={current.key !== "redes_sociais"}>
+        {savedId && <ImovelRedesSociaisSection imovelId={savedId} tenantId={tenantId} />}
+      </div>
+      <div hidden={current.key === "fotos" || current.key === "redes_sociais"}>
         <ImovelForm
-          activeSection={current.key === "fotos" ? "principal" : current.key}
+          activeSection={
+            current.key === "fotos" || current.key === "redes_sociais" ? "principal" : current.key
+          }
           onSubmit={handleSubmit}
           submitLabel={hasUserSaved ? "Salvar alterações" : "Criar imóvel"}
           submitting={saving}
@@ -142,7 +172,7 @@ function AssistenteImovel() {
         <Button variant="outline" disabled={isFirst} onClick={() => setStepIndex((i) => i - 1)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
         </Button>
-        {!isLast && (
+        {mostrarProximo && (
           <Button onClick={() => setStepIndex((i) => i + 1)}>
             Próximo <ArrowRight className="ml-2 h-4 w-4" />
           </Button>

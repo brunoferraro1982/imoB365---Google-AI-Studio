@@ -216,9 +216,22 @@ function MetaConexaoPage() {
                 </li>
                 <li>
                   <strong>3. Adicionar produtos.</strong> Dentro do aplicativo, adicione os produtos{" "}
-                  <strong>"Login do Facebook para Empresas"</strong> e{" "}
-                  <strong>"Marketing API"</strong> (aparecem na lista de produtos disponíveis, é só
-                  clicar em "Configurar" em cada um).
+                  <strong>"Login do Facebook para Empresas"</strong>,{" "}
+                  <strong>"Marketing API"</strong> e <strong>"Instagram Graph API"</strong>{" "}
+                  (aparecem na lista de produtos disponíveis, é só clicar em "Configurar" em cada
+                  um). O Instagram Graph API é o que permite publicar Post/Story direto do imob365
+                  mais pra frente — sem ele, só o Facebook funciona.
+                </li>
+                <li>
+                  <strong>
+                    3.1. Vincular o Instagram (opcional, mas necessário pra publicar lá também).
+                  </strong>{" "}
+                  Sua Página do Facebook precisa estar ligada a uma{" "}
+                  <strong>conta profissional do Instagram</strong>. Isso é feito no próprio
+                  Instagram, não no app da Meta: no app do Instagram (celular), vá em Configurações
+                  → Contas vinculadas → Facebook, e escolha a mesma Página do Facebook desta
+                  imobiliária. Depois de vincular, volte aqui e conecte normalmente — o imob365
+                  detecta a vinculação sozinho.
                 </li>
                 <li>
                   <strong>4. Configurar o Webhook.</strong> No produto Webhooks, escolha o objeto{" "}
@@ -312,6 +325,25 @@ function MetaConexaoPage() {
                       </p>
                     </div>
                   </div>
+                  {data.instagramConnected ? (
+                    <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                      <p className="text-sm font-medium">
+                        Conta profissional do Instagram vinculada — pronto pra publicar nas duas
+                        redes.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+                      <p className="font-medium">Instagram ainda não vinculado</p>
+                      <p className="mt-1 text-muted-foreground">
+                        A publicação no Facebook já funciona. Pra publicar no Instagram também, siga
+                        o passo 3.1 acima (vincular a conta no próprio Instagram) e depois clique em
+                        "Desconectar Página" e "Conectar Facebook" de novo, pra o imob365 detectar a
+                        vinculação.
+                      </p>
+                    </div>
+                  )}
                   <Button variant="outline" onClick={onDesconectar} disabled={desconectando}>
                     {desconectando ? "Desconectando…" : "Desconectar Página"}
                   </Button>

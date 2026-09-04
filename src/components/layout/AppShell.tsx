@@ -189,7 +189,7 @@ const tenantModules: Module[] = [
     label: "Marketing",
     icon: Megaphone,
     items: [
-      { to: "/app/portais", label: "Anúncios em portais", icon: Globe2 },
+      { to: "/app/portais", label: "Portais & Redes sociais", icon: Globe2 },
       { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
     ],
   },
