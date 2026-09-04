@@ -223,8 +223,26 @@ function MetaConexaoPage() {
                   mais pra frente — sem ele, só o Facebook funciona.
                 </li>
                 <li>
+                  <strong>3.1. Autorizar o app a acessar sua Página (obrigatório).</strong> Como o
+                  app usa "Login do Facebook para Empresas", a Meta só deixa conectar Páginas que já
+                  estão atribuídas ao app dentro do Business Manager — sem esse passo, ao clicar em
+                  "Conectar Facebook" mais abaixo, você recebe o erro "Nenhuma Página do Facebook
+                  encontrada nessa conta", mesmo sendo administrador dela. Acesse{" "}
+                  <a
+                    href="https://business.facebook.com/settings/apps"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary underline underline-offset-2"
+                  >
+                    business.facebook.com/settings/apps <ExternalLink className="inline h-3 w-3" />
+                  </a>{" "}
+                  → selecione este aplicativo → <strong>"Adicionar ativos"</strong> → aba{" "}
+                  <strong>Páginas</strong> → selecione sua Página → marque{" "}
+                  <strong>"Acesso total"</strong> → Salvar.
+                </li>
+                <li>
                   <strong>
-                    3.1. Vincular o Instagram (opcional, mas necessário pra publicar lá também).
+                    3.2. Vincular o Instagram (opcional, mas necessário pra publicar lá também).
                   </strong>{" "}
                   Sua Página do Facebook precisa estar ligada a uma{" "}
                   <strong>conta profissional do Instagram</strong>. Isso é feito no próprio
@@ -357,6 +375,30 @@ function MetaConexaoPage() {
                     <ExternalLink className="mr-2 h-4 w-4" />
                     {conectando ? "Redirecionando…" : "Conectar Facebook"}
                   </Button>
+                  {search.meta_error === "nenhuma_pagina" && (
+                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+                      <p className="font-medium">
+                        Nenhuma Página do Facebook encontrada nessa conta
+                      </p>
+                      <p className="mt-1 text-muted-foreground">
+                        Como o app usa "Login do Facebook para Empresas", a Página precisa estar
+                        atribuída a ele dentro do Business Manager antes de conectar — mesmo você
+                        sendo administrador dela. Acesse{" "}
+                        <a
+                          href="https://business.facebook.com/settings/apps"
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary underline underline-offset-2"
+                        >
+                          business.facebook.com/settings/apps{" "}
+                          <ExternalLink className="inline h-3 w-3" />
+                        </a>{" "}
+                        → selecione este aplicativo → "Adicionar ativos" → aba Páginas → selecione
+                        sua Página → marque "Acesso total" → Salvar. Depois volte aqui e clique em
+                        "Conectar Facebook" de novo.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
