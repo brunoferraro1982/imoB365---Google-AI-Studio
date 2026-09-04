@@ -220,11 +220,20 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     url.searchParams.set(
       "scope",
       // pages_manage_posts/pages_read_engagement/instagram_basic/
-      // instagram_business_content_publish são os escopos novos, pra
-      // publicar Post/Story real (ver metaPublish.functions.ts) — mesmo
-      // regime de Standard Access já usado pros escopos originais (BYO: o
-      // próprio tenant tem papel no próprio app).
-      "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_business_content_publish",
+      // instagram_content_publish são os escopos novos, pra publicar
+      // Post/Story real (ver metaPublish.functions.ts) — mesmo regime de
+      // Standard Access já usado pros escopos originais (BYO: o próprio
+      // tenant tem papel no próprio app). O nome correto aqui é
+      // "instagram_content_publish" (produto Instagram Graph API via
+      // Facebook Login, o mesmo diálogo facebook.com/.../dialog/oauth já
+      // usado por todo o resto deste fluxo) — "instagram_business_*" é o
+      // nome de escopo de um produto DIFERENTE (Instagram API with
+      // Instagram Login, autorizado em instagram.com/oauth/authorize, com
+      // token/endpoints de publicação próprios). Usar o nome errado nesse
+      // diálogo fazia a Meta rejeitar com "Invalid Scopes:
+      // instagram_business_content_publish" — achado real testando em
+      // produção (bruno.ferraro09@hotmail.com, 2026-09-04).
+      "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish",
     );
     url.searchParams.set("state", state);
 
