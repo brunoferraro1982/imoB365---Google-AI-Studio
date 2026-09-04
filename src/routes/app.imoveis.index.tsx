@@ -1,13 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Plus, Building2, Pencil, Trash2, GitCompare, Wand2 } from "lucide-react";
+import { Plus, Building2, Pencil, Copy, Trash2, GitCompare, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { formatBRL, FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL } from "@/lib/format";
+import { formatBRL, slugify, FINALIDADE_LABEL, STATUS_LABEL, TIPO_LABEL } from "@/lib/format";
 import { useConfirm } from "@/hooks/useConfirm";
 
 export const Route = createFileRoute("/app/imoveis/")({
@@ -34,6 +34,7 @@ function ImoveisList() {
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [duplicandoId, setDuplicandoId] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
@@ -67,6 +68,90 @@ function ImoveisList() {
     if (error) return toast.error(error.message);
     toast.success("Imóvel excluído");
     load();
+  }
+
+  // Duplica o imóvel como um novo rascunho (não publicado) no mesmo tenant —
+  // reaproveita as fotos originais apontando pro mesmo storage_path (a
+  // política de leitura do bucket não restringe por pasta, só por
+  // bucket_id, então não é preciso copiar o arquivo em si).
+  async function duplicar(id: string) {
+    if (!tenantId) return;
+    setDuplicandoId(id);
+    try {
+      const { data: original, error: fetchError } = await supabase
+        .from("imoveis")
+        .select("*")
+        .eq("id", id)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      if (fetchError || !original) {
+        toast.error(fetchError?.message ?? "Imóvel não encontrado");
+        return;
+      }
+
+      const {
+        id: _id,
+        slug: _slug,
+        titulo: _titulo,
+        codigo_interno: _codigoInterno,
+        status: _status,
+        publicado: _publicado,
+        publicado_em: _publicadoEm,
+        destaque: _destaque,
+        created_at: _createdAt,
+        updated_at: _updatedAt,
+        created_by: _createdBy,
+        ...resto
+      } = original;
+
+      const novoTitulo = `${original.titulo} (cópia)`;
+      const novoSlug = `${slugify(novoTitulo)}-${crypto.randomUUID().slice(0, 6)}`;
+
+      const { data: novo, error: insertError } = await supabase
+        .from("imoveis")
+        .insert({
+          ...resto,
+          tenant_id: tenantId,
+          titulo: novoTitulo,
+          slug: novoSlug,
+          codigo_interno: null,
+          status: "rascunho",
+          publicado: false,
+          publicado_em: null,
+          destaque: false,
+        })
+        .select("id")
+        .single();
+      if (insertError || !novo) {
+        toast.error(insertError?.message ?? "Erro ao duplicar imóvel");
+        return;
+      }
+
+      const { data: fotos } = await supabase
+        .from("imovel_fotos")
+        .select("storage_path,ordem,capa,legenda")
+        .eq("imovel_id", id);
+      if (fotos && fotos.length > 0) {
+        const { error: fotosError } = await supabase.from("imovel_fotos").insert(
+          fotos.map((f) => ({
+            imovel_id: novo.id,
+            tenant_id: tenantId,
+            storage_path: f.storage_path,
+            ordem: f.ordem,
+            capa: f.capa,
+            legenda: f.legenda,
+          })),
+        );
+        if (fotosError) {
+          toast.error("Imóvel duplicado, mas houve um erro ao copiar as fotos.");
+        }
+      }
+
+      toast.success("Imóvel duplicado como rascunho — edite e publique quando quiser.");
+      load();
+    } finally {
+      setDuplicandoId(null);
+    }
   }
 
   const filtered = items.filter((i) => {
@@ -179,12 +264,26 @@ function ImoveisList() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
-                      <Button size="sm" variant="ghost" asChild>
+                      <Button size="sm" variant="ghost" asChild title="Editar">
                         <Link to="/app/imoveis/$id" params={{ id: i.id }}>
                           <Pencil className="h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(i.id)}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Duplicar anúncio"
+                        disabled={duplicandoId === i.id}
+                        onClick={() => duplicar(i.id)}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Excluir"
+                        onClick={() => remove(i.id)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
