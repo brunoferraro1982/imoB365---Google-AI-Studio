@@ -91,6 +91,25 @@ export const Route = createFileRoute("/api/public/meta/oauth/callback")({
           );
           const meBody = await meRes.json().catch(() => null);
 
+          // 5) conta comercial do Instagram vinculada à Página (se o tenant
+          // já fez essa vinculação no próprio Instagram/Business Suite,
+          // pré-requisito fora do imoB365 — ver passo novo em
+          // app.portais.meta.tsx). Sem isso, publicação no Instagram não é
+          // possível; publicação no Facebook continua funcionando normal.
+          let instagramBusinessAccountId: string | null = null;
+          try {
+            const igRes = await fetch(
+              `https://graph.facebook.com/${META_GRAPH_VERSION}/${page.id}?fields=instagram_business_account&access_token=${encodeURIComponent(page.access_token)}`,
+            );
+            const igBody = await igRes.json().catch(() => null);
+            instagramBusinessAccountId = igBody?.instagram_business_account?.id ?? null;
+          } catch (igErr) {
+            console.error(
+              "[meta-oauth-callback] falha ao buscar instagram_business_account (não bloqueante)",
+              igErr,
+            );
+          }
+
           const { error } = await (supabaseAdmin as any).from("tenant_meta_connections").upsert(
             {
               tenant_id: verified.tenantId,
@@ -98,6 +117,7 @@ export const Route = createFileRoute("/api/public/meta/oauth/callback")({
               page_id: page.id,
               page_name: page.name ?? null,
               page_access_token: page.access_token,
+              instagram_business_account_id: instagramBusinessAccountId,
               connected_at: new Date().toISOString(),
             },
             { onConflict: "tenant_id" },
