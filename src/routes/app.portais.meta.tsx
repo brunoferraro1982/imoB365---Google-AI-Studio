@@ -11,6 +11,7 @@ import {
   getMetaConnectionStatus,
   getMetaAuthorizeUrl,
   salvarMetaAppCredentials,
+  salvarMetaLoginConfigId,
   removerMetaAppCredentials,
   disconnectMeta,
   META_WEBHOOK_VERIFY_TOKEN,
@@ -71,10 +72,13 @@ function MetaConexaoPage() {
   const [conectando, setConectando] = useState(false);
   const [desconectando, setDesconectando] = useState(false);
   const [removendo, setRemovendo] = useState(false);
+  const [loginConfigId, setLoginConfigId] = useState("");
+  const [salvandoConfigId, setSalvandoConfigId] = useState(false);
 
   const fetchStatus = useServerFn(getMetaConnectionStatus);
   const fetchAuthorizeUrl = useServerFn(getMetaAuthorizeUrl);
   const salvarCredenciais = useServerFn(salvarMetaAppCredentials);
+  const salvarConfigId = useServerFn(salvarMetaLoginConfigId);
   const removerCredenciais = useServerFn(removerMetaAppCredentials);
   const desconectar = useServerFn(disconnectMeta);
 
@@ -92,6 +96,10 @@ function MetaConexaoPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setLoginConfigId(data?.loginConfigId ?? "");
+  }, [data?.loginConfigId]);
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "https://portal.imob365.com.br";
@@ -114,6 +122,23 @@ function MetaConexaoPage() {
       toast.error(e?.message ?? "Não foi possível salvar");
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function onSalvarConfigId() {
+    if (!loginConfigId.trim()) {
+      toast.error("Cole o ID da Configuração de Login.");
+      return;
+    }
+    setSalvandoConfigId(true);
+    try {
+      await salvarConfigId({ data: { loginConfigId: loginConfigId.trim() } });
+      toast.success("Configuração de Login salva. Clique em Conectar Facebook novamente.");
+      refetch();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Não foi possível salvar");
+    } finally {
+      setSalvandoConfigId(false);
     }
   }
 
@@ -241,8 +266,24 @@ function MetaConexaoPage() {
                   <strong>"Acesso total"</strong> → Salvar.
                 </li>
                 <li>
+                  <strong>3.2. Criar uma Configuração de Login (obrigatório).</strong> Mesmo com a
+                  Página atribuída no passo anterior, "Login do Facebook para Empresas" só concede
+                  acesso a ela através de uma Configuração de Login — sem isso, a conexão continua
+                  falhando com "Nenhuma Página encontrada". Dentro do produto{" "}
+                  <strong>"Login do Facebook para Empresas"</strong> → aba{" "}
+                  <strong>Configurações</strong> → "Criar configuração" → tipo de ativo{" "}
+                  <strong>Página</strong> → selecione sua Página → marque as permissões:{" "}
+                  <em>
+                    pages_show_list, pages_manage_metadata, pages_manage_posts,
+                    pages_read_engagement, leads_retrieval, catalog_management, instagram_basic,
+                    instagram_content_publish
+                  </em>{" "}
+                  → Salvar. Copie o <strong>ID de configuração</strong> gerado e cole no campo
+                  abaixo (aparece depois de salvar o App ID/Secret).
+                </li>
+                <li>
                   <strong>
-                    3.2. Vincular o Instagram (opcional, mas necessário pra publicar lá também).
+                    3.3. Vincular o Instagram (opcional, mas necessário pra publicar lá também).
                   </strong>{" "}
                   Sua Página do Facebook precisa estar ligada a uma{" "}
                   <strong>conta profissional do Instagram</strong>. Isso é feito no próprio
@@ -327,6 +368,24 @@ function MetaConexaoPage() {
                 </Button>
               </div>
 
+              <div className="mb-4 space-y-1.5">
+                <Label>ID de Configuração de Login (passo 3.2 acima)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={loginConfigId}
+                    onChange={(e) => setLoginConfigId(e.target.value)}
+                    placeholder="123456789012345"
+                  />
+                  <Button variant="outline" onClick={onSalvarConfigId} disabled={salvandoConfigId}>
+                    {salvandoConfigId ? "Salvando…" : "Salvar"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Necessário se sua Página pertence a um Portfólio Empresarial — sem isso a conexão
+                  não encontra a Página mesmo ela estando corretamente atribuída ao app.
+                </p>
+              </div>
+
               {data?.connected ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
@@ -356,7 +415,7 @@ function MetaConexaoPage() {
                       <p className="font-medium">Instagram ainda não vinculado</p>
                       <p className="mt-1 text-muted-foreground">
                         A publicação no Facebook já funciona. Pra publicar no Instagram também, siga
-                        o passo 3.1 acima (vincular a conta no próprio Instagram) e depois clique em
+                        o passo 3.3 acima (vincular a conta no próprio Instagram) e depois clique em
                         "Desconectar Página" e "Conectar Facebook" de novo, pra o imob365 detectar a
                         vinculação.
                       </p>
@@ -381,9 +440,7 @@ function MetaConexaoPage() {
                         Nenhuma Página do Facebook encontrada nessa conta
                       </p>
                       <p className="mt-1 text-muted-foreground">
-                        Como o app usa "Login do Facebook para Empresas", a Página precisa estar
-                        atribuída a ele dentro do Business Manager antes de conectar — mesmo você
-                        sendo administrador dela. Acesse{" "}
+                        Confira duas coisas: (1) a Página está atribuída a este app em{" "}
                         <a
                           href="https://business.facebook.com/settings/apps"
                           target="_blank"
@@ -393,9 +450,11 @@ function MetaConexaoPage() {
                           business.facebook.com/settings/apps{" "}
                           <ExternalLink className="inline h-3 w-3" />
                         </a>{" "}
-                        → selecione este aplicativo → "Adicionar ativos" → aba Páginas → selecione
-                        sua Página → marque "Acesso total" → Salvar. Depois volte aqui e clique em
-                        "Conectar Facebook" de novo.
+                        (Adicionar ativos → Páginas → Acesso total); (2) se sua Página pertence a um{" "}
+                        <strong>Portfólio Empresarial</strong>, isso sozinho não basta — você também
+                        precisa criar uma <strong>Configuração de Login</strong> (passo 3.2 acima) e
+                        colar o ID no campo "ID de Configuração de Login" logo acima deste botão.
+                        Depois volte aqui e clique em "Conectar Facebook" de novo.
                       </p>
                     </div>
                   )}

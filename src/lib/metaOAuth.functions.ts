@@ -123,6 +123,7 @@ export type MetaConnectionStatus = {
   pageName: string | null;
   connectedAt: string | null;
   instagramConnected: boolean;
+  loginConfigId: string | null;
 };
 
 export const getMetaConnectionStatus = createServerFn({ method: "POST" })
@@ -133,7 +134,9 @@ export const getMetaConnectionStatus = createServerFn({ method: "POST" })
 
     const { data } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .select("app_id,app_secret,page_name,connected_at,instagram_business_account_id")
+      .select(
+        "app_id,app_secret,page_name,connected_at,instagram_business_account_id,login_config_id",
+      )
       .eq("tenant_id", tenantId)
       .maybeSingle();
 
@@ -143,6 +146,7 @@ export const getMetaConnectionStatus = createServerFn({ method: "POST" })
       pageName: data?.page_name ?? null,
       connectedAt: data?.connected_at ?? null,
       instagramConnected: !!data?.instagram_business_account_id,
+      loginConfigId: data?.login_config_id ?? null,
     };
   });
 
@@ -169,6 +173,35 @@ export const salvarMetaAppCredentials = createServerFn({ method: "POST" })
         { tenant_id: tenantId, app_id: data.appId, app_secret: data.appSecret },
         { onConflict: "tenant_id" },
       );
+    if (error) throw new Error(error.message);
+
+    return { ok: true };
+  });
+
+const salvarLoginConfigIdSchema = z.object({
+  loginConfigId: z.string().trim().min(5, "ID de configuração inválido").max(40),
+});
+
+// Separado de salvarMetaAppCredentials porque, na prática, o tenant só
+// descobre que precisa disso DEPOIS de já ter salvo App ID/Secret e
+// tentado conectar — achado real em produção (2026-09-04): apps tipo
+// "Negócios" com "Login do Facebook para Empresas" só concedem acesso a
+// Páginas de um Portfólio Empresarial através de uma Configuração de
+// Login (config_id); o fluxo clássico por `scope` sempre retorna
+// /me/accounts vazio nesse caso, mesmo com a Página corretamente
+// atribuída. Ver getMetaAuthorizeUrl abaixo.
+export const salvarMetaLoginConfigId = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => salvarLoginConfigIdSchema.parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const { supabase, userId } = context;
+    const tenantId = await resolveTenantId(supabase, userId);
+    await requireTenantAdmin(supabase, userId, tenantId);
+
+    const { error } = await (supabaseAdmin as any)
+      .from("tenant_meta_connections")
+      .update({ login_config_id: data.loginConfigId })
+      .eq("tenant_id", tenantId);
     if (error) throw new Error(error.message);
 
     return { ok: true };
@@ -205,7 +238,7 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
 
     const { data: conexao } = await (supabaseAdmin as any)
       .from("tenant_meta_connections")
-      .select("app_id")
+      .select("app_id,login_config_id")
       .eq("tenant_id", tenantId)
       .maybeSingle();
     if (!conexao?.app_id) {
@@ -217,24 +250,42 @@ export const getMetaAuthorizeUrl = createServerFn({ method: "POST" })
     const url = new URL(`https://www.facebook.com/${META_GRAPH_VERSION}/dialog/oauth`);
     url.searchParams.set("client_id", conexao.app_id);
     url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set(
-      "scope",
-      // pages_manage_posts/pages_read_engagement/instagram_basic/
-      // instagram_content_publish são os escopos novos, pra publicar
-      // Post/Story real (ver metaPublish.functions.ts) — mesmo regime de
-      // Standard Access já usado pros escopos originais (BYO: o próprio
-      // tenant tem papel no próprio app). O nome correto aqui é
-      // "instagram_content_publish" (produto Instagram Graph API via
-      // Facebook Login, o mesmo diálogo facebook.com/.../dialog/oauth já
-      // usado por todo o resto deste fluxo) — "instagram_business_*" é o
-      // nome de escopo de um produto DIFERENTE (Instagram API with
-      // Instagram Login, autorizado em instagram.com/oauth/authorize, com
-      // token/endpoints de publicação próprios). Usar o nome errado nesse
-      // diálogo fazia a Meta rejeitar com "Invalid Scopes:
-      // instagram_business_content_publish" — achado real testando em
-      // produção (bruno.ferraro09@hotmail.com, 2026-09-04).
-      "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish",
-    );
+
+    if (conexao.login_config_id) {
+      // Achado real em produção (2026-09-04): apps tipo "Negócios" com o
+      // produto "Login do Facebook para Empresas" só concedem acesso a
+      // Páginas de um Portfólio Empresarial através de uma Configuração
+      // de Login — o fluxo clássico por `scope` sempre volta com
+      // /me/accounts = [] nesse caso, mesmo com a Página corretamente
+      // atribuída e com acesso total (confirmado via log de produção).
+      // Quando o tenant configurou uma Configuração de Login (passo 3.2
+      // do wizard) e colou o ID aqui, usamos `config_id` — a própria
+      // Configuração já define os ativos/permissões pedidos, então
+      // `scope` não deve ser enviado junto (comportamento documentado
+      // pela Meta pra esse parâmetro).
+      url.searchParams.set("config_id", conexao.login_config_id);
+    } else {
+      url.searchParams.set(
+        "scope",
+        // pages_manage_posts/pages_read_engagement/instagram_basic/
+        // instagram_content_publish são os escopos novos, pra publicar
+        // Post/Story real (ver metaPublish.functions.ts) — mesmo regime de
+        // Standard Access já usado pros escopos originais (BYO: o próprio
+        // tenant tem papel no próprio app). O nome correto aqui é
+        // "instagram_content_publish" (produto Instagram Graph API via
+        // Facebook Login, o mesmo diálogo facebook.com/.../dialog/oauth já
+        // usado por todo o resto deste fluxo) — "instagram_business_*" é o
+        // nome de escopo de um produto DIFERENTE (Instagram API with
+        // Instagram Login, autorizado em instagram.com/oauth/authorize, com
+        // token/endpoints de publicação próprios). Usar o nome errado nesse
+        // diálogo fazia a Meta rejeitar com "Invalid Scopes:
+        // instagram_business_content_publish" — achado real testando em
+        // produção (bruno.ferraro09@hotmail.com, 2026-09-04). Esse caminho
+        // (sem config_id) só funciona pra Páginas que NÃO pertencem a um
+        // Portfólio Empresarial.
+        "pages_show_list,pages_manage_metadata,leads_retrieval,catalog_management,pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish",
+      );
+    }
     url.searchParams.set("state", state);
 
     return { url: url.toString() };
