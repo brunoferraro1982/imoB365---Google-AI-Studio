@@ -12,7 +12,6 @@ import {
   Banknote,
   Wallet,
   Globe2,
-  Facebook,
   Settings,
   Mail,
   LayoutDashboard,
@@ -190,8 +189,7 @@ const tenantModules: Module[] = [
     label: "Marketing",
     icon: Megaphone,
     items: [
-      { to: "/app/portais/meta", label: "Facebook & Instagram", icon: Facebook },
-      { to: "/app/portais", label: "Portais imobiliários", icon: Globe2 },
+      { to: "/app/portais", label: "Portais & Redes sociais", icon: Globe2 },
       { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
     ],
   },
