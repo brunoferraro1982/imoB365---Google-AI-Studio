@@ -1,12 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Globe2, Copy, Check, AlertCircle, Info, Facebook, ChevronRight } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  Globe2,
+  Copy,
+  Check,
+  AlertCircle,
+  Info,
+  Facebook,
+  Instagram,
+  ChevronRight,
+  CheckCircle2,
+} from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PORTAIS } from "@/lib/portais";
+import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
 import { toast } from "sonner";
 
 // Precisa ser app.portais.index.tsx (não app.portais.tsx) — no roteamento
@@ -31,13 +43,28 @@ type Feed = {
   credentials: Record<string, string> | null;
 };
 
+const PORTAIS_FEED = PORTAIS.filter((p) => p.slug !== "meta");
+
 function PortaisPage() {
   const { tenantId, isAdmin } = useAuth();
+  const fetchMetaStatus = useServerFn(getMetaConnectionStatus);
   const [feeds, setFeeds] = useState<Record<string, Feed>>({});
   const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [imoveisAtivos, setImoveisAtivos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
+  const [metaStatus, setMetaStatus] = useState<{
+    connected: boolean;
+    instagramConnected: boolean;
+    pageName: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    fetchMetaStatus()
+      .then((s) => setMetaStatus(s))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function load() {
     if (!tenantId) return;
@@ -106,12 +133,60 @@ function PortaisPage() {
   return (
     <div className="p-8">
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Portais externos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Portais & Redes sociais</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Distribua seus imóveis automaticamente para VivaReal, ZAP e outros portais usando um feed
-          XML.
+          Distribua seus imóveis automaticamente pra portais imobiliários e publique direto no
+          Facebook/Instagram.
         </p>
       </header>
+
+      <section className="mb-6 overflow-hidden rounded-xl border border-blue-500/30 bg-gradient-to-br from-blue-500/10 via-card to-card">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex shrink-0 items-center -space-x-2">
+              <div className="rounded-full bg-blue-600 p-2.5 text-white shadow-sm">
+                <Facebook className="h-5 w-5" />
+              </div>
+              <div className="rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-purple-600 p-2.5 text-white shadow-sm">
+                <Instagram className="h-5 w-5" />
+              </div>
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-semibold">Facebook & Instagram</h2>
+                {metaStatus?.connected && (
+                  <Badge className="gap-1 bg-emerald-600 text-[10px] hover:bg-emerald-600">
+                    <CheckCircle2 className="h-3 w-3" /> Conectado
+                  </Badge>
+                )}
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Publique Post e Story de cada imóvel direto na sua Página/Instagram, e receba de
+                volta os leads gerados pelas suas campanhas — tudo com a sua própria conta,
+                configurando uma única vez.
+              </p>
+              {metaStatus?.connected && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Página conectada: <strong>{metaStatus.pageName ?? "—"}</strong>
+                  {metaStatus.instagramConnected
+                    ? " · Instagram vinculado"
+                    : " · Instagram não vinculado"}
+                </p>
+              )}
+            </div>
+          </div>
+          <Button asChild size="lg" className="shrink-0">
+            <Link to="/app/portais/meta">
+              {metaStatus?.connected ? "Gerenciar conexão" : "Configurar Facebook & Instagram"}
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        Portais imobiliários (feed XML)
+      </h2>
 
       <div className="mb-6 grid gap-3 rounded-xl border border-border bg-muted/30 p-4 text-xs text-muted-foreground md:grid-cols-3">
         <div>
@@ -133,7 +208,7 @@ function PortaisPage() {
         <div className="text-sm text-muted-foreground">Carregando…</div>
       ) : (
         <div className="grid gap-3">
-          {PORTAIS.map((p) => {
+          {PORTAIS_FEED.map((p) => {
             const feed = feeds[p.slug];
             const enabled = feed?.enabled ?? false;
             const url = feedUrl(p.feedSuffix);
@@ -212,21 +287,6 @@ function PortaisPage() {
                         seus imóveis sozinho a partir dessa URL.
                       </span>
                     </div>
-                  </div>
-                )}
-
-                {p.slug === "meta" && (
-                  <div className="mt-4 border-t border-border pt-4">
-                    <Link
-                      to="/app/portais/meta"
-                      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5 text-sm transition-colors hover:bg-muted/40"
-                    >
-                      <span className="flex items-center gap-2">
-                        <Facebook className="h-4 w-4 text-muted-foreground" />
-                        Conectar sua conta Meta pra receber de volta os leads de campanhas
-                      </span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
                   </div>
                 )}
               </div>
