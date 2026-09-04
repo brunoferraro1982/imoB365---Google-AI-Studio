@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ImovelForm, type ImovelFormData } from "@/components/imoveis/ImovelForm";
+import { ImovelRedesSociaisSection } from "@/components/imoveis/ImovelRedesSociaisSection";
 import { ImovelHistorico } from "@/components/imoveis/ImovelHistorico";
 import { FotosManager, type Foto } from "@/components/imoveis/FotosManager";
 import { aplicarMarcaDagua } from "@/lib/watermark";
@@ -333,6 +334,12 @@ function EditarImovel() {
         submitting={saving}
         mode="edit"
       />
+
+      {imovel?.publicado && imovel?.status === "ativo" && (
+        <div className="mt-6">
+          <ImovelRedesSociaisSection imovelId={id} tenantId={tenantId} />
+        </div>
+      )}
 
       <section className="mt-8 rounded-xl border border-border bg-card p-6">
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
