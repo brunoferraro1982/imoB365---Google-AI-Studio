@@ -72,18 +72,14 @@ function parseArgs(argv) {
 
 const fileEnv = loadEnvFile();
 const SUPABASE_URL = process.env.SUPABASE_URL ?? fileEnv.SUPABASE_URL ?? fileEnv.VITE_SUPABASE_URL;
-const SERVICE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? fileEnv.SUPABASE_SERVICE_ROLE_KEY;
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? fileEnv.SUPABASE_SERVICE_ROLE_KEY;
 
 const args = parseArgs(process.argv.slice(2));
 const TENANT_ID = args["tenant-id"];
 const DOMINIO = args["dominio"];
 const DRY_RUN = args["dry-run"] === true;
 const CATALOGO_PATH = args["catalogo-path"] ?? "/buscar-imovel";
-const LISTING_REGEX = new RegExp(
-  args["listing-regex"] ?? '\\/imoveis\\/[^"]*-id-(\\d+)',
-  "g",
-);
+const LISTING_REGEX = new RegExp(args["listing-regex"] ?? '\\/imoveis\\/[^"]*-id-(\\d+)', "g");
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 const DIACRITICS_RE = new RegExp("[\\u0300-\\u036f]", "g");
@@ -138,9 +134,7 @@ async function supabaseRest(path, init = {}) {
 
 async function resolverCorretorId() {
   if (args["corretor-id"]) return args["corretor-id"];
-  const res = await supabaseRest(
-    `corretores?tenant_id=eq.${TENANT_ID}&select=id&limit=2`,
-  );
+  const res = await supabaseRest(`corretores?tenant_id=eq.${TENANT_ID}&select=id&limit=2`);
   const rows = await res.json();
   if (!res.ok) throw new Error(`Falha ao buscar corretores: ${JSON.stringify(rows)}`);
   if (rows.length !== 1) {
@@ -192,9 +186,7 @@ async function fetchDetalhe(href) {
   const data = JSON.parse(ldMatch[1]);
   const graph = Array.isArray(data["@graph"]) ? data["@graph"] : [data];
   const prop = graph.find((g) =>
-    ["Product", "Accommodation", "RealEstateListing"].some((t) =>
-      String(g["@type"]).includes(t),
-    ),
+    ["Product", "Accommodation", "RealEstateListing"].some((t) => String(g["@type"]).includes(t)),
   );
   if (!prop) throw new Error(`Item de imóvel não encontrado no JSON-LD de ${url}`);
 
