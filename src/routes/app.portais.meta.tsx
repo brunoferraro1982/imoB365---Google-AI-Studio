@@ -198,6 +198,14 @@ function MetaConexaoPage() {
           Conectando sua própria Página, você passa a receber de volta, direto no seu funil, os
           leads reais gerados pelas suas campanhas no Facebook e Instagram.
         </p>
+        <Link
+          to="/ajuda/facebook-instagram"
+          target="_blank"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> Guia completo, passo a passo, com solução de
+          problemas
+        </Link>
       </header>
 
       {isLoading ? (
@@ -456,6 +464,14 @@ function MetaConexaoPage() {
                         colar o ID no campo "ID de Configuração de Login" logo acima deste botão.
                         Depois volte aqui e clique em "Conectar Facebook" de novo.
                       </p>
+                      <Link
+                        to="/ajuda/facebook-instagram"
+                        hash="erro-nenhuma-pagina"
+                        target="_blank"
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                      >
+                        Ver explicação detalhada no guia <ExternalLink className="h-3 w-3" />
+                      </Link>
                     </div>
                   )}
                 </div>
