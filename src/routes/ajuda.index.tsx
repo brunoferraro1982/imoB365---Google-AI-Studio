@@ -6,11 +6,13 @@ import {
   Scale,
   GraduationCap,
   MessageSquare,
+  Facebook,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 
-export const Route = createFileRoute("/ajuda")({
+export const Route = createFileRoute("/ajuda/")({
   head: () => ({
     meta: [
       { title: "Central de Ajuda — imob365" },
@@ -82,6 +84,17 @@ const ARTIGOS = [
       "Acompanhe o progresso e as certificações emitidas ao concluir.",
     ],
   },
+  {
+    icon: Facebook,
+    title: "Como conectar Facebook e Instagram (e publicar imóveis nas redes sociais)",
+    steps: [
+      "Cada corretor/imobiliária cria o próprio aplicativo gratuito na Meta — leva uns 20 minutos, mas tem alguns passos que não são óbvios.",
+      "Depois de conectado, você recebe de volta os leads gerados pelas suas campanhas direto no funil do imob365.",
+      "Também passa a poder publicar Post e Story de qualquer imóvel direto no Facebook/Instagram, com modelos prontos.",
+    ],
+    href: "/ajuda/facebook-instagram",
+    linkLabel: "Ver guia completo, passo a passo",
+  },
 ];
 
 function AjudaPage() {
@@ -125,6 +138,14 @@ function AjudaPage() {
                   </li>
                 ))}
               </ol>
+              {"href" in a && a.href && (
+                <Link
+                  to={a.href as any}
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  {a.linkLabel} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              )}
             </div>
           ))}
         </div>
