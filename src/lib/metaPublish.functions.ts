@@ -71,6 +71,50 @@ async function publicarInstagram(
   return publicado.id;
 }
 
+// Carrossel — só existe pra Post (feed), nunca Story (Story é sempre uma
+// única mídia por natureza da própria Meta). A primeira URL é sempre a
+// capa (já composta com o template pelo client, ver imageTemplates.ts);
+// as demais são as fotos originais do imóvel, sem overlay.
+async function publicarCarrosselFacebook(
+  pageId: string,
+  token: string,
+  imageUrls: string[],
+  legenda: string | null,
+): Promise<string> {
+  const fotos = await Promise.all(
+    imageUrls.map((url) => graphPost(`${pageId}/photos`, token, { url, published: "false" })),
+  );
+  const body: Record<string, string> = {};
+  fotos.forEach((f, i) => {
+    body[`attached_media[${i}]`] = JSON.stringify({ media_fbid: f.id });
+  });
+  if (legenda) body.message = legenda;
+  const post = await graphPost(`${pageId}/feed`, token, body);
+  return post.id;
+}
+
+async function publicarCarrosselInstagram(
+  igUserId: string,
+  token: string,
+  imageUrls: string[],
+  legenda: string | null,
+): Promise<string> {
+  const filhos = await Promise.all(
+    imageUrls.map((url) =>
+      graphPost(`${igUserId}/media`, token, { image_url: url, is_carousel_item: "true" }),
+    ),
+  );
+  const container = await graphPost(`${igUserId}/media`, token, {
+    media_type: "CAROUSEL",
+    children: filhos.map((f) => f.id).join(","),
+    ...(legenda ? { caption: legenda } : {}),
+  });
+  const publicado = await graphPost(`${igUserId}/media_publish`, token, {
+    creation_id: container.id,
+  });
+  return publicado.id;
+}
+
 const publicarSchema = z.object({
   tenant_id: z.string().uuid(),
   imovel_id: z.string().uuid(),
@@ -78,6 +122,10 @@ const publicarSchema = z.object({
   tipo_post: z.enum(["post", "story"]),
   template_id: z.string().uuid().nullable().optional(),
   media_public_url: z.string().url(),
+  // Demais fotos do imóvel, sem overlay — carrossel. Só usado quando
+  // tipo_post === "post" (Story não suporta carrossel). Instagram limita
+  // carrossel a 10 itens no total; 9 aqui + a capa em media_public_url.
+  media_extra_urls: z.array(z.string().url()).max(9).optional(),
   legenda: z.string().max(2200).nullable().optional(),
 });
 
@@ -135,36 +183,58 @@ export const publicarNasRedesSociais = createServerFn({ method: "POST" })
       });
     }
 
+    // Carrossel só faz sentido pra Post — Story é sempre uma mídia só.
+    const carrossel =
+      data.tipo_post === "post" && data.media_extra_urls && data.media_extra_urls.length > 0
+        ? [data.media_public_url, ...data.media_extra_urls]
+        : null;
+
     try {
       let externalId: string;
       if (data.rede === "facebook") {
         if (!conexao.page_id) throw new Error("Página do Facebook não conectada.");
-        externalId =
-          data.tipo_post === "post"
-            ? await publicarFotoFacebook(
-                conexao.page_id,
-                conexao.page_access_token,
-                data.media_public_url,
-                data.legenda ?? null,
-              )
-            : await publicarStoryFacebook(
-                conexao.page_id,
-                conexao.page_access_token,
-                data.media_public_url,
-              );
+        if (carrossel) {
+          externalId = await publicarCarrosselFacebook(
+            conexao.page_id,
+            conexao.page_access_token,
+            carrossel,
+            data.legenda ?? null,
+          );
+        } else {
+          externalId =
+            data.tipo_post === "post"
+              ? await publicarFotoFacebook(
+                  conexao.page_id,
+                  conexao.page_access_token,
+                  data.media_public_url,
+                  data.legenda ?? null,
+                )
+              : await publicarStoryFacebook(
+                  conexao.page_id,
+                  conexao.page_access_token,
+                  data.media_public_url,
+                );
+        }
       } else {
         if (!conexao.instagram_business_account_id) {
           throw new Error(
             "Conta profissional do Instagram não vinculada — veja o passo 3.1 em Portais → Facebook/Instagram.",
           );
         }
-        externalId = await publicarInstagram(
-          conexao.instagram_business_account_id,
-          conexao.page_access_token,
-          data.media_public_url,
-          data.tipo_post,
-          data.legenda ?? null,
-        );
+        externalId = carrossel
+          ? await publicarCarrosselInstagram(
+              conexao.instagram_business_account_id,
+              conexao.page_access_token,
+              carrossel,
+              data.legenda ?? null,
+            )
+          : await publicarInstagram(
+              conexao.instagram_business_account_id,
+              conexao.page_access_token,
+              data.media_public_url,
+              data.tipo_post,
+              data.legenda ?? null,
+            );
       }
       await registrar("publicado", externalId, null);
       return { ok: true, externalId };
