@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -46,6 +47,7 @@ export function ImovelRedesSociaisSection({
   const [rede, setRede] = useState<"facebook" | "instagram" | "ambas">("facebook");
   const [tipoPost, setTipoPost] = useState<TipoPost>("post");
   const [fotoId, setFotoId] = useState<string>("");
+  const [incluirTodasFotos, setIncluirTodasFotos] = useState(false);
   const [templateId, setTemplateId] = useState<string>("");
   const [legenda, setLegenda] = useState("");
   const [gerandoLegenda, setGerandoLegenda] = useState(false);
@@ -112,6 +114,11 @@ export function ImovelRedesSociaisSection({
     [templates, tipoPost],
   );
 
+  // Instagram limita carrossel a 10 itens no total (1 capa + 9 aqui) — o
+  // Facebook não impõe um teto tão baixo, mas usamos o mesmo pra "Ambas"
+  // sempre publicar o mesmo conjunto de fotos nas duas redes.
+  const outrasFotosCount = Math.min(Math.max(fotos.length - 1, 0), 9);
+
   useEffect(() => {
     if (templatesDoTipo.length && !templatesDoTipo.some((t) => t.id === templateId)) {
       setTemplateId(templatesDoTipo[0].id);
@@ -121,7 +128,12 @@ export function ImovelRedesSociaisSection({
   useEffect(() => {
     setPreviewUrl(null);
     setPreviewBlob(null);
-  }, [rede, tipoPost, fotoId, templateId]);
+  }, [rede, tipoPost, fotoId, templateId, incluirTodasFotos]);
+
+  // Carrossel só existe pra Post — Story é sempre uma mídia só na Meta.
+  useEffect(() => {
+    if (tipoPost === "story") setIncluirTodasFotos(false);
+  }, [tipoPost]);
 
   async function gerarLegenda() {
     if (!imovel) return;
@@ -201,12 +213,30 @@ export function ImovelRedesSociaisSection({
     }
     setPublicando(true);
     try {
-      const path = `social-posts/${tenantId}/${imovelId}/${crypto.randomUUID()}.jpg`;
+      // {tenant_id}/{imovel_id}/... — a policy de escrita do bucket
+      // imovel-fotos casta o PRIMEIRO segmento da pasta pra uuid
+      // (((storage.foldername(name))[1])::uuid) pra checar o tenant; um
+      // prefixo textual antes do tenant_id (ex. "social-posts/...") quebra
+      // esse cast com "invalid input syntax for type uuid" — achado real
+      // em produção. Mesmo padrão já usado em ImovelFotosSection.tsx.
+      const path = `${tenantId}/${imovelId}/social-posts/${crypto.randomUUID()}.jpg`;
       const { error: upErr } = await supabase.storage
         .from("imovel-fotos")
         .upload(path, previewBlob, { cacheControl: "3600", contentType: "image/jpeg" });
       if (upErr) throw new Error(upErr.message);
       const mediaPublicUrl = imovelFotoUrl(path);
+
+      // Demais fotos do imóvel (sem overlay) pro carrossel — já são
+      // públicas no mesmo bucket, não precisa reenviar nada.
+      // Instagram limita carrossel a 10 itens no total (1 capa + 9 aqui) —
+      // mesmo teto validado no schema do servidor (metaPublish.functions.ts).
+      const mediaExtraUrls =
+        incluirTodasFotos && tipoPost === "post"
+          ? fotos
+              .filter((f) => f.id !== fotoId)
+              .slice(0, 9)
+              .map((f) => imovelFotoUrl(f.storage_path))
+          : undefined;
 
       const redes: ("facebook" | "instagram")[] =
         rede === "ambas" ? ["facebook", "instagram"] : [rede];
@@ -219,6 +249,7 @@ export function ImovelRedesSociaisSection({
             tipo_post: tipoPost,
             template_id: templateId || null,
             media_public_url: mediaPublicUrl,
+            media_extra_urls: mediaExtraUrls,
             legenda: legenda || null,
           },
         });
@@ -329,6 +360,22 @@ export function ImovelRedesSociaisSection({
         </div>
       </div>
 
+      {tipoPost === "post" && fotos.length > 1 && (
+        <label className="mt-4 flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={incluirTodasFotos}
+            onCheckedChange={(v) => setIncluirTodasFotos(v === true)}
+          />
+          <span>
+            Incluir todas as fotos do imóvel (carrossel){" "}
+            <span className="text-xs text-muted-foreground">
+              — a foto acima vira a capa com o modelo escolhido; as outras {outrasFotosCount} vão
+              sem overlay, do jeito que estão publicadas no portal.
+            </span>
+          </span>
+        </label>
+      )}
+
       <div className="mt-4">
         <div className="mb-1.5 flex items-center justify-between">
           <Label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -353,11 +400,18 @@ export function ImovelRedesSociaisSection({
           {gerandoPreview ? "Gerando…" : "Gerar prévia"}
         </Button>
         {previewUrl && (
-          <img
-            src={previewUrl}
-            alt="Prévia do post"
-            className="h-48 rounded-lg border border-border object-cover"
-          />
+          <div className="relative">
+            <img
+              src={previewUrl}
+              alt="Prévia do post"
+              className="h-48 rounded-lg border border-border object-cover"
+            />
+            {incluirTodasFotos && fotos.length > 1 && (
+              <span className="absolute bottom-2 right-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-medium text-white">
+                +{outrasFotosCount} fotos no carrossel
+              </span>
+            )}
+          </div>
         )}
       </div>
 
