@@ -13,12 +13,20 @@ export type TipoPost = "post" | "story";
 export type TemplateLayout = "classico" | "moderno" | "minimalista";
 export type TemplateConfig = { layout: TemplateLayout; overlay: string };
 
-export const POST_SIZES: Record<TipoPost, { width: number; height: number }> = {
-  // 4:5 — dentro da faixa 4:5–1.91:1 recomendada pela Meta pra feed
-  post: { width: 1080, height: 1350 },
-  // 9:16 — recomendado pela Meta pra Story
-  story: { width: 1080, height: 1920 },
-};
+// Formato de imagem — separado de TipoPost (que controla o comportamento
+// de publicação na Meta: media_type=STORIES etc.). Post (feed) aceita
+// mais de uma proporção real na Meta (1:1 a 1.91:1) — deixamos a pessoa
+// escolher; Story só tem uma proporção sensata (9:16, tela cheia), então
+// só exibimos a informação, sem seletor.
+export type FormatoFeed = "quadrado" | "retrato";
+
+export const FEED_FORMATOS: Record<FormatoFeed, { label: string; width: number; height: number }> =
+  {
+    quadrado: { label: "Quadrado — 1:1", width: 1080, height: 1080 },
+    retrato: { label: "Retrato — 4:5", width: 1080, height: 1350 },
+  };
+
+export const STORY_FORMATO = { label: "Vertical — 9:16", width: 1080, height: 1920 };
 
 const DEFAULT_ACCENT = "#0f172a";
 
@@ -92,7 +100,8 @@ export type RenderPostImageInput = {
   precoLabel: string;
   specsLabel: string;
   localLabel: string;
-  tipoPost: TipoPost;
+  width: number;
+  height: number;
   config: TemplateConfig;
 };
 
@@ -202,7 +211,7 @@ function drawOverlayEText(
  * lança — falha em carregar o logo só faz a imagem sair sem ele.
  */
 export async function renderPostImage(input: RenderPostImageInput): Promise<Blob> {
-  const size = POST_SIZES[input.tipoPost];
+  const size = { width: input.width, height: input.height };
   const fotoBitmap = await carregarBitmapExterno(input.fotoUrl);
   if (!fotoBitmap) throw new Error("Não foi possível carregar a foto do imóvel");
 

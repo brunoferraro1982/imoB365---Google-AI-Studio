@@ -17,7 +17,14 @@ import {
 import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
 import { gerarPostRedesImovel } from "@/lib/ai.functions";
 import { publicarNasRedesSociais } from "@/lib/metaPublish.functions";
-import { renderPostImage, type TipoPost, type TemplateConfig } from "@/lib/imageTemplates";
+import {
+  renderPostImage,
+  FEED_FORMATOS,
+  STORY_FORMATO,
+  type TipoPost,
+  type FormatoFeed,
+  type TemplateConfig,
+} from "@/lib/imageTemplates";
 import { formatBRL, imovelFotoUrl } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -46,6 +53,7 @@ export function ImovelRedesSociaisSection({
 
   const [rede, setRede] = useState<"facebook" | "instagram" | "ambas">("facebook");
   const [tipoPost, setTipoPost] = useState<TipoPost>("post");
+  const [formatoFeed, setFormatoFeed] = useState<FormatoFeed>("retrato");
   const [fotoId, setFotoId] = useState<string>("");
   const [incluirTodasFotos, setIncluirTodasFotos] = useState(false);
   const [templateId, setTemplateId] = useState<string>("");
@@ -128,7 +136,7 @@ export function ImovelRedesSociaisSection({
   useEffect(() => {
     setPreviewUrl(null);
     setPreviewBlob(null);
-  }, [rede, tipoPost, fotoId, templateId, incluirTodasFotos]);
+  }, [rede, tipoPost, formatoFeed, fotoId, templateId, incluirTodasFotos]);
 
   // Carrossel só existe pra Post — Story é sempre uma mídia só na Meta.
   useEffect(() => {
@@ -186,6 +194,7 @@ export function ImovelRedesSociaisSection({
     }
     setGerandoPreview(true);
     try {
+      const { width, height } = tipoPost === "post" ? FEED_FORMATOS[formatoFeed] : STORY_FORMATO;
       const blob = await renderPostImage({
         fotoUrl: imovelFotoUrl(foto.storage_path),
         logoUrl,
@@ -194,7 +203,8 @@ export function ImovelRedesSociaisSection({
         precoLabel: formatBRL(imovel.preco),
         specsLabel: specsLabel(),
         localLabel: localLabel(),
-        tipoPost,
+        width,
+        height,
         config: template.config,
       });
       setPreviewBlob(blob);
@@ -326,6 +336,30 @@ export function ImovelRedesSociaisSection({
         </div>
         <div>
           <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Tamanho
+          </Label>
+          {tipoPost === "post" ? (
+            <Select value={formatoFeed} onValueChange={(v) => setFormatoFeed(v as FormatoFeed)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(FEED_FORMATOS).map(([key, f]) => (
+                  <SelectItem key={key} value={key}>
+                    {f.label} ({f.width}×{f.height})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="flex h-10 items-center rounded-md border border-border bg-muted/30 px-3 text-sm text-muted-foreground">
+              {STORY_FORMATO.label} ({STORY_FORMATO.width}×{STORY_FORMATO.height}) — único formato
+              aceito pela Meta pra Story
+            </div>
+          )}
+        </div>
+        <div>
+          <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Foto
           </Label>
           <Select value={fotoId} onValueChange={setFotoId}>
@@ -360,21 +394,26 @@ export function ImovelRedesSociaisSection({
         </div>
       </div>
 
-      {tipoPost === "post" && fotos.length > 1 && (
-        <label className="mt-4 flex items-start gap-2 text-sm">
-          <Checkbox
-            checked={incluirTodasFotos}
-            onCheckedChange={(v) => setIncluirTodasFotos(v === true)}
-          />
-          <span>
-            Incluir todas as fotos do imóvel (carrossel){" "}
-            <span className="text-xs text-muted-foreground">
-              — a foto acima vira a capa com o modelo escolhido; as outras {outrasFotosCount} vão
-              sem overlay, do jeito que estão publicadas no portal.
+      {fotos.length > 1 &&
+        (tipoPost === "post" ? (
+          <label className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-muted/20 p-3 text-sm">
+            <Checkbox
+              checked={incluirTodasFotos}
+              onCheckedChange={(v) => setIncluirTodasFotos(v === true)}
+            />
+            <span>
+              <span className="font-medium">Incluir todas as fotos do imóvel (carrossel)</span>
+              <span className="block text-xs text-muted-foreground">
+                A foto selecionada acima vira a capa com o modelo escolhido; as outras{" "}
+                {outrasFotosCount} vão sem overlay, do jeito que estão publicadas no portal.
+              </span>
             </span>
-          </span>
-        </label>
-      )}
+          </label>
+        ) : (
+          <p className="mt-4 text-xs text-muted-foreground">
+            Carrossel (várias fotos) só existe pra Post — Story é sempre uma única imagem na Meta.
+          </p>
+        ))}
 
       <div className="mt-4">
         <div className="mb-1.5 flex items-center justify-between">

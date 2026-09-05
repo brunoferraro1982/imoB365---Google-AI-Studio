@@ -26,6 +26,41 @@ async function graphPost(path: string, token: string, body: Record<string, strin
   return json;
 }
 
+async function graphGet(
+  path: string,
+  token: string,
+  params: Record<string, string> = {},
+): Promise<any> {
+  const url = new URL(`https://graph.facebook.com/${META_GRAPH_VERSION}/${path}`);
+  Object.entries({ ...params, access_token: token }).forEach(([k, v]) =>
+    url.searchParams.set(k, v),
+  );
+  const res = await fetch(url.toString());
+  const json = await res.json().catch(() => null);
+  if (!res.ok || json?.error) {
+    throw new Error(json?.error?.message || `Falha ao consultar (${path})`);
+  }
+  return json;
+}
+
+// Containers de mídia do Instagram (imagem, Story ou item de carrossel)
+// processam de forma assíncrona do lado da Meta — chamar media_publish
+// antes do status virar FINISHED retorna "Media ID is not available".
+// Achado real em produção (Story do Instagram, 2026-09-05; Facebook
+// publicou na hora, Instagram não). Doc oficial da Instagram Content
+// Publishing API recomenda checar status_code antes de publicar.
+async function aguardarContainerPronto(containerId: string, token: string): Promise<void> {
+  for (let tentativa = 0; tentativa < 10; tentativa++) {
+    const { status_code } = await graphGet(containerId, token, { fields: "status_code" });
+    if (status_code === "FINISHED") return;
+    if (status_code === "ERROR" || status_code === "EXPIRED") {
+      throw new Error("A Meta não conseguiu processar a imagem enviada.");
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  throw new Error("A Meta demorou demais pra processar a imagem — tente novamente.");
+}
+
 async function publicarFotoFacebook(
   pageId: string,
   token: string,
@@ -65,6 +100,7 @@ async function publicarInstagram(
     mediaParams.caption = legenda;
   }
   const container = await graphPost(`${igUserId}/media`, token, mediaParams);
+  await aguardarContainerPronto(container.id, token);
   const publicado = await graphPost(`${igUserId}/media_publish`, token, {
     creation_id: container.id,
   });
@@ -100,15 +136,21 @@ async function publicarCarrosselInstagram(
   legenda: string | null,
 ): Promise<string> {
   const filhos = await Promise.all(
-    imageUrls.map((url) =>
-      graphPost(`${igUserId}/media`, token, { image_url: url, is_carousel_item: "true" }),
-    ),
+    imageUrls.map(async (url) => {
+      const filho = await graphPost(`${igUserId}/media`, token, {
+        image_url: url,
+        is_carousel_item: "true",
+      });
+      await aguardarContainerPronto(filho.id, token);
+      return filho;
+    }),
   );
   const container = await graphPost(`${igUserId}/media`, token, {
     media_type: "CAROUSEL",
     children: filhos.map((f) => f.id).join(","),
     ...(legenda ? { caption: legenda } : {}),
   });
+  await aguardarContainerPronto(container.id, token);
   const publicado = await graphPost(`${igUserId}/media_publish`, token, {
     creation_id: container.id,
   });
