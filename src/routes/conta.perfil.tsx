@@ -50,8 +50,22 @@ function PerfilPage() {
         .eq("id", tenantId)
         .maybeSingle();
       const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: url };
-      const { error } = await supabase.from("tenants").update({ tema }).eq("id", tenantId);
+      // .select() é necessário aqui: sem ele, um UPDATE bloqueado pela RLS
+      // (0 linhas afetadas) retorna error: null do mesmo jeito — a Meta/
+      // Postgres não trata "0 linhas alteradas" como erro. Achado real em
+      // produção: um corretor autônomo sem role admin via "Foto atualizada"
+      // (falso positivo) 3 vezes seguidas, mas tenants.tema nunca mudava.
+      const { data: updated, error } = await supabase
+        .from("tenants")
+        .update({ tema })
+        .eq("id", tenantId)
+        .select("id");
       if (error) throw error;
+      if (!updated || updated.length === 0) {
+        throw new Error(
+          "Não foi possível salvar — você pode não ter permissão de administrador neste espaço.",
+        );
+      }
       setFotoUrl(url);
       toast.success("Foto atualizada");
     } catch (err: any) {
@@ -69,8 +83,17 @@ function PerfilPage() {
       .eq("id", tenantId)
       .maybeSingle();
     const tema = { ...((tenantRow?.tema as object) ?? {}), logo_url: undefined };
-    const { error } = await supabase.from("tenants").update({ tema }).eq("id", tenantId);
+    const { data: updated, error } = await supabase
+      .from("tenants")
+      .update({ tema })
+      .eq("id", tenantId)
+      .select("id");
     if (error) return toast.error(error.message);
+    if (!updated || updated.length === 0) {
+      return toast.error(
+        "Não foi possível remover — você pode não ter permissão de administrador neste espaço.",
+      );
+    }
     setFotoUrl("");
     toast.success("Foto removida");
   }
