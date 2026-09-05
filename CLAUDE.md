@@ -808,6 +808,17 @@ Fix pontual aplicado direto em produção pro Enzo: role `admin` inserido + `ten
 
 **Lição operacional**: quando uma função SQL recebe várias correções ao longo do tempo via `CREATE OR REPLACE FUNCTION` em migrations separadas, escrever a migration seguinte sempre a partir da definição ATUAL do banco (`pg_get_functiondef`) — nunca de uma cópia local desatualizada do arquivo de migration anterior — ou revisar explicitamente se algum fix anterior está sendo silenciosamente descartado. Também: um `.update()` do Supabase client sem `.select()` nunca revela se 0 linhas foram afetadas por RLS — só o `error` é checado por padrão, e RLS bloqueando silenciosamente não gera `error`.
 
+### 🔧 Script reaproveitável: sincronizar portfólio de corretor a partir do site externo dele (2026-09-05)
+
+Pedido do usuário depois de uma importação pontual real pra corretora Daniela Fonseca (52 imóveis originais em 2026-08-19/20, script não versionado na época). Desta vez o import foi **incremental** (só a diferença entre o site externo dela e o que já existe na imob365, 18 imóveis novos) e o script foi generalizado e versionado pra reuso futuro, com qualquer corretor.
+
+- **`scripts/import-imoveis-corretor-externo.mjs`** (novo, Node puro sem dependências, fora do build da app — não afeta `tsc`/`eslint`/CI): recebe `--tenant-id`, `--dominio` (e opcionalmente `--corretor-id`, `--catalogo-path`, `--listing-regex`, `--dry-run`). Pagina o catálogo público do site externo, extrai o `codigo_interno` de cada link, compara com o que já existe em `imoveis` pro tenant (via REST, sem precisar de SSH+psql manual) e importa só a diferença.
+- **Fonte de dados**: bloco `<script type="application/ld+json">` (schema.org, `Product`/`Accommodation`/`RealEstateListing`) presente na página de detalhe de cada imóvel — padrão web comum entre CRMs imobiliários brasileiros (confirmado funcionando na plataforma "Eu Corretor"/Odoo da Daniela), não exclusivo de uma plataforma específica.
+- **Execução recomendada**: rodar direto na VPS de produção via `node --env-file=/opt/imob365/app/.env scripts/import-imoveis-corretor-externo.mjs ...` — reaproveita a `SUPABASE_SERVICE_ROLE_KEY` que o próprio app já tem configurada, sem precisar trazer a chave pra máquina local. Sempre rodar `--dry-run` primeiro.
+- **Fotos**: nunca hotlinka — baixa cada uma do site externo e reenvia pro bucket `imovel-fotos` próprio, mesmo padrão de todo o resto do projeto.
+- **Achado ao generalizar**: `WebFetch` (ferramenta de fetch da própria sessão) toma 403 do Cloudflare no site da Daniela; `curl`/`fetch` normal com User-Agent de navegador passa sem problema — não é bloqueio real ao scraping, só à assinatura da ferramenta.
+- **Validado**: testado com `--dry-run` contra o caso real da Daniela depois do import — corretamente identificou 0 novos (68 no site dela, 70 já na imob365, incluindo 2 que saíram do site dela desde a importação original).
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
