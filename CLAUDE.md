@@ -795,6 +795,19 @@ Duas features shippadas na mesma sessão, a segunda motivada por um pedido estra
 
 **Pendências reais**: usuário pediu pequenos ajustes de melhoria a definir numa próxima rodada (não especificados ainda); teste ponta-a-ponta de publicação real confirmado pelo usuário, mas sem cobertura ainda do carrossel/seletor de tamanho na prática.
 
+### 🔧 Regressão real: corretor autônomo sem admin no próprio tenant (2026-09-05)
+
+Relato de produção no mesmo dia: o corretor Enzo Ferracioli (cadastrado hoje) subiu a própria foto em `/conta/perfil` 3 vezes seguidas, sempre vendo "Foto atualizada" — mas ela nunca aparecia na home ("Corretores e Imobiliárias parceiras").
+
+| Causa | Onde | O que |
+| :--- | :--- | :--- |
+| Regressão em `provision_trial_business()` | `20260905010000_fix_provision_trial_business_admin_role_regressao.sql` | O fix de 2026-07-28 (corretor autônomo recebe `admin` ALÉM de `broker`, já que é o único usuário do próprio tenant) tinha sido silenciosamente revertido pela migration seguinte que tocou a mesma função (`20260826140000`, fix de slug em maiúsculas) — escrita em cima de uma cópia desatualizada do corpo da função, que recriou a função inteira e descartou o fix anterior sem querer. Confirmado comparando tenants antes (Daniela, 2026-08-18, com admin) e depois (Enzo, 2026-09-04, só com broker) dessa migration — só o Enzo foi afetado até este ponto. Corrigido combinando as duas correções na mesma função |
+| Falso positivo silencioso | `conta.perfil.tsx` | Sem `admin`, o `UPDATE` em `tenants` (RLS `tenants_admin_update`, exige admin desde 2026-07-24) afetava 0 linhas — mas Postgres/PostgREST não trata "0 linhas alteradas" como erro, então o código sempre mostrava "Foto atualizada" mesmo sem salvar nada, mascarando o problema real. Corrigido com `.select("id")` depois do `update()` + checagem de linhas afetadas, em `uploadFoto` e `removerFoto` |
+
+Fix pontual aplicado direto em produção pro Enzo: role `admin` inserido + `tenants.tema.logo_url` apontando pro arquivo que ele já tinha enviado 3x no storage (achado via `storage.objects` — os arquivos físicos já existiam, só nunca tinham sido vinculados no banco), sem precisar reenviar. Confirmado pelo usuário: foto aparecendo na home. PR #341 → develop → PR #342 develop→main, deploy aprovado e validado.
+
+**Lição operacional**: quando uma função SQL recebe várias correções ao longo do tempo via `CREATE OR REPLACE FUNCTION` em migrations separadas, escrever a migration seguinte sempre a partir da definição ATUAL do banco (`pg_get_functiondef`) — nunca de uma cópia local desatualizada do arquivo de migration anterior — ou revisar explicitamente se algum fix anterior está sendo silenciosamente descartado. Também: um `.update()` do Supabase client sem `.select()` nunca revela se 0 linhas foram afetadas por RLS — só o `error` é checado por padrão, e RLS bloqueando silenciosamente não gera `error`.
+
 ### 📋 Backlog (próximas versões)
 
 Consolidado por tema em 2026-07-20 (revisão de PO — deduplicado, sem Cloudflare no escopo).
