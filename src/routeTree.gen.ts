@@ -39,12 +39,12 @@ import { Route as BuscarRouteImport } from './routes/buscar'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as AtendimentoRouteImport } from './routes/atendimento'
 import { Route as AppRouteImport } from './routes/app'
-import { Route as AjudaRouteImport } from './routes/ajuda'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AImob365RouteImport } from './routes/a-imob365'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AjudaIndexRouteImport } from './routes/ajuda.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VisitaCheckinTokenRouteImport } from './routes/visita-checkin.$token'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
@@ -77,6 +77,7 @@ import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
+import { Route as AjudaFacebookInstagramRouteImport } from './routes/ajuda.facebook-instagram'
 import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
@@ -364,11 +365,6 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AjudaRoute = AjudaRouteImport.update({
-  id: '/ajuda',
-  path: '/ajuda',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -393,6 +389,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const AjudaIndexRoute = AjudaIndexRouteImport.update({
+  id: '/ajuda/',
+  path: '/ajuda/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -552,6 +553,11 @@ const AppCartaoVirtualRoute = AppCartaoVirtualRouteImport.update({
 const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
   id: '/api/sitemap.xml',
   path: '/api/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaFacebookInstagramRoute = AjudaFacebookInstagramRouteImport.update({
+  id: '/ajuda/facebook-instagram',
+  path: '/ajuda/facebook-instagram',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminVitrineParceirosRoute = AdminVitrineParceirosRouteImport.update({
@@ -1280,7 +1286,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
-  '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
   '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
@@ -1326,6 +1331,7 @@ export interface FileRoutesByFullPath {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1358,6 +1364,7 @@ export interface FileRoutesByFullPath {
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/ajuda/': typeof AjudaIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
@@ -1484,7 +1491,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
-  '/ajuda': typeof AjudaRoute
   '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
   '/buscar': typeof BuscarRoute
@@ -1528,6 +1534,7 @@ export interface FileRoutesByTo {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1558,6 +1565,7 @@ export interface FileRoutesByTo {
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin': typeof AdminIndexRoute
+  '/ajuda': typeof AjudaIndexRoute
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
@@ -1686,7 +1694,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/a-imob365': typeof AImob365Route
   '/admin': typeof AdminRouteWithChildren
-  '/ajuda': typeof AjudaRoute
   '/app': typeof AppRouteWithChildren
   '/atendimento': typeof AtendimentoRoute
   '/blog': typeof BlogRoute
@@ -1732,6 +1739,7 @@ export interface FileRoutesById {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1764,6 +1772,7 @@ export interface FileRoutesById {
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
   '/admin/': typeof AdminIndexRoute
+  '/ajuda/': typeof AjudaIndexRoute
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
@@ -1893,7 +1902,6 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/admin'
-    | '/ajuda'
     | '/app'
     | '/atendimento'
     | '/blog'
@@ -1939,6 +1947,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -1971,6 +1980,7 @@ export interface FileRouteTypes {
     | '/site/$slug'
     | '/visita-checkin/$token'
     | '/admin/'
+    | '/ajuda/'
     | '/app/'
     | '/conta/'
     | '/admin/atendimento/painel'
@@ -2097,7 +2107,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/a-imob365'
-    | '/ajuda'
     | '/atendimento'
     | '/blog'
     | '/buscar'
@@ -2141,6 +2150,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2171,6 +2181,7 @@ export interface FileRouteTypes {
     | '/site/$slug'
     | '/visita-checkin/$token'
     | '/admin'
+    | '/ajuda'
     | '/app'
     | '/conta'
     | '/admin/atendimento/painel'
@@ -2298,7 +2309,6 @@ export interface FileRouteTypes {
     | '/'
     | '/a-imob365'
     | '/admin'
-    | '/ajuda'
     | '/app'
     | '/atendimento'
     | '/blog'
@@ -2344,6 +2354,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2376,6 +2387,7 @@ export interface FileRouteTypes {
     | '/site/$slug'
     | '/visita-checkin/$token'
     | '/admin/'
+    | '/ajuda/'
     | '/app/'
     | '/conta/'
     | '/admin/atendimento/painel'
@@ -2504,7 +2516,6 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AImob365Route: typeof AImob365Route
   AdminRoute: typeof AdminRouteWithChildren
-  AjudaRoute: typeof AjudaRoute
   AppRoute: typeof AppRouteWithChildren
   AtendimentoRoute: typeof AtendimentoRoute
   BlogRoute: typeof BlogRoute
@@ -2535,6 +2546,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
+  AjudaFacebookInstagramRoute: typeof AjudaFacebookInstagramRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
@@ -2548,6 +2560,7 @@ export interface RootRouteChildren {
   QueroAnunciarTenantSlugRoute: typeof QueroAnunciarTenantSlugRoute
   SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
+  AjudaIndexRoute: typeof AjudaIndexRoute
   ApiAiAssistenteRoute: typeof ApiAiAssistenteRoute
   ApiAiSugestaoChamadoRoute: typeof ApiAiSugestaoChamadoRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
@@ -2803,13 +2816,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ajuda': {
-      id: '/ajuda'
-      path: '/ajuda'
-      fullPath: '/ajuda'
-      preLoaderRoute: typeof AjudaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -2844,6 +2850,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/ajuda/': {
+      id: '/ajuda/'
+      path: '/ajuda'
+      fullPath: '/ajuda/'
+      preLoaderRoute: typeof AjudaIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/admin/': {
       id: '/admin/'
@@ -3067,6 +3080,13 @@ declare module '@tanstack/react-router' {
       path: '/api/sitemap.xml'
       fullPath: '/api/sitemap.xml'
       preLoaderRoute: typeof ApiSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/facebook-instagram': {
+      id: '/ajuda/facebook-instagram'
+      path: '/ajuda/facebook-instagram'
+      fullPath: '/ajuda/facebook-instagram'
+      preLoaderRoute: typeof AjudaFacebookInstagramRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/vitrine-parceiros': {
@@ -4307,7 +4327,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AImob365Route: AImob365Route,
   AdminRoute: AdminRouteWithChildren,
-  AjudaRoute: AjudaRoute,
   AppRoute: AppRouteWithChildren,
   AtendimentoRoute: AtendimentoRoute,
   BlogRoute: BlogRoute,
@@ -4338,6 +4357,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
+  AjudaFacebookInstagramRoute: AjudaFacebookInstagramRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
@@ -4351,6 +4371,7 @@ const rootRouteChildren: RootRouteChildren = {
   QueroAnunciarTenantSlugRoute: QueroAnunciarTenantSlugRoute,
   SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,
+  AjudaIndexRoute: AjudaIndexRoute,
   ApiAiAssistenteRoute: ApiAiAssistenteRoute,
   ApiAiSugestaoChamadoRoute: ApiAiSugestaoChamadoRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
