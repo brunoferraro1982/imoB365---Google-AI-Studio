@@ -7,6 +7,7 @@ import {
   GraduationCap,
   MessageSquare,
   Facebook,
+  Palette,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,17 @@ const ARTIGOS = [
       "Também passa a poder publicar Post e Story de qualquer imóvel direto no Facebook/Instagram, com modelos prontos.",
     ],
     href: "/ajuda/facebook-instagram",
+    linkLabel: "Ver guia completo, passo a passo",
+  },
+  {
+    icon: Palette,
+    title: "Como conectar sua conta Canva (e editar imagens antes de publicar)",
+    steps: [
+      "Cada corretor/imobiliária cria a própria integração gratuita na Canva — leva de 10 a 15 minutos, sem fila de aprovação.",
+      "Depois de conectado, aparece a opção 'Editar no Canva' na prévia de post/story de qualquer imóvel.",
+      "Você edita no editor de verdade da Canva, numa aba nova, e volta automaticamente pro imob365 com a imagem pronta.",
+    ],
+    href: "/ajuda/canva",
     linkLabel: "Ver guia completo, passo a passo",
   },
 ];

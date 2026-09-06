@@ -24,6 +24,11 @@ const CANVA_ERROR_LABEL: Record<string, string> = {
   erro_ao_salvar: "Falha ao salvar a conexão. Tente novamente.",
 };
 
+const CANVA_ERROR_ANCHOR: Record<string, string> = {
+  token_exchange_falhou: "erro-token-exchange",
+  state_invalido: "erro-state-invalido",
+};
+
 export const Route = createFileRoute("/app/portais/canva")({
   head: () => ({ meta: [{ title: "Conectar Canva — imob365" }] }),
   component: CanvaConexaoPage,
@@ -168,7 +173,31 @@ function CanvaConexaoPage() {
           Conectando sua própria conta Canva, você passa a poder abrir a imagem de qualquer post ou
           story de imóvel no editor de verdade da Canva pra personalizar antes de publicar.
         </p>
+        <Link
+          to="/ajuda/canva"
+          target="_blank"
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> Guia completo, passo a passo, com solução de
+          problemas
+        </Link>
       </header>
+
+      {search.canva_error && (
+        <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+          <p className="font-medium">
+            {CANVA_ERROR_LABEL[search.canva_error] ?? "Não foi possível conectar à Canva."}
+          </p>
+          <Link
+            to="/ajuda/canva"
+            hash={CANVA_ERROR_ANCHOR[search.canva_error]}
+            target="_blank"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            Ver explicação detalhada no guia <ExternalLink className="h-3 w-3" />
+          </Link>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="text-sm text-muted-foreground">Carregando…</div>
