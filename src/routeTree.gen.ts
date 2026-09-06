@@ -78,6 +78,7 @@ import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AjudaFacebookInstagramRouteImport } from './routes/ajuda.facebook-instagram'
+import { Route as AjudaCanvaRouteImport } from './routes/ajuda.canva'
 import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
@@ -561,6 +562,11 @@ const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
 const AjudaFacebookInstagramRoute = AjudaFacebookInstagramRouteImport.update({
   id: '/ajuda/facebook-instagram',
   path: '/ajuda/facebook-instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaCanvaRoute = AjudaCanvaRouteImport.update({
+  id: '/ajuda/canva',
+  path: '/ajuda/canva',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminVitrineParceirosRoute = AdminVitrineParceirosRouteImport.update({
@@ -1350,6 +1356,7 @@ export interface FileRoutesByFullPath {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1556,6 +1563,7 @@ export interface FileRoutesByTo {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1764,6 +1772,7 @@ export interface FileRoutesById {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1975,6 +1984,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2181,6 +2191,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2388,6 +2399,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2583,6 +2595,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
+  AjudaCanvaRoute: typeof AjudaCanvaRoute
   AjudaFacebookInstagramRoute: typeof AjudaFacebookInstagramRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -3125,6 +3138,13 @@ declare module '@tanstack/react-router' {
       path: '/ajuda/facebook-instagram'
       fullPath: '/ajuda/facebook-instagram'
       preLoaderRoute: typeof AjudaFacebookInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/canva': {
+      id: '/ajuda/canva'
+      path: '/ajuda/canva'
+      fullPath: '/ajuda/canva'
+      preLoaderRoute: typeof AjudaCanvaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/vitrine-parceiros': {
@@ -4420,6 +4440,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
+  AjudaCanvaRoute: AjudaCanvaRoute,
   AjudaFacebookInstagramRoute: AjudaFacebookInstagramRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
