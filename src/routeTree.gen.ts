@@ -78,6 +78,7 @@ import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AjudaFacebookInstagramRouteImport } from './routes/ajuda.facebook-instagram'
+import { Route as AjudaCanvaRouteImport } from './routes/ajuda.canva'
 import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
 import { Route as AdminStatusRouteImport } from './routes/admin.status'
@@ -117,6 +118,7 @@ import { Route as AppSitePreviaRouteImport } from './routes/app.site.previa'
 import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppPortaisMetaRouteImport } from './routes/app.portais.meta'
+import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
@@ -125,6 +127,7 @@ import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
 import { Route as AppImoveisImportarRouteImport } from './routes/app.imoveis.importar'
 import { Route as AppImoveisCompararRouteImport } from './routes/app.imoveis.comparar'
+import { Route as AppImoveisCanvaRetornoRouteImport } from './routes/app.imoveis.canva-retorno'
 import { Route as AppImoveisAssistenteRouteImport } from './routes/app.imoveis.assistente'
 import { Route as AppImoveisIdRouteImport } from './routes/app.imoveis.$id'
 import { Route as AppFinanceiroPlanoContasRouteImport } from './routes/app.financeiro.plano-contas'
@@ -213,6 +216,7 @@ import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
 import { Route as ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport } from './routes/api.public.feeds.$tenantSlug.meta-catalog[.]csv'
+import { Route as ApiPublicCanvaOauthCallbackRouteImport } from './routes/api.public.canva.oauth.callback'
 
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
@@ -560,6 +564,11 @@ const AjudaFacebookInstagramRoute = AjudaFacebookInstagramRouteImport.update({
   path: '/ajuda/facebook-instagram',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AjudaCanvaRoute = AjudaCanvaRouteImport.update({
+  id: '/ajuda/canva',
+  path: '/ajuda/canva',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminVitrineParceirosRoute = AdminVitrineParceirosRouteImport.update({
   id: '/vitrine-parceiros',
   path: '/vitrine-parceiros',
@@ -755,6 +764,11 @@ const AppPortaisMetaRoute = AppPortaisMetaRouteImport.update({
   path: '/portais/meta',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPortaisCanvaRoute = AppPortaisCanvaRouteImport.update({
+  id: '/portais/canva',
+  path: '/portais/canva',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLocacaoPrestacaoContasRoute =
   AppLocacaoPrestacaoContasRouteImport.update({
     id: '/locacao/prestacao-contas',
@@ -794,6 +808,11 @@ const AppImoveisImportarRoute = AppImoveisImportarRouteImport.update({
 const AppImoveisCompararRoute = AppImoveisCompararRouteImport.update({
   id: '/imoveis/comparar',
   path: '/imoveis/comparar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppImoveisCanvaRetornoRoute = AppImoveisCanvaRetornoRouteImport.update({
+  id: '/imoveis/canva-retorno',
+  path: '/imoveis/canva-retorno',
   getParentRoute: () => AppRoute,
 } as any)
 const AppImoveisAssistenteRoute = AppImoveisAssistenteRouteImport.update({
@@ -1281,6 +1300,12 @@ const ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute =
     path: '/api/public/feeds/$tenantSlug/meta-catalog.csv',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCanvaOauthCallbackRoute =
+  ApiPublicCanvaOauthCallbackRouteImport.update({
+    id: '/api/public/canva/oauth/callback',
+    path: '/api/public/canva/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1331,6 +1356,7 @@ export interface FileRoutesByFullPath {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1413,6 +1439,7 @@ export interface FileRoutesByFullPath {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
+  '/app/imoveis/canva-retorno': typeof AppImoveisCanvaRetornoRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -1421,6 +1448,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1479,6 +1507,7 @@ export interface FileRoutesByFullPath {
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1534,6 +1563,7 @@ export interface FileRoutesByTo {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1614,6 +1644,7 @@ export interface FileRoutesByTo {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
+  '/app/imoveis/canva-retorno': typeof AppImoveisCanvaRetornoRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -1622,6 +1653,7 @@ export interface FileRoutesByTo {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1680,6 +1712,7 @@ export interface FileRoutesByTo {
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1739,6 +1772,7 @@ export interface FileRoutesById {
   '/admin/status': typeof AdminStatusRoute
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
+  '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1821,6 +1855,7 @@ export interface FileRoutesById {
   '/app/financeiro/plano-contas': typeof AppFinanceiroPlanoContasRoute
   '/app/imoveis/$id': typeof AppImoveisIdRoute
   '/app/imoveis/assistente': typeof AppImoveisAssistenteRoute
+  '/app/imoveis/canva-retorno': typeof AppImoveisCanvaRetornoRoute
   '/app/imoveis/comparar': typeof AppImoveisCompararRoute
   '/app/imoveis/importar': typeof AppImoveisImportarRoute
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
@@ -1829,6 +1864,7 @@ export interface FileRoutesById {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
   '/app/site/blog': typeof AppSiteBlogRoute
@@ -1887,6 +1923,7 @@ export interface FileRoutesById {
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
+  '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1947,6 +1984,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2029,6 +2067,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/assistente'
+    | '/app/imoveis/canva-retorno'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -2037,6 +2076,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -2095,6 +2135,7 @@ export interface FileRouteTypes {
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
+    | '/api/public/canva/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2150,6 +2191,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2230,6 +2272,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/assistente'
+    | '/app/imoveis/canva-retorno'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -2238,6 +2281,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -2296,6 +2340,7 @@ export interface FileRouteTypes {
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias'
     | '/app/locacao/repasses'
+    | '/api/public/canva/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2354,6 +2399,7 @@ export interface FileRouteTypes {
     | '/admin/status'
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
+    | '/ajuda/canva'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2436,6 +2482,7 @@ export interface FileRouteTypes {
     | '/app/financeiro/plano-contas'
     | '/app/imoveis/$id'
     | '/app/imoveis/assistente'
+    | '/app/imoveis/canva-retorno'
     | '/app/imoveis/comparar'
     | '/app/imoveis/importar'
     | '/app/imoveis/novo'
@@ -2444,6 +2491,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
     | '/app/site/blog'
@@ -2502,6 +2550,7 @@ export interface FileRouteTypes {
     | '/site/$slug_/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
+    | '/api/public/canva/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2546,6 +2595,7 @@ export interface RootRouteChildren {
   SobreRoute: typeof SobreRoute
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
+  AjudaCanvaRoute: typeof AjudaCanvaRoute
   AjudaFacebookInstagramRoute: typeof AjudaFacebookInstagramRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -2595,6 +2645,7 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   SiteSlugBlogPostSlugRoute: typeof SiteSlugBlogPostSlugRoute
   SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
+  ApiPublicCanvaOauthCallbackRoute: typeof ApiPublicCanvaOauthCallbackRoute
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -3089,6 +3140,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AjudaFacebookInstagramRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ajuda/canva': {
+      id: '/ajuda/canva'
+      path: '/ajuda/canva'
+      fullPath: '/ajuda/canva'
+      preLoaderRoute: typeof AjudaCanvaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/vitrine-parceiros': {
       id: '/admin/vitrine-parceiros'
       path: '/vitrine-parceiros'
@@ -3362,6 +3420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPortaisMetaRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/portais/canva': {
+      id: '/app/portais/canva'
+      path: '/portais/canva'
+      fullPath: '/app/portais/canva'
+      preLoaderRoute: typeof AppPortaisCanvaRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/locacao/prestacao-contas': {
       id: '/app/locacao/prestacao-contas'
       path: '/locacao/prestacao-contas'
@@ -3416,6 +3481,13 @@ declare module '@tanstack/react-router' {
       path: '/imoveis/comparar'
       fullPath: '/app/imoveis/comparar'
       preLoaderRoute: typeof AppImoveisCompararRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/imoveis/canva-retorno': {
+      id: '/app/imoveis/canva-retorno'
+      path: '/imoveis/canva-retorno'
+      fullPath: '/app/imoveis/canva-retorno'
+      preLoaderRoute: typeof AppImoveisCanvaRetornoRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/imoveis/assistente': {
@@ -4034,6 +4106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/canva/oauth/callback': {
+      id: '/api/public/canva/oauth/callback'
+      path: '/api/public/canva/oauth/callback'
+      fullPath: '/api/public/canva/oauth/callback'
+      preLoaderRoute: typeof ApiPublicCanvaOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -4195,6 +4274,7 @@ interface AppRouteChildren {
   AppFinanceiroPlanoContasRoute: typeof AppFinanceiroPlanoContasRoute
   AppImoveisIdRoute: typeof AppImoveisIdRoute
   AppImoveisAssistenteRoute: typeof AppImoveisAssistenteRoute
+  AppImoveisCanvaRetornoRoute: typeof AppImoveisCanvaRetornoRoute
   AppImoveisCompararRoute: typeof AppImoveisCompararRoute
   AppImoveisImportarRoute: typeof AppImoveisImportarRoute
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
@@ -4203,6 +4283,7 @@ interface AppRouteChildren {
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
+  AppPortaisCanvaRoute: typeof AppPortaisCanvaRoute
   AppPortaisMetaRoute: typeof AppPortaisMetaRoute
   AppAtendimentoIndexRoute: typeof AppAtendimentoIndexRoute
   AppChatIndexRoute: typeof AppChatIndexRoute
@@ -4257,6 +4338,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFinanceiroPlanoContasRoute: AppFinanceiroPlanoContasRoute,
   AppImoveisIdRoute: AppImoveisIdRoute,
   AppImoveisAssistenteRoute: AppImoveisAssistenteRoute,
+  AppImoveisCanvaRetornoRoute: AppImoveisCanvaRetornoRoute,
   AppImoveisCompararRoute: AppImoveisCompararRoute,
   AppImoveisImportarRoute: AppImoveisImportarRoute,
   AppImoveisNovoRoute: AppImoveisNovoRoute,
@@ -4265,6 +4347,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
+  AppPortaisCanvaRoute: AppPortaisCanvaRoute,
   AppPortaisMetaRoute: AppPortaisMetaRoute,
   AppAtendimentoIndexRoute: AppAtendimentoIndexRoute,
   AppChatIndexRoute: AppChatIndexRoute,
@@ -4357,6 +4440,7 @@ const rootRouteChildren: RootRouteChildren = {
   SobreRoute: SobreRoute,
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
+  AjudaCanvaRoute: AjudaCanvaRoute,
   AjudaFacebookInstagramRoute: AjudaFacebookInstagramRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
@@ -4408,6 +4492,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   SiteSlugBlogPostSlugRoute: SiteSlugBlogPostSlugRoute,
   SiteSlugPPageSlugRoute: SiteSlugPPageSlugRoute,
+  ApiPublicCanvaOauthCallbackRoute: ApiPublicCanvaOauthCallbackRoute,
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute:
     ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute,
   ApiPublicFeedsTenantSlugOlxDotxmlRoute:
