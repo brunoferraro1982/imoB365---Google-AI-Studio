@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { Link } from "@tanstack/react-router";
-import { Share2, Sparkles, ExternalLink } from "lucide-react";
+import { Link, useSearch } from "@tanstack/react-router";
+import { Share2, Sparkles, ExternalLink, Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
+import { getCanvaConnectionStatus } from "@/lib/canvaOAuth.functions";
+import { iniciarEdicaoNoCanva } from "@/lib/canvaDesign.functions";
 import { gerarPostRedesImovel } from "@/lib/ai.functions";
 import { publicarNasRedesSociais } from "@/lib/metaPublish.functions";
 import {
@@ -38,13 +40,23 @@ export function ImovelRedesSociaisSection({
   imovelId: string;
   tenantId: string | null | undefined;
 }) {
+  const search = useSearch({ strict: false }) as { canva_preview?: string };
   const fetchStatus = useServerFn(getMetaConnectionStatus);
+  const fetchCanvaStatus = useServerFn(getCanvaConnectionStatus);
   const fetchLegenda = useServerFn(gerarPostRedesImovel);
   const publicar = useServerFn(publicarNasRedesSociais);
+  const iniciarCanva = useServerFn(iniciarEdicaoNoCanva);
 
   const [loading, setLoading] = useState(true);
   const [conectado, setConectado] = useState(false);
   const [instagramConectado, setInstagramConectado] = useState(false);
+  const [canvaConectado, setCanvaConectado] = useState(false);
+  // Presente quando a imagem atual veio da Canva já editada e enviada ao
+  // nosso storage (ver app.imoveis.canva-retorno.tsx) — nesse caso
+  // publicarPost() usa essa URL direto, sem reenviar previewBlob (que nem
+  // existe mais, a edição aconteceu fora do canvas local).
+  const [canvaMediaUrl, setCanvaMediaUrl] = useState<string | null>(null);
+  const [abrindoCanva, setAbrindoCanva] = useState(false);
   const [fotos, setFotos] = useState<Foto[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -70,6 +82,7 @@ export function ImovelRedesSociaisSection({
       setLoading(true);
       const [
         status,
+        canvaStatus,
         { data: imo },
         { data: fts },
         { data: tpls },
@@ -77,6 +90,7 @@ export function ImovelRedesSociaisSection({
         { data: siteSettings },
       ] = await Promise.all([
         fetchStatus(),
+        fetchCanvaStatus(),
         (supabase as any)
           .from("imoveis")
           .select(
@@ -104,6 +118,7 @@ export function ImovelRedesSociaisSection({
       ]);
       setConectado(status.connected);
       setInstagramConectado(status.instagramConnected);
+      setCanvaConectado(canvaStatus.connected);
       setImovel(imo ?? null);
       setFotos((fts as Foto[]) ?? []);
       setFotoId(fts?.[0]?.id ?? "");
@@ -136,12 +151,26 @@ export function ImovelRedesSociaisSection({
   useEffect(() => {
     setPreviewUrl(null);
     setPreviewBlob(null);
+    setCanvaMediaUrl(null);
   }, [rede, tipoPost, formatoFeed, fotoId, templateId, incluirTodasFotos]);
 
   // Carrossel só existe pra Post — Story é sempre uma mídia só na Meta.
   useEffect(() => {
     if (tipoPost === "story") setIncluirTodasFotos(false);
   }, [tipoPost]);
+
+  // Voltando de "Editar no Canva" (ver app.imoveis.canva-retorno.tsx) — a
+  // imagem já foi exportada e enviada pro nosso storage, então já é a
+  // prévia atual, sem precisar gerar de novo nem reenviar no publish.
+  useEffect(() => {
+    if (search.canva_preview) {
+      setPreviewUrl(search.canva_preview);
+      setPreviewBlob(null);
+      setCanvaMediaUrl(search.canva_preview);
+      toast.success("Imagem editada na Canva trazida de volta!");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function gerarLegenda() {
     if (!imovel) return;
@@ -216,25 +245,52 @@ export function ImovelRedesSociaisSection({
     }
   }
 
+  // {tenant_id}/{imovel_id}/... — a policy de escrita do bucket
+  // imovel-fotos casta o PRIMEIRO segmento da pasta pra uuid
+  // (((storage.foldername(name))[1])::uuid) pra checar o tenant; um
+  // prefixo textual antes do tenant_id (ex. "social-posts/...") quebra
+  // esse cast com "invalid input syntax for type uuid" — achado real em
+  // produção. Mesmo padrão já usado em ImovelFotosSection.tsx. Reaproveitado
+  // tanto por publicarPost() quanto por abrirNoCanva() — os dois precisam
+  // de uma URL pública real antes de continuar.
+  async function uploadPreviewParaStorage(blob: Blob): Promise<string> {
+    if (!tenantId) throw new Error("Tenant não identificado.");
+    const path = `${tenantId}/${imovelId}/social-posts/${crypto.randomUUID()}.jpg`;
+    const { error: upErr } = await supabase.storage
+      .from("imovel-fotos")
+      .upload(path, blob, { cacheControl: "3600", contentType: "image/jpeg" });
+    if (upErr) throw new Error(upErr.message);
+    return imovelFotoUrl(path);
+  }
+
+  async function abrirNoCanva() {
+    if ((!previewBlob && !canvaMediaUrl) || !tenantId) {
+      toast.error("Gere a prévia antes de editar na Canva.");
+      return;
+    }
+    setAbrindoCanva(true);
+    try {
+      const mediaPublicUrl = canvaMediaUrl ?? (await uploadPreviewParaStorage(previewBlob!));
+      const { width, height } = tipoPost === "post" ? FEED_FORMATOS[formatoFeed] : STORY_FORMATO;
+      const { editUrl } = await iniciarCanva({
+        data: { imovelId, mediaPublicUrl, width, height },
+      });
+      window.open(editUrl, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao abrir a Canva");
+    } finally {
+      setAbrindoCanva(false);
+    }
+  }
+
   async function publicarPost() {
-    if (!previewBlob || !tenantId) {
+    if ((!previewBlob && !canvaMediaUrl) || !tenantId) {
       toast.error("Gere a prévia antes de publicar.");
       return;
     }
     setPublicando(true);
     try {
-      // {tenant_id}/{imovel_id}/... — a policy de escrita do bucket
-      // imovel-fotos casta o PRIMEIRO segmento da pasta pra uuid
-      // (((storage.foldername(name))[1])::uuid) pra checar o tenant; um
-      // prefixo textual antes do tenant_id (ex. "social-posts/...") quebra
-      // esse cast com "invalid input syntax for type uuid" — achado real
-      // em produção. Mesmo padrão já usado em ImovelFotosSection.tsx.
-      const path = `${tenantId}/${imovelId}/social-posts/${crypto.randomUUID()}.jpg`;
-      const { error: upErr } = await supabase.storage
-        .from("imovel-fotos")
-        .upload(path, previewBlob, { cacheControl: "3600", contentType: "image/jpeg" });
-      if (upErr) throw new Error(upErr.message);
-      const mediaPublicUrl = imovelFotoUrl(path);
+      const mediaPublicUrl = canvaMediaUrl ?? (await uploadPreviewParaStorage(previewBlob!));
 
       // Demais fotos do imóvel (sem overlay) pro carrossel — já são
       // públicas no mesmo bucket, não precisa reenviar nada.
@@ -267,6 +323,7 @@ export function ImovelRedesSociaisSection({
       toast.success("Publicado nas redes sociais!");
       setPreviewUrl(null);
       setPreviewBlob(null);
+      setCanvaMediaUrl(null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao publicar");
     } finally {
@@ -438,6 +495,20 @@ export function ImovelRedesSociaisSection({
         <Button type="button" variant="outline" onClick={gerarPreview} disabled={gerandoPreview}>
           {gerandoPreview ? "Gerando…" : "Gerar prévia"}
         </Button>
+        {(previewBlob || canvaMediaUrl) &&
+          (canvaConectado ? (
+            <Button type="button" variant="outline" onClick={abrirNoCanva} disabled={abrindoCanva}>
+              <Palette className="mr-2 h-4 w-4" />
+              {abrindoCanva ? "Abrindo…" : "Editar no Canva"}
+            </Button>
+          ) : (
+            <Link
+              to="/app/portais/canva"
+              className="inline-flex items-center gap-1.5 self-center text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+            >
+              <Palette className="h-3.5 w-3.5" /> Conectar Canva pra editar essa imagem
+            </Link>
+          ))}
         {previewUrl && (
           <div className="relative">
             <img
@@ -455,7 +526,7 @@ export function ImovelRedesSociaisSection({
       </div>
 
       <div className="mt-4 flex justify-end">
-        <Button onClick={publicarPost} disabled={!previewBlob || publicando}>
+        <Button onClick={publicarPost} disabled={(!previewBlob && !canvaMediaUrl) || publicando}>
           {publicando ? "Publicando…" : "Publicar"}
         </Button>
       </div>
