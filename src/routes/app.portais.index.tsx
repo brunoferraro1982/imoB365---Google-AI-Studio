@@ -9,6 +9,7 @@ import {
   Info,
   Facebook,
   Instagram,
+  Palette,
   ChevronRight,
   CheckCircle2,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { PORTAIS } from "@/lib/portais";
 import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
+import { getCanvaConnectionStatus } from "@/lib/canvaOAuth.functions";
 import { toast } from "sonner";
 
 // Precisa ser app.portais.index.tsx (não app.portais.tsx) — no roteamento
@@ -48,6 +50,7 @@ const PORTAIS_FEED = PORTAIS.filter((p) => p.slug !== "meta");
 function PortaisPage() {
   const { tenantId, isAdmin } = useAuth();
   const fetchMetaStatus = useServerFn(getMetaConnectionStatus);
+  const fetchCanvaStatus = useServerFn(getCanvaConnectionStatus);
   const [feeds, setFeeds] = useState<Record<string, Feed>>({});
   const [tenantSlug, setTenantSlug] = useState<string | null>(null);
   const [imoveisAtivos, setImoveisAtivos] = useState(0);
@@ -58,10 +61,14 @@ function PortaisPage() {
     instagramConnected: boolean;
     pageName: string | null;
   } | null>(null);
+  const [canvaStatus, setCanvaStatus] = useState<{ connected: boolean } | null>(null);
 
   useEffect(() => {
     fetchMetaStatus()
       .then((s) => setMetaStatus(s))
+      .catch(() => {});
+    fetchCanvaStatus()
+      .then((s) => setCanvaStatus(s))
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -178,6 +185,36 @@ function PortaisPage() {
           <Button asChild size="lg" className="shrink-0">
             <Link to="/app/portais/meta">
               {metaStatus?.connected ? "Gerenciar conexão" : "Configurar Facebook & Instagram"}
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="mb-6 overflow-hidden rounded-xl border border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-card to-card">
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="shrink-0 rounded-full bg-gradient-to-tr from-purple-600 to-fuchsia-500 p-2.5 text-white shadow-sm">
+              <Palette className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-lg font-semibold">Canva</h2>
+                {canvaStatus?.connected && (
+                  <Badge className="gap-1 bg-emerald-600 text-[10px] hover:bg-emerald-600">
+                    <CheckCircle2 className="h-3 w-3" /> Conectado
+                  </Badge>
+                )}
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Conecte sua própria conta Canva pra editar a imagem de qualquer post ou story de
+                imóvel no editor de verdade da Canva antes de publicar — sua conta, seu design.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="lg" variant="outline" className="shrink-0">
+            <Link to="/app/portais/canva">
+              {canvaStatus?.connected ? "Gerenciar conexão" : "Configurar Canva"}
               <ChevronRight className="ml-1 h-4 w-4" />
             </Link>
           </Button>
