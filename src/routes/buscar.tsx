@@ -221,10 +221,22 @@ function Buscar() {
     return imovelFotoUrl(path);
   }
 
+  // Normaliza acento/caixa antes de comparar — sem isso, buscar "sao paulo"
+  // (como a maioria digita no celular, sem acento) não batia com imóveis
+  // cadastrados como "São Paulo"/"SÃO PAULO" e a busca por localidade na
+  // home parecia simplesmente não funcionar, mesmo com imóveis reais na
+  // cidade buscada.
+  function normalizarBusca(v: string): string {
+    return v
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
   const filtered = items.filter((i) => {
-    const term = (search || sp.q || "").toLowerCase();
-    const bairroFilter = (sp.bairro || "").toLowerCase();
-    if (bairroFilter && !(i.endereco_bairro ?? "").toLowerCase().includes(bairroFilter))
+    const term = normalizarBusca(search || sp.q || "");
+    const bairroFilter = normalizarBusca(sp.bairro || "");
+    if (bairroFilter && !normalizarBusca(i.endereco_bairro ?? "").includes(bairroFilter))
       return false;
 
     // Client-side instant react filters for advanced parameters
@@ -241,9 +253,9 @@ function Buscar() {
 
     if (!term) return true;
     return (
-      i.titulo.toLowerCase().includes(term) ||
-      (i.endereco_cidade ?? "").toLowerCase().includes(term) ||
-      (i.endereco_bairro ?? "").toLowerCase().includes(term)
+      normalizarBusca(i.titulo).includes(term) ||
+      normalizarBusca(i.endereco_cidade ?? "").includes(term) ||
+      normalizarBusca(i.endereco_bairro ?? "").includes(term)
     );
   });
 
