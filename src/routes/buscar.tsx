@@ -114,6 +114,7 @@ function Buscar() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [saveAlert, setSaveAlert] = useState(true);
+  const [outraFinalidadeCount, setOutraFinalidadeCount] = useState<number | null>(null);
 
   // Advanced filters state
   const [suites, setSuites] = useState<string>("");
@@ -258,6 +259,50 @@ function Buscar() {
       normalizarBusca(i.endereco_bairro ?? "").includes(term)
     );
   });
+
+  const outraFinalidade =
+    finalidade === "venda" ? "aluguel" : finalidade === "aluguel" ? "venda" : null;
+
+  // Achado real: buscar "São Bernardo do Campo" (ou qualquer cidade que só
+  // tenha imóvel de aluguel cadastrado) na home dava "nenhum imóvel
+  // encontrado" sem explicação nenhuma, porque a home busca por padrão na
+  // aba "Comprar" — não é bug de acento/caixa (já confirmado que não
+  // influencia), é a finalidade escondendo resultados que existem do outro
+  // lado. Avisa o usuário e oferece trocar de aba em vez de parecer que a
+  // busca simplesmente não funciona.
+  useEffect(() => {
+    if (loading || !outraFinalidade) {
+      setOutraFinalidadeCount(null);
+      return;
+    }
+    const term = normalizarBusca(search || sp.q || "");
+    if (!term || filtered.length > 0) {
+      setOutraFinalidadeCount(null);
+      return;
+    }
+    let cancelado = false;
+    (async () => {
+      const { data } = await supabase
+        .from("imoveis")
+        .select("titulo,endereco_cidade,endereco_bairro")
+        .eq("publicado", true)
+        .eq("status", "ativo")
+        .eq("finalidade", outraFinalidade as "venda" | "aluguel" | "temporada")
+        .limit(500);
+      if (cancelado) return;
+      const count = (data ?? []).filter(
+        (i: any) =>
+          normalizarBusca(i.titulo).includes(term) ||
+          normalizarBusca(i.endereco_cidade ?? "").includes(term) ||
+          normalizarBusca(i.endereco_bairro ?? "").includes(term),
+      ).length;
+      setOutraFinalidadeCount(count);
+    })();
+    return () => {
+      cancelado = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, finalidade, search, sp.q, filtered.length]);
 
   const pontosMapa = useMemo(() => {
     return filtered
@@ -639,7 +684,33 @@ function Buscar() {
             <p className="text-center text-sm text-muted-foreground">Carregando…</p>
           ) : filtered.length === 0 ? (
             <div className="rounded-xl border border-dashed border-border bg-card p-16 text-center text-sm text-muted-foreground">
-              Nenhum imóvel publicado encontrado.
+              <p>
+                Nenhum imóvel
+                {finalidade !== "todos" &&
+                  ` para ${finalidade === "aluguel" ? "alugar" : "comprar"}`}{" "}
+                encontrado
+                {(search || sp.q) && (
+                  <>
+                    {" "}
+                    para <strong className="text-foreground">{search || sp.q}</strong>
+                  </>
+                )}
+                .
+              </p>
+              {outraFinalidade && outraFinalidadeCount ? (
+                <p className="mt-3">
+                  Encontramos {outraFinalidadeCount}{" "}
+                  {outraFinalidadeCount === 1 ? "imóvel" : "imóveis"} pra{" "}
+                  {outraFinalidade === "aluguel" ? "alugar" : "comprar"} nessa região.{" "}
+                  <button
+                    type="button"
+                    className="font-medium text-primary underline underline-offset-2"
+                    onClick={() => setFinalidade(outraFinalidade)}
+                  >
+                    Ver imóveis pra {outraFinalidade === "aluguel" ? "alugar" : "comprar"}
+                  </button>
+                </p>
+              ) : null}
             </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
