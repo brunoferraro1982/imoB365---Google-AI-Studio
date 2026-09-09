@@ -8,8 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
+// DocuSign saiu daqui — tem API OAuth 2.0 real (confirmado contra a
+// documentação oficial), então ganhou seu próprio fluxo completo
+// (DocusignConnectSection.tsx, renderizado antes desta seção em
+// app.configuracoes.assinatura-eletronica.tsx). Os demais confirmados
+// como API key/token estático, sem redirecionamento OAuth — ficam aqui.
 const PROVIDERS = [
-  { value: "docusign", label: "DocuSign" },
   { value: "clicksign", label: "Clicksign" },
   { value: "zapsign", label: "ZapSign" },
   { value: "gov_br", label: "gov.br" },
