@@ -90,6 +90,7 @@ import { Route as AdminModulosRouteImport } from './routes/admin.modulos'
 import { Route as AdminLimitesRouteImport } from './routes/admin.limites'
 import { Route as AdminIntegracoesRouteImport } from './routes/admin.integracoes'
 import { Route as AdminImportarImoveisRouteImport } from './routes/admin.importar-imoveis'
+import { Route as AdminGoogleAdsRouteImport } from './routes/admin.google-ads'
 import { Route as AdminFlagsRouteImport } from './routes/admin.flags'
 import { Route as AdminFaturamentoRouteImport } from './routes/admin.faturamento'
 import { Route as AdminEmailsRouteImport } from './routes/admin.emails'
@@ -121,6 +122,7 @@ import { Route as AppSiteBlogRouteImport } from './routes/app.site.blog'
 import { Route as AppSiteAssistenteRouteImport } from './routes/app.site.assistente'
 import { Route as AppPortaisMetaRouteImport } from './routes/app.portais.meta'
 import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
+import { Route as AppMarketingGoogleAdsRouteImport } from './routes/app.marketing.google-ads'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
@@ -216,6 +218,7 @@ import { Route as ApiPublicV1ImoveisSlugRouteImport } from './routes/api.public.
 import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './routes/api.public.sitemap.$tenantSlug.sitemap[.]xml'
 import { Route as ApiPublicMetaOauthCallbackRouteImport } from './routes/api.public.meta.oauth.callback'
 import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/api.public.mercadopago.oauth.callback'
+import { Route as ApiPublicGoogleadsOauthCallbackRouteImport } from './routes/api.public.googleads.oauth.callback'
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
 import { Route as ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport } from './routes/api.public.feeds.$tenantSlug.meta-catalog[.]csv'
@@ -628,6 +631,11 @@ const AdminImportarImoveisRoute = AdminImportarImoveisRouteImport.update({
   path: '/importar-imoveis',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminGoogleAdsRoute = AdminGoogleAdsRouteImport.update({
+  id: '/google-ads',
+  path: '/google-ads',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminFlagsRoute = AdminFlagsRouteImport.update({
   id: '/flags',
   path: '/flags',
@@ -781,6 +789,11 @@ const AppPortaisMetaRoute = AppPortaisMetaRouteImport.update({
 const AppPortaisCanvaRoute = AppPortaisCanvaRouteImport.update({
   id: '/portais/canva',
   path: '/portais/canva',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMarketingGoogleAdsRoute = AppMarketingGoogleAdsRouteImport.update({
+  id: '/marketing/google-ads',
+  path: '/marketing/google-ads',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLocacaoPrestacaoContasRoute =
@@ -1302,6 +1315,12 @@ const ApiPublicMercadopagoOauthCallbackRoute =
     path: '/api/public/mercadopago/oauth/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicGoogleadsOauthCallbackRoute =
+  ApiPublicGoogleadsOauthCallbackRouteImport.update({
+    id: '/api/public/googleads/oauth/callback',
+    path: '/api/public/googleads/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicFeedsTenantSlugVrsyncDotxmlRoute =
   ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport.update({
     id: '/api/public/feeds/$tenantSlug/vrsync.xml',
@@ -1373,6 +1392,7 @@ export interface FileRoutesByFullPath {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/google-ads': typeof AdminGoogleAdsRoute
   '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1476,6 +1496,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
@@ -1541,6 +1562,7 @@ export interface FileRoutesByFullPath {
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1584,6 +1606,7 @@ export interface FileRoutesByTo {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/google-ads': typeof AdminGoogleAdsRoute
   '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1685,6 +1708,7 @@ export interface FileRoutesByTo {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
@@ -1750,6 +1774,7 @@ export interface FileRoutesByTo {
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -1797,6 +1822,7 @@ export interface FileRoutesById {
   '/admin/emails': typeof AdminEmailsRoute
   '/admin/faturamento': typeof AdminFaturamentoRoute
   '/admin/flags': typeof AdminFlagsRoute
+  '/admin/google-ads': typeof AdminGoogleAdsRoute
   '/admin/importar-imoveis': typeof AdminImportarImoveisRoute
   '/admin/integracoes': typeof AdminIntegracoesRoute
   '/admin/limites': typeof AdminLimitesRoute
@@ -1900,6 +1926,7 @@ export interface FileRoutesById {
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
+  '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
   '/app/portais/meta': typeof AppPortaisMetaRoute
   '/app/site/assistente': typeof AppSiteAssistenteRoute
@@ -1965,6 +1992,7 @@ export interface FileRoutesById {
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
   '/api/public/sitemap/$tenantSlug/sitemap.xml': typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -2013,6 +2041,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/google-ads'
     | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -2116,6 +2145,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/marketing/google-ads'
     | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
@@ -2181,6 +2211,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -2224,6 +2255,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/google-ads'
     | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -2325,6 +2357,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/marketing/google-ads'
     | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
@@ -2390,6 +2423,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -2436,6 +2470,7 @@ export interface FileRouteTypes {
     | '/admin/emails'
     | '/admin/faturamento'
     | '/admin/flags'
+    | '/admin/google-ads'
     | '/admin/importar-imoveis'
     | '/admin/integracoes'
     | '/admin/limites'
@@ -2539,6 +2574,7 @@ export interface FileRouteTypes {
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
+    | '/app/marketing/google-ads'
     | '/app/portais/canva'
     | '/app/portais/meta'
     | '/app/site/assistente'
@@ -2604,6 +2640,7 @@ export interface FileRouteTypes {
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
+    | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
     | '/api/public/sitemap/$tenantSlug/sitemap.xml'
@@ -2703,6 +2740,7 @@ export interface RootRouteChildren {
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
+  ApiPublicGoogleadsOauthCallbackRoute: typeof ApiPublicGoogleadsOauthCallbackRoute
   ApiPublicMercadopagoOauthCallbackRoute: typeof ApiPublicMercadopagoOauthCallbackRoute
   ApiPublicMetaOauthCallbackRoute: typeof ApiPublicMetaOauthCallbackRoute
   ApiPublicSitemapTenantSlugSitemapDotxmlRoute: typeof ApiPublicSitemapTenantSlugSitemapDotxmlRoute
@@ -3278,6 +3316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminImportarImoveisRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/google-ads': {
+      id: '/admin/google-ads'
+      path: '/google-ads'
+      fullPath: '/admin/google-ads'
+      preLoaderRoute: typeof AdminGoogleAdsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/flags': {
       id: '/admin/flags'
       path: '/flags'
@@ -3493,6 +3538,13 @@ declare module '@tanstack/react-router' {
       path: '/portais/canva'
       fullPath: '/app/portais/canva'
       preLoaderRoute: typeof AppPortaisCanvaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/marketing/google-ads': {
+      id: '/app/marketing/google-ads'
+      path: '/marketing/google-ads'
+      fullPath: '/app/marketing/google-ads'
+      preLoaderRoute: typeof AppMarketingGoogleAdsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/locacao/prestacao-contas': {
@@ -4160,6 +4212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicMercadopagoOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/googleads/oauth/callback': {
+      id: '/api/public/googleads/oauth/callback'
+      path: '/api/public/googleads/oauth/callback'
+      fullPath: '/api/public/googleads/oauth/callback'
+      preLoaderRoute: typeof ApiPublicGoogleadsOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/feeds/$tenantSlug/vrsync.xml': {
       id: '/api/public/feeds/$tenantSlug/vrsync.xml'
       path: '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -4205,6 +4264,7 @@ interface AdminRouteChildren {
   AdminEmailsRoute: typeof AdminEmailsRoute
   AdminFaturamentoRoute: typeof AdminFaturamentoRoute
   AdminFlagsRoute: typeof AdminFlagsRoute
+  AdminGoogleAdsRoute: typeof AdminGoogleAdsRoute
   AdminImportarImoveisRoute: typeof AdminImportarImoveisRoute
   AdminIntegracoesRoute: typeof AdminIntegracoesRoute
   AdminLimitesRoute: typeof AdminLimitesRoute
@@ -4227,6 +4287,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminEmailsRoute: AdminEmailsRoute,
   AdminFaturamentoRoute: AdminFaturamentoRoute,
   AdminFlagsRoute: AdminFlagsRoute,
+  AdminGoogleAdsRoute: AdminGoogleAdsRoute,
   AdminImportarImoveisRoute: AdminImportarImoveisRoute,
   AdminIntegracoesRoute: AdminIntegracoesRoute,
   AdminLimitesRoute: AdminLimitesRoute,
@@ -4365,6 +4426,7 @@ interface AppRouteChildren {
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
+  AppMarketingGoogleAdsRoute: typeof AppMarketingGoogleAdsRoute
   AppPortaisCanvaRoute: typeof AppPortaisCanvaRoute
   AppPortaisMetaRoute: typeof AppPortaisMetaRoute
   AppAtendimentoIndexRoute: typeof AppAtendimentoIndexRoute
@@ -4429,6 +4491,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
+  AppMarketingGoogleAdsRoute: AppMarketingGoogleAdsRoute,
   AppPortaisCanvaRoute: AppPortaisCanvaRoute,
   AppPortaisMetaRoute: AppPortaisMetaRoute,
   AppAtendimentoIndexRoute: AppAtendimentoIndexRoute,
@@ -4585,6 +4648,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicFeedsTenantSlugOlxDotxmlRoute,
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute:
     ApiPublicFeedsTenantSlugVrsyncDotxmlRoute,
+  ApiPublicGoogleadsOauthCallbackRoute: ApiPublicGoogleadsOauthCallbackRoute,
   ApiPublicMercadopagoOauthCallbackRoute:
     ApiPublicMercadopagoOauthCallbackRoute,
   ApiPublicMetaOauthCallbackRoute: ApiPublicMetaOauthCallbackRoute,
