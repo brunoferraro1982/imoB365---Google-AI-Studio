@@ -18,7 +18,6 @@ import {
   Share2,
   TrendingUp,
   FileCheck2,
-  Server,
   HelpCircle,
   Code,
   Activity,
@@ -225,34 +224,41 @@ function GoLivePage() {
         actionLink: "/app/site",
       };
 
+      // Achado real (2026-09-09): esign/billing/erp abaixo descreviam
+      // sistemas que nunca existiram neste projeto (Stripe nunca foi usado
+      // — o gateway real sempre foi Mercado Pago; "Sandbox do ClickSign com
+      // Hash de Auditoria SHA-256" nunca existiu — nenhum provedor de
+      // assinatura teve integração real até o DocuSign; "SuperLógica" nunca
+      // foi mencionado em nenhum outro lugar do projeto). Corrigido pra
+      // refletir o estado real.
       const esignDiag: IntegrationDiagnosis = {
         id: "esign",
         name: "Assinatura Eletrônica de Contratos",
         category: "Jurídico",
-        status: "sandbox",
-        statusText: "Clicksign Sandbox Integrado",
+        status: "active",
+        statusText: "DocuSign (OAuth real)",
         description:
-          "Modulo completo para emissão, despacho, assinatura e autenticação de contratos digitais de locação e venda.",
+          "Envio de contrato pra assinatura eletrônica de verdade, com confirmação automática via webhook.",
         details:
-          "Simulador de Laboratório Sandbox do ClickSign com Hash de Auditoria SHA-256 e checklist automático de vistorias 100% integrados em 'routes/app.contratos.$id.tsx'. O disparo oficial de links de email/SMS fora do modo sandbox requer a chave de token de produção do ClickSign.",
+          "DocuSign é a única integração de assinatura com API real — cada tenant conecta a própria conta via OAuth em Configurações → Assinatura eletrônica. Clicksign, ZapSign, gov.br e ICP-Brasil continuam disponíveis no formulário simplificado (API key/token), sem chamada automática de envio ainda.",
         icon: ShieldCheck,
-        actionText: "Ver Contratos",
-        actionLink: "/app/contratos/modelos",
+        actionText: "Configurar Assinatura",
+        actionLink: "/app/configuracoes/assinatura-eletronica",
       };
 
       const billingDiag: IntegrationDiagnosis = {
         id: "billing",
-        name: "Gateway de Faturamento Planos SaaS",
+        name: "Cobrança (PIX, boleto, cartão)",
         category: "Financeiro",
-        status: "sandbox",
-        statusText: "Simulador Sandbox",
+        status: "active",
+        statusText: "Mercado Pago",
         description:
-          "Área de upgrades, alteração de limites e cobranças por corretor integrado na plataforma.",
+          "Assinatura do plano imob365 e cobrança do cliente final da imobiliária (aluguel, venda).",
         details:
-          "Área de planos (/app/contratacao) funcional em modo Sandbox com faturamento local e upgrade imediato de limites. Integração nativa com chaves produtivas do Stripe para recorrência de boleto, pix e cartão em conformidade PCI.",
+          "Duas integrações reais e distintas com Mercado Pago: (1) a própria plataforma cobra a assinatura do seu plano em /app/contratacao; (2) qualquer tenant pode conectar a PRÓPRIA conta Mercado Pago (Marketplace, OAuth) em Configurações → Integrações Bancárias, pra receber PIX/boleto/cartão direto do cliente final dele — já disponível pra todos os tenants, não é uma função exclusiva da conta administradora do imob365.",
         icon: CreditCard,
-        actionText: "Ajustar Planos",
-        actionLink: "/app/contratacao",
+        actionText: "Ver Integrações Bancárias",
+        actionLink: "/app/configuracoes/integracoes-bancarias",
       };
 
       const cartorioDiag: IntegrationDiagnosis = {
@@ -270,19 +276,6 @@ function GoLivePage() {
         actionLink: "/app/cartorios",
       };
 
-      const erpDiag: IntegrationDiagnosis = {
-        id: "erp",
-        name: "SuperLógica / ERPs Financeiros",
-        category: "Financeiro",
-        status: "pending",
-        statusText: "Desconectado (Ajustes Internos Ativos)",
-        description:
-          "Envio de contas correlatas, split de faturamento e taxas condominiais para ERP de administração de terceiros.",
-        details:
-          "O controle de comissão de corretores, lançamentos de recebíveis de aluguel e vistorias é efetuado e centralizado diretamente de modo nativo dentro do ERP próprio da imob365.",
-        icon: Server,
-      };
-
       setDiagnostics([
         emailDiag,
         portalDiag,
@@ -292,7 +285,6 @@ function GoLivePage() {
         esignDiag,
         billingDiag,
         cartorioDiag,
-        erpDiag,
       ]);
 
       setLoading(false);

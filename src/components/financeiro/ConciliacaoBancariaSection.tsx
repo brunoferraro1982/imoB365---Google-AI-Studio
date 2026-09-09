@@ -7,9 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Landmark, Boxes, Trash2 } from "lucide-react";
-
-type Tipo = "conciliacao_bancaria" | "erp";
+import { Landmark, Trash2 } from "lucide-react";
 
 type Integracao = {
   id: string;
@@ -19,48 +17,40 @@ type Integracao = {
   ativo: boolean;
 };
 
-const PROVIDERS: Record<Tipo, { value: string; label: string }[]> = {
-  conciliacao_bancaria: [
-    { value: "bb", label: "Banco do Brasil" },
-    { value: "itau", label: "Itaú" },
-    { value: "bradesco", label: "Bradesco" },
-    { value: "santander", label: "Santander" },
-    { value: "nubank", label: "Nubank" },
-    { value: "caixa", label: "Caixa" },
-    { value: "outro", label: "Outro" },
-  ],
-  erp: [
-    { value: "conta_azul", label: "Conta Azul" },
-    { value: "omie", label: "Omie" },
-    { value: "outro", label: "Outro" },
-  ],
-};
-const PROVIDER_LABEL = Object.fromEntries(
-  [...PROVIDERS.conciliacao_bancaria, ...PROVIDERS.erp].map((p) => [p.value, p.label]),
-);
+const PROVIDERS = [
+  { value: "bb", label: "Banco do Brasil" },
+  { value: "itau", label: "Itaú" },
+  { value: "bradesco", label: "Bradesco" },
+  { value: "santander", label: "Santander" },
+  { value: "nubank", label: "Nubank" },
+  { value: "caixa", label: "Caixa" },
+  { value: "outro", label: "Outro" },
+];
+const PROVIDER_LABEL = Object.fromEntries(PROVIDERS.map((p) => [p.value, p.label]));
 
-const emptyForm = {
-  provider: "",
-  nome: "",
-  agencia: "",
-  conta: "",
-  clientId: "",
-  clientSecret: "",
-  ativo: false,
-};
+const emptyForm = { provider: PROVIDERS[0].value, nome: "", agencia: "", conta: "", ativo: false };
 
-// Cadastro administrativo de conciliação bancária / ERP (Fase 4 do módulo
-// Financeiro) — lista + formulário sempre visível na própria página (sem
-// modal), mesmo padrão de ParcelasSection.tsx (lista + form inline) e
-// LancamentoForm.tsx (visual do card do formulário). Escrita direta do
-// client (RLS admin) — sem chamada real a API externa ainda, só o cadastro.
-export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
+// Cadastro administrativo de conciliação bancária (Financeiro Fase 4) —
+// lista + formulário sempre visível na própria página (sem modal), mesmo
+// padrão de ParcelasSection.tsx. Escrita direta do client (RLS admin) —
+// sem chamada real a API de banco ainda (exige um agregador certificado de
+// Open Finance, ex. Pluggy — decisão de produto pendente, ver backlog).
+//
+// A metade de "Integrações ERP" que existia aqui (Conta Azul/Omie) foi
+// removida — investigação estratégica confirmou que essas plataformas
+// competem diretamente com o próprio Financeiro do imob365 (contas a
+// pagar/receber, fluxo de caixa, DRE, centros de custo, cobrança via
+// PIX/boleto/cartão já são nativos aqui), então "integrar" só mandaria o
+// tenant sincronizar dado pra um concorrente em vez de manter o valor no
+// imob365. O único gap real identificado (emissão de Nota Fiscal
+// Eletrônica) vira uma integração própria, não uma ponte pra ERP de
+// terceiro.
+export function ConciliacaoBancariaSection() {
   const { tenantId, user } = useAuth();
-  const providers = PROVIDERS[tipo];
   const [items, setItems] = useState<Integracao[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ ...emptyForm, provider: providers[0].value });
+  const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -70,7 +60,7 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
       .from("tenant_integracoes_financeiras")
       .select("id,provider,nome_exibicao,config,ativo")
       .eq("tenant_id", tenantId)
-      .eq("tipo", tipo)
+      .eq("tipo", "conciliacao_bancaria")
       .order("created_at", { ascending: false });
     if (error) toast.error(error.message);
     setItems((data ?? []) as Integracao[]);
@@ -92,14 +82,12 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
       nome: i.nome_exibicao,
       agencia: i.config?.agencia ?? "",
       conta: i.config?.conta ?? "",
-      clientId: i.config?.client_id ?? "",
-      clientSecret: i.config?.client_secret ?? "",
       ativo: i.ativo,
     });
   }
   function cancelarEdicao() {
     setEditingId(null);
-    setForm({ ...emptyForm, provider: providers[0].value });
+    setForm(emptyForm);
   }
 
   async function salvar(e: FormEvent) {
@@ -108,16 +96,12 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
     if (!form.nome.trim()) return toast.error("Informe um nome de exibição");
     setSaving(true);
 
-    const config =
-      tipo === "erp"
-        ? { client_id: form.clientId, client_secret: form.clientSecret }
-        : { agencia: form.agencia, conta: form.conta };
     const payload = {
       tenant_id: tenantId,
-      tipo,
+      tipo: "conciliacao_bancaria",
       provider: form.provider,
       nome_exibicao: form.nome.trim(),
-      config,
+      config: { agencia: form.agencia, conta: form.conta },
       ativo: form.ativo,
     };
 
@@ -148,8 +132,6 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
     load();
   }
 
-  const Icon = tipo === "erp" ? Boxes : Landmark;
-
   return (
     <div className="max-w-3xl space-y-6">
       <section className="rounded-xl border border-border bg-card p-6">
@@ -166,7 +148,7 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
                 className="flex items-center justify-between gap-4 rounded-md border border-border bg-background p-3"
               >
                 <div className="flex items-center gap-3">
-                  <Icon className="h-6 w-6 text-muted-foreground" />
+                  <Landmark className="h-6 w-6 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{i.nome_exibicao}</p>
                     <p className="text-xs text-muted-foreground">
@@ -194,13 +176,13 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
           {editingId ? "Editar integração" : "Nova integração"}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label={tipo === "erp" ? "ERP" : "Banco"}>
+          <Field label="Banco">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.provider}
               onChange={(e) => set("provider", e.target.value)}
             >
-              {providers.map((p) => (
+              {PROVIDERS.map((p) => (
                 <option key={p.value} value={p.value}>
                   {p.label}
                 </option>
@@ -216,29 +198,12 @@ export function IntegracaoFinanceiraSection({ tipo }: { tipo: Tipo }) {
               maxLength={120}
             />
           </Field>
-          {tipo === "conciliacao_bancaria" ? (
-            <>
-              <Field label="Agência">
-                <Input value={form.agencia} onChange={(e) => set("agencia", e.target.value)} />
-              </Field>
-              <Field label="Conta">
-                <Input value={form.conta} onChange={(e) => set("conta", e.target.value)} />
-              </Field>
-            </>
-          ) : (
-            <>
-              <Field label="Client ID">
-                <Input value={form.clientId} onChange={(e) => set("clientId", e.target.value)} />
-              </Field>
-              <Field label="Client Secret">
-                <Input
-                  type="password"
-                  value={form.clientSecret}
-                  onChange={(e) => set("clientSecret", e.target.value)}
-                />
-              </Field>
-            </>
-          )}
+          <Field label="Agência">
+            <Input value={form.agencia} onChange={(e) => set("agencia", e.target.value)} />
+          </Field>
+          <Field label="Conta">
+            <Input value={form.conta} onChange={(e) => set("conta", e.target.value)} />
+          </Field>
         </div>
 
         <div className="flex items-center justify-between rounded-lg border border-input bg-background px-4 py-3">
