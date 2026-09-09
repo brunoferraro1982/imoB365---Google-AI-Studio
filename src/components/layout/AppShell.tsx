@@ -218,6 +218,11 @@ const tenantModules: Module[] = [
         icon: PenTool,
       },
       {
+        to: "/app/configuracoes/nota-fiscal",
+        label: "Nota Fiscal",
+        icon: Receipt,
+      },
+      {
         to: "/app/configuracoes/atendimento-canais",
         label: "Canais de Atendimento",
         icon: Headset,

@@ -9,6 +9,7 @@ import {
   Facebook,
   Palette,
   FileSignature,
+  Receipt,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -117,6 +118,17 @@ const ARTIGOS = [
       "A confirmação de assinatura chega automaticamente por webhook — o status atualiza sozinho no imob365.",
     ],
     href: "/ajuda/docusign",
+    linkLabel: "Ver guia completo, passo a passo",
+  },
+  {
+    icon: Receipt,
+    title: "Como emitir Nota Fiscal (NFS-e) de verdade",
+    steps: [
+      "Obrigatória por lei pra qualquer prestador de serviço desde janeiro de 2026 (NFS-e Nacional).",
+      "Cada corretor/imobiliária conecta a própria conta Focus NFe com o próprio CNPJ e certificado digital.",
+      "Emite direto de qualquer comissão, com consulta de status até a nota sair autorizada.",
+    ],
+    href: "/ajuda/nota-fiscal",
     linkLabel: "Ver guia completo, passo a passo",
   },
 ];
