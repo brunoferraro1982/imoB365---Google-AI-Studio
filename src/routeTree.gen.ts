@@ -78,6 +78,7 @@ import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
 import { Route as AjudaFacebookInstagramRouteImport } from './routes/ajuda.facebook-instagram'
+import { Route as AjudaDocusignRouteImport } from './routes/ajuda.docusign'
 import { Route as AjudaCanvaRouteImport } from './routes/ajuda.canva'
 import { Route as AdminVitrineParceirosRouteImport } from './routes/admin.vitrine-parceiros'
 import { Route as AdminTenantsRouteImport } from './routes/admin.tenants'
@@ -189,6 +190,7 @@ import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.w
 import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
 import { Route as ApiPublicWebhooksEvolutionRouteImport } from './routes/api.public.webhooks.evolution'
+import { Route as ApiPublicWebhooksDocusignRouteImport } from './routes/api.public.webhooks.docusign'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
 import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.leads'
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
@@ -216,6 +218,7 @@ import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/
 import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
 import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
 import { Route as ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport } from './routes/api.public.feeds.$tenantSlug.meta-catalog[.]csv'
+import { Route as ApiPublicDocusignOauthCallbackRouteImport } from './routes/api.public.docusign.oauth.callback'
 import { Route as ApiPublicCanvaOauthCallbackRouteImport } from './routes/api.public.canva.oauth.callback'
 
 const TermosRoute = TermosRouteImport.update({
@@ -562,6 +565,11 @@ const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
 const AjudaFacebookInstagramRoute = AjudaFacebookInstagramRouteImport.update({
   id: '/ajuda/facebook-instagram',
   path: '/ajuda/facebook-instagram',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AjudaDocusignRoute = AjudaDocusignRouteImport.update({
+  id: '/ajuda/docusign',
+  path: '/ajuda/docusign',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AjudaCanvaRoute = AjudaCanvaRouteImport.update({
@@ -1143,6 +1151,12 @@ const ApiPublicWebhooksEvolutionRoute =
     path: '/api/public/webhooks/evolution',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksDocusignRoute =
+  ApiPublicWebhooksDocusignRouteImport.update({
+    id: '/api/public/webhooks/docusign',
+    path: '/api/public/webhooks/docusign',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksDeliverRoute =
   ApiPublicWebhooksDeliverRouteImport.update({
     id: '/api/public/webhooks/deliver',
@@ -1300,6 +1314,12 @@ const ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute =
     path: '/api/public/feeds/$tenantSlug/meta-catalog.csv',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDocusignOauthCallbackRoute =
+  ApiPublicDocusignOauthCallbackRouteImport.update({
+    id: '/api/public/docusign/oauth/callback',
+    path: '/api/public/docusign/oauth/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCanvaOauthCallbackRoute =
   ApiPublicCanvaOauthCallbackRouteImport.update({
     id: '/api/public/canva/oauth/callback',
@@ -1357,6 +1377,7 @@ export interface FileRoutesByFullPath {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/ajuda/canva': typeof AjudaCanvaRoute
+  '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1492,6 +1513,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
@@ -1508,6 +1530,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
+  '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1564,6 +1587,7 @@ export interface FileRoutesByTo {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/ajuda/canva': typeof AjudaCanvaRoute
+  '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1697,6 +1721,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
@@ -1713,6 +1738,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
+  '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1773,6 +1799,7 @@ export interface FileRoutesById {
   '/admin/tenants': typeof AdminTenantsRoute
   '/admin/vitrine-parceiros': typeof AdminVitrineParceirosRoute
   '/ajuda/canva': typeof AjudaCanvaRoute
+  '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
@@ -1908,6 +1935,7 @@ export interface FileRoutesById {
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
   '/api/public/v1/leads': typeof ApiPublicV1LeadsRoute
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
+  '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
@@ -1924,6 +1952,7 @@ export interface FileRoutesById {
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
+  '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -1985,6 +2014,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
     | '/ajuda/canva'
+    | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2120,6 +2150,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
@@ -2136,6 +2167,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
+    | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2192,6 +2224,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
     | '/ajuda/canva'
+    | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2325,6 +2358,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
@@ -2341,6 +2375,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/integracoes-bancarias'
     | '/app/locacao/repasses'
     | '/api/public/canva/oauth/callback'
+    | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2400,6 +2435,7 @@ export interface FileRouteTypes {
     | '/admin/tenants'
     | '/admin/vitrine-parceiros'
     | '/ajuda/canva'
+    | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
@@ -2535,6 +2571,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/imoveis'
     | '/api/public/v1/leads'
     | '/api/public/webhooks/deliver'
+    | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
@@ -2551,6 +2588,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/integracoes-bancarias/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
+    | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
     | '/api/public/feeds/$tenantSlug/olx.xml'
     | '/api/public/feeds/$tenantSlug/vrsync.xml'
@@ -2596,6 +2634,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermosRoute: typeof TermosRoute
   AjudaCanvaRoute: typeof AjudaCanvaRoute
+  AjudaDocusignRoute: typeof AjudaDocusignRoute
   AjudaFacebookInstagramRoute: typeof AjudaFacebookInstagramRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -2636,6 +2675,7 @@ export interface RootRouteChildren {
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
   ApiPublicV1LeadsRoute: typeof ApiPublicV1LeadsRoute
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
+  ApiPublicWebhooksDocusignRoute: typeof ApiPublicWebhooksDocusignRoute
   ApiPublicWebhooksEvolutionRoute: typeof ApiPublicWebhooksEvolutionRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   ApiPublicWebhooksMercadopagoMarketplaceRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
@@ -2646,6 +2686,7 @@ export interface RootRouteChildren {
   SiteSlugBlogPostSlugRoute: typeof SiteSlugBlogPostSlugRoute
   SiteSlugPPageSlugRoute: typeof SiteSlugPPageSlugRoute
   ApiPublicCanvaOauthCallbackRoute: typeof ApiPublicCanvaOauthCallbackRoute
+  ApiPublicDocusignOauthCallbackRoute: typeof ApiPublicDocusignOauthCallbackRoute
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
   ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
   ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
@@ -3138,6 +3179,13 @@ declare module '@tanstack/react-router' {
       path: '/ajuda/facebook-instagram'
       fullPath: '/ajuda/facebook-instagram'
       preLoaderRoute: typeof AjudaFacebookInstagramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ajuda/docusign': {
+      id: '/ajuda/docusign'
+      path: '/ajuda/docusign'
+      fullPath: '/ajuda/docusign'
+      preLoaderRoute: typeof AjudaDocusignRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ajuda/canva': {
@@ -3917,6 +3965,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksEvolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/docusign': {
+      id: '/api/public/webhooks/docusign'
+      path: '/api/public/webhooks/docusign'
+      fullPath: '/api/public/webhooks/docusign'
+      preLoaderRoute: typeof ApiPublicWebhooksDocusignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/deliver': {
       id: '/api/public/webhooks/deliver'
       path: '/api/public/webhooks/deliver'
@@ -4104,6 +4159,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/feeds/$tenantSlug/meta-catalog.csv'
       fullPath: '/api/public/feeds/$tenantSlug/meta-catalog.csv'
       preLoaderRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/docusign/oauth/callback': {
+      id: '/api/public/docusign/oauth/callback'
+      path: '/api/public/docusign/oauth/callback'
+      fullPath: '/api/public/docusign/oauth/callback'
+      preLoaderRoute: typeof ApiPublicDocusignOauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/canva/oauth/callback': {
@@ -4441,6 +4503,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermosRoute: TermosRoute,
   AjudaCanvaRoute: AjudaCanvaRoute,
+  AjudaDocusignRoute: AjudaDocusignRoute,
   AjudaFacebookInstagramRoute: AjudaFacebookInstagramRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
@@ -4482,6 +4545,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
   ApiPublicV1LeadsRoute: ApiPublicV1LeadsRoute,
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
+  ApiPublicWebhooksDocusignRoute: ApiPublicWebhooksDocusignRoute,
   ApiPublicWebhooksEvolutionRoute: ApiPublicWebhooksEvolutionRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   ApiPublicWebhooksMercadopagoMarketplaceRoute:
@@ -4493,6 +4557,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiteSlugBlogPostSlugRoute: SiteSlugBlogPostSlugRoute,
   SiteSlugPPageSlugRoute: SiteSlugPPageSlugRoute,
   ApiPublicCanvaOauthCallbackRoute: ApiPublicCanvaOauthCallbackRoute,
+  ApiPublicDocusignOauthCallbackRoute: ApiPublicDocusignOauthCallbackRoute,
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute:
     ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute,
   ApiPublicFeedsTenantSlugOlxDotxmlRoute:

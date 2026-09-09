@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { AssinaturaConfigSection } from "@/components/contratos/AssinaturaConfigSection";
+import { DocusignConnectSection } from "@/components/contratos/DocusignConnectSection";
 
 export const Route = createFileRoute("/app/configuracoes/assinatura-eletronica")({
   head: () => ({ meta: [{ title: "Assinatura eletrônica — imob365" }] }),
@@ -29,7 +30,10 @@ function AssinaturaEletronicaPage() {
       </header>
 
       {isAdmin ? (
-        <AssinaturaConfigSection />
+        <>
+          <DocusignConnectSection />
+          <AssinaturaConfigSection />
+        </>
       ) : (
         <p className="text-sm text-muted-foreground">
           Apenas administradores podem configurar a integração de assinatura eletrônica.

@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Facebook,
   Palette,
+  FileSignature,
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,17 @@ const ARTIGOS = [
       "Você edita no editor de verdade da Canva, numa aba nova, e volta automaticamente pro imob365 com a imagem pronta.",
     ],
     href: "/ajuda/canva",
+    linkLabel: "Ver guia completo, passo a passo",
+  },
+  {
+    icon: FileSignature,
+    title: "Como conectar o DocuSign (e enviar contratos pra assinatura de verdade)",
+    steps: [
+      "Cada corretor/imobiliária cria a própria Integration Key no DocuSign — leva de 10 a 20 minutos, mais o tempo do Go-Live (etapa própria do DocuSign).",
+      "Depois de conectado, dá pra enviar contratos direto pela API, com PDF real anexado.",
+      "A confirmação de assinatura chega automaticamente por webhook — o status atualiza sozinho no imob365.",
+    ],
+    href: "/ajuda/docusign",
     linkLabel: "Ver guia completo, passo a passo",
   },
 ];
