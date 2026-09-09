@@ -44,6 +44,7 @@ import {
   Eye,
   Radar,
   CreditCard,
+  Target,
   Activity,
   PenTool,
   Headset,
@@ -189,6 +190,7 @@ const tenantModules: Module[] = [
     icon: Megaphone,
     items: [
       { to: "/app/portais", label: "Portais & Redes sociais", icon: Globe2 },
+      { to: "/app/marketing/google-ads", label: "Google Ads", icon: Target },
       { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
     ],
   },
@@ -250,6 +252,7 @@ const adminNav: Item[] = [
   { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
   { to: "/admin/importar-imoveis", label: "Assistente de importação", icon: Sparkles },
   { to: "/admin/vitrine-parceiros", label: "Vitrine de Parceiros", icon: GalleryHorizontalEnd },
+  { to: "/admin/google-ads", label: "Google Ads", icon: Target },
   { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
   { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
   { to: "/admin/faturamento", label: "Faturamento", icon: Receipt },
