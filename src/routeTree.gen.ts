@@ -77,6 +77,7 @@ import { Route as AppConfiguracoesRouteImport } from './routes/app.configuracoes
 import { Route as AppCartoriosRouteImport } from './routes/app.cartorios'
 import { Route as AppCartaoVirtualRouteImport } from './routes/app.cartao-virtual'
 import { Route as ApiSitemapDotxmlRouteImport } from './routes/api/sitemap[.]xml'
+import { Route as AjudaNotaFiscalRouteImport } from './routes/ajuda.nota-fiscal'
 import { Route as AjudaFacebookInstagramRouteImport } from './routes/ajuda.facebook-instagram'
 import { Route as AjudaDocusignRouteImport } from './routes/ajuda.docusign'
 import { Route as AjudaCanvaRouteImport } from './routes/ajuda.canva'
@@ -151,6 +152,7 @@ import { Route as AppConfiguracoesScoringRouteImport } from './routes/app.config
 import { Route as AppConfiguracoesPrivacidadeRouteImport } from './routes/app.configuracoes.privacidade'
 import { Route as AppConfiguracoesPlanoContasRouteImport } from './routes/app.configuracoes.plano-contas'
 import { Route as AppConfiguracoesNotificacoesRouteImport } from './routes/app.configuracoes.notificacoes'
+import { Route as AppConfiguracoesNotaFiscalRouteImport } from './routes/app.configuracoes.nota-fiscal'
 import { Route as AppConfiguracoesGoliveRouteImport } from './routes/app.configuracoes.golive'
 import { Route as AppConfiguracoesFunisRouteImport } from './routes/app.configuracoes.funis'
 import { Route as AppConfiguracoesEquipeRouteImport } from './routes/app.configuracoes.equipe'
@@ -561,6 +563,11 @@ const ApiSitemapDotxmlRoute = ApiSitemapDotxmlRouteImport.update({
   path: '/api/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AjudaNotaFiscalRoute = AjudaNotaFiscalRouteImport.update({
+  id: '/ajuda/nota-fiscal',
+  path: '/ajuda/nota-fiscal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AjudaFacebookInstagramRoute = AjudaFacebookInstagramRouteImport.update({
   id: '/ajuda/facebook-instagram',
   path: '/ajuda/facebook-instagram',
@@ -937,6 +944,12 @@ const AppConfiguracoesNotificacoesRoute =
   AppConfiguracoesNotificacoesRouteImport.update({
     id: '/notificacoes',
     path: '/notificacoes',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
+const AppConfiguracoesNotaFiscalRoute =
+  AppConfiguracoesNotaFiscalRouteImport.update({
+    id: '/nota-fiscal',
+    path: '/nota-fiscal',
     getParentRoute: () => AppConfiguracoesRoute,
   } as any)
 const AppConfiguracoesGoliveRoute = AppConfiguracoesGoliveRouteImport.update({
@@ -1372,6 +1385,7 @@ export interface FileRoutesByFullPath {
   '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
+  '/ajuda/nota-fiscal': typeof AjudaNotaFiscalRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1430,6 +1444,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/nota-fiscal': typeof AppConfiguracoesNotaFiscalRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1581,6 +1596,7 @@ export interface FileRoutesByTo {
   '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
+  '/ajuda/nota-fiscal': typeof AjudaNotaFiscalRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1637,6 +1653,7 @@ export interface FileRoutesByTo {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/nota-fiscal': typeof AppConfiguracoesNotaFiscalRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -1792,6 +1809,7 @@ export interface FileRoutesById {
   '/ajuda/canva': typeof AjudaCanvaRoute
   '/ajuda/docusign': typeof AjudaDocusignRoute
   '/ajuda/facebook-instagram': typeof AjudaFacebookInstagramRoute
+  '/ajuda/nota-fiscal': typeof AjudaNotaFiscalRoute
   '/api/sitemap.xml': typeof ApiSitemapDotxmlRoute
   '/app/cartao-virtual': typeof AppCartaoVirtualRoute
   '/app/cartorios': typeof AppCartoriosRoute
@@ -1850,6 +1868,7 @@ export interface FileRoutesById {
   '/app/configuracoes/equipe': typeof AppConfiguracoesEquipeRoute
   '/app/configuracoes/funis': typeof AppConfiguracoesFunisRoute
   '/app/configuracoes/golive': typeof AppConfiguracoesGoliveRoute
+  '/app/configuracoes/nota-fiscal': typeof AppConfiguracoesNotaFiscalRoute
   '/app/configuracoes/notificacoes': typeof AppConfiguracoesNotificacoesRoute
   '/app/configuracoes/plano-contas': typeof AppConfiguracoesPlanoContasRoute
   '/app/configuracoes/privacidade': typeof AppConfiguracoesPrivacidadeRoute
@@ -2006,6 +2025,7 @@ export interface FileRouteTypes {
     | '/ajuda/canva'
     | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
+    | '/ajuda/nota-fiscal'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2064,6 +2084,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/nota-fiscal'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -2215,6 +2236,7 @@ export interface FileRouteTypes {
     | '/ajuda/canva'
     | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
+    | '/ajuda/nota-fiscal'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2271,6 +2293,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/nota-fiscal'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -2425,6 +2448,7 @@ export interface FileRouteTypes {
     | '/ajuda/canva'
     | '/ajuda/docusign'
     | '/ajuda/facebook-instagram'
+    | '/ajuda/nota-fiscal'
     | '/api/sitemap.xml'
     | '/app/cartao-virtual'
     | '/app/cartorios'
@@ -2483,6 +2507,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/equipe'
     | '/app/configuracoes/funis'
     | '/app/configuracoes/golive'
+    | '/app/configuracoes/nota-fiscal'
     | '/app/configuracoes/notificacoes'
     | '/app/configuracoes/plano-contas'
     | '/app/configuracoes/privacidade'
@@ -2623,6 +2648,7 @@ export interface RootRouteChildren {
   AjudaCanvaRoute: typeof AjudaCanvaRoute
   AjudaDocusignRoute: typeof AjudaDocusignRoute
   AjudaFacebookInstagramRoute: typeof AjudaFacebookInstagramRoute
+  AjudaNotaFiscalRoute: typeof AjudaNotaFiscalRoute
   ApiSitemapDotxmlRoute: typeof ApiSitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   AvaliacaoTenantSlugRoute: typeof AvaliacaoTenantSlugRoute
@@ -3161,6 +3187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ajuda/nota-fiscal': {
+      id: '/ajuda/nota-fiscal'
+      path: '/ajuda/nota-fiscal'
+      fullPath: '/ajuda/nota-fiscal'
+      preLoaderRoute: typeof AjudaNotaFiscalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ajuda/facebook-instagram': {
       id: '/ajuda/facebook-instagram'
       path: '/ajuda/facebook-instagram'
@@ -3677,6 +3710,13 @@ declare module '@tanstack/react-router' {
       path: '/notificacoes'
       fullPath: '/app/configuracoes/notificacoes'
       preLoaderRoute: typeof AppConfiguracoesNotificacoesRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
+    '/app/configuracoes/nota-fiscal': {
+      id: '/app/configuracoes/nota-fiscal'
+      path: '/nota-fiscal'
+      fullPath: '/app/configuracoes/nota-fiscal'
+      preLoaderRoute: typeof AppConfiguracoesNotaFiscalRouteImport
       parentRoute: typeof AppConfiguracoesRoute
     }
     '/app/configuracoes/golive': {
@@ -4217,6 +4257,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesEquipeRoute: typeof AppConfiguracoesEquipeRoute
   AppConfiguracoesFunisRoute: typeof AppConfiguracoesFunisRoute
   AppConfiguracoesGoliveRoute: typeof AppConfiguracoesGoliveRoute
+  AppConfiguracoesNotaFiscalRoute: typeof AppConfiguracoesNotaFiscalRoute
   AppConfiguracoesNotificacoesRoute: typeof AppConfiguracoesNotificacoesRoute
   AppConfiguracoesPlanoContasRoute: typeof AppConfiguracoesPlanoContasRoute
   AppConfiguracoesPrivacidadeRoute: typeof AppConfiguracoesPrivacidadeRoute
@@ -4244,6 +4285,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesEquipeRoute: AppConfiguracoesEquipeRoute,
   AppConfiguracoesFunisRoute: AppConfiguracoesFunisRoute,
   AppConfiguracoesGoliveRoute: AppConfiguracoesGoliveRoute,
+  AppConfiguracoesNotaFiscalRoute: AppConfiguracoesNotaFiscalRoute,
   AppConfiguracoesNotificacoesRoute: AppConfiguracoesNotificacoesRoute,
   AppConfiguracoesPlanoContasRoute: AppConfiguracoesPlanoContasRoute,
   AppConfiguracoesPrivacidadeRoute: AppConfiguracoesPrivacidadeRoute,
@@ -4483,6 +4525,7 @@ const rootRouteChildren: RootRouteChildren = {
   AjudaCanvaRoute: AjudaCanvaRoute,
   AjudaDocusignRoute: AjudaDocusignRoute,
   AjudaFacebookInstagramRoute: AjudaFacebookInstagramRoute,
+  AjudaNotaFiscalRoute: AjudaNotaFiscalRoute,
   ApiSitemapDotxmlRoute: ApiSitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   AvaliacaoTenantSlugRoute: AvaliacaoTenantSlugRoute,
