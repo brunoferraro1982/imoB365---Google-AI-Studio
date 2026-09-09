@@ -101,6 +101,7 @@ function Buscar() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState(sp.q || "");
+  const [searchDebounced, setSearchDebounced] = useState(search);
   const [finalidade, setFinalidade] = useState<string>(sp.finalidade || "todos");
   const [tipo, setTipo] = useState<string>(sp.tipo || "");
   const [quartos, setQuartos] = useState<string>(sp.quartos || "");
@@ -178,6 +179,25 @@ function Buscar() {
 
   useEffect(() => setMounted(true), []);
 
+  // Debounce da digitação livre antes de disparar consulta ao banco — sem
+  // isso, cada tecla digitada faria uma requisição nova.
+  useEffect(() => {
+    const t = setTimeout(() => setSearchDebounced(search), 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Normaliza acento/caixa — sem isso, buscar "sao paulo" (como a maioria
+  // digita no celular, sem acento) não batia com imóveis cadastrados como
+  // "São Paulo"/"SÃO PAULO". Ainda usada aqui pro termo ir normalizado pro
+  // banco (a coluna busca_localizacao já é normalizada do lado do Postgres,
+  // então os dois lados precisam da mesma normalização).
+  function normalizarBusca(v: string): string {
+    return v
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -187,9 +207,21 @@ function Buscar() {
           "id,slug,titulo,finalidade,tipo,preco,quartos,banheiros,vagas,area_util,endereco_cidade,endereco_uf,endereco_bairro,latitude,longitude,caracteristicas,aceita_financiamento,aceita_permuta,suites,imovel_fotos(storage_path,capa,ordem)",
         )
         .eq("publicado", true)
-        .eq("status", "ativo")
-        .order("updated_at", { ascending: false })
-        .limit(240);
+        .eq("status", "ativo");
+      // Achado real: buscar um pool de imóveis por recência e SÓ DEPOIS
+      // filtrar texto no client fazia imóveis de cidades que não foram
+      // atualizadas recentemente sumirem silenciosamente da busca conforme
+      // o catálogo cresce além do corte — mesma classe de bug já corrigida
+      // antes neste projeto pro ".limit(12)" da vitrine da home. Corrigido
+      // filtrando por texto NO BANCO (coluna gerada busca_localizacao, já
+      // normalizada via unaccent), antes de qualquer limite de linhas —
+      // assim o corte de linhas passa a valer sobre o resultado já
+      // filtrado, nunca sobre o catálogo inteiro.
+      const termoQ = normalizarBusca(searchDebounced || "");
+      if (termoQ) q = q.ilike("busca_localizacao", `%${termoQ}%`);
+      const termoBairro = normalizarBusca(sp.bairro || "");
+      if (termoBairro) q = q.ilike("busca_localizacao", `%${termoBairro}%`);
+      q = q.order("updated_at", { ascending: false }).limit(1000);
       if (finalidade !== "todos")
         q = q.eq("finalidade", finalidade as "venda" | "aluguel" | "temporada");
       if (tipo) q = q.eq("tipo", tipo as any);
@@ -215,32 +247,27 @@ function Buscar() {
       setItems(mapped);
       setLoading(false);
     })();
-  }, [finalidade, tipo, quartos, banheiros, vagas, areaMin, precoMin, precoMax]);
+  }, [
+    finalidade,
+    tipo,
+    quartos,
+    banheiros,
+    vagas,
+    areaMin,
+    precoMin,
+    precoMax,
+    searchDebounced,
+    sp.bairro,
+  ]);
 
   function publicUrl(path: string | null) {
     if (!path) return null;
     return imovelFotoUrl(path);
   }
 
-  // Normaliza acento/caixa antes de comparar — sem isso, buscar "sao paulo"
-  // (como a maioria digita no celular, sem acento) não batia com imóveis
-  // cadastrados como "São Paulo"/"SÃO PAULO" e a busca por localidade na
-  // home parecia simplesmente não funcionar, mesmo com imóveis reais na
-  // cidade buscada.
-  function normalizarBusca(v: string): string {
-    return v
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  }
-
   const filtered = items.filter((i) => {
-    const term = normalizarBusca(search || sp.q || "");
-    const bairroFilter = normalizarBusca(sp.bairro || "");
-    if (bairroFilter && !normalizarBusca(i.endereco_bairro ?? "").includes(bairroFilter))
-      return false;
-
-    // Client-side instant react filters for advanced parameters
+    // Comparação de texto (cidade/bairro/título) já feita no banco — aqui só
+    // sobram os filtros avançados que ainda são client-side.
     if (suites && i.suites != null && i.suites < Number(suites)) return false;
     if (aceitaFinanciamento !== null && i.aceita_financiamento !== aceitaFinanciamento)
       return false;
@@ -252,12 +279,7 @@ function Buscar() {
       if (!hasAll) return false;
     }
 
-    if (!term) return true;
-    return (
-      normalizarBusca(i.titulo).includes(term) ||
-      normalizarBusca(i.endereco_cidade ?? "").includes(term) ||
-      normalizarBusca(i.endereco_bairro ?? "").includes(term)
-    );
+    return true;
   });
 
   const outraFinalidade =
@@ -275,34 +297,28 @@ function Buscar() {
       setOutraFinalidadeCount(null);
       return;
     }
-    const term = normalizarBusca(search || sp.q || "");
+    const term = normalizarBusca(searchDebounced || sp.q || "");
     if (!term || filtered.length > 0) {
       setOutraFinalidadeCount(null);
       return;
     }
     let cancelado = false;
     (async () => {
-      const { data } = await supabase
+      const { count } = await supabase
         .from("imoveis")
-        .select("titulo,endereco_cidade,endereco_bairro")
+        .select("id", { count: "exact", head: true })
         .eq("publicado", true)
         .eq("status", "ativo")
         .eq("finalidade", outraFinalidade as "venda" | "aluguel" | "temporada")
-        .limit(500);
+        .ilike("busca_localizacao", `%${term}%`);
       if (cancelado) return;
-      const count = (data ?? []).filter(
-        (i: any) =>
-          normalizarBusca(i.titulo).includes(term) ||
-          normalizarBusca(i.endereco_cidade ?? "").includes(term) ||
-          normalizarBusca(i.endereco_bairro ?? "").includes(term),
-      ).length;
-      setOutraFinalidadeCount(count);
+      setOutraFinalidadeCount(count ?? 0);
     })();
     return () => {
       cancelado = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, finalidade, search, sp.q, filtered.length]);
+  }, [loading, finalidade, searchDebounced, sp.q, filtered.length]);
 
   const pontosMapa = useMemo(() => {
     return filtered
