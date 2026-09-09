@@ -44,7 +44,6 @@ import {
   Eye,
   Radar,
   CreditCard,
-  Boxes,
   Activity,
   PenTool,
   Headset,
@@ -213,7 +212,6 @@ const tenantModules: Module[] = [
         label: "Conciliação Bancária",
         icon: Landmark,
       },
-      { to: "/app/configuracoes/integracoes-erp", label: "Integrações ERP", icon: Boxes },
       {
         to: "/app/configuracoes/assinatura-eletronica",
         label: "Assinatura eletrônica",

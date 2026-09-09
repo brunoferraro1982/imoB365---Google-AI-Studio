@@ -353,7 +353,6 @@ const TELAS_BACKEND: { prefixo: string; nome: string }[] = [
   },
   { prefixo: "/app/configuracoes/integracoes-bancarias", nome: "Integrações Bancárias" },
   { prefixo: "/app/configuracoes/conciliacao-bancaria", nome: "Conciliação Bancária" },
-  { prefixo: "/app/configuracoes/integracoes-erp", nome: "Integrações ERP" },
   { prefixo: "/app/configuracoes", nome: "Configurações" },
   { prefixo: "/app/elearning", nome: "E-Learning" },
   { prefixo: "/app/relatorios", nome: "Relatórios" },

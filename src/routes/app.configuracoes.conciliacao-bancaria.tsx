@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
-import { IntegracaoFinanceiraSection } from "@/components/financeiro/IntegracaoFinanceiraSection";
+import { ConciliacaoBancariaSection } from "@/components/financeiro/ConciliacaoBancariaSection";
 
 export const Route = createFileRoute("/app/configuracoes/conciliacao-bancaria")({
   head: () => ({ meta: [{ title: "Conciliação bancária — imob365" }] }),
@@ -25,7 +25,7 @@ function ConciliacaoBancariaPage() {
         </p>
       </header>
 
-      <IntegracaoFinanceiraSection tipo="conciliacao_bancaria" />
+      <ConciliacaoBancariaSection />
     </div>
   );
 }
