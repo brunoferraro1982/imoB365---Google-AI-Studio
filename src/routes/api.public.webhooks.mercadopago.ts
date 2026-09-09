@@ -88,6 +88,35 @@ async function activateFromPreapproval(
   return { activated: true, status: preapproval.status, amount, currency };
 }
 
+// Pagamento de uma campanha de Google Ads gerenciada pela imoB365 (ver
+// googleAdsCampanhas.functions.ts) — diferente da assinatura SaaS, o
+// external_reference aqui é "google_ads_campanha:<id>", não um tenant_id
+// puro. Idempotente: só avança de "aguardando_pagamento" pra
+// "aguardando_ativacao", nunca reprocessa um pagamento duplicado.
+async function ativarPagamentoCampanhaGoogleAds(
+  paymentId: string,
+  ref: string,
+  payment: { status: string; transaction_amount?: number; currency_id?: string },
+) {
+  const campanhaId = ref.split(":")[1];
+  if (!campanhaId) return null;
+  const amount = payment.transaction_amount ?? null;
+  const currency = payment.currency_id ?? "BRL";
+  if (payment.status !== "approved") {
+    return { activated: false, status: payment.status, amount, currency };
+  }
+
+  const { data } = await (supabaseAdmin as any)
+    .from("google_ads_campanhas")
+    .update({ status: "aguardando_ativacao" })
+    .eq("id", campanhaId)
+    .eq("status", "aguardando_pagamento")
+    .select("tenant_id")
+    .maybeSingle();
+
+  return { activated: !!data, status: payment.status, amount, currency, tenantId: data?.tenant_id };
+}
+
 async function activateFromPayment(paymentId: string, tenantId: string) {
   const payment = await fetchPayment(paymentId);
   const amount = payment.transaction_amount ?? null;
@@ -190,10 +219,13 @@ export const Route = createFileRoute("/api/public/webhooks/mercadopago")({
             }
           } else if (eventType === "payment") {
             const payment = await fetchPayment(resourceId);
-            const tenantId = payment.external_reference;
-            if (tenantId) {
-              const r = await activateFromPayment(resourceId, tenantId);
-              result = { ...r, tenantId };
+            const ref = payment.external_reference;
+            if (ref?.startsWith("google_ads_campanha:")) {
+              const r = await ativarPagamentoCampanhaGoogleAds(resourceId, ref, payment);
+              result = r ?? null;
+            } else if (ref) {
+              const r = await activateFromPayment(resourceId, ref);
+              result = { ...r, tenantId: ref };
             }
           }
           // subscription_authorized_payment (cobrança recorrente já autorizada) e

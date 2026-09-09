@@ -236,6 +236,9 @@ MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→clie
 HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
 HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
 GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote
+GOOGLE_ADS_CLIENT_ID                 # OAuth do Google Ads — conta ÚNICA da imoB365, conectada só pelo super_admin (não é por tenant, ver changelog "Google Ads")
+GOOGLE_ADS_CLIENT_SECRET             # Idem
+GOOGLE_ADS_DEVELOPER_TOKEN           # Developer Token do Google Ads API Center — emitido uma vez por empresa, exigido em toda chamada
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
@@ -909,6 +912,36 @@ Escolhido pelo usuário entre os dois modelos possíveis (BYO de verdade vs. imo
 | **Decisão de escopo — item de serviço fixo, tomador manual** | Item da lista de serviço (LC 116/2003) sugerido como `10.05` (corretagem/intermediação imobiliária), editável; o tomador da nota é sempre digitado manualmente pelo corretor/financeiro, nunca inferido automaticamente do contrato |
 
 **Pendente**: migration ainda não aplicada em dev/produção (próximo passo com o usuário); teste ponta-a-ponta com uma conta Focus NFe real (criar conta, cadastrar certificado digital, emitir uma nota de homologação de verdade) — só o usuário pode fazer isso, precisa de CNPJ e certificado ICP-Brasil reais.
+
+### 🎯 Google Ads gerenciado pela imoB365 (conta única, não BYO) — Fase 1 + Fase 2a (2026-09-09)
+
+Pedido do usuário logo após a Nota Fiscal: um painel de verdade pro Google Ads, além do simples ID de conversão que já existia (`google_ads_id` em `tenant_site_settings`, injetado por `TrackingPixels.tsx` — só tag de rastreamento client-side, nunca teve nenhuma chamada à API do Google Ads).
+
+**Achado de arquitetura que mudou o desenho** (confirmado por fetch direto na documentação oficial do Google Ads API, não só busca): o Developer Token — obrigatório em toda chamada — é emitido **uma vez por empresa** ("Google usually grants one developer token per company"), não por cliente final. Diferente de Meta/Canva ("app Privado" instantâneo) e do DocuSign (Integration Key + Go-Live, mas ainda por conta), o Google Ads não tem um caminho de autoatendimento pra cada corretor criar a própria conexão independente — a arquitetura já empurra pra um modelo "um app da plataforma, OAuth por cliente", igual ao Mercado Pago Marketplace.
+
+**Decisão de negócio do usuário, definitiva**: não é BYO por tenant. É uma **conta Google Ads única da própria imoB365** (o cartão que paga o gasto real é dela), conectada uma única vez pelo super_admin. Fluxo completo:
+1. Imobiliária/corretor monta um **rascunho** de campanha (palavras-chave, tipo de anúncio, orçamento do período, duração) — nenhuma chamada ao Google ainda.
+2. Vê **só o valor final a pagar** (orçamento de mídia + margem de 30% da imoB365 já embutida) — **nunca** o orçamento bruto nem o percentual de margem lado a lado, pedido explícito do usuário pra não expor a margem ao cliente final.
+3. Paga via **Checkout Pro do Mercado Pago da própria plataforma** (reaproveitado de `mercadopago.functions.ts`/`client.server.ts` — mesmo mecanismo já usado pra cobrar assinatura SaaS, `MERCADOPAGO_ACCESS_TOKEN`), com `external_reference = "google_ads_campanha:<id>"`.
+4. Super_admin revê e **ativa** em `/admin/google-ads` — só esse clique gera gasto real no cartão da imoB365.
+5. Imobiliária/corretor acompanha custo/performance real (leitura via GAQL) da própria campanha.
+
+| Item | O que foi feito |
+| :--- | :--- |
+| `supabase/migrations/20260909220000_google_ads_campanhas.sql` | `google_ads_config` (linha única — não por tenant, RLS deny-all) + `google_ads_campanhas` (RLS por membership + **trigger** `protect_google_ads_campanha_ativacao` bloqueando qualquer UPDATE de `status` pra `ativa`/`rejeitada` vindo de quem não é `super_admin` — mesmo padrão de `protect_tenants_exibir_na_home`, um trigger, não só policy, pra fechar a brecha de vez) |
+| `src/lib/googleAdsOAuth.functions.ts` | Conexão OAuth **só do super_admin**; `client_id`/`client_secret`/`developer_token` vêm de variável de ambiente da plataforma (`GOOGLE_ADS_CLIENT_ID/SECRET/DEVELOPER_TOKEN`), não de tabela por tenant. `access_type=offline&prompt=consent` sempre incluídos (senão o Google só devolve `refresh_token` na primeiríssima autorização) |
+| `src/routes/api.public.googleads.oauth.callback.ts` | Descobre automaticamente a conta Google Ads acessível via `GET /v25/customers:listAccessibleCustomers` em vez de pedir pro super_admin digitar o ID |
+| `src/lib/googleAdsCampanhas.functions.ts` | `criarRascunhoCampanha`, `iniciarPagamentoCampanha` (Checkout Pro), `listarMinhasCampanhas` (select explícito, **sem** `orcamento_periodo`/`margem_percentual`), `listarCampanhasParaAprovacao`/`aprovarCampanha`/`rejeitarCampanha` (só super_admin), `consultarPerformanceCampanha` (GAQL `googleAds:searchStream`) |
+| `src/routes/api.public.webhooks.mercadopago.ts` | Novo case reconhecendo o prefixo `google_ads_campanha:` no `external_reference` — marca a campanha como `aguardando_ativacao` quando o pagamento é aprovado (idempotente, só avança de `aguardando_pagamento`) |
+| `/admin/google-ads`, `/app/marketing/google-ads` | Telas de conexão+aprovação (admin) e criação+pagamento+performance (tenant) |
+
+**Faseamento restante, registrado como pendente**:
+- **Fase 2a** (o que foi entregue agora): ativação é um passo **manual** — o super_admin ainda cria a campanha de verdade no próprio painel do Google Ads e cola o `resource_name` de volta no imob365. Isso evita depender do **Basic Access** do Google (revisão manual, ~5 dias úteis) antes de validar o fluxo financeiro/aprovação inteiro — o **Explorer Access** (concedido automaticamente na maioria dos casos) já cobre a leitura de performance (`consultarPerformanceCampanha`), mas a documentação oficial confirma que **não libera criação/gestão de anúncio**.
+- **Fase 2b** (não implementada): criação 100% automática da campanha via API no clique de "Ativar" — exige a hierarquia completa de recursos do Google Ads (`CampaignBudget` → `Campaign` → `AdGroup` → `AdGroupCriterion` → `AdGroupAd`, cada um com seu próprio `mutate`) e só é viável depois que a imoB365 solicitar e receber o Basic Access do Google (pré-requisito real, fora de controle da imob365/deste changelog).
+- **Reembolso**: não há automação de estorno se uma campanha for rejeitada depois de paga — fica manual por ora.
+- **Achado técnico sobre orçamento** (informa a decisão de cobrança adiantada): o Google Ads garante o orçamento só na média do período de faturamento (pode gastar até ~2x o orçamento diário isolado, nunca mais que `orçamento_diário × dias` no total) — cobrar o valor total do período adiantado é seguro; prometer um teto diário rígido não seria.
+
+**Pendente, precisa do usuário**: criar o projeto OAuth no Google Cloud + solicitar o Developer Token no Google Ads API Center (uma única vez, pra plataforma inteira) e configurar as 3 variáveis de ambiente antes de qualquer teste real; migration ainda não aplicada em dev/produção.
 
 ### 📋 Backlog (próximas versões)
 
