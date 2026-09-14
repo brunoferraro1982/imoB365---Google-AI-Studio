@@ -238,7 +238,7 @@ HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcion
 GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote
 GOOGLE_ADS_CLIENT_ID                 # OAuth do Google Ads — conta ÚNICA da imoB365, conectada só pelo super_admin (não é por tenant, ver changelog "Google Ads")
 GOOGLE_ADS_CLIENT_SECRET             # Idem
-GOOGLE_ADS_DEVELOPER_TOKEN           # Developer Token do Google Ads API Center — emitido uma vez por empresa, exigido em toda chamada
+GOOGLE_ADS_DEVELOPER_TOKEN           # OPCIONAL desde 2026-09-09 — Google desativou a exigência de Developer Token; enviada só por compatibilidade quando presente (ver changelog "Google Ads sem Developer Token")
 ```
 
 > `src/integrations/supabase/client.ts` and `src/integrations/supabase/types.ts` are auto-generated — **do not edit directly**.
@@ -941,7 +941,19 @@ Pedido do usuário logo após a Nota Fiscal: um painel de verdade pro Google Ads
 - **Reembolso**: não há automação de estorno se uma campanha for rejeitada depois de paga — fica manual por ora.
 - **Achado técnico sobre orçamento** (informa a decisão de cobrança adiantada): o Google Ads garante o orçamento só na média do período de faturamento (pode gastar até ~2x o orçamento diário isolado, nunca mais que `orçamento_diário × dias` no total) — cobrar o valor total do período adiantado é seguro; prometer um teto diário rígido não seria.
 
-**Pendente, precisa do usuário**: criar o projeto OAuth no Google Cloud + solicitar o Developer Token no Google Ads API Center (uma única vez, pra plataforma inteira) e configurar as 3 variáveis de ambiente antes de qualquer teste real; migration ainda não aplicada em dev/produção.
+**Pendente, precisa do usuário**: criar o projeto OAuth no Google Cloud, habilitar a API Google Ads nele e configurar `GOOGLE_ADS_CLIENT_ID`/`GOOGLE_ADS_CLIENT_SECRET` antes de qualquer teste real (ver correção abaixo — Developer Token não é mais pré-requisito); migration ainda não aplicada em dev/produção.
+
+### 🔧 Google Ads sem Developer Token — mudança de política do Google no mesmo dia do deploy (2026-09-14)
+
+Achado do usuário ao configurar as credenciais reais, 5 dias após o deploy da feature acima: o Google **desativou o Developer Token do Google Ads API em 09/09/2026** — coincidentemente o mesmo dia em que a integração foi construída e documentada como "emitido uma vez por empresa, exigido em toda chamada" (premissa correta na época, mas obsoleta a partir daquele mesmo dia). Confirmado direto na documentação oficial (`developers.google.com/google-ads/api/docs/api-policy/developer-token`):
+
+- "Você pode continuar enviando tokens de desenvolvedor nos cabeçalhos de chamadas de API, mas isso é **opcional e ignorado** pelos servidores de API. Seu código atual vai continuar funcionando sem mudanças." — ou seja, não é um bug/regressão, o código anterior seguia funcionando, só ficou desatualizado quanto ao que é *necessário*.
+- O nível de acesso à API (Test/Explorer/Basic/Standard) passou a ser determinado pelo **projeto do Google Cloud** usado pra gerar as credenciais OAuth (Client ID/Secret), gerenciado em `console.cloud.google.com/google/ads-apis/overview` — não mais por um token solicitado separadamente em `ads.google.com/aw/apicenter` (a doc inclusive orienta explicitamente a **não** usar mais esse caminho antigo).
+- Uma versão principal futura da API vai passar a **rejeitar** o header `developer-token` nas chamadas — a remoção feita agora já deixa o código adequado pra esse futuro, não é só evitar um erro atual.
+
+**Correção**: `GOOGLE_ADS_DEVELOPER_TOKEN` deixou de ser exigida em `getGoogleAdsConnectionStatus` (`appConfigured` agora checa só `CLIENT_ID`/`CLIENT_SECRET`); o header `developer-token` nas duas chamadas REST (`listAccessibleCustomers` no callback OAuth, `googleAds:searchStream` em `consultarPerformanceCampanha`) passou a ser enviado só quando a variável está presente, nunca mais bloqueando a conexão por faltar. Texto de `/admin/google-ads` atualizado pra não pedir mais o Developer Token. Variável de ambiente mantida como **opcional** (não removida do schema/env) — aceita se o usuário já tiver uma, mas não é mais um pré-requisito documentado.
+
+**Efeito prático pro usuário**: só precisa configurar `GOOGLE_ADS_CLIENT_ID`/`GOOGLE_ADS_CLIENT_SECRET` (Client OAuth criado no Google Cloud Console, com a API Google Ads habilitada no projeto) pra conectar em `/admin/google-ads` — sem precisar solicitar/esperar aprovação de Developer Token, que nem é mais possível pedir pelo caminho antigo.
 
 ### 📋 Backlog (próximas versões)
 

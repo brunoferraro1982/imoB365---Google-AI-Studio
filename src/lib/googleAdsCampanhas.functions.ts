@@ -266,21 +266,21 @@ export const consultarPerformanceCampanha = createServerFn({ method: "POST" })
     if (!campanha?.google_campaign_resource_name) return null;
 
     const { accessToken, customerId } = await getValidGoogleAdsAccessToken();
-    const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
     const campaignId = campanha.google_campaign_resource_name.split("/").pop();
+
+    // developer-token virou opcional/ignorado pela API desde 2026-09-09
+    // (ver googleAdsOAuth.functions.ts) — enviado só quando configurado.
+    const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    };
+    if (developerToken) headers["developer-token"] = developerToken;
 
     const query = `SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.conversions FROM campaign WHERE campaign.id = ${campaignId}`;
     const res = await fetch(
       `https://googleads.googleapis.com/v25/customers/${customerId}/googleAds:searchStream`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "developer-token": developerToken ?? "",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query }),
-      },
+      { method: "POST", headers, body: JSON.stringify({ query }) },
     );
     const json = await res.json().catch(() => null);
     if (!res.ok) {
