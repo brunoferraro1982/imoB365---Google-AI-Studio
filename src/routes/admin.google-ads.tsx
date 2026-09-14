@@ -170,10 +170,11 @@ function GoogleAdsAdminPage() {
 
         {!data?.appConfigured ? (
           <p className="text-sm text-muted-foreground">
-            Configure <code className="text-xs">GOOGLE_ADS_CLIENT_ID</code>,{" "}
-            <code className="text-xs">GOOGLE_ADS_CLIENT_SECRET</code> e{" "}
-            <code className="text-xs">GOOGLE_ADS_DEVELOPER_TOKEN</code> nas variáveis de ambiente do
-            servidor (criadas uma vez no Google Cloud + Google Ads API Center) antes de conectar.
+            Configure <code className="text-xs">GOOGLE_ADS_CLIENT_ID</code> e{" "}
+            <code className="text-xs">GOOGLE_ADS_CLIENT_SECRET</code> nas variáveis de ambiente do
+            servidor (credenciais OAuth criadas uma vez no Google Cloud Console, com a API Google
+            Ads habilitada no projeto) antes de conectar. O Developer Token não é mais necessário —
+            o Google desativou esse requisito em 09/09/2026.
           </p>
         ) : data?.connected ? (
           <div className="space-y-3">

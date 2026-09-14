@@ -14,10 +14,21 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // conecta conta própria aqui — só monta/paga campanha e acompanha
 // performance (ver googleAdsCampanhas.functions.ts).
 //
-// client_id/client_secret/developer_token vêm de variável de ambiente da
-// PLATAFORMA (GOOGLE_ADS_CLIENT_ID/SECRET/DEVELOPER_TOKEN), não de uma
-// tabela por tenant — o usuário precisa criar o projeto no Google Cloud +
-// solicitar o Developer Token no Google Ads API Center uma única vez.
+// client_id/client_secret vêm de variável de ambiente da PLATAFORMA
+// (GOOGLE_ADS_CLIENT_ID/SECRET), não de uma tabela por tenant — o usuário
+// precisa criar o projeto no Google Cloud e habilitar a API Google Ads
+// nele uma única vez.
+//
+// Developer Token DESATIVADO pelo Google em 2026-09-09 (mesmo dia em que
+// esta integração foi construída — ver
+// developers.google.com/google-ads/api/docs/api-policy/developer-token):
+// o header "developer-token" agora é opcional e ignorado pelos servidores
+// da API; o nível de acesso passou a ser determinado pelo projeto do
+// Google Cloud usado pra gerar as credenciais OAuth (Client ID/Secret),
+// gerenciado em console.cloud.google.com/google/ads-apis/overview, não
+// mais por um token solicitado em ads.google.com/aw/apicenter.
+// GOOGLE_ADS_DEVELOPER_TOKEN continua opcional/aceita (enviada quando
+// presente, só por compatibilidade) mas não é mais exigida.
 
 const GOOGLE_OAUTH_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_OAUTH_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -43,10 +54,10 @@ export type GoogleAdsConnectionStatus = {
 export const getGoogleAdsConnectionStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async (): Promise<GoogleAdsConnectionStatus> => {
+    // Developer Token desativado pelo Google (2026-09-09) — não é mais
+    // pré-requisito, ver comentário no topo do arquivo.
     const appConfigured = !!(
-      process.env.GOOGLE_ADS_CLIENT_ID &&
-      process.env.GOOGLE_ADS_CLIENT_SECRET &&
-      process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+      process.env.GOOGLE_ADS_CLIENT_ID && process.env.GOOGLE_ADS_CLIENT_SECRET
     );
 
     const { data } = await (supabaseAdmin as any)

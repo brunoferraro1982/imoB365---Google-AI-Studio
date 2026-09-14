@@ -43,15 +43,15 @@ export const Route = createFileRoute("/api/public/googleads/oauth/callback")({
 
         let customerId: string | null = null;
         try {
+          // developer-token virou opcional/ignorado pela API desde
+          // 2026-09-09 (ver googleAdsOAuth.functions.ts) — enviado só
+          // quando configurado, por compatibilidade retroativa.
           const developerToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN;
+          const headers: Record<string, string> = { Authorization: `Bearer ${token.access_token}` };
+          if (developerToken) headers["developer-token"] = developerToken;
           const res = await fetch(
             "https://googleads.googleapis.com/v25/customers:listAccessibleCustomers",
-            {
-              headers: {
-                Authorization: `Bearer ${token.access_token}`,
-                "developer-token": developerToken ?? "",
-              },
-            },
+            { headers },
           );
           const json = await res.json().catch(() => null);
           const first: string | undefined = json?.resourceNames?.[0];
