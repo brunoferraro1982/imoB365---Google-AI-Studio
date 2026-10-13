@@ -259,7 +259,7 @@ function LeadDetail() {
             <h1 className="text-3xl font-bold tracking-tight">{lead.nome}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Recebido em {new Date(lead.created_at).toLocaleString("pt-BR")} · origem:{" "}
-              {lead.origem}
+              {lead.origem === "landing_page" ? "Landing page (mkt.imob365)" : lead.origem}
             </p>
           </header>
 
@@ -442,7 +442,11 @@ function LeadDetail() {
         </div>
 
         <aside className="space-y-4">
-          {(lead.utm_source || lead.utm_medium || lead.utm_campaign) && (
+          {(lead.utm_source ||
+            lead.utm_medium ||
+            lead.utm_campaign ||
+            lead.gclid ||
+            lead.fbclid) && (
             <div className="rounded-xl border border-border bg-card p-4 text-xs">
               <div className="mb-2 font-medium uppercase tracking-wide text-muted-foreground">
                 Origem (UTM)
@@ -465,6 +469,16 @@ function LeadDetail() {
               {lead.referrer && (
                 <div className="truncate">
                   <span className="text-muted-foreground">ref:</span> {lead.referrer}
+                </div>
+              )}
+              {lead.gclid && (
+                <div className="truncate" title={lead.gclid}>
+                  <span className="text-muted-foreground">gclid:</span> {lead.gclid}
+                </div>
+              )}
+              {lead.fbclid && (
+                <div className="truncate" title={lead.fbclid}>
+                  <span className="text-muted-foreground">fbclid:</span> {lead.fbclid}
                 </div>
               )}
             </div>

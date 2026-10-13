@@ -1,16 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import nodemailer from "nodemailer";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
-type CanalEmailConfig = {
-  smtp_host?: string;
-  smtp_port?: number;
-  usuario?: string;
-  senha?: string;
-  endereco_exibicao?: string;
-};
+import { getTenantSmtp, sendWithSmtp } from "@/lib/tenantSmtp.server";
 
 /**
  * Envia por e-mail a última resposta não-interna de um chamado ao
@@ -50,18 +42,8 @@ export const enviarEmailChamado = createServerFn({ method: "POST" })
     }
     if (!tenantIdConfig) return { enviado: false, motivo: "Sem tenant associado" };
 
-    const { data: canal } = await supabaseAdmin
-      .from("tenant_atendimento_canal_config")
-      .select("config,ativo")
-      .eq("tenant_id", tenantIdConfig)
-      .eq("canal", "email")
-      .maybeSingle();
-    if (!canal?.ativo) return { enviado: false, motivo: "Canal de e-mail não configurado" };
-
-    const cfg = canal.config as CanalEmailConfig;
-    if (!cfg.smtp_host || !cfg.usuario || !cfg.senha) {
-      return { enviado: false, motivo: "Configuração de e-mail incompleta" };
-    }
+    const smtp = await getTenantSmtp(tenantIdConfig);
+    if (!smtp.ok) return { enviado: false, motivo: smtp.motivo };
 
     const { data: ultimaMensagem } = await supabaseAdmin
       .from("chamado_mensagens")
@@ -73,21 +55,9 @@ export const enviarEmailChamado = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!ultimaMensagem) return { enviado: false, motivo: "Sem mensagem pra enviar" };
 
-    try {
-      const transporter = nodemailer.createTransport({
-        host: cfg.smtp_host,
-        port: cfg.smtp_port ?? 587,
-        secure: cfg.smtp_port === 465,
-        auth: { user: cfg.usuario, pass: cfg.senha },
-      });
-      await transporter.sendMail({
-        from: cfg.endereco_exibicao || cfg.usuario,
-        to: chamado.solicitante_email,
-        subject: `[${chamado.numero}] ${chamado.assunto}`,
-        text: ultimaMensagem.conteudo,
-      });
-      return { enviado: true };
-    } catch (err) {
-      return { enviado: false, motivo: err instanceof Error ? err.message : "Falha ao enviar" };
-    }
+    return sendWithSmtp(smtp.cfg, {
+      to: chamado.solicitante_email,
+      subject: `[${chamado.numero}] ${chamado.assunto}`,
+      text: ultimaMensagem.conteudo,
+    });
   });

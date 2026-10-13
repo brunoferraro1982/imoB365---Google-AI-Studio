@@ -192,6 +192,7 @@ import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } f
 import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
 import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
 import { Route as ApiPublicWebhooksMercadopagoRouteImport } from './routes/api.public.webhooks.mercadopago'
+import { Route as ApiPublicWebhooksLandingLeadRouteImport } from './routes/api.public.webhooks.landing-lead'
 import { Route as ApiPublicWebhooksEvolutionRouteImport } from './routes/api.public.webhooks.evolution'
 import { Route as ApiPublicWebhooksDocusignRouteImport } from './routes/api.public.webhooks.docusign'
 import { Route as ApiPublicWebhooksDeliverRouteImport } from './routes/api.public.webhooks.deliver'
@@ -1164,6 +1165,12 @@ const ApiPublicWebhooksMercadopagoRoute =
     path: '/api/public/webhooks/mercadopago',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksLandingLeadRoute =
+  ApiPublicWebhooksLandingLeadRouteImport.update({
+    id: '/api/public/webhooks/landing-lead',
+    path: '/api/public/webhooks/landing-lead',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksEvolutionRoute =
   ApiPublicWebhooksEvolutionRouteImport.update({
     id: '/api/public/webhooks/evolution',
@@ -1543,6 +1550,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
+  '/api/public/webhooks/landing-lead': typeof ApiPublicWebhooksLandingLeadRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
@@ -1755,6 +1763,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
+  '/api/public/webhooks/landing-lead': typeof ApiPublicWebhooksLandingLeadRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
@@ -1973,6 +1982,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/deliver': typeof ApiPublicWebhooksDeliverRoute
   '/api/public/webhooks/docusign': typeof ApiPublicWebhooksDocusignRoute
   '/api/public/webhooks/evolution': typeof ApiPublicWebhooksEvolutionRoute
+  '/api/public/webhooks/landing-lead': typeof ApiPublicWebhooksLandingLeadRoute
   '/api/public/webhooks/mercadopago': typeof ApiPublicWebhooksMercadopagoRoute
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
@@ -2192,6 +2202,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
+    | '/api/public/webhooks/landing-lead'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
@@ -2404,6 +2415,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
+    | '/api/public/webhooks/landing-lead'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
@@ -2621,6 +2633,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/deliver'
     | '/api/public/webhooks/docusign'
     | '/api/public/webhooks/evolution'
+    | '/api/public/webhooks/landing-lead'
     | '/api/public/webhooks/mercadopago'
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
@@ -2727,6 +2740,7 @@ export interface RootRouteChildren {
   ApiPublicWebhooksDeliverRoute: typeof ApiPublicWebhooksDeliverRoute
   ApiPublicWebhooksDocusignRoute: typeof ApiPublicWebhooksDocusignRoute
   ApiPublicWebhooksEvolutionRoute: typeof ApiPublicWebhooksEvolutionRoute
+  ApiPublicWebhooksLandingLeadRoute: typeof ApiPublicWebhooksLandingLeadRoute
   ApiPublicWebhooksMercadopagoRoute: typeof ApiPublicWebhooksMercadopagoRoute
   ApiPublicWebhooksMercadopagoMarketplaceRoute: typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   ApiPublicWebhooksMetaRoute: typeof ApiPublicWebhooksMetaRoute
@@ -4030,6 +4044,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksMercadopagoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/landing-lead': {
+      id: '/api/public/webhooks/landing-lead'
+      path: '/api/public/webhooks/landing-lead'
+      fullPath: '/api/public/webhooks/landing-lead'
+      preLoaderRoute: typeof ApiPublicWebhooksLandingLeadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/evolution': {
       id: '/api/public/webhooks/evolution'
       path: '/api/public/webhooks/evolution'
@@ -4631,6 +4652,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhooksDeliverRoute: ApiPublicWebhooksDeliverRoute,
   ApiPublicWebhooksDocusignRoute: ApiPublicWebhooksDocusignRoute,
   ApiPublicWebhooksEvolutionRoute: ApiPublicWebhooksEvolutionRoute,
+  ApiPublicWebhooksLandingLeadRoute: ApiPublicWebhooksLandingLeadRoute,
   ApiPublicWebhooksMercadopagoRoute: ApiPublicWebhooksMercadopagoRoute,
   ApiPublicWebhooksMercadopagoMarketplaceRoute:
     ApiPublicWebhooksMercadopagoMarketplaceRoute,
