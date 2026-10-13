@@ -390,7 +390,7 @@ export type Database = {
       };
       captacao_listings: {
         Row: {
-          config_id: string;
+          config_id: string | null;
           dados_brutos: Json;
           external_id: string;
           fonte: string;
@@ -403,7 +403,7 @@ export type Database = {
           url: string;
         };
         Insert: {
-          config_id: string;
+          config_id?: string | null;
           dados_brutos?: Json;
           external_id: string;
           fonte?: string;
@@ -416,7 +416,7 @@ export type Database = {
           url: string;
         };
         Update: {
-          config_id?: string;
+          config_id?: string | null;
           dados_brutos?: Json;
           external_id?: string;
           fonte?: string;
@@ -1103,6 +1103,7 @@ export type Database = {
           id: string;
           intervalo_horas: number;
           nome: string;
+          origem: string;
           tipo_alvo: string;
           ultima_execucao: string | null;
           updated_at: string;
@@ -1115,6 +1116,7 @@ export type Database = {
           id?: string;
           intervalo_horas?: number;
           nome: string;
+          origem?: string;
           tipo_alvo: string;
           ultima_execucao?: string | null;
           updated_at?: string;
@@ -1127,6 +1129,7 @@ export type Database = {
           id?: string;
           intervalo_horas?: number;
           nome?: string;
+          origem?: string;
           tipo_alvo?: string;
           ultima_execucao?: string | null;
           updated_at?: string;
@@ -1138,6 +1141,75 @@ export type Database = {
             columns: ["construtora_id"];
             isOneToOne: false;
             referencedRelation: "construtoras";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      construtora_ingestao_aprovacoes: {
+        Row: {
+          aprovado_por: string;
+          corretor_id: string | null;
+          created_at: string;
+          empreendimento_id: string | null;
+          id: string;
+          imovel_id: string | null;
+          lote_id: string;
+          tenant_id: string;
+        };
+        Insert: {
+          aprovado_por: string;
+          corretor_id?: string | null;
+          created_at?: string;
+          empreendimento_id?: string | null;
+          id?: string;
+          imovel_id?: string | null;
+          lote_id: string;
+          tenant_id: string;
+        };
+        Update: {
+          aprovado_por?: string;
+          corretor_id?: string | null;
+          created_at?: string;
+          empreendimento_id?: string | null;
+          id?: string;
+          imovel_id?: string | null;
+          lote_id?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "construtora_ingestao_aprovacoes_corretor_id_fkey";
+            columns: ["corretor_id"];
+            isOneToOne: false;
+            referencedRelation: "corretores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_aprovacoes_empreendimento_id_fkey";
+            columns: ["empreendimento_id"];
+            isOneToOne: false;
+            referencedRelation: "empreendimentos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_aprovacoes_imovel_id_fkey";
+            columns: ["imovel_id"];
+            isOneToOne: false;
+            referencedRelation: "imoveis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_aprovacoes_lote_id_fkey";
+            columns: ["lote_id"];
+            isOneToOne: false;
+            referencedRelation: "construtora_ingestao_lotes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "construtora_ingestao_aprovacoes_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
             referencedColumns: ["id"];
           },
         ];
@@ -1157,6 +1229,7 @@ export type Database = {
           revisado_em: string | null;
           revisado_por: string | null;
           status: string;
+          tipo_alvo_override: string | null;
           updated_at: string;
         };
         Insert: {
@@ -1173,6 +1246,7 @@ export type Database = {
           revisado_em?: string | null;
           revisado_por?: string | null;
           status?: string;
+          tipo_alvo_override?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -1189,6 +1263,7 @@ export type Database = {
           revisado_em?: string | null;
           revisado_por?: string | null;
           status?: string;
+          tipo_alvo_override?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -1230,6 +1305,7 @@ export type Database = {
           legenda_ia: string | null;
           lote_id: string;
           origem_drive_id: string | null;
+          origem_url: string | null;
           recomendada: boolean;
           score_ia: number | null;
           storage_path: string | null;
@@ -1243,6 +1319,7 @@ export type Database = {
           legenda_ia?: string | null;
           lote_id: string;
           origem_drive_id?: string | null;
+          origem_url?: string | null;
           recomendada?: boolean;
           score_ia?: number | null;
           storage_path?: string | null;
@@ -1256,6 +1333,7 @@ export type Database = {
           legenda_ia?: string | null;
           lote_id?: string;
           origem_drive_id?: string | null;
+          origem_url?: string | null;
           recomendada?: boolean;
           score_ia?: number | null;
           storage_path?: string | null;
@@ -2007,15 +2085,21 @@ export type Database = {
           ativo: boolean;
           bio: string | null;
           cargo: string | null;
+          cirp_enviado_em: string | null;
+          cirp_storage_path: string | null;
           comissao_padrao: number | null;
           created_at: string;
           creci: string | null;
           creci_uf: string | null;
           email: string | null;
+          facebook: string | null;
           foto_url: string | null;
           id: string;
+          instagram: string | null;
+          linkedin: string | null;
           nome: string;
           publico: boolean;
+          site: string | null;
           slug: string;
           telefone: string | null;
           tenant_id: string;
@@ -2027,15 +2111,21 @@ export type Database = {
           ativo?: boolean;
           bio?: string | null;
           cargo?: string | null;
+          cirp_enviado_em?: string | null;
+          cirp_storage_path?: string | null;
           comissao_padrao?: number | null;
           created_at?: string;
           creci?: string | null;
           creci_uf?: string | null;
           email?: string | null;
+          facebook?: string | null;
           foto_url?: string | null;
           id?: string;
+          instagram?: string | null;
+          linkedin?: string | null;
           nome: string;
           publico?: boolean;
+          site?: string | null;
           slug: string;
           telefone?: string | null;
           tenant_id: string;
@@ -2047,15 +2137,21 @@ export type Database = {
           ativo?: boolean;
           bio?: string | null;
           cargo?: string | null;
+          cirp_enviado_em?: string | null;
+          cirp_storage_path?: string | null;
           comissao_padrao?: number | null;
           created_at?: string;
           creci?: string | null;
           creci_uf?: string | null;
           email?: string | null;
+          facebook?: string | null;
           foto_url?: string | null;
           id?: string;
+          instagram?: string | null;
+          linkedin?: string | null;
           nome?: string;
           publico?: boolean;
+          site?: string | null;
           slug?: string;
           telefone?: string | null;
           tenant_id?: string;
@@ -2063,7 +2159,15 @@ export type Database = {
           user_id?: string | null;
           whatsapp?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "corretores_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       elearning_aulas: {
         Row: {
@@ -2876,6 +2980,113 @@ export type Database = {
         };
         Relationships: [];
       };
+      google_ads_campanhas: {
+        Row: {
+          aprovado_em: string | null;
+          aprovado_por: string | null;
+          created_at: string;
+          criado_por: string | null;
+          duracao_dias: number;
+          google_campaign_resource_name: string | null;
+          id: string;
+          margem_percentual: number;
+          motivo_rejeicao: string | null;
+          nome: string;
+          orcamento_periodo: number;
+          palavras_chave: string;
+          payment_reference: string | null;
+          status: string;
+          tenant_id: string;
+          tipo_conteudo: string;
+          updated_at: string;
+          valor_com_margem: number;
+        };
+        Insert: {
+          aprovado_em?: string | null;
+          aprovado_por?: string | null;
+          created_at?: string;
+          criado_por?: string | null;
+          duracao_dias: number;
+          google_campaign_resource_name?: string | null;
+          id?: string;
+          margem_percentual?: number;
+          motivo_rejeicao?: string | null;
+          nome: string;
+          orcamento_periodo: number;
+          palavras_chave: string;
+          payment_reference?: string | null;
+          status?: string;
+          tenant_id: string;
+          tipo_conteudo?: string;
+          updated_at?: string;
+          valor_com_margem: number;
+        };
+        Update: {
+          aprovado_em?: string | null;
+          aprovado_por?: string | null;
+          created_at?: string;
+          criado_por?: string | null;
+          duracao_dias?: number;
+          google_campaign_resource_name?: string | null;
+          id?: string;
+          margem_percentual?: number;
+          motivo_rejeicao?: string | null;
+          nome?: string;
+          orcamento_periodo?: number;
+          palavras_chave?: string;
+          payment_reference?: string | null;
+          status?: string;
+          tenant_id?: string;
+          tipo_conteudo?: string;
+          updated_at?: string;
+          valor_com_margem?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "google_ads_campanhas_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      google_ads_config: {
+        Row: {
+          access_token: string | null;
+          connected_at: string | null;
+          connected_by: string | null;
+          customer_id: string | null;
+          id: string;
+          refresh_token: string | null;
+          singleton: boolean;
+          token_expires_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          access_token?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          customer_id?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          singleton?: boolean;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          access_token?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          customer_id?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          singleton?: boolean;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       imoveis: {
         Row: {
           aceita_financiamento: boolean;
@@ -2883,6 +3094,7 @@ export type Database = {
           area_total: number | null;
           area_util: number | null;
           banheiros: number | null;
+          busca_localizacao: string | null;
           caracteristicas: string[];
           codigo_interno: string | null;
           condominio: number | null;
@@ -2905,6 +3117,7 @@ export type Database = {
           iptu: number | null;
           latitude: number | null;
           longitude: number | null;
+          marca_dagua_ativa: boolean;
           mostrar_endereco_publico: boolean;
           preco: number;
           preco_anterior: number | null;
@@ -2927,6 +3140,7 @@ export type Database = {
           area_total?: number | null;
           area_util?: number | null;
           banheiros?: number | null;
+          busca_localizacao?: string | null;
           caracteristicas?: string[];
           codigo_interno?: string | null;
           condominio?: number | null;
@@ -2949,6 +3163,7 @@ export type Database = {
           iptu?: number | null;
           latitude?: number | null;
           longitude?: number | null;
+          marca_dagua_ativa?: boolean;
           mostrar_endereco_publico?: boolean;
           preco?: number;
           preco_anterior?: number | null;
@@ -2971,6 +3186,7 @@ export type Database = {
           area_total?: number | null;
           area_util?: number | null;
           banheiros?: number | null;
+          busca_localizacao?: string | null;
           caracteristicas?: string[];
           codigo_interno?: string | null;
           condominio?: number | null;
@@ -2993,6 +3209,7 @@ export type Database = {
           iptu?: number | null;
           latitude?: number | null;
           longitude?: number | null;
+          marca_dagua_ativa?: boolean;
           mostrar_endereco_publico?: boolean;
           preco?: number;
           preco_anterior?: number | null;
@@ -3019,6 +3236,90 @@ export type Database = {
           },
         ];
       };
+      imovel_canva_designs: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          design_id: string;
+          edit_url: string | null;
+          erro_mensagem: string | null;
+          id: string;
+          imovel_id: string;
+          media_public_url: string | null;
+          status: string;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          design_id: string;
+          edit_url?: string | null;
+          erro_mensagem?: string | null;
+          id?: string;
+          imovel_id: string;
+          media_public_url?: string | null;
+          status?: string;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          design_id?: string;
+          edit_url?: string | null;
+          erro_mensagem?: string | null;
+          id?: string;
+          imovel_id?: string;
+          media_public_url?: string | null;
+          status?: string;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imovel_canva_designs_imovel_id_fkey";
+            columns: ["imovel_id"];
+            isOneToOne: false;
+            referencedRelation: "imoveis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imovel_canva_designs_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      imovel_eventos: {
+        Row: {
+          created_at: string;
+          id: string;
+          imovel_id: string;
+          tenant_id: string;
+          tipo: string;
+          user_agent: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          imovel_id: string;
+          tenant_id: string;
+          tipo: string;
+          user_agent?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          imovel_id?: string;
+          tenant_id?: string;
+          tipo?: string;
+          user_agent?: string | null;
+        };
+        Relationships: [];
+      };
       imovel_fotos: {
         Row: {
           capa: boolean;
@@ -3028,6 +3329,7 @@ export type Database = {
           legenda: string | null;
           ordem: number;
           storage_path: string;
+          storage_path_original: string | null;
           tenant_id: string;
         };
         Insert: {
@@ -3038,6 +3340,7 @@ export type Database = {
           legenda?: string | null;
           ordem?: number;
           storage_path: string;
+          storage_path_original?: string | null;
           tenant_id: string;
         };
         Update: {
@@ -3048,6 +3351,7 @@ export type Database = {
           legenda?: string | null;
           ordem?: number;
           storage_path?: string;
+          storage_path_original?: string | null;
           tenant_id?: string;
         };
         Relationships: [
@@ -3165,6 +3469,76 @@ export type Database = {
           },
           {
             foreignKeyName: "imovel_portais_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      imovel_social_posts: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          erro_mensagem: string | null;
+          external_post_id: string | null;
+          id: string;
+          imovel_id: string;
+          legenda: string | null;
+          media_public_url: string | null;
+          rede: Database["public"]["Enums"]["social_post_rede"];
+          status: Database["public"]["Enums"]["social_post_status"];
+          template_id: string | null;
+          tenant_id: string;
+          tipo_post: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          erro_mensagem?: string | null;
+          external_post_id?: string | null;
+          id?: string;
+          imovel_id: string;
+          legenda?: string | null;
+          media_public_url?: string | null;
+          rede: Database["public"]["Enums"]["social_post_rede"];
+          status?: Database["public"]["Enums"]["social_post_status"];
+          template_id?: string | null;
+          tenant_id: string;
+          tipo_post: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          erro_mensagem?: string | null;
+          external_post_id?: string | null;
+          id?: string;
+          imovel_id?: string;
+          legenda?: string | null;
+          media_public_url?: string | null;
+          rede?: Database["public"]["Enums"]["social_post_rede"];
+          status?: Database["public"]["Enums"]["social_post_status"];
+          template_id?: string | null;
+          tenant_id?: string;
+          tipo_post?: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "imovel_social_posts_imovel_id_fkey";
+            columns: ["imovel_id"];
+            isOneToOne: false;
+            referencedRelation: "imoveis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imovel_social_posts_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "social_post_templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "imovel_social_posts_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
             referencedRelation: "tenants";
@@ -3858,6 +4232,7 @@ export type Database = {
           descricao: string | null;
           id: string;
           lead_id: string | null;
+          parceiro_id: string | null;
           prazo: string | null;
           prioridade: string;
           responsavel_user_id: string | null;
@@ -3866,6 +4241,7 @@ export type Database = {
           tipo: string;
           titulo: string;
           updated_at: string;
+          visita_id: string | null;
         };
         Insert: {
           cartorio_registro_id?: string | null;
@@ -3877,6 +4253,7 @@ export type Database = {
           descricao?: string | null;
           id?: string;
           lead_id?: string | null;
+          parceiro_id?: string | null;
           prazo?: string | null;
           prioridade?: string;
           responsavel_user_id?: string | null;
@@ -3885,6 +4262,7 @@ export type Database = {
           tipo?: string;
           titulo: string;
           updated_at?: string;
+          visita_id?: string | null;
         };
         Update: {
           cartorio_registro_id?: string | null;
@@ -3896,6 +4274,7 @@ export type Database = {
           descricao?: string | null;
           id?: string;
           lead_id?: string | null;
+          parceiro_id?: string | null;
           prazo?: string | null;
           prioridade?: string;
           responsavel_user_id?: string | null;
@@ -3904,6 +4283,7 @@ export type Database = {
           tipo?: string;
           titulo?: string;
           updated_at?: string;
+          visita_id?: string | null;
         };
         Relationships: [
           {
@@ -3934,6 +4314,20 @@ export type Database = {
             referencedRelation: "leads";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "lead_tarefas_parceiro_id_fkey";
+            columns: ["parceiro_id"];
+            isOneToOne: false;
+            referencedRelation: "parceiros_comerciais";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_tarefas_visita_id_fkey";
+            columns: ["visita_id"];
+            isOneToOne: false;
+            referencedRelation: "visitas";
+            referencedColumns: ["id"];
+          },
         ];
       };
       leads: {
@@ -3943,8 +4337,11 @@ export type Database = {
           email: string | null;
           email_hash: string | null;
           etapa_id: string | null;
+          external_ref: string | null;
+          fbclid: string | null;
           funil_id: string | null;
           ganho_em: string | null;
+          gclid: string | null;
           id: string;
           imovel_id: string | null;
           ip: string | null;
@@ -3977,8 +4374,11 @@ export type Database = {
           email?: string | null;
           email_hash?: string | null;
           etapa_id?: string | null;
+          external_ref?: string | null;
+          fbclid?: string | null;
           funil_id?: string | null;
           ganho_em?: string | null;
+          gclid?: string | null;
           id?: string;
           imovel_id?: string | null;
           ip?: string | null;
@@ -4011,8 +4411,11 @@ export type Database = {
           email?: string | null;
           email_hash?: string | null;
           etapa_id?: string | null;
+          external_ref?: string | null;
+          fbclid?: string | null;
           funil_id?: string | null;
           ganho_em?: string | null;
+          gclid?: string | null;
           id?: string;
           imovel_id?: string | null;
           ip?: string | null;
@@ -4041,6 +4444,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "leads_corretor_id_fkey";
+            columns: ["corretor_id"];
+            isOneToOne: false;
+            referencedRelation: "corretores";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "leads_etapa_id_fkey";
             columns: ["etapa_id"];
             isOneToOne: false;
@@ -4052,6 +4462,20 @@ export type Database = {
             columns: ["funil_id"];
             isOneToOne: false;
             referencedRelation: "lead_funis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leads_imovel_id_fkey";
+            columns: ["imovel_id"];
+            isOneToOne: false;
+            referencedRelation: "imoveis";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "leads_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
             referencedColumns: ["id"];
           },
         ];
@@ -4359,6 +4783,42 @@ export type Database = {
           },
         ];
       };
+      meta_leadgen_events: {
+        Row: {
+          created_at: string;
+          error: string | null;
+          id: string;
+          lead_id: string | null;
+          leadgen_id: string;
+          page_id: string;
+          processed_at: string | null;
+          raw_payload: Json | null;
+          tenant_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          lead_id?: string | null;
+          leadgen_id: string;
+          page_id: string;
+          processed_at?: string | null;
+          raw_payload?: Json | null;
+          tenant_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          error?: string | null;
+          id?: string;
+          lead_id?: string | null;
+          leadgen_id?: string;
+          page_id?: string;
+          processed_at?: string | null;
+          raw_payload?: Json | null;
+          tenant_id?: string | null;
+        };
+        Relationships: [];
+      };
       modules: {
         Row: {
           core: boolean;
@@ -4536,6 +4996,120 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      parceiro_etapas: {
+        Row: {
+          cor: string | null;
+          created_at: string;
+          id: string;
+          nome: string;
+          ordem: number;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          cor?: string | null;
+          created_at?: string;
+          id?: string;
+          nome: string;
+          ordem?: number;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          cor?: string | null;
+          created_at?: string;
+          id?: string;
+          nome?: string;
+          ordem?: number;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parceiro_etapas_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      parceiros_comerciais: {
+        Row: {
+          canal_contato: string | null;
+          cargo: string | null;
+          corretor_id: string | null;
+          created_at: string;
+          created_by: string | null;
+          email: string | null;
+          etapa_id: string | null;
+          id: string;
+          nome_contato: string | null;
+          nome_empresa: string | null;
+          observacoes: string | null;
+          telefone: string | null;
+          tenant_id: string;
+          tipo: string;
+          updated_at: string;
+        };
+        Insert: {
+          canal_contato?: string | null;
+          cargo?: string | null;
+          corretor_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          etapa_id?: string | null;
+          id?: string;
+          nome_contato?: string | null;
+          nome_empresa?: string | null;
+          observacoes?: string | null;
+          telefone?: string | null;
+          tenant_id: string;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Update: {
+          canal_contato?: string | null;
+          cargo?: string | null;
+          corretor_id?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string | null;
+          etapa_id?: string | null;
+          id?: string;
+          nome_contato?: string | null;
+          nome_empresa?: string | null;
+          observacoes?: string | null;
+          telefone?: string | null;
+          tenant_id?: string;
+          tipo?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parceiros_comerciais_corretor_id_fkey";
+            columns: ["corretor_id"];
+            isOneToOne: false;
+            referencedRelation: "corretores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "parceiros_comerciais_etapa_id_fkey";
+            columns: ["etapa_id"];
+            isOneToOne: false;
+            referencedRelation: "parceiro_etapas";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "parceiros_comerciais_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
             referencedRelation: "tenants";
@@ -5050,6 +5624,44 @@ export type Database = {
           },
         ];
       };
+      roteiro_visita_etapas: {
+        Row: {
+          cor: string | null;
+          created_at: string;
+          id: string;
+          nome: string;
+          ordem: number;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          cor?: string | null;
+          created_at?: string;
+          id?: string;
+          nome: string;
+          ordem?: number;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          cor?: string | null;
+          created_at?: string;
+          id?: string;
+          nome?: string;
+          ordem?: number;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roteiro_visita_etapas_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       route_aliases: {
         Row: {
           active: boolean;
@@ -5074,6 +5686,39 @@ export type Database = {
           id?: string;
           status_code?: number;
           to_path?: string;
+        };
+        Relationships: [];
+      };
+      seo_pages: {
+        Row: {
+          canonical: string | null;
+          description: string | null;
+          id: string;
+          noindex: boolean;
+          og_image: string | null;
+          path: string;
+          title: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          canonical?: string | null;
+          description?: string | null;
+          id?: string;
+          noindex?: boolean;
+          og_image?: string | null;
+          path: string;
+          title?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          canonical?: string | null;
+          description?: string | null;
+          id?: string;
+          noindex?: boolean;
+          og_image?: string | null;
+          path?: string;
+          title?: string | null;
+          updated_at?: string;
         };
         Relationships: [];
       };
@@ -5212,6 +5857,36 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      social_post_templates: {
+        Row: {
+          ativo: boolean;
+          config: Json;
+          created_at: string;
+          id: string;
+          nome: string;
+          ordem: number;
+          tipo_post: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Insert: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          nome: string;
+          ordem?: number;
+          tipo_post: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Update: {
+          ativo?: boolean;
+          config?: Json;
+          created_at?: string;
+          id?: string;
+          nome?: string;
+          ordem?: number;
+          tipo_post?: Database["public"]["Enums"]["social_post_tipo"];
+        };
+        Relationships: [];
       };
       status_checks: {
         Row: {
@@ -5565,6 +6240,56 @@ export type Database = {
           },
         ];
       };
+      tenant_canva_connections: {
+        Row: {
+          access_token: string | null;
+          canva_user_id: string | null;
+          client_id: string | null;
+          client_secret: string | null;
+          connected_at: string | null;
+          connected_by: string | null;
+          id: string;
+          refresh_token: string | null;
+          tenant_id: string;
+          token_expires_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          access_token?: string | null;
+          canva_user_id?: string | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          tenant_id: string;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          access_token?: string | null;
+          canva_user_id?: string | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          tenant_id?: string;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_canva_connections_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tenant_custom_fields: {
         Row: {
           chave: string;
@@ -5610,6 +6335,68 @@ export type Database = {
             foreignKeyName: "tenant_custom_fields_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tenant_docusign_connections: {
+        Row: {
+          access_token: string | null;
+          account_id: string | null;
+          account_name: string | null;
+          base_uri: string | null;
+          client_id: string | null;
+          client_secret: string | null;
+          connect_configuration_id: string | null;
+          connect_secret: string | null;
+          connected_at: string | null;
+          connected_by: string | null;
+          id: string;
+          refresh_token: string | null;
+          tenant_id: string;
+          token_expires_at: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          access_token?: string | null;
+          account_id?: string | null;
+          account_name?: string | null;
+          base_uri?: string | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          connect_configuration_id?: string | null;
+          connect_secret?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          tenant_id: string;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          access_token?: string | null;
+          account_id?: string | null;
+          account_name?: string | null;
+          base_uri?: string | null;
+          client_id?: string | null;
+          client_secret?: string | null;
+          connect_configuration_id?: string | null;
+          connect_secret?: string | null;
+          connected_at?: string | null;
+          connected_by?: string | null;
+          id?: string;
+          refresh_token?: string | null;
+          tenant_id?: string;
+          token_expires_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_docusign_connections_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
             referencedRelation: "tenants";
             referencedColumns: ["id"];
           },
@@ -5767,6 +6554,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tenant_mercadopago_accounts_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: true;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      tenant_meta_connections: {
+        Row: {
+          app_id: string | null;
+          app_secret: string | null;
+          business_id: string | null;
+          catalog_id: string | null;
+          connected_at: string;
+          connected_by: string | null;
+          id: string;
+          instagram_business_account_id: string | null;
+          login_config_id: string | null;
+          meta_user_id: string | null;
+          page_access_token: string | null;
+          page_id: string | null;
+          page_name: string | null;
+          tenant_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          app_id?: string | null;
+          app_secret?: string | null;
+          business_id?: string | null;
+          catalog_id?: string | null;
+          connected_at?: string;
+          connected_by?: string | null;
+          id?: string;
+          instagram_business_account_id?: string | null;
+          login_config_id?: string | null;
+          meta_user_id?: string | null;
+          page_access_token?: string | null;
+          page_id?: string | null;
+          page_name?: string | null;
+          tenant_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          app_id?: string | null;
+          app_secret?: string | null;
+          business_id?: string | null;
+          catalog_id?: string | null;
+          connected_at?: string;
+          connected_by?: string | null;
+          id?: string;
+          instagram_business_account_id?: string | null;
+          login_config_id?: string | null;
+          meta_user_id?: string | null;
+          page_access_token?: string | null;
+          page_id?: string | null;
+          page_name?: string | null;
+          tenant_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tenant_meta_connections_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: true;
             referencedRelation: "tenants";
@@ -6364,6 +7213,7 @@ export type Database = {
           nps_respondido_at: string | null;
           nps_score: number | null;
           observacoes: string | null;
+          roteiro_etapa_id: string | null;
           status: Database["public"]["Enums"]["visita_status"];
           tenant_id: string;
           updated_at: string;
@@ -6388,6 +7238,7 @@ export type Database = {
           nps_respondido_at?: string | null;
           nps_score?: number | null;
           observacoes?: string | null;
+          roteiro_etapa_id?: string | null;
           status?: Database["public"]["Enums"]["visita_status"];
           tenant_id: string;
           updated_at?: string;
@@ -6412,6 +7263,7 @@ export type Database = {
           nps_respondido_at?: string | null;
           nps_score?: number | null;
           observacoes?: string | null;
+          roteiro_etapa_id?: string | null;
           status?: Database["public"]["Enums"]["visita_status"];
           tenant_id?: string;
           updated_at?: string;
@@ -6442,6 +7294,13 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "visitas_roteiro_etapa_id_fkey";
+            columns: ["roteiro_etapa_id"];
+            isOneToOne: false;
+            referencedRelation: "roteiro_visita_etapas";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "visitas_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
@@ -6449,6 +7308,33 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      vitrine_parceiros: {
+        Row: {
+          ativo: boolean;
+          created_at: string;
+          id: string;
+          ordem: number;
+          ref_id: string;
+          tipo: string;
+        };
+        Insert: {
+          ativo?: boolean;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          ref_id: string;
+          tipo: string;
+        };
+        Update: {
+          ativo?: boolean;
+          created_at?: string;
+          id?: string;
+          ordem?: number;
+          ref_id?: string;
+          tipo?: string;
+        };
+        Relationships: [];
       };
       webhook_deliveries: {
         Row: {
@@ -6547,6 +7433,7 @@ export type Database = {
         };
         Returns: boolean;
       };
+      imob365_unaccent: { Args: { "": string }; Returns: string };
       is_member_of_tenant: {
         Args: { _tenant_id: string; _user_id: string };
         Returns: boolean;
@@ -6650,6 +7537,10 @@ export type Database = {
           visitante_telefone: string;
         }[];
       };
+      public_record_imovel_evento: {
+        Args: { _imovel_id: string; _tipo: string };
+        Returns: undefined;
+      };
       public_solicitar_visita: {
         Args: {
           _data_hora: string;
@@ -6674,6 +7565,15 @@ export type Database = {
           read_ct: number;
         }[];
       };
+      relatorio_metricas_imoveis: {
+        Args: never;
+        Returns: {
+          favoritos: number;
+          imovel_id: string;
+          views: number;
+          whatsapp_clicks: number;
+        }[];
+      };
       set_tenant_optional_modules: {
         Args: {
           _module_slugs: string[];
@@ -6682,6 +7582,8 @@ export type Database = {
         };
         Returns: undefined;
       };
+      show_limit: { Args: never; Returns: number };
+      show_trgm: { Args: { "": string }; Returns: string[] };
       tenant_modules_quota: {
         Args: { _plano_slug_override?: string; _tenant_id: string };
         Returns: {
@@ -6689,6 +7591,7 @@ export type Database = {
           used: number;
         }[];
       };
+      unaccent: { Args: { "": string }; Returns: string };
     };
     Enums: {
       app_role: "super_admin" | "admin" | "broker" | "juridico" | "financeiro" | "atendente";
@@ -6755,7 +7658,10 @@ export type Database = {
         | "manual"
         | "outro"
         | "api"
-        | "captacao_automatica";
+        | "captacao_automatica"
+        | "captacao_manual"
+        | "meta_leads"
+        | "landing_page";
       lead_status: "novo" | "contato" | "visita" | "proposta" | "ganho" | "perdido";
       parte_papel:
         | "comprador"
@@ -6769,6 +7675,9 @@ export type Database = {
         | "corretor"
         | "advogado"
         | "administrador";
+      social_post_rede: "facebook" | "instagram";
+      social_post_status: "pendente" | "publicado" | "erro";
+      social_post_tipo: "post" | "story";
       subscription_status: "ativa" | "inadimplente" | "cancelada" | "trial";
       tenant_status: "trial" | "active" | "suspended" | "cancelled";
       visita_status: "agendada" | "confirmada" | "realizada" | "cancelada" | "nao_compareceu";
@@ -6969,6 +7878,9 @@ export const Constants = {
         "outro",
         "api",
         "captacao_automatica",
+        "captacao_manual",
+        "meta_leads",
+        "landing_page",
       ],
       lead_status: ["novo", "contato", "visita", "proposta", "ganho", "perdido"],
       parte_papel: [
@@ -6984,6 +7896,9 @@ export const Constants = {
         "advogado",
         "administrador",
       ],
+      social_post_rede: ["facebook", "instagram"],
+      social_post_status: ["pendente", "publicado", "erro"],
+      social_post_tipo: ["post", "story"],
       subscription_status: ["ativa", "inadimplente", "cancelada", "trial"],
       tenant_status: ["trial", "active", "suspended", "cancelled"],
       visita_status: ["agendada", "confirmada", "realizada", "cancelada", "nao_compareceu"],
