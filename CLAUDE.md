@@ -233,6 +233,8 @@ MERCADOPAGO_WEBHOOK_SECRET           # Mercado Pago webhook HMAC signature secre
 MERCADOPAGO_MARKETPLACE_CLIENT_ID    # OAuth Marketplace por tenant (Fase 3 do Financeiro) — opcional em dev
 MERCADOPAGO_MARKETPLACE_CLIENT_SECRET # Idem — distinto do MERCADOPAGO_ACCESS_TOKEN acima
 MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→cliente final (Fase 3 parte 2)
+LANDING_LEAD_SECRET                  # HMAC da landing mkt.imob365.com.br → /api/public/webhooks/landing-lead (sem ele: 503, falha fechada)
+LANDING_LEAD_NOTIFY_TO               # E-mails (vírgula) avisados a cada lead da landing — enviado pelo SMTP do Tenant 0
 HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
 HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
 GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote
