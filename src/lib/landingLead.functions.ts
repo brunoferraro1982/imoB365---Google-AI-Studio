@@ -12,10 +12,14 @@ import { FAIXAS_INVESTIMENTO, MORA_EM, PRAZO_COMPRA } from "@/lib/landingLeadOpt
 // corretor, dedupe 30 dias, e-mail pra LANDING_LEAD_NOTIFY_TO.
 
 const LANDINGS = {
+  // Leads desta landing vão para a conta pessoal do Bruno Ferraro (pedido do
+  // usuário em 2026-10-14), já atribuídos a ele.
   "praia-grande": {
     fonte: "lp_praia_grande",
     fonteLabel: "LP Praia Grande",
     regiao: "Praia Grande",
+    tenantSlug: "bruno-ferraro",
+    corretorNome: "Bruno Ferraro",
   },
 } as const;
 
@@ -78,6 +82,8 @@ export const enviarLeadLanding = createServerFn({ method: "POST" })
       external_ref: `lp:${data.landing}:${data.client_ref}`,
       fonte: landing.fonte,
       fonteLabel: landing.fonteLabel,
+      tenantSlug: landing.tenantSlug,
+      corretorNome: landing.corretorNome,
       nome: data.nome,
       telefone: digitos,
       email: data.email,
