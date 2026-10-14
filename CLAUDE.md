@@ -235,6 +235,9 @@ MERCADOPAGO_MARKETPLACE_CLIENT_SECRET # Idem — distinto do MERCADOPAGO_ACCESS_
 MERCADOPAGO_MARKETPLACE_WEBHOOK_SECRET # Webhook da cobrança real tenant→cliente final (Fase 3 parte 2)
 LANDING_LEAD_SECRET                  # HMAC da landing mkt.imob365.com.br → /api/public/webhooks/landing-lead (sem ele: 503, falha fechada)
 LANDING_LEAD_NOTIFY_TO               # E-mails (vírgula) avisados a cada lead da landing — enviado pelo SMTP do Tenant 0
+LP_GOOGLE_ADS_ID                     # Opcional — tag do Google Ads (AW-...) só nas landings /lp/* (anúncio, noindex)
+LP_GOOGLE_ADS_LEAD_LABEL             # Opcional — rótulo da conversão "formulário enviado" da /lp/praia-grande
+LP_GOOGLE_ADS_WHATSAPP_LABEL         # Opcional — rótulo da conversão "clique no WhatsApp" da /lp/praia-grande
 HOSTINGER_API_TOKEN                  # API da Hostinger (opcional) — painel de infra real em /admin/status
 HOSTINGER_VPS_ID                     # ID numérico da VPS de produção (opcional, junto com o token acima)
 GOOGLE_DRIVE_API_KEY                 # Ingestão automatizada de construtoras parceiras (ex.: GMV) — opcional, sem ela só a coleta de mídia falha por lote

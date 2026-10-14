@@ -15,7 +15,12 @@ export function AtendimentoFAB() {
   const [aberto, setAberto] = useState(false);
   const location = useLocation();
 
-  if (location.pathname.startsWith("/app") || location.pathname.startsWith("/admin")) {
+  // /lp/* são landings de anúncio: nada pode competir com o formulário/WhatsApp
+  if (
+    location.pathname.startsWith("/app") ||
+    location.pathname.startsWith("/admin") ||
+    location.pathname.startsWith("/lp/")
+  ) {
     return null;
   }
 
