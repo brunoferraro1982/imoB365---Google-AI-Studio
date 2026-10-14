@@ -49,6 +49,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as VisitaCheckinTokenRouteImport } from './routes/visita-checkin.$token'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as QueroAnunciarTenantSlugRouteImport } from './routes/quero-anunciar.$tenantSlug'
+import { Route as LpPraiaGrandeRouteImport } from './routes/lp.praia-grande'
 import { Route as LSlugRouteImport } from './routes/l.$slug'
 import { Route as ImovelSlugRouteImport } from './routes/imovel.$slug'
 import { Route as EmpreendimentoSlugRouteImport } from './routes/empreendimento.$slug'
@@ -425,6 +426,11 @@ const SiteSlugRoute = SiteSlugRouteImport.update({
 const QueroAnunciarTenantSlugRoute = QueroAnunciarTenantSlugRouteImport.update({
   id: '/quero-anunciar/$tenantSlug',
   path: '/quero-anunciar/$tenantSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LpPraiaGrandeRoute = LpPraiaGrandeRouteImport.update({
+  id: '/lp/praia-grande',
+  path: '/lp/praia-grande',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LSlugRoute = LSlugRouteImport.update({
@@ -1441,6 +1447,7 @@ export interface FileRoutesByFullPath {
   '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/lp/praia-grande': typeof LpPraiaGrandeRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -1654,6 +1661,7 @@ export interface FileRoutesByTo {
   '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/lp/praia-grande': typeof LpPraiaGrandeRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -1873,6 +1881,7 @@ export interface FileRoutesById {
   '/empreendimento/$slug': typeof EmpreendimentoSlugRoute
   '/imovel/$slug': typeof ImovelSlugRoute
   '/l/$slug': typeof LSlugRoute
+  '/lp/praia-grande': typeof LpPraiaGrandeRoute
   '/quero-anunciar/$tenantSlug': typeof QueroAnunciarTenantSlugRoute
   '/site/$slug': typeof SiteSlugRoute
   '/visita-checkin/$token': typeof VisitaCheckinTokenRoute
@@ -2093,6 +2102,7 @@ export interface FileRouteTypes {
     | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/lp/praia-grande'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -2306,6 +2316,7 @@ export interface FileRouteTypes {
     | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/lp/praia-grande'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -2524,6 +2535,7 @@ export interface FileRouteTypes {
     | '/empreendimento/$slug'
     | '/imovel/$slug'
     | '/l/$slug'
+    | '/lp/praia-grande'
     | '/quero-anunciar/$tenantSlug'
     | '/site/$slug'
     | '/visita-checkin/$token'
@@ -2709,6 +2721,7 @@ export interface RootRouteChildren {
   EmpreendimentoSlugRoute: typeof EmpreendimentoSlugRoute
   ImovelSlugRoute: typeof ImovelSlugRoute
   LSlugRoute: typeof LSlugRoute
+  LpPraiaGrandeRoute: typeof LpPraiaGrandeRoute
   QueroAnunciarTenantSlugRoute: typeof QueroAnunciarTenantSlugRoute
   SiteSlugRoute: typeof SiteSlugRoute
   VisitaCheckinTokenRoute: typeof VisitaCheckinTokenRoute
@@ -3041,6 +3054,13 @@ declare module '@tanstack/react-router' {
       path: '/quero-anunciar/$tenantSlug'
       fullPath: '/quero-anunciar/$tenantSlug'
       preLoaderRoute: typeof QueroAnunciarTenantSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lp/praia-grande': {
+      id: '/lp/praia-grande'
+      path: '/lp/praia-grande'
+      fullPath: '/lp/praia-grande'
+      preLoaderRoute: typeof LpPraiaGrandeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/l/$slug': {
@@ -4620,6 +4640,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpreendimentoSlugRoute: EmpreendimentoSlugRoute,
   ImovelSlugRoute: ImovelSlugRoute,
   LSlugRoute: LSlugRoute,
+  LpPraiaGrandeRoute: LpPraiaGrandeRoute,
   QueroAnunciarTenantSlugRoute: QueroAnunciarTenantSlugRoute,
   SiteSlugRoute: SiteSlugRoute,
   VisitaCheckinTokenRoute: VisitaCheckinTokenRoute,

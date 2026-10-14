@@ -17,7 +17,7 @@ export function AssistenteIAFAB() {
   const [aberto, setAberto] = useState(false);
   const location = useLocation();
 
-  if (location.pathname.startsWith("/buscar")) {
+  if (location.pathname.startsWith("/buscar") || location.pathname.startsWith("/lp/")) {
     return null;
   }
 
