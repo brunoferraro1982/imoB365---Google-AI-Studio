@@ -3,7 +3,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
-  BadgeCheck,
   Bath,
   BedDouble,
   Building2,
@@ -81,12 +80,6 @@ type EmpreendimentoLp = {
 };
 
 type LpData = {
-  corretor: {
-    nome: string;
-    creci: string | null;
-    creci_uf: string | null;
-    foto_url: string | null;
-  } | null;
   imoveis: ImovelLp[];
   empreendimentos: EmpreendimentoLp[];
   heroImg: string | null;
@@ -123,21 +116,13 @@ const fetchLpPraiaGrande = createServerFn({ method: "GET" }).handler(async (): P
   const sb = supabase as any;
 
   const [{ data: corretores }, { data: tenants }] = await Promise.all([
-    sb
-      .from("corretores")
-      .select("id,nome,creci,creci_uf,foto_url,tenant_id")
-      .ilike("nome", CORRETOR_NOME)
-      .eq("ativo", true),
+    sb.from("corretores").select("id").ilike("nome", CORRETOR_NOME).eq("ativo", true),
     sb.from("tenants").select("id,slug").in("slug", [CORRETOR_TENANT_SLUG, CORPORATE_TENANT_SLUG]),
   ]);
   const corretorIds: string[] = (corretores ?? []).map((c: { id: string }) => c.id);
   const tenantBruno = (tenants ?? []).find(
     (t: { slug: string }) => t.slug === CORRETOR_TENANT_SLUG,
   );
-  const corretor =
-    (corretores ?? []).find((c: { foto_url: string | null }) => c.foto_url) ??
-    corretores?.[0] ??
-    null;
 
   // Imóveis do Bruno: os do tenant pessoal dele + os em que ele é o corretor
   // responsável (em qualquer tenant). Só venda — a campanha é de compra.
@@ -249,14 +234,6 @@ const fetchLpPraiaGrande = createServerFn({ method: "GET" }).handler(async (): P
     null;
 
   return {
-    corretor: corretor
-      ? {
-          nome: corretor.nome,
-          creci: corretor.creci,
-          creci_uf: corretor.creci_uf,
-          foto_url: corretor.foto_url,
-        }
-      : null,
     imoveis,
     empreendimentos,
     heroImg,
@@ -514,47 +491,15 @@ function LpPraiaGrande() {
         </section>
       )}
 
-      {/* ---------- imóveis do corretor ---------- */}
+      {/* ---------- imóveis à venda (carteira do corretor, sem citar nome) ---------- */}
       {data.imoveis.length > 0 && (
         <section className="bg-white py-12">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-              <Titulo
-                eyebrow="Pronto para morar"
-                titulo={`Apartamentos selecionados por ${data.corretor?.nome ?? CORRETOR_NOME}`}
-                sub="Imóveis à venda acompanhados de perto pelo nosso consultor."
-              />
-              {data.corretor && (
-                <div className="flex items-center gap-3 rounded-2xl bg-[#f6f3ec] px-4 py-3">
-                  {data.corretor.foto_url ? (
-                    <img
-                      src={data.corretor.foto_url}
-                      alt={data.corretor.nome}
-                      className="h-12 w-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-12 w-12 place-items-center rounded-full bg-[#0f1e3a] font-bold text-white">
-                      {data.corretor.nome
-                        .split(" ")
-                        .map((p) => p[0])
-                        .slice(0, 2)
-                        .join("")}
-                    </span>
-                  )}
-                  <div className="text-sm">
-                    <p className="flex items-center gap-1 font-bold">
-                      {data.corretor.nome} <BadgeCheck className="h-4 w-4 text-[#C2410C]" />
-                    </p>
-                    {data.corretor.creci && (
-                      <p className="text-xs text-black/60">
-                        CRECI {data.corretor.creci}
-                        {data.corretor.creci_uf ? `/${data.corretor.creci_uf}` : ""}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <Titulo
+              eyebrow="Pronto para morar"
+              titulo="Apartamentos à venda em Praia Grande e região"
+              sub="Imóveis selecionados e acompanhados de perto pelo nosso consultor."
+            />
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {data.imoveis.map((i) => (
                 <a
