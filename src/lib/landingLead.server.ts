@@ -3,7 +3,7 @@ import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 import { formatBRL } from "@/lib/format";
-import { sendTenantEmail } from "@/lib/tenantSmtp.server";
+import { getTenantSmtp, sendWithSmtp } from "@/lib/tenantSmtp.server";
 
 // Ingestão de leads de landing pages de campanha no CRM do Tenant 0
 // (imoB365). Usado por:
@@ -11,7 +11,9 @@ import { sendTenantEmail } from "@/lib/tenantSmtp.server";
 //     (PHP+MySQL na hospedagem compartilhada, assinada com HMAC);
 //   - landingLead.functions.ts — landings internas do portal (/lp/*).
 //
-// Os leads entram sem corretor (rodízio desligado por decisão de produto) e
+// Por padrão os leads entram no Tenant 0 sem corretor (rodízio desligado por
+// decisão de produto); cada landing pode direcionar para outro tenant e
+// atribuir um corretor (ex.: /lp/praia-grande → conta Bruno Ferraro). E
 // o aviso vai por e-mail pra lista fixa LANDING_LEAD_NOTIFY_TO, pelo SMTP do
 // próprio Tenant 0. Idempotente por `external_ref`; mesma pessoa (telefone/
 // e-mail) em até 30 dias vira interação no lead existente.
@@ -50,6 +52,10 @@ export type LandingLeadInput = z.infer<typeof baseLeadSchema> & {
   fonteLabel: string;
   /** Respostas extras do formulário (rótulo → valor), mostradas no e-mail e no CRM. */
   extras?: Record<string, string>;
+  /** Tenant que recebe o lead (default: Tenant 0). Se não existir, cai no Tenant 0 — lead nunca se perde. */
+  tenantSlug?: string;
+  /** Corretor (nome exato, dentro do tenant de destino) que recebe o lead. */
+  corretorNome?: string;
 };
 
 export type LandingLeadResultado =
@@ -93,7 +99,10 @@ function telefoneFormatado(d: string) {
     : `(${n.slice(0, 2)}) ${n.slice(2, 6)}-${n.slice(6)}`;
 }
 
-function emailHtml(l: LandingLeadInput, opts: { link: string; voltou: boolean }) {
+function emailHtml(
+  l: LandingLeadInput,
+  opts: { link: string; voltou: boolean; responsavel: string | null },
+) {
   const waDigits = l.telefone.length <= 11 ? `55${l.telefone}` : l.telefone;
   const campanha = [l.utm_source, l.utm_medium, l.utm_campaign].filter(Boolean).join(" / ");
   const linha = (rotulo: string, valor: string) =>
@@ -116,11 +125,20 @@ function emailHtml(l: LandingLeadInput, opts: { link: string; voltou: boolean })
     <p style="text-align:center;margin:24px 0">
       <a href="${escape(opts.link)}" style="display:inline-block;background:#FF7A1A;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600">Abrir lead no CRM</a>
     </p>
-    <p style="font-size:12px;color:#888">Lead sem corretor atribuído — distribua pela tela do lead.</p>
+    <p style="font-size:12px;color:#888">${
+      opts.responsavel
+        ? `Lead atribuído a ${escape(opts.responsavel)} — abra o CRM com a conta desse corretor.`
+        : "Lead sem corretor atribuído — distribua pela tela do lead."
+    }</p>
   </div>`;
 }
 
-async function notificar(tenantId: string, l: LandingLeadInput, leadId: string, voltou: boolean) {
+async function notificar(
+  destino: { tenantId: string; corporateId: string; responsavel: string | null },
+  l: LandingLeadInput,
+  leadId: string,
+  voltou: boolean,
+) {
   const destinatarios = (process.env.LANDING_LEAD_NOTIFY_TO ?? "")
     .split(",")
     .map((s) => s.trim())
@@ -136,25 +154,59 @@ async function notificar(tenantId: string, l: LandingLeadInput, leadId: string, 
     .filter(([, v]) => v)
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
-  const r = await sendTenantEmail(tenantId, {
+  // SMTP do tenant que recebeu o lead; se ele não tiver canal de e-mail,
+  // usa o do Tenant 0 — a landing é campanha da própria imoB365.
+  let smtp = await getTenantSmtp(destino.tenantId);
+  if (!smtp.ok && destino.tenantId !== destino.corporateId) {
+    smtp = await getTenantSmtp(destino.corporateId);
+  }
+  if (!smtp.ok) {
+    console.error("[landing-lead] e-mail não enviado:", smtp.motivo);
+    return false;
+  }
+  const r = await sendWithSmtp(smtp.cfg, {
     to: destinatarios,
     replyTo: l.email,
     subject: `${prefixo} (${l.fonteLabel}): ${l.nome} — ${resumoInteresse(l)}`,
     text: `${prefixo} — ${l.fonteLabel}\n\n${l.nome}\n${telefoneFormatado(l.telefone)}\n${l.email}\n${resumoInteresse(l)}\n${extrasTexto}\n\n${link}`,
-    html: emailHtml(l, { link, voltou }),
+    html: emailHtml(l, { link, voltou, responsavel: destino.responsavel }),
   });
   if (!r.enviado) console.error("[landing-lead] e-mail não enviado:", r.motivo);
   return r.enviado;
 }
 
 export async function ingestLandingLead(lead: LandingLeadInput): Promise<LandingLeadResultado> {
-  const { data: tenant } = await supabaseAdmin
+  const alvo = lead.tenantSlug ?? CORPORATE_TENANT_SLUG;
+  const { data: tenants } = await supabaseAdmin
     .from("tenants")
-    .select("id")
-    .eq("slug", CORPORATE_TENANT_SLUG)
-    .maybeSingle();
-  if (!tenant) return { ok: false, erro: "Tenant imoB365 não encontrado" };
+    .select("id,slug")
+    .in("slug", [alvo, CORPORATE_TENANT_SLUG]);
+  const corporate = tenants?.find((t) => t.slug === CORPORATE_TENANT_SLUG);
+  if (!corporate) return { ok: false, erro: "Tenant imoB365 não encontrado" };
+  let tenant = tenants?.find((t) => t.slug === alvo);
+  if (!tenant) {
+    console.error(`[landing-lead] tenant "${alvo}" não existe — lead vai para o Tenant 0`);
+    tenant = corporate;
+  }
   const tenantId = tenant.id;
+
+  let corretor: { id: string; nome: string } | null = null;
+  if (lead.corretorNome) {
+    const { data } = await supabaseAdmin
+      .from("corretores")
+      .select("id,nome")
+      .eq("tenant_id", tenantId)
+      .eq("ativo", true)
+      .ilike("nome", lead.corretorNome)
+      .limit(1)
+      .maybeSingle();
+    corretor = data ?? null;
+    if (!corretor)
+      console.error(
+        `[landing-lead] corretor "${lead.corretorNome}" não achado no tenant ${tenant.slug}`,
+      );
+  }
+  const destino = { tenantId, corporateId: corporate.id, responsavel: corretor?.nome ?? null };
 
   // 1. Idempotência — reenvio do mesmo lead (cron de pendentes, duplo clique)
   const { data: jaCriado } = await supabaseAdmin
@@ -233,17 +285,17 @@ export async function ingestLandingLead(lead: LandingLeadInput): Promise<Landing
       .from("leads")
       .update({ last_contact_at: new Date().toISOString() })
       .eq("id", existente.id);
-    const emailEnviado = lead.backfill
-      ? false
-      : await notificar(tenantId, lead, existente.id, true);
+    const emailEnviado = lead.backfill ? false : await notificar(destino, lead, existente.id, true);
     return { ok: true, status: "juntado", leadId: existente.id, emailEnviado };
   }
 
-  // 3. Lead novo, sem corretor
+  // 3. Lead novo — com o corretor da landing, se houver (o trigger
+  //    tg_lead_notifica_corretor gera a notificação in-app dele)
   const { data: criado, error } = await supabaseAdmin
     .from("leads")
     .insert({
       tenant_id: tenantId,
+      corretor_id: corretor?.id ?? null,
       nome: lead.nome,
       telefone: local,
       email: lead.email,
@@ -286,6 +338,6 @@ export async function ingestLandingLead(lead: LandingLeadInput): Promise<Landing
     metadata,
   });
 
-  const emailEnviado = lead.backfill ? false : await notificar(tenantId, lead, criado.id, false);
+  const emailEnviado = lead.backfill ? false : await notificar(destino, lead, criado.id, false);
   return { ok: true, status: "criado", leadId: criado.id, emailEnviado };
 }
