@@ -75,3 +75,98 @@ export const deleteAdminUser = createServerFn({ method: "POST" })
 
     return { success: true };
   });
+
+export type ContagemImoveisCorretor = {
+  tenantId: string;
+  /** null = imóveis do tenant sem corretor responsável */
+  corretorId: string | null;
+  nome: string;
+  ativo: boolean;
+  userId: string | null;
+  total: number;
+  publicados: number;
+};
+
+/**
+ * Contagem de imóveis por tenant e por corretor para /admin/tenants.
+ * "Publicados" = publicado e status ativo (o que aparece no portal).
+ * Pagina de 1000 em 1000 porque o PostgREST corta respostas nesse limite.
+ */
+export const contarImoveisAdmin = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: isSuper } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "super_admin",
+    });
+    if (!isSuper) throw new Error("Acesso negado");
+
+    type Linha = {
+      tenant_id: string;
+      corretor_responsavel_id: string | null;
+      publicado: boolean;
+      status: string;
+    };
+    const imoveis: Linha[] = [];
+    for (let de = 0; ; de += 1000) {
+      const { data, error } = await supabaseAdmin
+        .from("imoveis")
+        .select("tenant_id,corretor_responsavel_id,publicado,status")
+        .order("id")
+        .range(de, de + 999);
+      if (error) throw new Error(error.message);
+      imoveis.push(...((data ?? []) as Linha[]));
+      if (!data || data.length < 1000) break;
+    }
+
+    const { data: corretores, error: errCorretores } = await supabaseAdmin
+      .from("corretores")
+      .select("id,nome,tenant_id,ativo,user_id");
+    if (errCorretores) throw new Error(errCorretores.message);
+
+    const porTenant: Record<string, { total: number; publicados: number }> = {};
+    const porChave = new Map<string, ContagemImoveisCorretor>();
+    for (const c of corretores ?? []) {
+      porChave.set(`${c.tenant_id}:${c.id}`, {
+        tenantId: c.tenant_id,
+        corretorId: c.id,
+        nome: c.nome,
+        ativo: c.ativo,
+        userId: c.user_id,
+        total: 0,
+        publicados: 0,
+      });
+    }
+
+    for (const i of imoveis) {
+      const pub = i.publicado && i.status === "ativo" ? 1 : 0;
+      const t = (porTenant[i.tenant_id] ??= { total: 0, publicados: 0 });
+      t.total++;
+      t.publicados += pub;
+
+      const chave = `${i.tenant_id}:${i.corretor_responsavel_id ?? "sem"}`;
+      let linha = porChave.get(chave);
+      if (!linha) {
+        // Sem corretor, ou corretor de outro tenant/apagado — agrupa como "sem corretor"
+        const chaveSem = `${i.tenant_id}:sem`;
+        linha = porChave.get(chaveSem);
+        if (!linha) {
+          linha = {
+            tenantId: i.tenant_id,
+            corretorId: null,
+            nome: "Sem corretor atribuído",
+            ativo: true,
+            userId: null,
+            total: 0,
+            publicados: 0,
+          };
+          porChave.set(chaveSem, linha);
+        }
+      }
+      linha.total++;
+      linha.publicados += pub;
+    }
+
+    return { porTenant, porCorretor: [...porChave.values()] };
+  });
