@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { listAdminUsers, deleteAdminUser } from "@/lib/admin.functions";
+import {
+  listAdminUsers,
+  deleteAdminUser,
+  contarImoveisAdmin,
+  type ContagemImoveisCorretor,
+} from "@/lib/admin.functions";
 import {
   Select,
   SelectContent,
@@ -46,6 +51,7 @@ import {
   Crown,
   Star,
   StarOff,
+  Home,
 } from "lucide-react";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -106,6 +112,11 @@ function AdminTenants() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [users, setUsers] = useState<ProfileUser[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  // Contagem de imóveis (null = ainda carregando ou falhou — a tela segue sem ela)
+  const [contagem, setContagem] = useState<{
+    porTenant: Record<string, { total: number; publicados: number }>;
+    porCorretor: ContagemImoveisCorretor[];
+  } | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const { confirmDialog, ConfirmDialog } = useConfirm();
@@ -139,11 +150,16 @@ function AdminTenants() {
   async function load() {
     setLoading(true);
     try {
-      const [{ data: t }, { data: p }, adminResult] = await Promise.all([
+      const [{ data: t }, { data: p }, adminResult, contagemResult] = await Promise.all([
         supabase.from("tenants").select("*").order("created_at", { ascending: false }),
         supabase.from("plans").select("slug,nome,limites").eq("ativo", true),
         listAdminUsers(),
+        contarImoveisAdmin().catch((err) => {
+          console.error("contarImoveisAdmin falhou:", err);
+          return null;
+        }),
       ]);
+      setContagem(contagemResult);
       setTenants((t as Tenant[]) ?? []);
       setPlans((p as Plan[]) ?? []);
       setUsers((adminResult?.users as ProfileUser[]) ?? []);
@@ -184,6 +200,18 @@ function AdminTenants() {
       .filter(Boolean);
 
   const usersOf = (tenantId: string) => users.filter((u) => u.tenant_id === tenantId);
+  const imoveisDoTenant = (tenantId: string) => contagem?.porTenant[tenantId] ?? null;
+  const corretoresDoTenant = (tenantId: string) =>
+    (contagem?.porCorretor ?? [])
+      .filter((c) => c.tenantId === tenantId && (c.total > 0 || c.corretorId))
+      .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
+  const imoveisDoUsuario = (userId: string) =>
+    (contagem?.porCorretor ?? [])
+      .filter((c) => c.userId === userId)
+      .reduce(
+        (acc, c) => ({ total: acc.total + c.total, publicados: acc.publicados + c.publicados }),
+        { total: 0, publicados: 0 },
+      );
   const orphanUsers = users.filter((u) => !u.tenant_id);
 
   const fmtDate = (d: string | null) => {
@@ -430,6 +458,19 @@ function AdminTenants() {
                 Aguardando
               </span>
             )}
+            {(() => {
+              const im = contagem ? imoveisDoUsuario(usr.id) : null;
+              if (!im || im.total === 0) return null;
+              return (
+                <span
+                  title={`${im.publicados} publicado(s) de ${im.total} imóvel(is) como corretor responsável`}
+                  className="inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold text-sky-700 bg-sky-500/10"
+                >
+                  <Home className="h-2.5 w-2.5" />
+                  {im.total} {im.total === 1 ? "imóvel" : "imóveis"}
+                </span>
+              );
+            })()}
           </div>
           <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 text-[10px] text-muted-foreground">
             {usr.email && (
@@ -589,6 +630,8 @@ function AdminTenants() {
             const members = usersOf(t.id);
             const plan = planFor(t.plano_slug);
             const maxUsers = plan?.limites?.usuarios;
+            const maxImoveis = plan?.limites?.imoveis;
+            const im = imoveisDoTenant(t.id);
             const isOpen = expanded.has(t.id);
 
             return (
@@ -643,6 +686,16 @@ function AdminTenants() {
                         <Users className="h-3 w-3 inline mr-0.5" />
                         {members.length}/{limitLabel(maxUsers)}
                       </div>
+                      {contagem && (
+                        <div
+                          className="text-[9px] text-muted-foreground"
+                          title={`${im?.publicados ?? 0} publicado(s) no portal de ${im?.total ?? 0} imóvel(is)`}
+                        >
+                          <Home className="h-3 w-3 inline mr-0.5" />
+                          {im?.total ?? 0}/{limitLabel(maxImoveis)}
+                          <span className="ml-1 text-green-600">({im?.publicados ?? 0} no ar)</span>
+                        </div>
+                      )}
                     </div>
 
                     <DropdownMenu>
@@ -731,6 +784,32 @@ function AdminTenants() {
                 {/* Tenant children */}
                 {isOpen && (
                   <div className="border-t border-border">
+                    {contagem && corretoresDoTenant(t.id).length > 0 && (
+                      <div className="pl-12 pr-4 py-3 border-b border-border bg-muted/20">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
+                          <Home className="h-3 w-3" /> Imóveis por corretor
+                        </div>
+                        <div className="grid gap-1 sm:grid-cols-2">
+                          {corretoresDoTenant(t.id).map((c) => (
+                            <div
+                              key={c.corretorId ?? "sem"}
+                              className="flex items-center justify-between gap-3 rounded-md bg-card px-2.5 py-1.5 text-xs border border-border/60"
+                            >
+                              <span
+                                className={`truncate ${c.corretorId ? "font-semibold" : "italic text-muted-foreground"} ${!c.ativo ? "line-through opacity-60" : ""}`}
+                                title={!c.ativo ? "Corretor inativo" : undefined}
+                              >
+                                {c.nome}
+                              </span>
+                              <span className="shrink-0 tabular-nums text-muted-foreground">
+                                <strong className="text-foreground">{c.total}</strong>
+                                <span className="ml-1 text-green-600">({c.publicados} no ar)</span>
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {members.length === 0 ? (
                       <div className="pl-12 py-3 text-[10px] text-muted-foreground italic">
                         Nenhum usuário vinculado a este tenant.
