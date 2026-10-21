@@ -19,6 +19,7 @@ import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PoliticaDePrivacidadeRouteImport } from './routes/politica-de-privacidade'
 import { Route as PlataformaRouteImport } from './routes/plataforma'
 import { Route as PlanosRouteImport } from './routes/planos'
+import { Route as PerguntasFrequentesRouteImport } from './routes/perguntas-frequentes'
 import { Route as PendingApprovalRouteImport } from './routes/pending-approval'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MinhasBuscasRouteImport } from './routes/minhas-buscas'
@@ -275,6 +276,11 @@ const PlataformaRoute = PlataformaRouteImport.update({
 const PlanosRoute = PlanosRouteImport.update({
   id: '/planos',
   path: '/planos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerguntasFrequentesRoute = PerguntasFrequentesRouteImport.update({
+  id: '/perguntas-frequentes',
+  path: '/perguntas-frequentes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PendingApprovalRoute = PendingApprovalRouteImport.update({
@@ -1389,6 +1395,7 @@ export interface FileRoutesByFullPath {
   '/minhas-buscas': typeof MinhasBuscasRoute
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
   '/planos': typeof PlanosRoute
   '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -1605,6 +1612,7 @@ export interface FileRoutesByTo {
   '/minhas-buscas': typeof MinhasBuscasRoute
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
   '/planos': typeof PlanosRoute
   '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -1823,6 +1831,7 @@ export interface FileRoutesById {
   '/minhas-buscas': typeof MinhasBuscasRoute
   '/onboarding': typeof OnboardingRoute
   '/pending-approval': typeof PendingApprovalRoute
+  '/perguntas-frequentes': typeof PerguntasFrequentesRoute
   '/planos': typeof PlanosRoute
   '/plataforma': typeof PlataformaRoute
   '/politica-de-privacidade': typeof PoliticaDePrivacidadeRoute
@@ -2044,6 +2053,7 @@ export interface FileRouteTypes {
     | '/minhas-buscas'
     | '/onboarding'
     | '/pending-approval'
+    | '/perguntas-frequentes'
     | '/planos'
     | '/plataforma'
     | '/politica-de-privacidade'
@@ -2260,6 +2270,7 @@ export interface FileRouteTypes {
     | '/minhas-buscas'
     | '/onboarding'
     | '/pending-approval'
+    | '/perguntas-frequentes'
     | '/planos'
     | '/plataforma'
     | '/politica-de-privacidade'
@@ -2477,6 +2488,7 @@ export interface FileRouteTypes {
     | '/minhas-buscas'
     | '/onboarding'
     | '/pending-approval'
+    | '/perguntas-frequentes'
     | '/planos'
     | '/plataforma'
     | '/politica-de-privacidade'
@@ -2697,6 +2709,7 @@ export interface RootRouteChildren {
   MinhasBuscasRoute: typeof MinhasBuscasRoute
   OnboardingRoute: typeof OnboardingRoute
   PendingApprovalRoute: typeof PendingApprovalRoute
+  PerguntasFrequentesRoute: typeof PerguntasFrequentesRoute
   PlanosRoute: typeof PlanosRoute
   PlataformaRoute: typeof PlataformaRoute
   PoliticaDePrivacidadeRoute: typeof PoliticaDePrivacidadeRoute
@@ -2844,6 +2857,13 @@ declare module '@tanstack/react-router' {
       path: '/planos'
       fullPath: '/planos'
       preLoaderRoute: typeof PlanosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perguntas-frequentes': {
+      id: '/perguntas-frequentes'
+      path: '/perguntas-frequentes'
+      fullPath: '/perguntas-frequentes'
+      preLoaderRoute: typeof PerguntasFrequentesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pending-approval': {
@@ -4616,6 +4636,7 @@ const rootRouteChildren: RootRouteChildren = {
   MinhasBuscasRoute: MinhasBuscasRoute,
   OnboardingRoute: OnboardingRoute,
   PendingApprovalRoute: PendingApprovalRoute,
+  PerguntasFrequentesRoute: PerguntasFrequentesRoute,
   PlanosRoute: PlanosRoute,
   PlataformaRoute: PlataformaRoute,
   PoliticaDePrivacidadeRoute: PoliticaDePrivacidadeRoute,

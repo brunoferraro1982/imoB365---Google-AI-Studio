@@ -24,6 +24,7 @@ const STATIC_PATHS: { path: string; priority: string }[] = [
   { path: "/calculadora-financiamento", priority: "0.6" },
   { path: "/calculadora-itbi", priority: "0.6" },
   { path: "/calculadora-mudanca", priority: "0.6" },
+  { path: "/perguntas-frequentes", priority: "0.7" },
   { path: "/contato", priority: "0.6" },
   { path: "/atendimento", priority: "0.6" },
   { path: "/termos", priority: "0.3" },

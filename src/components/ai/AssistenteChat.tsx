@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { Sparkles, Send, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Sparkles, Send, Loader2, BadgeCheck, ArrowRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { perguntarMercadoIA } from "@/lib/ai.functions";
+import { buscarFaq, faqPorId, FAQ_SCORE_CONFIANTE, type FaqItem } from "@/content/faqMercado";
 
 const PLANOS_ILIMITADOS = ["pro", "business"];
 
@@ -39,6 +42,16 @@ const EXEMPLOS_CONTRATO = [
 const CONTRATO_ID_REGEX = /^\/app\/contratos\/([0-9a-f-]{36})(?:$|\/)/i;
 
 export function AssistenteChat({ compact = false }: { compact?: boolean }) {
+  const location = useLocation();
+  const emBackend = location.pathname.startsWith("/app");
+  // Fora do /app as perguntas são de mercado imobiliário: guia curado
+  // instantâneo + IA rápida (Gemini). No /app segue o assistente do sistema
+  // (base de conhecimento do produto e dados do tenant, via Ollama).
+  if (!emBackend) return <AssistenteMercado compact={compact} />;
+  return <AssistenteSistema compact={compact} />;
+}
+
+function AssistenteSistema({ compact = false }: { compact?: boolean }) {
   const { session, user, tenantId } = useAuth();
   const location = useLocation();
   const emBackend = location.pathname.startsWith("/app");
@@ -199,6 +212,227 @@ export function AssistenteChat({ compact = false }: { compact?: boolean }) {
           pra acesso ilimitado.
         </p>
       )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Assistente de mercado (portal público). Primeiro procura no guia curado
+// (src/content/faqMercado.ts) — resposta instantânea, sem rede; só o que não
+// está no guia vai para a IA (perguntarMercadoIA, Gemini Flash).
+
+type RespostaMercado =
+  | { tipo: "guia"; item: FaqItem; relacionados: FaqItem[] }
+  | { tipo: "ia"; texto: string; relacionados: FaqItem[] };
+
+function AssistenteMercado({ compact = false }: { compact?: boolean }) {
+  const perguntarIA = useServerFn(perguntarMercadoIA);
+  const [pergunta, setPergunta] = useState("");
+  const [perguntaFeita, setPerguntaFeita] = useState("");
+  const [resposta, setResposta] = useState<RespostaMercado | null>(null);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  // Sugestões do guia enquanto a pessoa digita (instantâneo, local)
+  const sugestoes = useMemo(
+    () => (pergunta.trim().length >= 3 ? buscarFaq(pergunta, 3) : []),
+    [pergunta],
+  );
+
+  async function perguntar(texto?: string) {
+    const q = (texto ?? pergunta).trim();
+    if (q.length < 3 || carregando) return;
+    setPerguntaFeita(q);
+    setPergunta("");
+    setErro(null);
+
+    const encontrados = buscarFaq(q, 3);
+    const melhor = encontrados[0];
+    if (melhor && melhor.score >= FAQ_SCORE_CONFIANTE) {
+      setResposta({
+        tipo: "guia",
+        item: melhor.item,
+        relacionados: encontrados.slice(1).map((r) => r.item),
+      });
+      return;
+    }
+
+    setResposta(null);
+    setCarregando(true);
+    try {
+      const r = await perguntarIA({ data: { pergunta: q } });
+      setResposta({
+        tipo: "ia",
+        texto: r.resposta,
+        relacionados: r.relacionados.map(faqPorId).filter((f): f is FaqItem => !!f),
+      });
+    } catch (e) {
+      setErro(
+        e instanceof Error && /muitas perguntas/i.test(e.message)
+          ? e.message
+          : "Não consegui responder agora. Veja as perguntas frequentes ou fale com nosso atendimento.",
+      );
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  const abrirItem = (item: FaqItem) => {
+    setPerguntaFeita(item.pergunta);
+    setErro(null);
+    setResposta({
+      tipo: "guia",
+      item,
+      relacionados: buscarFaq(item.pergunta, 3)
+        .map((r) => r.item)
+        .filter((f) => f.id !== item.id)
+        .slice(0, 2),
+    });
+  };
+
+  return (
+    <div className={compact ? "p-4" : "rounded-2xl border border-border bg-card p-6"}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-sm font-semibold">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Assistente de IA imoB365
+        </div>
+        <Link
+          to="/perguntas-frequentes"
+          className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-primary"
+        >
+          <BookOpen className="h-3.5 w-3.5" /> Todas as perguntas
+        </Link>
+      </div>
+
+      {!resposta && !carregando && !erro && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {EXEMPLOS_MERCADO.map((ex) => (
+            <button
+              key={ex}
+              onClick={() => perguntar(ex)}
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary"
+            >
+              {ex}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(resposta || carregando || erro) && (
+        <div className="mt-3 max-h-72 overflow-y-auto rounded-lg bg-muted/40 p-3 text-sm leading-relaxed">
+          {perguntaFeita && (
+            <p className="mb-2 text-xs font-semibold text-muted-foreground">“{perguntaFeita}”</p>
+          )}
+          {carregando && (
+            <p className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> A IA está preparando a resposta…
+            </p>
+          )}
+          {erro && <p className="text-destructive">{erro}</p>}
+          {resposta?.tipo === "guia" && (
+            <>
+              <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
+                <BadgeCheck className="h-3 w-3" /> Resposta verificada · Guia imoB365
+              </span>
+              <p className="font-semibold text-foreground">{resposta.item.pergunta}</p>
+              <p className="mt-1 whitespace-pre-wrap">{resposta.item.resposta}</p>
+              {resposta.item.links && resposta.item.links.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {resposta.item.links.map((l) => (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    >
+                      {l.label} <ArrowRight className="h-3 w-3" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          {resposta?.tipo === "ia" && (
+            <>
+              <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                <Sparkles className="h-3 w-3" /> Resposta gerada por IA
+              </span>
+              <p className="whitespace-pre-wrap">{resposta.texto}</p>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Informação geral — para o seu caso, confirme com um especialista.
+              </p>
+            </>
+          )}
+          {resposta && resposta.relacionados.length > 0 && (
+            <div className="mt-3 border-t border-border/60 pt-2">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                Perguntas relacionadas
+              </p>
+              {resposta.relacionados.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => abrirItem(f)}
+                  className="mt-1 block text-left text-xs font-medium text-primary hover:underline"
+                >
+                  {f.pergunta}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="relative mt-3">
+        {sugestoes.length > 0 && !carregando && (
+          <div className="absolute bottom-full left-0 right-0 z-10 mb-1 overflow-hidden rounded-lg border border-border bg-popover shadow-lg">
+            <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              Respostas instantâneas
+            </p>
+            {sugestoes.map((s) => (
+              <button
+                key={s.item.id}
+                onClick={() => {
+                  setPergunta("");
+                  abrirItem(s.item);
+                }}
+                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs hover:bg-muted"
+              >
+                <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                {s.item.pergunta}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Textarea
+            value={pergunta}
+            onChange={(e) => setPergunta(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void perguntar();
+              }
+            }}
+            placeholder="Pergunte sobre financiamento, ITBI, aluguel, documentos..."
+            className="min-h-10 resize-none text-sm"
+            rows={1}
+            maxLength={400}
+            disabled={carregando}
+          />
+          <Button
+            size="icon"
+            onClick={() => void perguntar()}
+            disabled={carregando || pergunta.trim().length < 3}
+            aria-label="Perguntar"
+          >
+            {carregando ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
