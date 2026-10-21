@@ -3,6 +3,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { buscarFaq } from "@/content/faqMercado";
 
 // IP real da requisição via headers do proxy nginx (X-Real-IP/X-Forwarded-For) —
 // achado de segurança de 2026-07-24: o rate limit por IP usava um campo `_ip`
@@ -37,7 +39,7 @@ function getAI(): InstanceType<typeof GoogleGenAI> {
 
 async function callAI(
   messages: Array<{ role: string; content: string }>,
-  opts?: { jsonMode?: boolean; model?: string },
+  opts?: { jsonMode?: boolean; model?: string; semRaciocinio?: boolean; maxTokens?: number },
 ) {
   const ai = getAI();
   const systemMessage = messages.find((m) => m.role === "system")?.content;
@@ -50,6 +52,14 @@ async function callAI(
     }
     if (opts?.jsonMode) {
       config.responseMimeType = "application/json";
+    }
+    // Gemini 2.5 "pensa" antes de responder por padrão — para respostas
+    // curtas de FAQ isso só adiciona segundos de espera.
+    if (opts?.semRaciocinio) {
+      config.thinkingConfig = { thinkingBudget: 0 };
+    }
+    if (opts?.maxTokens) {
+      config.maxOutputTokens = opts.maxTokens;
     }
 
     const response = await ai.models.generateContent({
@@ -266,4 +276,54 @@ Retorne SEMPRE um JSON válido contendo obrigatoriamente as chaves:
         },
       };
     }
+  });
+
+// ─────────────────────────────────────────────────────────────────────────
+// Assistente de mercado imobiliário do portal (home / FAB público).
+// Antes ia para o Ollama da VPS (llama3.2:3b em CPU): ~9 tokens/s (30s+ por
+// resposta) e respostas factualmente erradas (ex.: definiu ITBI como imposto
+// sobre "valores mobiliários"). Agora: o guia curado (src/content/faqMercado)
+// responde instantaneamente no navegador; só o que NÃO está no guia chega
+// aqui, e vai para o Gemini Flash sem raciocínio, com o guia como referência.
+// Sem login (pergunta de mercado não envolve dado privado), com limite por IP.
+
+const MercadoInput = z.object({
+  pergunta: z.string().trim().min(3).max(400),
+});
+
+export const perguntarMercadoIA = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => MercadoInput.parse(d))
+  .handler(async ({ data }): Promise<{ resposta: string; relacionados: string[] }> => {
+    const ip = getClientIp();
+    const rl = checkRateLimit(`mercado-ia:${ip}`, { max: 8, windowMs: 10 * 60_000 });
+    if (!rl.allowed) {
+      throw new Error(
+        `Você fez muitas perguntas seguidas. Tente de novo em ${Math.ceil(rl.retryAfterSeconds / 60)} min.`,
+      );
+    }
+
+    const referencias = buscarFaq(data.pergunta, 3);
+    const contexto = referencias.length
+      ? referencias.map((r) => `P: ${r.item.pergunta}\nR: ${r.item.resposta}`).join("\n\n")
+      : "(nenhuma entrada do guia relacionada)";
+
+    const system = `Você é o assistente de mercado imobiliário do portal imoB365 (Brasil). Responda em português do Brasil, de forma clara, correta e objetiva, em no máximo 5 frases curtas.
+Regras:
+- Dê informação geral e didática baseada na legislação brasileira; não é consultoria jurídica nem financeira personalizada.
+- NUNCA invente números, taxas, preços ou percentuais específicos. Se a resposta depender de valores atuais (juros, Selic, preço de imóvel em um bairro), explique do que depende e oriente a consultar a fonte (banco, prefeitura, cartório) ou a busca do portal.
+- Para perguntas sobre imóveis disponíveis, preços em bairros/cidades ou onde morar, oriente a usar a busca de imóveis do portal (/buscar) e o atendimento humano da imoB365.
+- Use as entradas do guia oficial abaixo como referência quando forem relevantes e não as contradiga.
+- Sem markdown pesado: texto corrido, no máximo uma lista curta se ajudar.
+
+Guia oficial imoB365 (referência):
+${contexto}`;
+
+    const resposta = await callAI(
+      [
+        { role: "system", content: system },
+        { role: "user", content: data.pergunta },
+      ],
+      { semRaciocinio: true, maxTokens: 450 },
+    );
+    return { resposta: resposta.trim(), relacionados: referencias.map((r) => r.item.id) };
   });
