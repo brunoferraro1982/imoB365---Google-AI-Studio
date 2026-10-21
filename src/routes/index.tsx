@@ -8,7 +8,6 @@ import {
   Sparkles,
   ShieldCheck,
   HeartHandshake,
-  Search,
   MapPin,
   Bed,
   Bath,
@@ -19,8 +18,6 @@ import {
   Facebook,
   Linkedin,
   SlidersHorizontal,
-  ChevronDown,
-  Car,
   Key,
   CreditCard,
   Calculator,
@@ -44,7 +41,6 @@ import {
 
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
 import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
@@ -52,6 +48,7 @@ import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
 import { getVisitorRegion } from "@/lib/geo.functions";
 import { seoHead, getSeoConfig, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
 import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
+import { BuscaIAHero } from "@/components/portal/BuscaIAHero";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
 
@@ -163,19 +160,6 @@ function Landing() {
   const [empreendimentos, setEmpreendimentos] = useState<EmpreendCard[]>([]);
   const [tenants, setTenants] = useState<TenantCard[]>([]);
   const [tenantsLoaded, setTenantsLoaded] = useState(false);
-  const [busca, setBusca] = useState("");
-  const [finalidade, setFinalidade] = useState<"venda" | "aluguel">("venda");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [adv, setAdv] = useState({
-    tipo: "",
-    quartos: "",
-    banheiros: "",
-    vagas: "",
-    precoMin: "",
-    precoMax: "",
-    areaMin: "",
-    bairro: "",
-  });
 
   useEffect(() => {
     (async () => {
@@ -348,190 +332,7 @@ function Landing() {
             </p>
           </div>
 
-          <div className="mt-12 w-full max-w-4xl rounded-3xl border border-border bg-white dark:bg-card p-4.5 shadow-md">
-            <div className="flex gap-6 px-4 pb-2 border-b border-border/40">
-              {(["venda", "aluguel"] as const).map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setFinalidade(f)}
-                  type="button"
-                  className={`pb-2.5 text-sm font-bold transition-all relative ${
-                    finalidade === f
-                      ? "text-foreground font-extrabold"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {f === "venda" ? "Comprar" : "Alugar"}
-                  {finalidade === f && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <form action="/buscar" method="get" className="mt-4 space-y-4">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center">
-                <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-border bg-neutral-50/50 dark:bg-background px-4 py-2.5 shadow-2xs hover:border-primary/20 transition-all">
-                  <MapPin className="h-5 w-5 text-muted-foreground/80 shrink-0" />
-                  <Input
-                    name="q"
-                    value={busca}
-                    onChange={(e) => setBusca(e.target.value)}
-                    placeholder="Cidade, bairro ou referência (ex: Pinheiros, São Paulo)"
-                    className="h-9 border-0 p-0 shadow-none focus-visible:ring-0 bg-transparent text-sm w-full font-medium placeholder:text-muted-foreground/60"
-                  />
-                </div>
-                <input type="hidden" name="finalidade" value={finalidade} />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="rounded-xl px-7 bg-primary hover:bg-[#d65e1b] hover:scale-101 text-white shadow-sm font-bold tracking-wide transition-all duration-200 shrink-0 h-12 flex items-center justify-center gap-2 pointer-events-auto"
-                >
-                  <Search className="h-4 w-4 stroke-[2.5px]" /> Buscar imóveis
-                </Button>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowAdvanced((v) => !v)}
-                className="flex items-center gap-1.5 text-xs md:text-sm font-bold text-primary group transition-all"
-                aria-expanded={showAdvanced}
-                aria-controls="busca-avancada"
-              >
-                <SlidersHorizontal className="h-4 w-4 transition-transform group-hover:scale-110" />
-                <span>Pesquisa avançada</span>
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {showAdvanced && (
-                <div
-                  id="busca-avancada"
-                  className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                >
-                  <Field label="Bairro">
-                    <Input
-                      name="bairro"
-                      value={adv.bairro}
-                      onChange={(e) => setAdv({ ...adv, bairro: e.target.value })}
-                      placeholder="Ex: Moema"
-                    />
-                  </Field>
-                  <Field label="Tipo de imóvel">
-                    <select
-                      name="tipo"
-                      value={adv.tipo}
-                      onChange={(e) => setAdv({ ...adv, tipo: e.target.value })}
-                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-                    >
-                      <option value="">Qualquer</option>
-                      <option value="apartamento">Apartamento</option>
-                      <option value="casa">Casa</option>
-                      <option value="cobertura">Cobertura</option>
-                      <option value="terreno">Terreno</option>
-                      <option value="comercial">Comercial</option>
-                      <option value="rural">Rural</option>
-                    </select>
-                  </Field>
-                  <Field label="Quartos" icon={<Bed className="h-3.5 w-3.5" />}>
-                    <select
-                      name="quartos"
-                      value={adv.quartos}
-                      onChange={(e) => setAdv({ ...adv, quartos: e.target.value })}
-                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-                    >
-                      <option value="">Qualquer</option>
-                      <option value="1">1+</option>
-                      <option value="2">2+</option>
-                      <option value="3">3+</option>
-                      <option value="4">4+</option>
-                    </select>
-                  </Field>
-                  <Field label="Banheiros" icon={<Bath className="h-3.5 w-3.5" />}>
-                    <select
-                      name="banheiros"
-                      value={adv.banheiros}
-                      onChange={(e) => setAdv({ ...adv, banheiros: e.target.value })}
-                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-                    >
-                      <option value="">Qualquer</option>
-                      <option value="1">1+</option>
-                      <option value="2">2+</option>
-                      <option value="3">3+</option>
-                    </select>
-                  </Field>
-                  <Field label="Vagas de garagem" icon={<Car className="h-3.5 w-3.5" />}>
-                    <select
-                      name="vagas"
-                      value={adv.vagas}
-                      onChange={(e) => setAdv({ ...adv, vagas: e.target.value })}
-                      className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
-                    >
-                      <option value="">Qualquer</option>
-                      <option value="1">1+</option>
-                      <option value="2">2+</option>
-                      <option value="3">3+</option>
-                    </select>
-                  </Field>
-                  <Field label="Área mín. (m²)" icon={<Maximize2 className="h-3.5 w-3.5" />}>
-                    <Input
-                      type="number"
-                      name="areaMin"
-                      value={adv.areaMin}
-                      onChange={(e) => setAdv({ ...adv, areaMin: e.target.value })}
-                      placeholder="Ex: 60"
-                      min={0}
-                    />
-                  </Field>
-                  <Field label="Valor mínimo (R$)">
-                    <Input
-                      type="number"
-                      name="precoMin"
-                      value={adv.precoMin}
-                      onChange={(e) => setAdv({ ...adv, precoMin: e.target.value })}
-                      placeholder="0"
-                      min={0}
-                    />
-                  </Field>
-                  <Field label="Valor máximo (R$)">
-                    <Input
-                      type="number"
-                      name="precoMax"
-                      value={adv.precoMax}
-                      onChange={(e) => setAdv({ ...adv, precoMax: e.target.value })}
-                      placeholder="Sem limite"
-                      min={0}
-                    />
-                  </Field>
-
-                  <div className="flex items-end gap-2 sm:col-span-2 md:col-span-3 lg:col-span-4">
-                    <Button type="submit" className="flex-1 md:flex-none">
-                      <Search className="mr-2 h-4 w-4" /> Aplicar filtros
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() =>
-                        setAdv({
-                          tipo: "",
-                          quartos: "",
-                          banheiros: "",
-                          vagas: "",
-                          precoMin: "",
-                          precoMax: "",
-                          areaMin: "",
-                          bairro: "",
-                        })
-                      }
-                    >
-                      Limpar
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </form>
-          </div>
+          <BuscaIAHero />
 
           <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
@@ -927,26 +728,6 @@ function Landing() {
 
       <SiteFooter />
     </div>
-  );
-}
-
-function Field({
-  label,
-  icon,
-  children,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        {icon}
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }
 
