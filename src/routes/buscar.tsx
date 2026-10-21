@@ -40,6 +40,7 @@ import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { useServerFn } from "@tanstack/react-start";
 import { salvarBusca } from "@/lib/buscas-salvas.functions";
 import { interpretarBuscaConversacional } from "@/lib/ai.functions";
+import { BUSCA_IA_STORAGE_KEY } from "@/lib/buscaIa";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { FavoritoButton } from "@/components/FavoritoButton";
@@ -58,7 +59,37 @@ type SearchParams = {
   areaMin?: string;
   precoMin?: string;
   precoMax?: string;
+  /** Características separadas por vírgula (ex.: vindas da busca por IA da home) */
+  caracteristicas?: string;
 };
+
+// Opções de características do filtro avançado — a IA devolve em minúsculas
+// e sem acento às vezes ("piscina", "salao de festas"); casamos com estas.
+const CARACTERISTICAS_OPCOES = [
+  "Piscina",
+  "Academia",
+  "Churrasqueira",
+  "Varanda",
+  "Mobiliado",
+  "Ar condicionado",
+  "Portaria 24h",
+  "Elevador",
+  "Salão de festas",
+  "Vaga demarcada",
+];
+
+const normCaract = (v: string) =>
+  v
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+
+/** Troca o termo da IA pela opção canônica do filtro quando houver correspondência. */
+function canonicalizarCaracteristica(v: string): string {
+  const n = normCaract(v);
+  return CARACTERISTICAS_OPCOES.find((o) => normCaract(o) === n || n.includes(normCaract(o))) ?? v;
+}
 
 function str(v: unknown): string {
   return typeof v === "string" ? v : v == null ? "" : String(v);
@@ -80,6 +111,7 @@ export const Route = createFileRoute("/buscar")({
       areaMin: str(raw.areaMin),
       precoMin: str(raw.precoMin),
       precoMax: str(raw.precoMax),
+      caracteristicas: str(raw.caracteristicas),
     };
   },
   head: () => ({
@@ -121,8 +153,27 @@ function Buscar() {
   const [suites, setSuites] = useState<string>("");
   const [aceitaFinanciamento, setAceitaFinanciamento] = useState<boolean | null>(null);
   const [aceitaPermuta, setAceitaPermuta] = useState<boolean | null>(null);
-  const [caracteristicasSelecionadas, setCaracteristicasSelecionadas] = useState<string[]>([]);
-  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  const [caracteristicasSelecionadas, setCaracteristicasSelecionadas] = useState<string[]>(() =>
+    (sp.caracteristicas || "")
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map(canonicalizarCaracteristica),
+  );
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(!!sp.caracteristicas);
+  // Pedido feito na caixa de IA da home + o que a IA entendeu (faixa no topo)
+  const [buscaIa, setBuscaIa] = useState<{ pedido: string; resposta: string } | null>(null);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(BUSCA_IA_STORAGE_KEY);
+      if (raw) {
+        setBuscaIa(JSON.parse(raw));
+        sessionStorage.removeItem(BUSCA_IA_STORAGE_KEY);
+      }
+    } catch {
+      /* storage bloqueado: segue sem a faixa */
+    }
+  }, []);
 
   const { user } = useAuth();
   const salvar = useServerFn(salvarBusca);
@@ -160,7 +211,9 @@ function Buscar() {
         Array.isArray(bot.caracteristicasSelecionadas) &&
         bot.caracteristicasSelecionadas.length > 0
       ) {
-        setCaracteristicasSelecionadas(bot.caracteristicasSelecionadas);
+        setCaracteristicasSelecionadas(
+          bot.caracteristicasSelecionadas.map((c: string) => canonicalizarCaracteristica(c)),
+        );
         setShowAdvanced(true);
       }
 
@@ -274,8 +327,14 @@ function Buscar() {
     if (aceitaPermuta !== null && i.aceita_permuta !== aceitaPermuta) return false;
 
     if (caracteristicasSelecionadas.length > 0) {
-      const itemCaracts = i.caracteristicas || [];
-      const hasAll = caracteristicasSelecionadas.every((c) => itemCaracts.includes(c));
+      // Sem diferenciar caixa/acento e aceitando correspondência parcial
+      // ("Piscina" casa com "Piscina aquecida") — a IA e os cadastros não
+      // escrevem as características do mesmo jeito.
+      const itemCaracts: string[] = (i.caracteristicas || []).map(normCaract);
+      const hasAll = caracteristicasSelecionadas.every((c) => {
+        const alvo = normCaract(c);
+        return itemCaracts.some((ic) => ic.includes(alvo));
+      });
       if (!hasAll) return false;
     }
 
@@ -375,6 +434,30 @@ function Buscar() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-10">
+        {buscaIa && (
+          <div className="mb-6 flex items-start gap-3 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/10 via-violet-500/5 to-transparent p-4">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-violet-600 text-white shadow">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary">
+                Busca feita pela IA da imoB365
+              </p>
+              <p className="mt-0.5 truncate text-muted-foreground" title={buscaIa.pedido}>
+                Você pediu: <span className="italic text-foreground">“{buscaIa.pedido}”</span>
+              </p>
+              {buscaIa.resposta && <p className="mt-1 text-foreground">{buscaIa.resposta}</p>}
+            </div>
+            <button
+              type="button"
+              onClick={() => setBuscaIa(null)}
+              className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-foreground"
+              aria-label="Fechar"
+            >
+              ✕
+            </button>
+          </div>
+        )}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Buscar imóveis</h1>
@@ -595,18 +678,7 @@ function Buscar() {
                   Características do Imóvel
                 </Label>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    "Piscina",
-                    "Academia",
-                    "Churrasqueira",
-                    "Varanda",
-                    "Mobiliado",
-                    "Ar condicionado",
-                    "Portaria 24h",
-                    "Elevador",
-                    "Salão de festas",
-                    "Vaga demarcada",
-                  ].map((caract) => {
+                  {CARACTERISTICAS_OPCOES.map((caract) => {
                     const isSelected = caracteristicasSelecionadas.includes(caract);
                     return (
                       <button
