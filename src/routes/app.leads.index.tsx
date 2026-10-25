@@ -1,10 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Users, Settings2 } from "lucide-react";
+import { Plus, Users, Settings2, Check, ChevronsUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { criarLeadManual } from "@/lib/leads.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/leads/")({
@@ -46,29 +67,89 @@ const COLUNAS: { key: Lead["status"]; label: string; tone: string }[] = [
 ];
 
 function LeadsKanban() {
+  const { user, tenantId, roles } = useAuth();
   const [items, setItems] = useState<Lead[]>([]);
   const [corretores, setCorretores] = useState<Record<string, string>>({});
+  const [corretoresList, setCorretoresList] = useState<
+    { id: string; nome: string; user_id: string | null }[]
+  >([]);
   const [imoveis, setImoveis] = useState<Record<string, string>>({});
+  const [imoveisList, setImoveisList] = useState<{ id: string; titulo: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [dragId, setDragId] = useState<string | null>(null);
+  const podeCadastrar = roles?.some((r) => r === "admin" || r === "broker" || r === "super_admin");
 
   async function load() {
     setLoading(true);
     const [{ data: leads, error }, { data: cors }, { data: imos }] = await Promise.all([
       (supabase as any).from("leads").select("*").order("created_at", { ascending: false }),
-      (supabase as any).from("corretores").select("id,nome"),
+      (supabase as any).from("corretores").select("id,nome,user_id").eq("ativo", true),
       (supabase as any).from("imoveis").select("id,titulo"),
     ]);
     if (error) toast.error(error.message);
     setItems((leads as Lead[]) ?? []);
     setCorretores(Object.fromEntries((cors ?? []).map((c: any) => [c.id, c.nome])));
+    setCorretoresList((cors as { id: string; nome: string; user_id: string | null }[]) ?? []);
     setImoveis(Object.fromEntries((imos ?? []).map((i: any) => [i.id, i.titulo])));
+    setImoveisList((imos as { id: string; titulo: string }[]) ?? []);
     setLoading(false);
   }
   useEffect(() => {
     load();
   }, []);
+
+  const selfCorretorId = useMemo(
+    () => corretoresList.find((c) => c.user_id === user?.id)?.id ?? null,
+    [corretoresList, user?.id],
+  );
+
+  const [novoOpen, setNovoOpen] = useState(false);
+  const [novoSalvando, setNovoSalvando] = useState(false);
+  const [novoNome, setNovoNome] = useState("");
+  const [novoTelefone, setNovoTelefone] = useState("");
+  const [novoEmail, setNovoEmail] = useState("");
+  const [novoMensagem, setNovoMensagem] = useState("");
+  const [novoImovelId, setNovoImovelId] = useState<string | null>(null);
+  const [novoCorretorId, setNovoCorretorId] = useState<string | null>(null);
+  const [imovelComboOpen, setImovelComboOpen] = useState(false);
+  const [corretorComboOpen, setCorretorComboOpen] = useState(false);
+  const fnCriarLead = useServerFn(criarLeadManual);
+
+  function abrirNovo() {
+    setNovoNome("");
+    setNovoTelefone("");
+    setNovoEmail("");
+    setNovoMensagem("");
+    setNovoImovelId(null);
+    setNovoCorretorId(selfCorretorId);
+    setNovoOpen(true);
+  }
+
+  async function salvarNovo() {
+    if (!tenantId || !novoNome.trim()) return;
+    setNovoSalvando(true);
+    try {
+      await fnCriarLead({
+        data: {
+          tenant_id: tenantId,
+          nome: novoNome.trim(),
+          telefone: novoTelefone.trim() || null,
+          email: novoEmail.trim() || null,
+          mensagem: novoMensagem.trim() || null,
+          imovel_id: novoImovelId,
+          corretor_id: novoCorretorId,
+        },
+      });
+      toast.success("Lead cadastrado");
+      setNovoOpen(false);
+      load();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao cadastrar lead");
+    } finally {
+      setNovoSalvando(false);
+    }
+  }
 
   async function moveTo(id: string, status: Lead["status"]) {
     const prev = items.find((l) => l.id === id);
@@ -109,6 +190,11 @@ function LeadsKanban() {
           </p>
         </div>
         <div className="flex gap-2">
+          {podeCadastrar && (
+            <Button onClick={abrirNovo}>
+              <Plus className="mr-2 h-4 w-4" /> Novo Lead
+            </Button>
+          )}
           <Button variant="outline" asChild>
             <Link to="/app/leads/configuracao">
               <Settings2 className="mr-2 h-4 w-4" /> Distribuição
@@ -190,6 +276,173 @@ function LeadsKanban() {
           })}
         </div>
       )}
+
+      <Dialog open={novoOpen} onOpenChange={setNovoOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Lead</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Nome *
+              </Label>
+              <Input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} autoFocus />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Telefone
+                </Label>
+                <Input value={novoTelefone} onChange={(e) => setNovoTelefone(e.target.value)} />
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  E-mail
+                </Label>
+                <Input
+                  type="email"
+                  value={novoEmail}
+                  onChange={(e) => setNovoEmail(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Imóvel de interesse
+              </Label>
+              <Popover open={imovelComboOpen} onOpenChange={setImovelComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    {novoImovelId
+                      ? (imoveisList.find((i) => i.id === novoImovelId)?.titulo ?? "Nenhum")
+                      : "Nenhum"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar imóvel…" />
+                    <CommandList>
+                      <CommandEmpty>Nenhum imóvel encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="__none__"
+                          onSelect={() => {
+                            setNovoImovelId(null);
+                            setImovelComboOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${novoImovelId ? "opacity-0" : "opacity-100"}`}
+                          />
+                          Nenhum
+                        </CommandItem>
+                        {imoveisList.map((i) => (
+                          <CommandItem
+                            key={i.id}
+                            value={i.titulo}
+                            onSelect={() => {
+                              setNovoImovelId(i.id);
+                              setImovelComboOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${novoImovelId === i.id ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {i.titulo}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Corretor responsável
+              </Label>
+              <Popover open={corretorComboOpen} onOpenChange={setCorretorComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    {novoCorretorId
+                      ? (corretoresList.find((c) => c.id === novoCorretorId)?.nome ??
+                        "Distribuir automaticamente")
+                      : "Distribuir automaticamente"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                  <Command>
+                    <CommandInput placeholder="Buscar corretor…" />
+                    <CommandList>
+                      <CommandEmpty>Nenhum corretor encontrado.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="__auto__"
+                          onSelect={() => {
+                            setNovoCorretorId(null);
+                            setCorretorComboOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={`mr-2 h-4 w-4 ${!novoCorretorId ? "opacity-100" : "opacity-0"}`}
+                          />
+                          Distribuir automaticamente
+                        </CommandItem>
+                        {corretoresList.map((c) => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.nome}
+                            onSelect={() => {
+                              setNovoCorretorId(c.id);
+                              setCorretorComboOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${novoCorretorId === c.id ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {c.nome}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Observação
+              </Label>
+              <Textarea
+                rows={3}
+                value={novoMensagem}
+                onChange={(e) => setNovoMensagem(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNovoOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={salvarNovo} disabled={novoSalvando || novoNome.trim().length < 2}>
+              {novoSalvando ? "Salvando…" : "Cadastrar lead"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
