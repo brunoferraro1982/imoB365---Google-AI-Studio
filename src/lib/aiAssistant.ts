@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 // Assistente de IA (RAG + Llama local via Ollama). Motivo do RAG ser
 // obrigatório, não opcional: testado manualmente contra o modelo real
 // (llama3.2:3b) sem contexto, a pergunta "o que é ITBI" gerou uma resposta
@@ -7,8 +8,26 @@
 // contexto fornecido — nunca do próprio conhecimento interno pra fatos de
 // domínio (tributos, legislação, etc.).
 
-const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
-const OLLAMA_MODEL = "llama3.2:3b";
+// Assistente do /app e sugestão de resposta da Central: Gemini Flash-Lite
+// (2026-11). Antes era o Ollama da VPS (llama3.2:3b em CPU): ~9 tokens/s
+// (30s+ por resposta), resposta factual errada no teste (ITBI) e 2,4 GB de
+// RAM presos. Flash-Lite pago custa centavos no volume real (~8 perguntas/
+// mês em out/2026) e, no plano pago, o Google não usa os dados para treino —
+// requisito aqui, porque o contexto inclui contratos e chamados dos tenants.
+// "gemini-2.5-flash-lite" foi descontinuado para chaves novas (404 em 2026-11);
+// a família 3.x não aceita thinkingBudget e já responde em ~1 s sem ajuste.
+const GEMINI_MODEL = "gemini-3.5-flash-lite";
+
+let _gemini: InstanceType<typeof GoogleGenAI> | null = null;
+function gemini(): InstanceType<typeof GoogleGenAI> {
+  if (_gemini) return _gemini;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === "SUA_GEMINI_KEY") {
+    throw new Error("Assistente de IA indisponível: GEMINI_API_KEY não configurada.");
+  }
+  _gemini = new GoogleGenAI({ apiKey });
+  return _gemini;
+}
 
 export interface AiAssistantSupabaseClient {
   from: (table: string) => any;
@@ -389,7 +408,77 @@ REGRA MAIS IMPORTANTE: para qualquer fato específico (impostos, percentuais, do
   return `${base}\n\nCONTEXTO:\n${contexto.map((c, i) => `[${i + 1}] ${c}`).join("\n\n")}`;
 }
 
-/** Chama o Ollama local em modo streaming, repassando cada trecho de texto gerado via callback. */
+// ─── Respostas prontas da base de conhecimento ────────────────────────────
+// Quando a pergunta casa com força com o TÍTULO de uma entrada da
+// ai_knowledge_base ("Como cadastro um imóvel?" ≈ "Como cadastrar um
+// imóvel"), devolvemos o conteúdo da entrada direto — instantâneo, sem IA e
+// sem custo. O conteúdo da base é a fonte oficial de qualquer forma.
+
+const semAcento = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+const VAZIAS_TITULO = new Set(
+  "como que qual quais onde quando para pra por uma umas uns com sem dos das nos nas meu minha esse essa este esta isso aqui funciona funcionam fazer faco faço".split(
+    " ",
+  ),
+);
+
+function termos(texto: string): string[] {
+  return semAcento(texto)
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !VAZIAS_TITULO.has(w));
+}
+
+/** "cadastro" ≈ "cadastrar", "lanco" ≈ "lancar" — prefixo comum suficiente. */
+function mesmaRaiz(a: string, b: string): boolean {
+  if (a === b) return true;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return i >= Math.min(5, Math.min(a.length, b.length) - 1) && i >= 4;
+}
+
+/** Cobertura da pergunta pelo título (0–1). */
+export function scoreTitulo(pergunta: string, titulo: string): number {
+  const q = termos(pergunta);
+  const t = termos(titulo);
+  if (q.length === 0 || t.length === 0) return 0;
+  const acertos = q.filter((w) => t.some((x) => mesmaRaiz(w, x))).length;
+  return acertos < Math.min(2, q.length) ? 0 : acertos / q.length;
+}
+
+const SCORE_RESPOSTA_PRONTA = 0.67;
+
+async function respostaPronta(
+  pergunta: string,
+  client: AiAssistantSupabaseClient,
+): Promise<{ titulo: string; conteudo: string } | null> {
+  const { data } = await client
+    .from("ai_knowledge_base")
+    .select("titulo, conteudo")
+    .eq("ativo", true)
+    .limit(200);
+  const itens: { titulo: string; conteudo: string }[] = data ?? [];
+  let melhor: { titulo: string; conteudo: string } | null = null;
+  let melhorScore = 0;
+  for (const item of itens) {
+    const sc = scoreTitulo(pergunta, item.titulo);
+    if (sc > melhorScore) {
+      melhor = item;
+      melhorScore = sc;
+    }
+  }
+  return melhorScore >= SCORE_RESPOSTA_PRONTA ? melhor : null;
+}
+
+/**
+ * Responde em streaming: primeiro tenta a resposta pronta da base (instantânea);
+ * senão, Gemini Flash-Lite com o CONTEXTO da base/contrato/blog.
+ * Perguntas sobre um contrato específico vão sempre para a IA.
+ */
 export async function perguntarAssistente(
   pergunta: string,
   client: AiAssistantSupabaseClient,
@@ -397,53 +486,42 @@ export async function perguntarAssistente(
   paginaAtual?: string,
   contratoId?: string,
 ): Promise<void> {
+  if (!contratoId) {
+    const pronta = await respostaPronta(pergunta, client);
+    if (pronta) {
+      onChunk(`${pronta.conteudo}\n\n— Base de conhecimento imoB365: “${pronta.titulo}”`);
+      return;
+    }
+  }
   const contexto = await buscarContexto(pergunta, client, paginaAtual, contratoId);
   const systemPrompt = buildSystemPrompt(contexto, paginaAtual, !!contratoId);
-  await chamarOllamaStreaming(systemPrompt, pergunta, onChunk);
+  await chamarGeminiStreaming(systemPrompt, pergunta, onChunk);
 }
 
-/** Chama o Ollama em modo streaming e repassa cada trecho via callback — extraído de perguntarAssistente pra ser reaproveitado por sugerirRespostaChamado. */
-async function chamarOllamaStreaming(
+/** Gemini 3.5 Flash-Lite em streaming. */
+async function chamarGeminiStreaming(
   systemPrompt: string,
   userPrompt: string,
   onChunk: (texto: string) => void,
 ): Promise<void> {
-  const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: OLLAMA_MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      stream: true,
-    }),
-  });
-
-  if (!res.ok || !res.body) {
+  let stream;
+  try {
+    stream = await gemini().models.generateContentStream({
+      model: GEMINI_MODEL,
+      contents: userPrompt,
+      config: {
+        systemInstruction: systemPrompt,
+        temperature: 0.3,
+        maxOutputTokens: 800,
+      },
+    });
+  } catch (err) {
+    console.error("[aiAssistant] Gemini falhou:", err);
     throw new Error("Assistente de IA indisponível no momento.");
   }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.trim()) continue;
-      try {
-        const parsed = JSON.parse(line);
-        if (parsed.message?.content) onChunk(parsed.message.content);
-      } catch {
-        // linha incompleta/malformada — ignora, o NDJSON do Ollama é linha-a-linha
-      }
-    }
+  for await (const parte of stream) {
+    const texto = parte.text;
+    if (texto) onChunk(texto);
   }
 }
 
@@ -476,5 +554,5 @@ REGRAS: (1) Nunca reproduza o conteúdo de "Nota interna do agente" na resposta 
 
 CONTEXTO:\n${contexto.map((c, i) => `[${i + 1}] ${c}`).join("\n\n")}`;
 
-  await chamarOllamaStreaming(systemPrompt, "Sugira a próxima resposta pra este chamado.", onChunk);
+  await chamarGeminiStreaming(systemPrompt, "Sugira a próxima resposta pra este chamado.", onChunk);
 }

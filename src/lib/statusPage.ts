@@ -107,11 +107,21 @@ function checkRealtime(): Promise<CheckResult> {
 }
 
 function checkAiAssistant(): Promise<CheckResult> {
-  // Só alcançável a partir da própria VPS (127.0.0.1) — em dev (sem Ollama
-  // local) isso falha por conexão recusada, o que é esperado e tratado como
-  // "outage" (não derruba o resto da checagem, ver executarChecks).
-  const base = process.env.OLLAMA_URL || "http://localhost:11434";
-  return checkHttp(`${base}/api/tags`, {}, 4000);
+  // Assistente de IA = Gemini 3.5 Flash-Lite (antes Ollama da VPS). Consulta só
+  // os metadados do modelo — não gera texto, não tem custo. Chave no header.
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) {
+    return Promise.resolve({
+      status: "outage",
+      latencyMs: null,
+      mensagem: "GEMINI_API_KEY ausente",
+    });
+  }
+  return checkHttp(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite",
+    { "x-goog-api-key": key },
+    4000,
+  );
 }
 
 export const SERVICE_CHECKS: Record<string, () => Promise<CheckResult>> = {
