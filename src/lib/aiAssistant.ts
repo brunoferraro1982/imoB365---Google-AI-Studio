@@ -421,21 +421,47 @@ const semAcento = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "");
 
 const VAZIAS_TITULO = new Set(
-  "como que qual quais onde quando para pra por uma umas uns com sem dos das nos nas meu minha esse essa este esta isso aqui funciona funcionam fazer faco faço".split(
+  "como que qual quais onde quando para pra por uma umas uns com sem dos das nos nas meu minha esse essa este esta isso aqui funciona funcionam fazer faco faço dar posso consigo preciso quero tem tenho numa num".split(
     " ",
   ),
 );
+
+// Sinônimos de uso comum → termo que a base usa
+const SINONIMOS: Record<string, string> = {
+  anuncio: "imovel",
+  anuncios: "imovel",
+  apto: "imovel",
+  boleto: "cobranca",
+  vendedor: "corretor",
+  vendedores: "corretor",
+  cliente: "lead",
+  clientes: "lead",
+  nf: "nota",
+  nfe: "nota",
+};
 
 function termos(texto: string): string[] {
   return semAcento(texto)
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length >= 3 && !VAZIAS_TITULO.has(w));
+    .filter((w) => w.length >= 3 && !VAZIAS_TITULO.has(w))
+    .map((w) => SINONIMOS[w] ?? w);
+}
+
+/** Raiz simples de verbos/plurais: "gero"/"gerar" → "ger", "lanco"/"lancar" → "lanc". */
+function raiz(w: string): string {
+  if (w.length <= 4) return w.replace(/(o|a|e|s)$/, "");
+  return w.replace(
+    /(ando|endo|indo|ados|adas|ado|ada|idos|ido|ida|amos|emos|ar|er|ir|as|es|os|o|a|e)$/,
+    "",
+  );
 }
 
 /** "cadastro" ≈ "cadastrar", "lanco" ≈ "lancar" — prefixo comum suficiente. */
 function mesmaRaiz(a: string, b: string): boolean {
   if (a === b) return true;
+  const ra = raiz(a);
+  if (ra.length >= 3 && ra === raiz(b)) return true;
   let i = 0;
   while (i < a.length && i < b.length && a[i] === b[i]) i++;
   return i >= Math.min(5, Math.min(a.length, b.length) - 1) && i >= 4;
@@ -450,33 +476,76 @@ export function scoreTitulo(pergunta: string, titulo: string): number {
   return acertos < Math.min(2, q.length) ? 0 : acertos / q.length;
 }
 
+// Casamento forte: responde direto da base em qualquer caso.
 const SCORE_RESPOSTA_PRONTA = 0.67;
+// Casamento médio: responde da base se a pergunta for sobre a plataforma
+// (decisão de produto: perguntas da plataforma usam sempre a base; a IA é
+// último recurso ou para temas fora da plataforma).
+const SCORE_PLATAFORMA = 0.45;
+const SCORE_RELACIONADA = 0.34;
 
-async function respostaPronta(
-  pergunta: string,
-  client: AiAssistantSupabaseClient,
-): Promise<{ titulo: string; conteudo: string } | null> {
+const PISTAS_PLATAFORMA =
+  /\b(imob ?365|plataforma|sistema|app|tela|menu|botao|aba|cadastr\w*|configur\w*|painel|dashboard|relatori\w*|leads?|funil|kanban|imove\w*|imovel|corretor\w*|equipe|contratos?|comiss\w*|financeir\w*|lancament\w*|lanc\w*|repasses?|locac\w*|site|portais|portal|anuncio\w*|anunci\w*|chamados?|atendimento|plano|planos|assinatura|usuario\w*|senha|login|permiss\w*|integra\w*|whatsapp|e-?mail|notifica\w*|curso\w*|elearning|e-learning|tarefas?|visitas?|agenda|qr|cartao|blog|webhooks?|api|nota fiscal|nfs-?e|nota|perfil|foto\w*|importar|exportar|duplicar|publicar|contas?|baixa|pag\w*|despesas?|receitas?|cobranc\w*|pix|modelos?|pdf|imprimir|docusign|clicksign|cartorio\w*|mfa|2fa|lgpd|privacidade|tema|modo escuro|trial|teste gratis|onboarding|favorit\w*|chave|cota|limite|modulos?|parceri\w*|qr ?code|google ads|canva|instagram|facebook|marca d.?agua)\b/;
+
+export function ehSobrePlataforma(pergunta: string): boolean {
+  return PISTAS_PLATAFORMA.test(semAcento(pergunta));
+}
+
+type ItemKb = { titulo: string; conteudo: string; perguntas?: string[] | null };
+
+async function carregarKb(client: AiAssistantSupabaseClient): Promise<ItemKb[]> {
+  const comPerguntas = await client
+    .from("ai_knowledge_base")
+    .select("titulo, conteudo, perguntas")
+    .eq("ativo", true)
+    .limit(500);
+  if (!comPerguntas.error) return comPerguntas.data ?? [];
+  // Banco ainda sem a coluna "perguntas" (migration 20261103180000 pendente)
   const { data } = await client
     .from("ai_knowledge_base")
     .select("titulo, conteudo")
     .eq("ativo", true)
-    .limit(200);
-  const itens: { titulo: string; conteudo: string }[] = data ?? [];
-  let melhor: { titulo: string; conteudo: string } | null = null;
-  let melhorScore = 0;
-  for (const item of itens) {
-    const sc = scoreTitulo(pergunta, item.titulo);
-    if (sc > melhorScore) {
-      melhor = item;
-      melhorScore = sc;
-    }
+    .limit(500);
+  return data ?? [];
+}
+
+/** Melhor score da pergunta contra o título e as variações de uma entrada. */
+export function scoreEntrada(pergunta: string, item: ItemKb): number {
+  let melhor = scoreTitulo(pergunta, item.titulo);
+  for (const p of item.perguntas ?? []) {
+    const sc = scoreTitulo(pergunta, p);
+    if (sc > melhor) melhor = sc;
+    if (melhor >= 1) break;
   }
-  return melhorScore >= SCORE_RESPOSTA_PRONTA ? melhor : null;
+  return melhor;
+}
+
+async function respostaPronta(
+  pergunta: string,
+  client: AiAssistantSupabaseClient,
+): Promise<{ item: ItemKb; relacionadas: string[] } | null> {
+  const ranking = (await carregarKb(client))
+    .map((item) => ({ item, score: scoreEntrada(pergunta, item) }))
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score);
+  const melhor = ranking[0];
+  if (!melhor) return null;
+  const aceita =
+    melhor.score >= SCORE_RESPOSTA_PRONTA ||
+    (melhor.score >= SCORE_PLATAFORMA && ehSobrePlataforma(pergunta));
+  if (!aceita) return null;
+  const relacionadas = ranking
+    .slice(1)
+    .filter((r) => r.score >= SCORE_RELACIONADA)
+    .slice(0, 2)
+    .map((r) => r.item.titulo);
+  return { item: melhor.item, relacionadas };
 }
 
 /**
- * Responde em streaming: primeiro tenta a resposta pronta da base (instantânea);
- * senão, Gemini Flash-Lite com o CONTEXTO da base/contrato/blog.
+ * Responde em streaming: perguntas sobre a plataforma saem da base de
+ * conhecimento (instantâneo, sem custo); o Gemini Flash-Lite, com o CONTEXTO
+ * da base/contrato/blog, fica como último recurso ou para temas de fora.
  * Perguntas sobre um contrato específico vão sempre para a IA.
  */
 export async function perguntarAssistente(
@@ -489,7 +558,12 @@ export async function perguntarAssistente(
   if (!contratoId) {
     const pronta = await respostaPronta(pergunta, client);
     if (pronta) {
-      onChunk(`${pronta.conteudo}\n\n— Base de conhecimento imoB365: “${pronta.titulo}”`);
+      const veja = pronta.relacionadas.length
+        ? `\n\nVeja também: ${pronta.relacionadas.map((t) => `“${t}”`).join(" · ")}`
+        : "";
+      onChunk(
+        `${pronta.item.conteudo}${veja}\n\n— Base de conhecimento imoB365: “${pronta.item.titulo}”`,
+      );
       return;
     }
   }
