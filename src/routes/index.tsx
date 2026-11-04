@@ -348,16 +348,15 @@ function Landing() {
         </div>
       </section>
 
-      {/* IMOBILIÁRIAS PARCEIRAS (Liquid Glass) — parceiros à esquerda | cadastro à direita */}
+      {/* IMOBILIÁRIAS PARCEIRAS (Liquid Glass) — parceiros (70%) | cadastro (30%) */}
       <section
         id="parceiros"
         className="hero-brand relative isolate scroll-mt-20 overflow-hidden border-b border-border bg-muted/30"
       >
-        {/* fundo da marca para o vidro ter o que desfocar */}
-        <div className="mesh-brand-claro absolute inset-0 -z-10" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--primary-glow)_10%,_transparent_55%)] opacity-25 dark:opacity-15" />
+        {/* fundo neutro com leve tom azul (sem laranja) para o vidro ter o que desfocar */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(620px_380px_at_0%_100%,rgba(90,150,235,.18),transparent_70%),radial-gradient(520px_320px_at_100%_0%,rgba(90,150,235,.10),transparent_70%)]" />
 
-        <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-2 md:py-16">
+        <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-[7fr_3fr] md:py-16">
           <div className="glass-fosco rounded-[28px] p-6 md:p-7">
             <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
               Corretores e Imobiliárias parceiras
@@ -365,7 +364,7 @@ function Landing() {
             <p className="mt-2 text-muted-foreground">
               Trabalhamos lado a lado com quem entende do mercado local.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {!tenantsLoaded &&
                 Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="glass-claro h-24 animate-pulse rounded-2xl" />
@@ -410,19 +409,18 @@ function Landing() {
             </div>
           </div>
 
-          <div className="glass-fosco relative flex flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-9">
-            <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(260px_200px_at_100%_0%,rgba(237,125,49,.22),transparent_70%)]" />
+          <div className="glass-fosco relative flex flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-7">
             <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
               <Building className="h-6 w-6" />
             </span>
-            <h3 className="relative mt-5 text-2xl font-bold tracking-tight md:text-3xl">
+            <h3 className="relative mt-4 text-xl font-bold leading-tight tracking-tight md:text-2xl">
               Você ou sua imobiliária ainda não estão aqui?
             </h3>
-            <p className="relative mt-2 text-muted-foreground">
+            <p className="relative mt-2 text-sm text-muted-foreground">
               Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
             </p>
-            <Link to="/signup" className="relative mt-6 inline-block">
-              <Button size="lg" className="rounded-full px-6 shadow-lg shadow-primary/20">
+            <Link to="/signup" className="relative mt-5 block w-full">
+              <Button className="h-auto w-full whitespace-normal rounded-full px-5 py-2.5 shadow-lg shadow-primary/20">
                 Quero efetuar o cadastro agora!
               </Button>
             </Link>
