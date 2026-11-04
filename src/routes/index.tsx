@@ -723,7 +723,7 @@ function Landing() {
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
           Uma plataforma completa para captar, atender, fechar e administrar — do primeiro lead ao
-          pós-venda, sem precisar de equipe de TI.
+          pós-venda. Tenha autonomia e utilize IA a seu favor.
         </p>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {valores.map((s) => (
@@ -731,7 +731,7 @@ function Landing() {
               key={s.title}
               className="rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
             >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
                 <s.icon className="h-5 w-5" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
@@ -926,7 +926,7 @@ const valores = [
   {
     icon: Sparkles,
     title: "Tecnologia simples",
-    desc: "Cadastre imóveis, envie fotos e publique sem precisar de equipe de TI. Tudo num único lugar.",
+    desc: "Cadastre imóveis, envie fotos e publique: tenha autonomia e utilize IA no dia a dia. Tudo num único lugar.",
   },
   {
     icon: HeartHandshake,
