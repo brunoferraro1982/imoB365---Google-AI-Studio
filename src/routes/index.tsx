@@ -309,12 +309,12 @@ function Landing() {
             <BuscaIAHero lateral={<WidgetsFerramentas />} />
           </div>
 
-          {/* Título (3 linhas: fixo + frase rotativa em até 2) | texto + "Procurando por" — ~50% cada */}
-          <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-2 md:items-center md:gap-10">
+          {/* Título (3 linhas: fixo + frase rotativa em até 2) | texto — ~55/45; "Procurando por" em linha própria abaixo */}
+          <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-[11fr_9fr] md:items-center md:gap-10">
             {/* min-h reserva o pior caso da frase rotativa para a altura do h1 não
                 variar e não empurrar o conteúdo seguinte (mobile: 2 linhas do fixo
                 + 2 da frase; desktop: 1 do fixo + 2 da frase). */}
-            <h1 className="text-4xl sm:text-6xl md:text-[clamp(1.75rem,calc((min(100vw,1152px)-88px)/22.5),3rem)] font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em] md:min-h-[3.3em]">
+            <h1 className="text-4xl sm:text-6xl md:text-[clamp(1.85rem,calc((min(100vw,1152px)-88px)/20),3.35rem)] font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em] md:min-h-[3.3em]">
               <span className="md:whitespace-nowrap">Encontre o imóvel certo,</span>
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
@@ -329,20 +329,21 @@ function Landing() {
                 Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
                 parceiros em todo o Brasil. Atendimento humano, sem burocracia.
               </p>
-              <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-                <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
-                {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
-                  <Link
-                    key={t}
-                    to="/buscar"
-                    search={{ tipo: t.toLowerCase() }}
-                    className="rounded-full border border-border bg-white/95 dark:bg-card px-4.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-2xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-200"
-                  >
-                    {t}
-                  </Link>
-                ))}
-              </div>
             </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+            <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
+            {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
+              <Link
+                key={t}
+                to="/buscar"
+                search={{ tipo: t.toLowerCase() }}
+                className="rounded-full border border-border bg-white/95 dark:bg-card px-4.5 py-1.5 text-xs font-semibold text-muted-foreground shadow-2xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-200"
+              >
+                {t}
+              </Link>
+            ))}
           </div>
         </div>
       </section>
