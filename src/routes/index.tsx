@@ -661,6 +661,58 @@ function Landing() {
         </section>
       )}
 
+      {/* MÓDULOS / RECURSOS — bento por jornada (Liquid Glass sobre o degradê laranja) */}
+      {/* Fundo: gradiente quente da marca (primary/15 → primary/5 → background)
+          em vez do cinza bg-secondary/40 — calor visível no topo descendo pro
+          fundo, destaca a seção sem competir com os cards; funciona em tema
+          claro e escuro (tokens primary/background existem nos dois). */}
+      <section
+        id="recursos"
+        className="hero-brand relative isolate overflow-hidden border-t border-border bg-gradient-to-b from-primary/15 via-primary/5 to-background"
+      >
+        {/* manchas suaves para o vidro ter o que desfocar */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(620px_380px_at_15%_0%,rgba(237,125,49,.22),transparent_70%),radial-gradient(560px_360px_at_90%_35%,rgba(237,125,49,.14),transparent_70%)]" />
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+            Tudo o que sua imobiliária precisa, num só lugar
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+            Organizado pela jornada do corretor — ative só o que precisa hoje e adicione novos
+            recursos conforme cresce.
+          </p>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {grupos.map((g) => (
+              <div
+                key={g.title}
+                className="glass-fosco group rounded-[26px] bg-white/55 p-6 transition duration-300 hover:-translate-y-0.5 hover:bg-white/75"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
+                    <g.icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-bold tracking-tight">{g.title}</h3>
+                </div>
+                <ul className="mt-5 space-y-4">
+                  {g.items.map((it) => (
+                    <li key={it.title} className="flex gap-3">
+                      <div className="glass-claro mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-white/60 text-primary">
+                        <it.icon className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold leading-snug">{it.title}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {it.desc}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
@@ -683,56 +735,6 @@ function Landing() {
               <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* MÓDULOS / RECURSOS — bento por jornada */}
-      {/* Fundo: gradiente quente da marca (primary/15 → primary/5 → background)
-          em vez do cinza bg-secondary/40 — calor visível no topo descendo pro
-          fundo, destaca a seção sem competir com os cards; funciona em tema
-          claro e escuro (tokens primary/background existem nos dois). */}
-      <section
-        id="recursos"
-        className="border-t border-border bg-gradient-to-b from-primary/15 via-primary/5 to-background"
-      >
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
-            Tudo o que sua imobiliária precisa, num só lugar
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-            Organizado pela jornada do corretor — ative só o que precisa hoje e adicione novos
-            recursos conforme cresce.
-          </p>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {grupos.map((g) => (
-              <div
-                key={g.title}
-                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
-                    <g.icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-base font-bold tracking-tight">{g.title}</h3>
-                </div>
-                <ul className="mt-5 space-y-4">
-                  {g.items.map((it) => (
-                    <li key={it.title} className="flex gap-3">
-                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                        <it.icon className="h-3.5 w-3.5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold leading-snug">{it.title}</p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
-                          {it.desc}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
