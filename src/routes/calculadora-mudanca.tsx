@@ -67,8 +67,8 @@ export function MudancaPage() {
                   <Truck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-md font-bold text-foreground">Orçamento de Logística</h2>
-                  <p className="text-3xs text-muted-foreground leading-none">
+                  <h2 className="text-base font-bold text-foreground">Orçamento de Logística</h2>
+                  <p className="text-[10px] text-muted-foreground leading-none">
                     Cote custos médios de frete
                   </p>
                 </div>
@@ -126,14 +126,14 @@ export function MudancaPage() {
                 <div className="border-t border-border pt-4 mt-2 space-y-3.5">
                   <div className="flex justify-between items-center bg-muted/45 p-3.5 rounded-xl border border-border/60">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-muted-foreground font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase leading-none block">
                         Custo Estimado
                       </span>
-                      <span className="text-2xs text-muted-foreground leading-none block">
+                      <span className="text-[11px] text-muted-foreground leading-none block">
                         Caminhão + Logística
                       </span>
                     </div>
-                    <span className="text-md font-extrabold text-[#4F46E5]">
+                    <span className="text-base font-extrabold text-[#4F46E5]">
                       {formatBRL(estimatedMovingCost)}
                     </span>
                   </div>
@@ -269,7 +269,7 @@ export function MudancaPage() {
 
               {/* Conclusão */}
               <div className="space-y-2 border-t border-border pt-4">
-                <h2 className="text-md font-bold text-foreground">
+                <h2 className="text-base font-bold text-foreground">
                   Iniciando a Vida Nova sem Stress
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">

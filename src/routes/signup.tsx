@@ -723,7 +723,7 @@ function SignupPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-sm">{p.name}</span>
                             {p.price > 0 && (
-                              <span className="inline-flex items-center rounded-full bg-accent/80 px-1.5 py-0.5 text-3xs font-medium text-accent-foreground font-mono">
+                              <span className="inline-flex items-center rounded-full bg-accent/80 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground font-mono">
                                 Mensal
                               </span>
                             )}
@@ -820,7 +820,7 @@ function SignupPage() {
                     <div className="w-32 h-32 bg-card border-2 border-primary rounded-xl flex items-center justify-center p-2 mb-3">
                       <QrCode className="h-28 w-28 text-foreground" />
                     </div>
-                    <p className="text-2xs text-muted-foreground text-center">
+                    <p className="text-[11px] text-muted-foreground text-center">
                       Escaneie o QR Code acima pelo app do seu banco ou use a chave Copia e Cola
                       abaixo para preencher o pagamento:
                     </p>
@@ -828,7 +828,7 @@ function SignupPage() {
                       <Input
                         readOnly
                         value="00020101021226870014br.gov.bcb.pix2565imob365-cadastro-validation"
-                        className="font-mono text-3xs h-8 bg-card"
+                        className="font-mono text-[10px] h-8 bg-card"
                       />
                       <Button
                         type="button"
@@ -846,17 +846,17 @@ function SignupPage() {
                 {pagamentoMetodo === "Boleto" && (
                   <div className="flex flex-col items-center border border-border rounded-xl p-4 bg-muted/10">
                     <FileText className="h-10 w-10 text-muted-foreground mb-1" />
-                    <p className="text-2xs text-muted-foreground text-center font-semibold text-primary">
+                    <p className="text-[11px] text-muted-foreground text-center font-semibold text-primary">
                       Boleto Bancário Gerado com Sucesso
                     </p>
-                    <p className="text-3xs text-muted-foreground text-center mt-1">
+                    <p className="text-[10px] text-muted-foreground text-center mt-1">
                       O boleto possui validade de 3 dias úteis para pagamento.
                     </p>
                     <div className="flex w-full mt-3 gap-1.5">
                       <Input
                         readOnly
                         value="34191.79001 01043.513184 91020.150008 7 98200000019900"
-                        className="font-mono text-3xs h-8 bg-card"
+                        className="font-mono text-[10px] h-8 bg-card"
                       />
                       <Button
                         type="button"
@@ -874,7 +874,7 @@ function SignupPage() {
                 {pagamentoMetodo === "Cartao" && (
                   <div className="space-y-2.5 border border-border rounded-xl p-4 bg-muted/10 text-left">
                     <div className="space-y-1">
-                      <Label htmlFor="cardNome" className="text-3xs font-semibold uppercase">
+                      <Label htmlFor="cardNome" className="text-[10px] font-semibold uppercase">
                         Nome do Titular (Como no cartão)
                       </Label>
                       <Input
@@ -887,7 +887,7 @@ function SignupPage() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label htmlFor="cardNumber" className="text-3xs font-semibold uppercase">
+                      <Label htmlFor="cardNumber" className="text-[10px] font-semibold uppercase">
                         Número do Cartão
                       </Label>
                       <Input
@@ -901,7 +901,7 @@ function SignupPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <Label htmlFor="cardExpiry" className="text-3xs font-semibold uppercase">
+                        <Label htmlFor="cardExpiry" className="text-[10px] font-semibold uppercase">
                           Validade
                         </Label>
                         <Input
@@ -914,7 +914,7 @@ function SignupPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label htmlFor="cardCvv" className="text-3xs font-semibold uppercase">
+                        <Label htmlFor="cardCvv" className="text-[10px] font-semibold uppercase">
                           CVV
                         </Label>
                         <Input
@@ -930,7 +930,7 @@ function SignupPage() {
                   </div>
                 )}
 
-                <div className="text-3xs bg-primary/10 border border-primary/20 text-primary p-2.5 rounded-lg flex items-center justify-center gap-1.5 text-center font-semibold">
+                <div className="text-[10px] bg-primary/10 border border-primary/20 text-primary p-2.5 rounded-lg flex items-center justify-center gap-1.5 text-center font-semibold">
                   <ShieldCheck className="h-4 w-4 flex-shrink-0 text-primary" />
                   DADOS DE SEÇÃO INTEGRADA AMBIENTE DE DEMONSTRAÇÃO E SEGURO.
                 </div>
