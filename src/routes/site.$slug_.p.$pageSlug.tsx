@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { obterSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { useQueryClient } from "@tanstack/react-query";
 import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 
 export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
 
 function TenantPage() {
   const { slug, pageSlug } = Route.useParams();
+  const qc = useQueryClient();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [page, setPage] = useState<{ titulo: string; conteudo_html: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ function TenantPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const c = await carregarSiteCtx(slug);
+      const c = await obterSiteCtx(qc, slug);
       if (!c) {
         setLoading(false);
         return;
@@ -41,7 +43,7 @@ function TenantPage() {
       setPage(pg ?? null);
       setLoading(false);
     })();
-  }, [slug, pageSlug]);
+  }, [slug, pageSlug, qc]);
 
   useTituloSite(ctx, page?.titulo);
 

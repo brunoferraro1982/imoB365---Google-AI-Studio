@@ -1,13 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Building2, Search } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { TenantSiteLayout, SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
-import { CardImovelSite, type ImovelCard } from "@/components/site/sections/ImoveisSection";
+import { TenantSiteLayout, SiteSkeleton } from "@/components/site/TenantSiteLayout";
+import { CardImovelSite } from "@/components/site/sections/ImoveisSection";
 import { MobileCtaBar, SecaoTitulo } from "@/components/site/sections/ui";
 import { SiteNaoEncontrado } from "@/components/site/SiteNaoEncontrado";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
-import { FINALIDADE_LABEL, imovelFotoUrl } from "@/lib/format";
+import { useImoveisSite, useSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { FINALIDADE_LABEL } from "@/lib/format";
 
 export const Route = createFileRoute("/site/$slug_/imoveis")({
   component: TenantImoveisPage,
@@ -18,53 +17,14 @@ export const Route = createFileRoute("/site/$slug_/imoveis")({
 
 function TenantImoveisPage() {
   const { slug } = Route.useParams();
-  const [ctx, setCtx] = useState<SiteCtx | null>(null);
-  const [imoveis, setImoveis] = useState<ImovelCard[]>([]);
-  const [fotosMap, setFotosMap] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
+  const ctxQuery = useSiteCtx(slug);
+  const ctx = ctxQuery.data ?? null;
+  const imoveisQuery = useImoveisSite(ctx?.tenantId);
+  const imoveis = useMemo(() => imoveisQuery.data?.imoveis ?? [], [imoveisQuery.data]);
+  const fotosMap = imoveisQuery.data?.fotosMap ?? {};
+  const loading = ctxQuery.isPending || (!!ctx && imoveisQuery.isPending);
   const [busca, setBusca] = useState("");
   const [finalidade, setFinalidade] = useState<string>("");
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const c = await carregarSiteCtx(slug);
-      if (!c) {
-        setLoading(false);
-        return;
-      }
-      const { data: imv } = await supabase
-        .from("imoveis")
-        .select(
-          "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,vagas,area_util,endereco_bairro,endereco_cidade",
-        )
-        .eq("tenant_id", c.tenantId)
-        .eq("publicado", true)
-        .eq("status", "ativo")
-        .order("destaque", { ascending: false })
-        .order("publicado_em", { ascending: false });
-      setCtx(c);
-      const lista = (imv as ImovelCard[]) ?? [];
-      setImoveis(lista);
-      if (lista.length) {
-        const { data: fotos } = await supabase
-          .from("imovel_fotos")
-          .select("imovel_id,storage_path,capa,ordem")
-          .in(
-            "imovel_id",
-            lista.map((i) => i.id),
-          )
-          .order("capa", { ascending: false })
-          .order("ordem");
-        const map: Record<string, string> = {};
-        (fotos ?? []).forEach((f) => {
-          if (!map[f.imovel_id]) map[f.imovel_id] = imovelFotoUrl(f.storage_path);
-        });
-        setFotosMap(map);
-      }
-      setLoading(false);
-    })();
-  }, [slug]);
 
   useTituloSite(ctx, "Imóveis");
 

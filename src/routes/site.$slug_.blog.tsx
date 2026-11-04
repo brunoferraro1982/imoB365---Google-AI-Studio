@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
 import { SiteNaoEncontrado } from "@/components/site/SiteNaoEncontrado";
 import { SecaoTitulo } from "@/components/site/sections/ui";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { obterSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { useQueryClient } from "@tanstack/react-query";
 import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 
 export const Route = createFileRoute("/site/$slug_/blog")({
@@ -27,6 +28,7 @@ type Post = {
 
 function TenantBlogPage() {
   const { slug } = Route.useParams();
+  const qc = useQueryClient();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +36,7 @@ function TenantBlogPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const c = await carregarSiteCtx(slug);
+      const c = await obterSiteCtx(qc, slug);
       if (!c) {
         setLoading(false);
         return;
@@ -50,7 +52,7 @@ function TenantBlogPage() {
       setPosts((postsData as Post[]) ?? []);
       setLoading(false);
     })();
-  }, [slug]);
+  }, [slug, qc]);
 
   useTituloSite(ctx, "Blog");
 

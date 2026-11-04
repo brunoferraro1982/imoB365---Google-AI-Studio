@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Building2, Calendar, MapPin } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { LIMITE_HOME_EMP, useEmpreendimentosSite } from "@/lib/tenantSite";
 import { SecaoTitulo } from "./ui";
 
 export type EmpreendimentoCard = {
@@ -23,23 +22,10 @@ const FASE_LABEL: Record<string, string> = {
   pronto: "Pronto para morar",
 };
 
-/** Empreendimentos publicados do tenant, mais recentes primeiro. */
+/** Empreendimentos publicados do tenant, mais recentes primeiro (cacheado). */
 export function useEmpreendimentosTenant(tenantId: string | undefined, limite?: number) {
-  const [itens, setItens] = useState<EmpreendimentoCard[] | null>(null);
-  useEffect(() => {
-    if (!tenantId) return;
-    let q = supabase
-      .from("empreendimentos")
-      .select(
-        "id,slug,nome,fase,construtora,endereco_bairro,endereco_cidade,entrega_prevista,fotos_urls",
-      )
-      .eq("tenant_id", tenantId)
-      .eq("publicado", true)
-      .order("created_at", { ascending: false });
-    if (limite) q = q.limit(limite);
-    q.then(({ data }) => setItens((data as EmpreendimentoCard[]) ?? []));
-  }, [tenantId, limite]);
-  return itens;
+  const { data } = useEmpreendimentosSite(tenantId, limite);
+  return data ?? null;
 }
 
 export function CardEmpreendimentoSite({ e }: { e: EmpreendimentoCard }) {
@@ -93,8 +79,6 @@ export function CardEmpreendimentoSite({ e }: { e: EmpreendimentoCard }) {
   );
 }
 
-const LIMITE_HOME = 6;
-
 export function EmpreendimentosSection({
   tenantId,
   tenantSlug,
@@ -106,7 +90,7 @@ export function EmpreendimentosSection({
   total: number;
   compact?: boolean;
 }) {
-  const itens = useEmpreendimentosTenant(total > 0 ? tenantId : undefined, LIMITE_HOME);
+  const itens = useEmpreendimentosTenant(total > 0 ? tenantId : undefined, LIMITE_HOME_EMP);
   if (total === 0 || (itens && itens.length === 0)) return null;
   const lista = compact ? (itens ?? []).slice(0, 2) : (itens ?? []);
 
@@ -118,7 +102,7 @@ export function EmpreendimentosSection({
         titulo="Lançamentos e empreendimentos"
         subtitulo="Condições direto com a construtora, tabela atualizada e plantas com quem acompanha cada obra."
         acao={
-          !compact && total > LIMITE_HOME ? (
+          !compact && total > LIMITE_HOME_EMP ? (
             <Link
               to="/site/$slug/lancamentos"
               params={{ slug: tenantSlug }}

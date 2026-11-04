@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { obterSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { useQueryClient } from "@tanstack/react-query";
 import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ type Post = {
 
 function TenantBlogPostPage() {
   const { slug, postSlug } = Route.useParams();
+  const qc = useQueryClient();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ function TenantBlogPostPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const c = await carregarSiteCtx(slug);
+      const c = await obterSiteCtx(qc, slug);
       if (!c) {
         setLoading(false);
         return;
@@ -51,7 +53,7 @@ function TenantBlogPostPage() {
       setPost((postData as unknown as Post) ?? null);
       setLoading(false);
     })();
-  }, [slug, postSlug]);
+  }, [slug, postSlug, qc]);
 
   useTituloSite(ctx, post?.titulo);
 

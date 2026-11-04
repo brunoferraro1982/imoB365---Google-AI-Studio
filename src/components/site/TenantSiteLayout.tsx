@@ -11,10 +11,19 @@ import {
   ArrowUpRight,
   Menu,
   BadgeCheck,
+  ArrowLeft,
+  Search,
+  Building2,
+  Calculator,
+  Briefcase,
+  Headset,
+  type LucideIcon,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { waHref as montarWaHref } from "@/lib/tenantSite";
+import { waHref as montarWaHref, usePrefetchSite, type PaginaSite } from "@/lib/tenantSite";
+import { Logo } from "@/components/brand/Logo";
+import { IconeVidroTopo } from "@/components/site/MegaNav";
 
 export type SiteCtx = {
   tenantId: string;
@@ -53,17 +62,26 @@ export type SiteCtx = {
   empreendimentosTotal?: number;
 };
 
-type NavItem = { key: string; label: string; to: string; hash?: string };
+type NavItem = { key: string; label: string; to: string; hash?: string; pagina?: PaginaSite };
 
 function navItems(ctx: SiteCtx): NavItem[] {
   const base = `/site/${ctx.tenantSlug}`;
   return [
-    { key: "inicio", label: "Início", to: base },
-    { key: "imoveis", label: "Imóveis", to: `${base}/imoveis` },
+    { key: "inicio", label: "Início", to: base, pagina: "inicio" as const },
+    { key: "imoveis", label: "Imóveis", to: `${base}/imoveis`, pagina: "imoveis" as const },
     ...((ctx.empreendimentosTotal ?? 0) > 0
-      ? [{ key: "lancamentos", label: "Lançamentos", to: `${base}/lancamentos` }]
+      ? [
+          {
+            key: "lancamentos",
+            label: "Lançamentos",
+            to: `${base}/lancamentos`,
+            pagina: "lancamentos" as const,
+          },
+        ]
       : []),
-    ...(ctx.hasSobre ? [{ key: "sobre", label: "Sobre", to: base, hash: "sobre" }] : []),
+    ...(ctx.hasSobre
+      ? [{ key: "sobre", label: "Sobre", to: base, hash: "sobre", pagina: "inicio" as const }]
+      : []),
     ...ctx.pages.map((p) => ({
       key: `page-${p.slug}`,
       label: p.titulo,
@@ -109,7 +127,56 @@ export function SiteMarca({ ctx, claro }: { ctx: SiteCtx; claro?: boolean }) {
   );
 }
 
+// Links principais do portal imoB365 na barra preta acima do site do tenant.
+const LINKS_PORTAL: { label: string; to: string; icon: LucideIcon }[] = [
+  { label: "Buscar imóveis", to: "/buscar", icon: Search },
+  { label: "Empreendimentos", to: "/empreendimentos", icon: Building2 },
+  { label: "Simuladores", to: "/calculadora-financiamento", icon: Calculator },
+  { label: "Para imobiliárias", to: "/planos", icon: Briefcase },
+  { label: "Central de Atendimento", to: "/atendimento", icon: Headset },
+];
+
+/**
+ * Top bar da imoB365 (identidade do portal: preto + ícones em vidro laranja)
+ * acima do header do tenant — caminho de volta ao portal e atalhos
+ * principais. Rola junto com a página; só o header do tenant fica fixo.
+ */
+function PortalTopBar() {
+  return (
+    <div className="relative z-50 bg-black text-[11.5px] font-semibold text-white/80">
+      <div className="mx-auto flex h-9 max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
+        <Link
+          to="/"
+          className="group flex shrink-0 items-center gap-2 transition-colors hover:text-white"
+          aria-label="Voltar ao portal imoB365"
+        >
+          <IconeVidroTopo icon={ArrowLeft} />
+          <span className="hidden sm:inline">Voltar ao portal</span>
+          <Logo flat variant="white" className="h-[18px] w-auto" />
+        </Link>
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Portal imoB365">
+          {LINKS_PORTAL.map((l) => (
+            <Link
+              key={l.to + l.label}
+              to={l.to}
+              className="group flex items-center gap-1.5 whitespace-nowrap rounded-full border border-transparent px-2 py-0.5 transition-colors hover:border-white/10 hover:bg-white/10 hover:text-white"
+            >
+              <IconeVidroTopo icon={l.icon} />
+              <span className={l.label.length > 18 ? "hidden lg:inline" : ""}>{l.label}</span>
+            </Link>
+          ))}
+        </nav>
+        <Link to="/buscar" className="group flex items-center gap-1.5 whitespace-nowrap md:hidden">
+          <IconeVidroTopo icon={Search} />
+          Buscar imóveis
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function SiteHeader({ ctx }: { ctx: SiteCtx }) {
+  const prefetch = usePrefetchSite(ctx);
   const [rolou, setRolou] = useState(false);
   const [aberto, setAberto] = useState(false);
   const wa = montarWaHref(ctx, `Olá! Vim pelo site de ${ctx.tenantNome}.`);
@@ -151,6 +218,8 @@ function SiteHeader({ ctx }: { ctx: SiteCtx }) {
               to={i.to}
               hash={i.hash}
               activeOptions={{ exact: true, includeHash: false }}
+              onMouseEnter={() => i.pagina && prefetch(i.pagina)}
+              onFocus={() => i.pagina && prefetch(i.pagina)}
               className="whitespace-nowrap rounded-full px-3.5 py-1.5 transition-colors hover:bg-white hover:text-foreground dark:hover:bg-white/10"
             >
               {i.label}
@@ -216,12 +285,28 @@ function SiteHeader({ ctx }: { ctx: SiteCtx }) {
                   </a>
                 </div>
               )}
-              <Link
-                to="/"
-                className="mt-6 block px-5 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Site criado com imoB365 ↗
-              </Link>
+              <div className="mx-3 mt-6 rounded-2xl bg-black p-3 text-white/85">
+                <Link
+                  to="/"
+                  onClick={() => setAberto(false)}
+                  className="group flex items-center gap-2 px-1 pb-2 text-xs font-semibold"
+                >
+                  <IconeVidroTopo icon={ArrowLeft} /> Voltar ao portal
+                  <Logo flat variant="white" className="ml-auto h-4 w-auto" />
+                </Link>
+                <div className="grid gap-0.5 border-t border-white/10 pt-2">
+                  {LINKS_PORTAL.map((l) => (
+                    <Link
+                      key={l.to + l.label}
+                      to={l.to}
+                      onClick={() => setAberto(false)}
+                      className="group flex items-center gap-2 rounded-lg px-1 py-1.5 text-[13px] hover:bg-white/10"
+                    >
+                      <IconeVidroTopo icon={l.icon} /> {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
@@ -381,6 +466,7 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
       }
     >
       <div aria-hidden className="site-mesh pointer-events-none fixed inset-0 -z-0" />
+      <PortalTopBar />
       <SiteHeader ctx={ctx} />
       <main className="relative">{children}</main>
       <SiteFooter ctx={ctx} />
@@ -392,6 +478,7 @@ export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: Re
 export function SiteSkeleton() {
   return (
     <div className="min-h-screen bg-[#f6f7f9] dark:bg-[#0b1220]">
+      <div className="h-9 bg-black" />
       <div className="h-16 border-b border-black/5 bg-white/60" />
       <div className="site-hero-fundo h-[520px] animate-pulse" />
       <div className="mx-auto grid max-w-6xl gap-6 px-6 py-16 sm:grid-cols-3">

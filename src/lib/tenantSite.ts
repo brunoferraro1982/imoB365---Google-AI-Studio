@@ -1,6 +1,10 @@
 import { useEffect } from "react";
+import { useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { SiteCtx } from "@/components/site/TenantSiteLayout";
+import type { ImovelCard } from "@/components/site/sections/ImoveisSection";
+import type { EmpreendimentoCard } from "@/components/site/sections/EmpreendimentosSection";
+import { imovelFotoUrl } from "@/lib/format";
 
 // Carregamento comum do site público do tenant (/site/$slug e rotas filhas):
 // tenant + configurações publicadas + páginas + presença de blog/lançamentos
@@ -117,4 +121,155 @@ export function useTituloSite(ctx: SiteCtx | null, pagina?: string) {
       tag.content = desc;
     }
   }, [ctx, pagina]);
+}
+
+// ---------------------------------------------------------------------------
+// Cache (React Query) do site do tenant: ao navegar entre Início, Imóveis,
+// Lançamentos e Sobre, o contexto e as listas já carregadas são reaproveitados
+// na hora — antes cada rota remontava, mostrava o esqueleto e refazia 3
+// rodadas de consultas. Os links do header ainda pré-carregam no hover.
+// ---------------------------------------------------------------------------
+const STALE = 5 * 60_000;
+
+const chaveCtx = (slug: string, previewTenant: string | null = null) =>
+  ["site-ctx", slug, previewTenant] as const;
+
+export function useSiteCtx(
+  slug: string,
+  opts: { preview?: boolean; authTenantId?: string | null } = {},
+) {
+  const previewTenant = opts.preview && opts.authTenantId ? opts.authTenantId : null;
+  return useQuery({
+    queryKey: chaveCtx(slug, previewTenant),
+    queryFn: () => carregarSiteCtx(slug, opts),
+    staleTime: previewTenant ? 0 : STALE,
+  });
+}
+
+/** Contexto do site via cache (para rotas que ainda carregam dados em useEffect). */
+export function obterSiteCtx(qc: QueryClient, slug: string) {
+  return qc.fetchQuery({
+    queryKey: chaveCtx(slug),
+    queryFn: () => carregarSiteCtx(slug),
+    staleTime: STALE,
+  });
+}
+
+const COLS_IMOVEL =
+  "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,vagas,area_util,endereco_bairro,endereco_cidade";
+
+export type ImoveisSite = {
+  imoveis: ImovelCard[];
+  total: number;
+  fotosMap: Record<string, string>;
+};
+
+export async function carregarImoveisSite(tenantId: string, limite?: number): Promise<ImoveisSite> {
+  let q = supabase
+    .from("imoveis")
+    .select(COLS_IMOVEL, { count: "exact" })
+    .eq("tenant_id", tenantId)
+    .eq("publicado", true)
+    .eq("status", "ativo")
+    .order("destaque", { ascending: false })
+    .order("publicado_em", { ascending: false });
+  if (limite) q = q.limit(limite);
+  const { data, count } = await q;
+  const imoveis = (data as ImovelCard[]) ?? [];
+  const fotosMap: Record<string, string> = {};
+  if (imoveis.length) {
+    const { data: fotos } = await supabase
+      .from("imovel_fotos")
+      .select("imovel_id,storage_path,capa,ordem")
+      .in(
+        "imovel_id",
+        imoveis.map((i) => i.id),
+      )
+      .order("capa", { ascending: false })
+      .order("ordem");
+    (fotos ?? []).forEach((f) => {
+      if (!fotosMap[f.imovel_id]) fotosMap[f.imovel_id] = imovelFotoUrl(f.storage_path);
+    });
+  }
+  return { imoveis, total: count ?? imoveis.length, fotosMap };
+}
+
+const chaveImoveis = (tenantId: string | undefined, limite?: number) =>
+  ["site-imoveis", tenantId, limite ?? "todos"] as const;
+
+export function useImoveisSite(tenantId: string | undefined, limite?: number) {
+  return useQuery({
+    queryKey: chaveImoveis(tenantId, limite),
+    queryFn: () => carregarImoveisSite(tenantId!, limite),
+    enabled: !!tenantId,
+    staleTime: STALE,
+  });
+}
+
+export async function carregarEmpreendimentosSite(
+  tenantId: string,
+  limite?: number,
+): Promise<EmpreendimentoCard[]> {
+  let q = supabase
+    .from("empreendimentos")
+    .select(
+      "id,slug,nome,fase,construtora,endereco_bairro,endereco_cidade,entrega_prevista,fotos_urls",
+    )
+    .eq("tenant_id", tenantId)
+    .eq("publicado", true)
+    .order("created_at", { ascending: false });
+  if (limite) q = q.limit(limite);
+  const { data } = await q;
+  return (data as EmpreendimentoCard[]) ?? [];
+}
+
+const chaveEmp = (tenantId: string | undefined, limite?: number) =>
+  ["site-emp", tenantId, limite ?? "todos"] as const;
+
+export function useEmpreendimentosSite(tenantId: string | undefined, limite?: number) {
+  return useQuery({
+    queryKey: chaveEmp(tenantId, limite),
+    queryFn: () => carregarEmpreendimentosSite(tenantId!, limite),
+    enabled: !!tenantId,
+    staleTime: STALE,
+  });
+}
+
+/** Quantos imóveis/lançamentos a home do site mostra (o resto fica em "Ver todos"). */
+export const LIMITE_HOME_IMOVEIS = 12;
+export const LIMITE_HOME_EMP = 6;
+
+export type PaginaSite = "inicio" | "imoveis" | "lancamentos";
+
+/** Pré-carrega os dados de uma página do site (hover nos links do header). */
+export function usePrefetchSite(ctx: SiteCtx) {
+  const qc = useQueryClient();
+  return (pagina: PaginaSite) => {
+    const t = ctx.tenantId;
+    if (pagina === "inicio") {
+      void qc.prefetchQuery({
+        queryKey: chaveImoveis(t, LIMITE_HOME_IMOVEIS),
+        queryFn: () => carregarImoveisSite(t, LIMITE_HOME_IMOVEIS),
+        staleTime: STALE,
+      });
+      if ((ctx.empreendimentosTotal ?? 0) > 0)
+        void qc.prefetchQuery({
+          queryKey: chaveEmp(t, LIMITE_HOME_EMP),
+          queryFn: () => carregarEmpreendimentosSite(t, LIMITE_HOME_EMP),
+          staleTime: STALE,
+        });
+    } else if (pagina === "imoveis") {
+      void qc.prefetchQuery({
+        queryKey: chaveImoveis(t),
+        queryFn: () => carregarImoveisSite(t),
+        staleTime: STALE,
+      });
+    } else {
+      void qc.prefetchQuery({
+        queryKey: chaveEmp(t),
+        queryFn: () => carregarEmpreendimentosSite(t),
+        staleTime: STALE,
+      });
+    }
+  };
 }

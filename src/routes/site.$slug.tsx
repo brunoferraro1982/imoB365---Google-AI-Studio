@@ -1,13 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Building2, MapPin, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { TenantSiteLayout, SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { TenantSiteLayout, SiteSkeleton } from "@/components/site/TenantSiteLayout";
 import { SiteWidgetsFaixa, useSiteWidgets } from "@/components/site/SiteWidgets";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
 import { HeroSection } from "@/components/site/sections/HeroSection";
-import { ImoveisSection, type ImovelCard } from "@/components/site/sections/ImoveisSection";
+import { ImoveisSection } from "@/components/site/sections/ImoveisSection";
 import { EmpreendimentosSection } from "@/components/site/sections/EmpreendimentosSection";
 import {
   ComoFuncionaSection,
@@ -17,10 +16,8 @@ import { SobreSection } from "@/components/site/sections/SobreSection";
 import { BlogDestaqueSection } from "@/components/site/sections/BlogDestaqueSection";
 import { ContactSection } from "@/components/site/sections/ContactSection";
 import { MobileCtaBar } from "@/components/site/sections/ui";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
-import { imovelFotoUrl } from "@/lib/format";
+import { LIMITE_HOME_IMOVEIS, useImoveisSite, useSiteCtx, useTituloSite } from "@/lib/tenantSite";
 import {
-  DEFAULT_SECOES,
   normalizarSecoes,
   type LayoutKey,
   type SectionDbItem,
@@ -47,70 +44,20 @@ function TenantHome() {
   const { slug } = Route.useParams();
   const { preview } = Route.useSearch();
   const { tenantId: authTenantId } = useAuth();
-  const [ctx, setCtx] = useState<SiteCtx | null>(null);
-  const [layout, setLayout] = useState<LayoutKey>("classico");
-  const [secoes, setSecoes] = useState<SectionDbItem[]>(DEFAULT_SECOES);
-  const [imoveis, setImoveis] = useState<ImovelCard[]>([]);
-  const [imoveisTotal, setImoveisTotal] = useState(0);
-  const [fotosMap, setFotosMap] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [notFoundState, setNotFoundState] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const c = await carregarSiteCtx(slug, { preview, authTenantId });
-      if (!c) {
-        setNotFoundState(true);
-        setLoading(false);
-        return;
-      }
-      const [{ data: imv }, { count: imoveisCount }] = await Promise.all([
-        supabase
-          .from("imoveis")
-          .select(
-            "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,vagas,area_util,endereco_bairro,endereco_cidade,endereco_uf",
-          )
-          .eq("tenant_id", c.tenantId)
-          .eq("publicado", true)
-          .eq("status", "ativo")
-          .order("destaque", { ascending: false })
-          .order("publicado_em", { ascending: false })
-          .limit(12),
-        // Contagem real (não a amostra de até 12 em destaque acima) — usada
-        // no stat do hero e pra decidir se mostra o link "Ver todos".
-        supabase
-          .from("imoveis")
-          .select("id", { count: "exact", head: true })
-          .eq("tenant_id", c.tenantId)
-          .eq("publicado", true)
-          .eq("status", "ativo"),
-      ]);
-      const cfg = c.settings as Record<string, unknown>;
-      setCtx(c);
-      setLayout((cfg.layout as LayoutKey) || "classico");
-      setSecoes(normalizarSecoes(cfg.secoes as SectionDbItem[] | null));
-      setImoveis((imv as ImovelCard[]) ?? []);
-      setImoveisTotal(imoveisCount ?? imv?.length ?? 0);
-      if (imv && imv.length) {
-        const { data: fotos } = await supabase
-          .from("imovel_fotos")
-          .select("imovel_id,storage_path,capa,ordem")
-          .in(
-            "imovel_id",
-            imv.map((i) => i.id),
-          )
-          .order("capa", { ascending: false })
-          .order("ordem");
-        const map: Record<string, string> = {};
-        (fotos ?? []).forEach((f) => {
-          if (!map[f.imovel_id]) map[f.imovel_id] = imovelFotoUrl(f.storage_path);
-        });
-        setFotosMap(map);
-      }
-      setLoading(false);
-    })();
-  }, [slug, preview, authTenantId]);
+  const ctxQuery = useSiteCtx(slug, { preview, authTenantId });
+  const ctx = ctxQuery.data ?? null;
+  const imoveisQuery = useImoveisSite(ctx?.tenantId, LIMITE_HOME_IMOVEIS);
+  const imoveis = imoveisQuery.data?.imoveis ?? [];
+  const imoveisTotal = imoveisQuery.data?.total ?? 0;
+  const fotosMap = imoveisQuery.data?.fotosMap ?? {};
+  const cfg = (ctx?.settings ?? {}) as Record<string, unknown>;
+  const layout = (cfg.layout as LayoutKey) || "classico";
+  const secoes = useMemo(
+    () => normalizarSecoes(cfg.secoes as SectionDbItem[] | null),
+    [cfg.secoes],
+  );
+  const loading = ctxQuery.isPending || (!!ctx && imoveisQuery.isPending);
+  const notFoundState = !ctxQuery.isPending && !ctx;
 
   useTituloSite(ctx);
 

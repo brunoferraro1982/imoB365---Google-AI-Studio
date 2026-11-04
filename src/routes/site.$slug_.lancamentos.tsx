@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Building2 } from "lucide-react";
-import { TenantSiteLayout, SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { TenantSiteLayout, SiteSkeleton } from "@/components/site/TenantSiteLayout";
 import {
   CardEmpreendimentoSite,
   useEmpreendimentosTenant,
 } from "@/components/site/sections/EmpreendimentosSection";
 import { MobileCtaBar, SecaoTitulo } from "@/components/site/sections/ui";
 import { SiteNaoEncontrado } from "@/components/site/SiteNaoEncontrado";
-import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { useSiteCtx, useTituloSite } from "@/lib/tenantSite";
 
 export const Route = createFileRoute("/site/$slug_/lancamentos")({
   component: TenantLancamentosPage,
@@ -27,17 +27,10 @@ const FASES = [
 
 function TenantLancamentosPage() {
   const { slug } = Route.useParams();
-  const [ctx, setCtx] = useState<SiteCtx | null>(null);
-  const [loading, setLoading] = useState(true);
+  const ctxQuery = useSiteCtx(slug);
+  const ctx = ctxQuery.data ?? null;
+  const loading = ctxQuery.isPending;
   const [fase, setFase] = useState("");
-
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      setCtx(await carregarSiteCtx(slug));
-      setLoading(false);
-    })();
-  }, [slug]);
 
   useTituloSite(ctx, "Lançamentos");
   const itens = useEmpreendimentosTenant(ctx?.tenantId);
