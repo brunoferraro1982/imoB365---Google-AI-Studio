@@ -101,7 +101,7 @@ function LoginPage() {
       <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm">
         <div className="text-center sm:text-left">
           <Link to="/" className="inline-block">
-            <Logo className="h-7 w-auto" />
+            <Logo className="h-8 w-auto" />
           </Link>
           <h1 className="mt-6 text-2xl font-bold tracking-tight">Entrar</h1>
           <p className="mt-1 text-sm text-muted-foreground">

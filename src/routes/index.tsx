@@ -1,4 +1,4 @@
-import { SiteHeader, ParceirosMarquee } from "@/components/site-layout";
+import { SiteHeader, SiteFooter, ParceirosMarquee } from "@/components/site-layout";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -14,13 +14,8 @@ import {
   Maximize2,
   ArrowRight,
   Building,
-  Instagram,
-  Facebook,
-  Linkedin,
   SlidersHorizontal,
-  Key,
   CreditCard,
-  Calculator,
   Calendar,
   Landmark,
   DollarSign,
@@ -39,7 +34,6 @@ import {
   Route as RouteIcon,
 } from "lucide-react";
 
-import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
@@ -47,7 +41,7 @@ import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
 import { getVisitorRegion } from "@/lib/geo.functions";
 import { seoHead, getSeoConfig, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
-import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
+import { WidgetsFerramentas } from "@/components/portal/WidgetsFerramentas";
 import { BuscaIAHero } from "@/components/portal/BuscaIAHero";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
@@ -286,38 +280,36 @@ function Landing() {
       />
       <SiteHeader />
 
-      {/* HERO + BUSCA */}
-      <section className="relative isolate overflow-hidden border-b border-border/60 pb-20 pt-16 md:pb-28 md:pt-24 bg-cover bg-center">
-        {/* Real city skyline background image centered and scaled like the image */}
+      {/* HERO + BUSCA (brand system · Liquid Glass) */}
+      <section className="hero-brand relative isolate overflow-hidden border-b border-border/60 pb-10 pt-6 md:pb-14 md:pt-9">
+        {/* Foto da cidade + mesh claro da marca: o vidro precisa de algo atrás para desfocar */}
         <div
           className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10"
           style={{ backgroundImage: `url(${citySkylineHero})` }}
         />
-        {/* Soft elegant vignette / gradient overlays to blend beautifully */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/95 via-background/65 to-transparent dark:from-background dark:via-background/80 dark:to-transparent" />
+        <div className="mesh-brand-claro absolute inset-0 -z-10" />
+        {/* Brilho alaranjado do topo (destaque original da seção) */}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--primary-glow)_15%,_transparent_55%)] opacity-35 dark:opacity-20" />
 
         <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-start text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
-              imobiliárias, corretores e clientes
-            </span>
-            {/* max-w removido em desktop (md:) — com max-w-4xl, as frases mais
-                longas do texto rotativo abaixo estouravam pra uma 3ª linha e
-                deslocavam o conteúdo seguinte da página. O container pai (
-                max-w-6xl) já comporta a frase mais longa numa única linha
-                (medido: ~1014px de texto em ~1104px disponíveis), então só
-                era um limite artificial mais estreito que o espaço real —
-                não precisou alargar nada além do que já existia. */}
-            {/* Mobile: text-5xl fazia as frases rotativas quebrarem em 3 linhas e,
-                como têm comprimentos diferentes, o min-h não cobria a maior —
-                a altura do h1 variava e empurrava o campo de busca (dificultava a
-                navegação). Reduzido pra text-4xl e min-h ampliado pra reservar
-                estável o pior caso (2 linhas do fixo + 2 da frase). Desktop
-                (sm:/md:) inalterado. */}
-            <h1 className="mt-8 max-w-4xl md:max-w-none text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
-              Encontre o imóvel certo,
+          <span className="glass-fosco inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta imobiliárias,
+            corretores e clientes
+          </span>
+
+          {/* Busca inteligente (70%) + widgets de ferramentas (30%), mesma altura */}
+          <div className="mt-5">
+            <BuscaIAHero lateral={<WidgetsFerramentas />} />
+          </div>
+
+          {/* Título (3 linhas: fixo + frase rotativa em até 2) | texto — ~55/45; "Procurando por" em linha própria abaixo */}
+          <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-[11fr_9fr] md:items-start md:gap-10">
+            {/* min-h reserva o pior caso da frase rotativa para a altura do h1 não
+                variar e não empurrar o conteúdo seguinte (mobile: 2 linhas do fixo
+                + 2 da frase; desktop: 1 do fixo + 2 da frase). */}
+            <h1 className="text-4xl sm:text-6xl md:text-[clamp(1.85rem,calc((min(100vw,1152px)-88px)/20),3.35rem)] font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em] md:min-h-[3.3em]">
+              <span className="md:whitespace-nowrap">Encontre o imóvel certo,</span>
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
                 {displayText}
@@ -326,15 +318,15 @@ function Landing() {
                 </span>
               </span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base md:text-lg text-muted-foreground font-semibold leading-relaxed">
-              Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
-              parceiros em todo o Brasil. Atendimento humano, sem burocracia.
-            </p>
+            <div>
+              <p className="text-base md:pt-2 md:text-[17px] text-muted-foreground font-semibold leading-relaxed">
+                Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
+                parceiros em todo o Brasil. Atendimento humano, sem burocracia.
+              </p>
+            </div>
           </div>
 
-          <BuscaIAHero />
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
             <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
             {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
               <Link
@@ -350,7 +342,86 @@ function Landing() {
         </div>
       </section>
 
-      <AssistenteIASection />
+      {/* IMOBILIÁRIAS PARCEIRAS (Liquid Glass) — parceiros (70%) | cadastro (30%) */}
+      <section
+        id="parceiros"
+        className="hero-brand relative isolate scroll-mt-20 overflow-hidden border-b border-border bg-muted/30"
+      >
+        {/* fundo Liquid Glass acinzentado suave (sem azul/laranja) */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_8%_100%,rgba(100,116,139,.16),transparent_70%),radial-gradient(480px_300px_at_95%_0%,rgba(148,163,184,.20),transparent_70%)]" />
+
+        <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-[7fr_3fr] md:py-16">
+          <div className="glass-fosco rounded-[28px] p-6 md:p-7">
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+              Corretores e Imobiliárias parceiras
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Trabalhamos lado a lado com quem entende do mercado local.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {!tenantsLoaded &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="glass-claro h-24 animate-pulse rounded-2xl" />
+                ))}
+              {tenants.map((t) => (
+                <Link
+                  key={t.id}
+                  to="/site/$slug"
+                  params={{ slug: t.slug }}
+                  className="glass-claro group flex items-center gap-4 rounded-2xl bg-white/55 p-4 transition hover:-translate-y-0.5 hover:bg-white/80"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {t.logoUrl ? (
+                      <img
+                        src={t.logoUrl}
+                        alt={t.nome}
+                        className="h-14 w-14 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Building className="h-6 w-6" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold group-hover:text-primary">
+                      {t.nome}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
+                    {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
+                      <p
+                        className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
+                        title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      >
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass-fosco relative flex flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-7">
+            <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
+              <Building className="h-6 w-6" />
+            </span>
+            <h3 className="relative mt-4 text-xl font-bold leading-tight tracking-tight md:text-2xl">
+              Você ou sua imobiliária ainda não estão aqui?
+            </h3>
+            <p className="relative mt-2 text-sm text-muted-foreground">
+              Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
+            </p>
+            <Link to="/signup" className="relative mt-5 block w-full">
+              <Button className="h-auto w-full whitespace-normal rounded-full px-5 py-2.5 shadow-lg shadow-primary/20">
+                Quero efetuar o cadastro agora!
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* IMÓVEIS EM DESTAQUE */}
       <section className="mx-auto max-w-6xl px-6 py-20">
@@ -446,6 +517,40 @@ function Landing() {
               Ver todos os imóveis <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </Link>
+        </div>
+      </section>
+
+      {/* CTA — Liquid Glass sobre degradê cinza-claro */}
+      <section className="hero-brand relative isolate overflow-hidden border-t border-border">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_10%_0%,rgba(148,163,184,.22),transparent_70%),radial-gradient(520px_320px_at_92%_100%,rgba(100,116,139,.16),transparent_70%)]" />
+        <div className="mx-auto max-w-6xl px-6 py-14 md:py-16">
+          <div className="glass-fosco rounded-[28px] p-8 text-center md:p-12">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+              Pronto para vender e alugar mais, com menos esforço?
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Teste grátis por 30 dias.</p>
+            <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground">
+              Após os 30 dias, seus dados continuam salvos na plataforma — para seguir usando, basta
+              escolher um plano de assinatura.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link to="/signup">
+                <Button size="lg" className="rounded-full px-7 shadow-lg shadow-primary/20">
+                  Começar agora
+                </Button>
+              </Link>
+              <Link to="/planos">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-white/70 bg-white/60 px-7 backdrop-blur hover:bg-white/90"
+                >
+                  Ver planos e preços
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -550,115 +655,17 @@ function Landing() {
         </section>
       )}
 
-      {/* IMOBILIÁRIAS PARCEIRAS */}
-      <section id="parceiros" className="scroll-mt-20 border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Corretores e Imobiliárias parceiras
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Trabalhamos lado a lado com quem entende do mercado local.
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {!tenantsLoaded &&
-              Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-28 animate-pulse rounded-xl border border-border bg-card"
-                />
-              ))}
-            {tenants.map((t) => (
-              <Link
-                key={t.id}
-                to="/site/$slug"
-                params={{ slug: t.slug }}
-                className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  {t.logoUrl ? (
-                    <img
-                      src={t.logoUrl}
-                      alt={t.nome}
-                      className="h-14 w-14 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <Building className="h-6 w-6" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold group-hover:text-primary">
-                    {t.nome}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
-                  {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
-                    <p
-                      className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
-                      title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    >
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Você ou sua imobiliária ainda não estão aqui?
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
-              </p>
-            </div>
-            <Link to="/signup" className="mt-4 inline-block md:mt-0">
-              <Button>Quero efetuar o cadastro agora!</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* COMO AJUDAMOS — valores */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
-          Como o imob365 trabalha por você
-        </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
-          Uma plataforma completa para captar, atender, fechar e administrar — do primeiro lead ao
-          pós-venda, sem precisar de equipe de TI.
-        </p>
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {valores.map((s) => (
-            <div
-              key={s.title}
-              className="rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
-            >
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <s.icon className="h-5 w-5" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* MÓDULOS / RECURSOS — bento por jornada */}
+      {/* MÓDULOS / RECURSOS — bento por jornada (Liquid Glass sobre o degradê laranja) */}
       {/* Fundo: gradiente quente da marca (primary/15 → primary/5 → background)
           em vez do cinza bg-secondary/40 — calor visível no topo descendo pro
           fundo, destaca a seção sem competir com os cards; funciona em tema
           claro e escuro (tokens primary/background existem nos dois). */}
       <section
         id="recursos"
-        className="border-t border-border bg-gradient-to-b from-primary/15 via-primary/5 to-background"
+        className="hero-brand relative isolate overflow-hidden border-t border-border bg-gradient-to-b from-primary/15 via-primary/5 to-background"
       >
+        {/* manchas suaves para o vidro ter o que desfocar */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(620px_380px_at_15%_0%,rgba(237,125,49,.22),transparent_70%),radial-gradient(560px_360px_at_90%_35%,rgba(237,125,49,.14),transparent_70%)]" />
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
             Tudo o que sua imobiliária precisa, num só lugar
@@ -671,10 +678,10 @@ function Landing() {
             {grupos.map((g) => (
               <div
                 key={g.title}
-                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
+                className="glass-fosco group rounded-[26px] bg-white/55 p-6 transition duration-300 hover:-translate-y-0.5 hover:bg-white/75"
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition duration-300 group-hover:bg-primary group-hover:text-primary-foreground">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
                     <g.icon className="h-5 w-5" />
                   </div>
                   <h3 className="text-base font-bold tracking-tight">{g.title}</h3>
@@ -682,7 +689,7 @@ function Landing() {
                 <ul className="mt-5 space-y-4">
                   {g.items.map((it) => (
                     <li key={it.title} className="flex gap-3">
-                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <div className="glass-claro mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-white/60 text-primary">
                         <it.icon className="h-3.5 w-3.5" />
                       </div>
                       <div className="min-w-0">
@@ -700,29 +707,31 @@ function Landing() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
+      {/* IMOBILIÁRIAS E CONSTRUTORAS PARCEIRAS — vitrine curada (Liquid Glass acinzentado) */}
+      <ParceirosMarquee />
+
+      {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-10 text-center md:p-16">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Pronto para vender e alugar mais, com menos esforço?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Teste grátis por 30 dias. Sem cartão de crédito.
-          </p>
-          <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground">
-            Após os 30 dias, seus dados continuam salvos na plataforma — para seguir usando, basta
-            escolher um plano de assinatura.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/signup">
-              <Button size="lg">Começar agora</Button>
-            </Link>
-            <Link to="/planos">
-              <Button size="lg" variant="outline">
-                Ver planos e preços
-              </Button>
-            </Link>
-          </div>
+        <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
+          Como o imob365 trabalha por você
+        </h2>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+          Uma plataforma completa para captar, atender, fechar e administrar — do primeiro lead ao
+          pós-venda. Tenha autonomia e utilize IA a seu favor.
+        </p>
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {valores.map((s) => (
+            <div
+              key={s.title}
+              className="rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
+                <s.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -731,188 +740,11 @@ function Landing() {
   );
 }
 
-export function SiteFooter() {
-  const year = new Date().getFullYear();
-
-  return (
-    <>
-      <ParceirosMarquee />
-      <footer className="border-t border-border bg-secondary text-secondary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="grid gap-10 md:grid-cols-4">
-            <div className="space-y-4">
-              <Logo className="h-9 w-auto" variant="white" />
-              <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-                A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores
-                e clientes em todo o Brasil.
-              </p>
-              <div className="mt-5 flex gap-3">
-                {[
-                  { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
-                  {
-                    Icon: Instagram,
-                    href: "https://www.instagram.com/imob365/",
-                    label: "Instagram",
-                  },
-                  {
-                    Icon: Linkedin,
-                    href: "https://www.linkedin.com/company/imob365/",
-                    label: "LinkedIn",
-                  },
-                ].map(({ Icon, href, label }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <FooterCol
-              title="Encontrar"
-              links={[
-                { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
-                { label: "Alugar imóvel", to: "/buscar", icon: Key },
-                { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-                { label: "Lançamentos e novidades", to: "/buscar", icon: Sparkles },
-              ]}
-            />
-            <FooterCol
-              title="Para imobiliárias"
-              links={[
-                { label: "Planos e preços", to: "/planos", icon: CreditCard },
-                { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
-                { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
-                { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
-                { label: "Acessar plataforma", to: "/login", icon: Users },
-                {
-                  label: "Calculadoras (ITBI, financiamento)",
-                  to: "/calculadoras",
-                  icon: Calculator,
-                  highlight: true,
-                },
-              ]}
-            />
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
-                Fale com a gente
-              </h4>
-              <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-                <li>
-                  <Link
-                    to="/atendimento"
-                    className="flex items-center gap-3 hover:text-primary transition-all duration-200"
-                  >
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                      <Headset className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-semibold text-white/95">Central de Atendimento</span>
-                  </Link>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                    <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
-                  </div>
-                  <span>Suporte 365 dias por ano</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
-            <span>© {year} imob365. Todos os direitos reservados.</span>
-            <div className="flex flex-wrap gap-5">
-              <Link to="/termos" className="hover:text-primary transition-colors">
-                Termos de uso
-              </Link>
-              <Link to="/privacidade" className="hover:text-primary transition-colors">
-                Política de privacidade
-              </Link>
-              <Link to="/lgpd" className="hover:text-primary transition-colors">
-                LGPD
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </>
-  );
-}
-
-interface FooterLink {
-  label: string;
-  to: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
-}
-
-function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
-  return (
-    <div>
-      <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">{title}</h4>
-      <ul className="mt-4 space-y-2 text-sm opacity-85">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const content = (
-            <span className="flex items-center gap-2 mb-0.5">
-              {Icon && (
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`}
-                />
-              )}
-              <span
-                className={
-                  l.highlight
-                    ? "text-primary font-bold tracking-wide relative"
-                    : "hover:text-white transition-all"
-                }
-              >
-                {l.label}
-                {l.highlight && (
-                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">
-                    ITBI
-                  </span>
-                )}
-              </span>
-            </span>
-          );
-
-          return (
-            <li key={l.label}>
-              {l.to.startsWith("/#") ? (
-                <a
-                  href={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </a>
-              ) : (
-                <Link
-                  to={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 const valores = [
   {
     icon: Sparkles,
     title: "Tecnologia simples",
-    desc: "Cadastre imóveis, envie fotos e publique sem precisar de equipe de TI. Tudo num único lugar.",
+    desc: "Cadastre imóveis, envie fotos e publique: tenha autonomia e utilize IA no dia a dia. Tudo num único lugar.",
   },
   {
     icon: HeartHandshake,
