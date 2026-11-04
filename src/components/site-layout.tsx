@@ -6,10 +6,8 @@ import { useEffect, useState } from "react";
 import {
   Building2,
   Users,
-  Globe2,
   ShieldCheck,
   HeartHandshake,
-  Search,
   Building,
   Home,
   Headset,
@@ -20,7 +18,6 @@ import {
   Key,
   CreditCard,
   Calculator,
-  Activity,
   Layers,
   Terminal,
   BookOpen,
@@ -29,6 +26,15 @@ import {
   Landmark,
   Sparkles,
   Factory,
+  Compass,
+  BadgeCheck,
+  BarChart3,
+  Briefcase,
+  Quote,
+  Receipt,
+  MapPinned,
+  ServerCog,
+  LayoutGrid,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
@@ -43,6 +49,7 @@ export function SiteHeader() {
 const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   {
     key: "quem-somos",
+    icon: Users,
     to: "/a-imob365",
     hash: "quem-somos",
     label: "Quem Somos",
@@ -50,6 +57,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "nossa-abordagem",
+    icon: Compass,
     to: "/a-imob365",
     hash: "nossa-abordagem",
     label: "Nossa Abordagem",
@@ -57,6 +65,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "nosso-padrao",
+    icon: BadgeCheck,
     to: "/a-imob365",
     hash: "nosso-padrao",
     label: "Nosso Padrão de Curadoria",
@@ -64,6 +73,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "numeros",
+    icon: BarChart3,
     to: "/a-imob365",
     hash: "numeros",
     label: "Nossos Números",
@@ -71,6 +81,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "servicos",
+    icon: Briefcase,
     to: "/a-imob365",
     hash: "servicos",
     label: "Serviços",
@@ -78,6 +89,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "depoimentos",
+    icon: Quote,
     to: "/a-imob365",
     hash: "depoimentos",
     label: "Depoimentos",
@@ -91,7 +103,8 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
   // corretor/imobiliária), não pra /app/imoveis/novo, que quebraria sem tenant.
   const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
-    logo: <Logo className="h-8 w-auto" />,
+    tema: "brand",
+    logo: <Logo className="h-8 w-auto" variant="white" />,
     logoTo: "/",
     topBar: {
       contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],
@@ -122,8 +135,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Comprar Imóvel",
                 desc: "Apartamentos, coberturas e casas exclusivas.",
                 icon: Building2,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "alugar",
@@ -131,17 +142,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Alugar Imóvel",
                 desc: "Locação ágil, sem burocracia ou fiador tradicional.",
                 icon: Key,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "empreendimentos",
                 to: "/empreendimentos",
                 label: "Empreendimentos",
                 desc: "Lançamentos e novos empreendimentos das parceiras.",
-                icon: Landmark,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+                icon: Building,
               },
             ],
           },
@@ -154,19 +161,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Comparador",
                 desc: "Compare até 4 imóveis lado a lado em tempo real.",
                 icon: Layers,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100/70 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
               },
               {
                 key: "busca-mapa",
                 to: "/buscar",
                 label: "Busca por Mapa",
                 desc: "Navegue pelas melhores regiões de forma geométrica.",
-                icon: Search,
-                iconClassName: "text-primary",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+                icon: MapPinned,
               },
             ],
           },
@@ -186,20 +187,14 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 to: "/calculadora-financiamento",
                 label: "Financiamento SAC",
                 desc: "Estime as parcelas decrescentes do imóvel de forma simples.",
-                icon: Calculator,
-                iconClassName: "text-primary",
-                mobileChipClassName:
-                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
+                icon: Landmark,
               },
               {
                 key: "itbi",
                 to: "/calculadora-itbi",
                 label: "Imposto de ITBI",
                 desc: "Verifique taxas de prefeitura e cartório de registro.",
-                icon: Calculator,
-                iconClassName: "text-orange-500",
-                mobileChipClassName:
-                  "bg-orange-100 text-orange-700 group-hover:bg-orange-500 group-hover:text-white",
+                icon: Receipt,
               },
               {
                 key: "mudanca",
@@ -207,9 +202,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Custo de Mudança",
                 desc: "Planeje custos de frete e logística para o novo lar.",
                 icon: Truck,
-                iconClassName: "text-indigo-500",
-                mobileChipClassName:
-                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
               },
               {
                 key: "avaliacao",
@@ -217,9 +209,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Quanto Vale meu Imóvel",
                 desc: "Estimativa de valor por CEP, metragem e tipo do imóvel.",
                 icon: Home,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white",
               },
             ],
           },
@@ -231,7 +220,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Score Serasa Experian",
                 desc: "Validação de CPF de inquilinos e proponentes integrados na hora da proposta (/leads).",
                 icon: ShieldCheck,
-                iconClassName: "text-sky-700",
                 badge: "Novo",
                 static: true,
               },
@@ -242,10 +230,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Assistente de IA",
                 desc: "Pergunte sobre financiamento, ITBI, mudança e mercado imobiliário.",
                 icon: Sparkles,
-                iconClassName: "text-primary",
                 badge: "Novo",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
             ],
           },
@@ -267,19 +252,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Planos & Valores",
                 desc: "Do Free ao Business, escolha o plano do tamanho da sua operação.",
                 icon: CreditCard,
-                iconClassName: "animate-pulse text-primary",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "plataforma",
                 to: "/plataforma",
                 label: "Plataforma & Recursos",
                 desc: "Veja tudo que está incluído: imóveis, financeiro, marketing, jurídico e e-learning.",
-                icon: Globe2,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+                icon: LayoutGrid,
               },
             ],
           },
@@ -302,7 +281,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Central de Ajuda",
                 desc: "Guias rápidos por jornada: cadastro, comissões, portais e contratos.",
                 icon: BookOpen,
-                iconClassName: "text-sky-600",
               },
               {
                 key: "docs-api",
@@ -310,16 +288,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Documentação API",
                 desc: "Disparadores REST e webhooks técnicos para ERPs de imobiliárias.",
                 icon: Terminal,
-                labelClassName: "text-emerald-600",
-                iconClassName: "text-emerald-600",
               },
               {
                 key: "status",
                 to: "/status",
                 label: "Servidores & APIs",
                 desc: "Verificação em tempo real da integridade de bancos de dados.",
-                icon: Activity,
-                iconClassName: "text-pink-600",
+                icon: ServerCog,
               },
             ],
           },
@@ -328,7 +303,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
     ],
     ctaButton: { label: "Anunciar Imóvel", to: anunciarTo, icon: PlusCircle },
     mobileQuickAction: { label: "Anunciar meu Imóvel", to: anunciarTo, icon: PlusCircle },
-    extraCtas: () => <HeaderUserMenu />,
+    extraCtas: () => <HeaderUserMenu tom="escuro" />,
   };
 }
 

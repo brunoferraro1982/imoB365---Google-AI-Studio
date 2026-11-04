@@ -43,7 +43,9 @@ function initials(nome: string | null | undefined, email: string | null | undefi
   return ((parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "")).toUpperCase() || "U";
 }
 
-export function HeaderUserMenu() {
+export function HeaderUserMenu({ tom = "claro" }: { tom?: "claro" | "escuro" } = {}) {
+  // "escuro": gatilhos em vidro escuro, para o header azul-marinho do portal (tema "brand")
+  const escuro = tom === "escuro";
   const { user, profile, roles, tenantId, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -85,7 +87,11 @@ export function HeaderUserMenu() {
   }, []);
 
   if (loading) {
-    return <div className="h-9 w-24 animate-pulse rounded-full bg-muted" />;
+    return (
+      <div
+        className={`h-9 w-24 animate-pulse rounded-full ${escuro ? "bg-white/10" : "bg-muted"}`}
+      />
+    );
   }
 
   // Handle credentials login submission inside the mega menu
@@ -143,9 +149,13 @@ export function HeaderUserMenu() {
           id="btn-login-megamenu-trigger"
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
-            isOpen
-              ? "border-primary bg-primary/5 text-primary"
-              : "border-border/80 bg-card text-foreground/90 hover:border-primary/45 hover:text-primary hover:bg-muted/30"
+            escuro
+              ? isOpen
+                ? "border-[#ed7d31]/60 bg-white/15 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]"
+                : "border-white/15 bg-white/[0.08] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur hover:bg-white/[0.14]"
+              : isOpen
+                ? "border-primary bg-primary/5 text-primary"
+                : "border-border/80 bg-card text-foreground/90 hover:border-primary/45 hover:text-primary hover:bg-muted/30"
           }`}
         >
           <Lock className="h-3.5 w-3.5 stroke-[2.2px]" />
@@ -159,9 +169,13 @@ export function HeaderUserMenu() {
           id="btn-user-megamenu-trigger"
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-2.5 rounded-full border pl-1.5 pr-3 py-1.5 transition-all duration-200 cursor-pointer shadow-sm ${
-            isOpen
-              ? "border-primary bg-primary/5 ring-1 ring-primary/25"
-              : "border-border/85 bg-card/90 hover:bg-muted/70 hover:border-primary/25"
+            escuro
+              ? isOpen
+                ? "border-[#ed7d31]/60 bg-white/15"
+                : "border-white/15 bg-white/[0.08] backdrop-blur hover:bg-white/[0.14]"
+              : isOpen
+                ? "border-primary bg-primary/5 ring-1 ring-primary/25"
+                : "border-border/85 bg-card/90 hover:bg-muted/70 hover:border-primary/25"
           }`}
         >
           <Avatar className="h-6.5 w-6.5 ring-2 ring-primary/10">
@@ -170,11 +184,13 @@ export function HeaderUserMenu() {
               {initials(profile?.nome, user.email)}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden max-w-[120px] truncate text-xs font-bold tracking-tight text-foreground md:inline">
+          <span
+            className={`hidden max-w-[120px] truncate text-xs font-bold tracking-tight md:inline ${escuro ? "text-white" : "text-foreground"}`}
+          >
             {profile?.nome ?? user.email?.split("@")[0] ?? "Minha Conta"}
           </span>
           <ChevronDown
-            className={`h-3 w-3 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`h-3 w-3 transition-transform duration-200 ${escuro ? "text-white/70" : "text-muted-foreground"} ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
       )}
