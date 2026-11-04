@@ -498,7 +498,7 @@ function MegaNavHeaderPadrao({ config }: { config: MegaNavConfig }) {
               to={config.ctaButton.to}
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#e86620] hover:from-[#e86620] hover:to-orange-500 text-white px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm hover:scale-[1.02]"
             >
-              {config.ctaButton.icon && <config.ctaButton.icon className="h-3.8 w-3.8 shrink-0" />}
+              {config.ctaButton.icon && <config.ctaButton.icon className="h-4 w-4 shrink-0" />}
               <span>{config.ctaButton.label}</span>
             </Link>
           )}
