@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Calendar, Tag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { carregarSiteCtx, useTituloSite } from "@/lib/tenantSite";
 import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,61 +35,27 @@ function TenantBlogPostPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id,slug,nome,tema")
-        .eq("slug", slug)
+      const c = await carregarSiteCtx(slug);
+      if (!c) {
+        setLoading(false);
+        return;
+      }
+      const { data: postData } = await supabase
+        .from("blog_posts")
+        .select("titulo,resumo,conteudo,imagem_url,categoria,publicado_em,autor:profiles(nome)")
+        .eq("tenant_id", c.tenantId)
+        .eq("slug", postSlug)
+        .eq("status", "publicado")
         .maybeSingle();
-      if (!tenant) {
-        setLoading(false);
-        return;
-      }
-      const [{ data: cfg }, { data: pages }, { data: postData }] = await Promise.all([
-        supabase
-          .from("tenant_site_settings")
-          .select("*")
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .maybeSingle(),
-        supabase
-          .from("tenant_pages")
-          .select("slug,titulo")
-          .eq("tenant_id", tenant.id)
-          .eq("publicada", true)
-          .order("ordem"),
-        supabase
-          .from("blog_posts")
-          .select("titulo,resumo,conteudo,imagem_url,categoria,publicado_em,autor:profiles(nome)")
-          .eq("tenant_id", tenant.id)
-          .eq("slug", postSlug)
-          .eq("status", "publicado")
-          .maybeSingle(),
-      ]);
-      if (!cfg) {
-        setLoading(false);
-        return;
-      }
-      setCtx({
-        tenantId: tenant.id,
-        tenantSlug: tenant.slug,
-        tenantNome: tenant.nome,
-        logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
-        settings: cfg,
-        pages: (pages ?? []) as { slug: string; titulo: string }[],
-        hasBlog: true,
-        hasSobre: !!cfg.sobre_html?.trim(),
-      });
+      setCtx(c);
       setPost((postData as unknown as Post) ?? null);
       setLoading(false);
     })();
   }, [slug, postSlug]);
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        Carregando…
-      </div>
-    );
+  useTituloSite(ctx, post?.titulo);
+
+  if (loading) return <SiteSkeleton />;
   if (!ctx || !post) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-center">
@@ -112,7 +79,7 @@ function TenantBlogPostPage() {
 
   return (
     <TenantSiteLayoutWithWidgets ctx={ctx}>
-      <article className="mx-auto max-w-3xl">
+      <article className="glass-fosco mx-auto max-w-3xl rounded-[32px] p-6 md:p-10">
         <Button asChild variant="ghost" size="sm" className="mb-6 gap-1.5">
           <Link to="/site/$slug/blog" params={{ slug }}>
             <ArrowLeft className="w-4 h-4" />

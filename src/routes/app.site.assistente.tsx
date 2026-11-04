@@ -29,6 +29,7 @@ import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionO
 import {
   SECTION_LABELS,
   DEFAULT_SECOES,
+  normalizarSecoes,
   LAYOUT_INFO,
   LAYOUT_SUGGESTED_SECOES,
   ZONA_LABELS,
@@ -185,7 +186,7 @@ function SiteWizard() {
           ),
         );
         setLayout((cfg.layout as LayoutKey) || "classico");
-        setSecoes((cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES);
+        setSecoes(normalizarSecoes(cfg.secoes as SectionDbItem[] | null));
       } else {
         setForm((f) => ({
           ...f,

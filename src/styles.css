@@ -298,4 +298,56 @@
   .hero-brand :is(h1, h2, h3, .font-brand-display) {
     font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
   }
+
+  /* Site público do tenant (/site/$slug) — Liquid Glass sobre a cor de
+     destaque de cada tenant (--primary é sobrescrito pelo TenantSiteLayout),
+     nunca a marca da imoB365. */
+  .site-mesh {
+    background:
+      radial-gradient(
+        640px 420px at 100% 0%,
+        color-mix(in oklab, var(--primary) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        620px 420px at 0% 38%,
+        color-mix(in oklab, var(--primary) 10%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(520px 360px at 85% 82%, rgb(90 150 235 / 0.1), transparent 70%);
+  }
+  .site-hero-fundo {
+    background:
+      radial-gradient(
+        900px 520px at 85% 10%,
+        color-mix(in oklab, var(--primary) 55%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(700px 480px at 0% 100%, rgb(52 110 214 / 0.35), transparent 70%),
+      linear-gradient(160deg, #0b1220 0%, #111827 55%, #0b1220 100%);
+  }
+  .site-hero-veu {
+    background:
+      linear-gradient(
+        90deg,
+        rgb(8 12 22 / 0.86) 0%,
+        rgb(8 12 22 / 0.6) 55%,
+        rgb(8 12 22 / 0.35) 100%
+      ),
+      linear-gradient(0deg, rgb(8 12 22 / 0.55) 0%, transparent 45%);
+  }
+  .glass-escuro {
+    background: rgb(255 255 255 / 0.08);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.12),
+      0 18px 40px -20px rgb(0 0 0 / 0.6);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-escuro {
+      background: rgb(17 24 39 / 0.92);
+    }
+  }
 }
