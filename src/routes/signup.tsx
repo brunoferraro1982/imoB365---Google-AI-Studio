@@ -256,7 +256,7 @@ function SignupPage() {
       {mode === null && (
         <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-8 shadow-sm text-center">
           <Link to="/" className="inline-block">
-            <Logo className="h-7 w-auto" />
+            <Logo className="h-8 w-auto" />
           </Link>
           <h1 className="mt-6 text-2xl font-bold tracking-tight">Como você quer usar o imoB365?</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -322,7 +322,7 @@ function SignupPage() {
 
           <div className="text-center mb-6">
             <Link to="/" className="inline-block">
-              <Logo className="h-7 w-auto" />
+              <Logo className="h-8 w-auto" />
             </Link>
             <h1 className="mt-4 text-2xl font-bold tracking-tight">Criar sua conta</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -435,7 +435,7 @@ function SignupPage() {
           )}
           <div className="text-center mb-6">
             <Link to="/" className="inline-block">
-              <Logo className="h-7 w-auto" />
+              <Logo className="h-8 w-auto" />
             </Link>
             <div className="flex items-center justify-center gap-1.5 mt-4">
               {[1, 2, 3, 4].map((s) => (

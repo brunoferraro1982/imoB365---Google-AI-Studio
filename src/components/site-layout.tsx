@@ -91,7 +91,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
   // corretor/imobiliária), não pra /app/imoveis/novo, que quebraria sem tenant.
   const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
-    logo: <Logo className="h-7 w-auto" />,
+    logo: <Logo className="h-8 w-auto" />,
     logoTo: "/",
     topBar: {
       contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],

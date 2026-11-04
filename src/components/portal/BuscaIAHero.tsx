@@ -232,24 +232,31 @@ export function BuscaIAHero() {
   }
 
   return (
-    <div className="mt-12 w-full max-w-4xl">
+    <div className="w-full">
       <style>{`
         @keyframes buscaIaBorda { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        .busca-ia-borda { background-size: 200% 200%; animation: buscaIaBorda 6s linear infinite; }
-        @media (prefers-reduced-motion: reduce) { .busca-ia-borda { animation: none; } }
+        .busca-ia-borda { position: relative; border-radius: 28px; }
+        .busca-ia-borda::before {
+          content: ""; position: absolute; inset: 0; z-index: 1; padding: 2px; border-radius: inherit; pointer-events: none;
+          background: linear-gradient(90deg, #ed7d31, #346ed6, #ed7d31); background-size: 200% 200%;
+          animation: buscaIaBorda 6s linear infinite;
+          -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+        }
+        @media (prefers-reduced-motion: reduce) { .busca-ia-borda::before { animation: none; } }
       `}</style>
 
       {/* ---------- caixa de IA ---------- */}
-      <div className="busca-ia-borda rounded-[28px] bg-gradient-to-r from-primary via-fuchsia-500 to-violet-600 p-[2px] shadow-xl shadow-primary/15">
+      <div className="busca-ia-borda shadow-xl shadow-primary/10">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             void buscarComIA();
           }}
-          className="relative rounded-[26px] bg-white p-4 dark:bg-card md:p-5"
+          className="glass-fosco relative rounded-[28px] bg-white/70 p-4 md:p-5"
         >
           <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-violet-600 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#346ed6] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
               Busca inteligente com IA
             </span>
@@ -283,7 +290,7 @@ export function BuscaIAHero() {
             </div>
           </div>
 
-          <div className="mt-3 flex items-end gap-3 rounded-2xl border border-border bg-neutral-50/60 px-4 py-3 transition focus-within:border-primary/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 dark:bg-background">
+          <div className="mt-3 flex items-end gap-3 rounded-2xl border border-border bg-white/70 px-4 py-3 transition focus-within:border-primary/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 dark:bg-background">
             <textarea
               ref={textareaRef}
               rows={2}
@@ -308,7 +315,7 @@ export function BuscaIAHero() {
               type="submit"
               disabled={carregando}
               aria-label="Buscar com IA"
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-violet-600 text-white shadow-lg transition hover:scale-105 hover:shadow-primary/30 disabled:cursor-wait disabled:opacity-80"
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-[#346ed6] text-white shadow-lg transition hover:scale-105 hover:shadow-primary/30 disabled:cursor-wait disabled:opacity-80"
             >
               {carregando ? (
                 <Loader2 className="h-5 w-5 animate-spin" />

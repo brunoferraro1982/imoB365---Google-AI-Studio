@@ -47,7 +47,7 @@ import { CORPORATE_TENANT_SLUG } from "@/lib/corporateTenant";
 import { comporDestaques, type TenantMeta } from "@/lib/featuredImoveis";
 import { getVisitorRegion } from "@/lib/geo.functions";
 import { seoHead, getSeoConfig, DEFAULT_SEO_GLOBAL } from "@/lib/seo";
-import { AssistenteIASection } from "@/components/portal/AssistenteIASection";
+import { WidgetsFerramentas } from "@/components/portal/WidgetsFerramentas";
 import { BuscaIAHero } from "@/components/portal/BuscaIAHero";
 
 import citySkylineHero from "@/assets/images/city_skyline_hero_1780319947399.png";
@@ -286,37 +286,33 @@ function Landing() {
       />
       <SiteHeader />
 
-      {/* HERO + BUSCA */}
-      <section className="relative isolate overflow-hidden border-b border-border/60 pb-20 pt-16 md:pb-28 md:pt-24 bg-cover bg-center">
-        {/* Real city skyline background image centered and scaled like the image */}
+      {/* HERO + BUSCA (brand system · Liquid Glass) */}
+      <section className="hero-brand relative isolate overflow-hidden border-b border-border/60 pb-10 pt-6 md:pb-14 md:pt-9">
+        {/* Foto da cidade + mesh claro da marca: o vidro precisa de algo atrás para desfocar */}
         <div
           className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10"
           style={{ backgroundImage: `url(${citySkylineHero})` }}
         />
-        {/* Soft elegant vignette / gradient overlays to blend beautifully */}
-        <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/95 via-background/65 to-transparent dark:from-background dark:via-background/80 dark:to-transparent" />
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--primary-glow)_15%,_transparent_55%)] opacity-35 dark:opacity-20" />
+        <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/90 via-background/60 to-background/30 dark:from-background dark:via-background/80 dark:to-background/40" />
+        <div className="mesh-brand-claro absolute inset-0 -z-10" />
 
         <div className="mx-auto max-w-6xl px-6">
-          <div className="flex flex-col items-start text-left">
-            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-xs font-semibold text-muted-foreground shadow-2xs">
-              <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta
-              imobiliárias, corretores e clientes
-            </span>
-            {/* max-w removido em desktop (md:) — com max-w-4xl, as frases mais
-                longas do texto rotativo abaixo estouravam pra uma 3ª linha e
-                deslocavam o conteúdo seguinte da página. O container pai (
-                max-w-6xl) já comporta a frase mais longa numa única linha
-                (medido: ~1014px de texto em ~1104px disponíveis), então só
-                era um limite artificial mais estreito que o espaço real —
-                não precisou alargar nada além do que já existia. */}
-            {/* Mobile: text-5xl fazia as frases rotativas quebrarem em 3 linhas e,
-                como têm comprimentos diferentes, o min-h não cobria a maior —
-                a altura do h1 variava e empurrava o campo de busca (dificultava a
-                navegação). Reduzido pra text-4xl e min-h ampliado pra reservar
-                estável o pior caso (2 linhas do fixo + 2 da frase). Desktop
-                (sm:/md:) inalterado. */}
-            <h1 className="mt-8 max-w-4xl md:max-w-none text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
+          <span className="glass-fosco inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> A plataforma que conecta imobiliárias,
+            corretores e clientes
+          </span>
+
+          {/* Busca inteligente (70%) + widgets de ferramentas (30%) */}
+          <div className="mt-5 grid items-stretch gap-4 md:grid-cols-[7fr_3fr]">
+            <BuscaIAHero />
+            <WidgetsFerramentas />
+          </div>
+
+          <div className="mt-8 flex flex-col items-start text-left md:mt-10">
+            {/* Mobile: as frases rotativas têm comprimentos diferentes — o min-h
+                reserva o pior caso (2 linhas do fixo + 2 da frase) para a altura
+                do h1 não variar e não empurrar o conteúdo seguinte. */}
+            <h1 className="max-w-4xl md:max-w-none text-3xl sm:text-5xl md:text-[3.4rem] font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">
@@ -326,15 +322,13 @@ function Landing() {
                 </span>
               </span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base md:text-lg text-muted-foreground font-semibold leading-relaxed">
+            <p className="mt-3 max-w-2xl text-base md:text-[17px] text-muted-foreground font-semibold leading-relaxed">
               Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
               parceiros em todo o Brasil. Atendimento humano, sem burocracia.
             </p>
           </div>
 
-          <BuscaIAHero />
-
-          <div className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
             <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
             {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
               <Link
@@ -349,8 +343,6 @@ function Landing() {
           </div>
         </div>
       </section>
-
-      <AssistenteIASection />
 
       {/* IMÓVEIS EM DESTAQUE */}
       <section className="mx-auto max-w-6xl px-6 py-20">

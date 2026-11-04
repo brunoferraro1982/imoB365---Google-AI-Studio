@@ -329,7 +329,7 @@ function LpPraiaGrande() {
       {/* ---------- topo: só logo + WhatsApp, sem menu de fuga ---------- */}
       <header className="sticky top-0 z-40 bg-[#0f1e3a]/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Logo variant="white" className="h-7 w-auto" />
+          <Logo variant="white" className="h-8 w-auto" />
           <a
             href={whatsHref}
             target="_blank"
@@ -646,7 +646,7 @@ function LpPraiaGrande() {
       </section>
 
       <footer className="bg-[#0b162b] px-4 py-8 text-center text-xs text-white/60">
-        <Logo variant="white" className="mx-auto h-6 w-auto opacity-80" />
+        <Logo variant="white" flat className="mx-auto h-6 w-auto opacity-80" />
         <p className="mt-3">
           imoB365 — consultoria imobiliária · contato@imob365.com.br · (13) 99779-4382
         </p>

@@ -203,3 +203,90 @@
 @utility animate-marquee {
   animation: marquee 28s linear infinite;
 }
+
+@layer components {
+  /* ===== Brand system imoB365 · Liquid Glass 2026 ===================== */
+  /* Logo: PNG com luz já aplicada + camada de desfoque do fundo recortada
+     na silhueta do próprio logo (mesma técnica do brand system). */
+  .logo-glass {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    vertical-align: middle;
+    line-height: 0;
+  }
+  .logo-glass > img {
+    position: relative;
+    z-index: 1;
+  }
+  .logo-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    -webkit-mask: var(--logo-mask) center / 100% 100% no-repeat;
+    mask: var(--logo-mask) center / 100% 100% no-repeat;
+  }
+  .logo-glass--claro::before {
+    -webkit-backdrop-filter: blur(7px) saturate(1.6) brightness(1.08);
+    backdrop-filter: blur(7px) saturate(1.6) brightness(1.08);
+  }
+  .logo-glass--fosco::before {
+    -webkit-backdrop-filter: blur(20px) saturate(1.7);
+    backdrop-filter: blur(20px) saturate(1.7);
+  }
+
+  /* Superfícies de vidro (hero da home, widgets, painéis) */
+  .glass-fosco {
+    background: rgb(255 255 255 / 0.58);
+    -webkit-backdrop-filter: blur(20px) saturate(1.7);
+    backdrop-filter: blur(20px) saturate(1.7);
+    border: 1px solid rgb(255 255 255 / 0.65);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.75),
+      0 10px 30px -12px rgb(15 30 58 / 0.22);
+  }
+  .glass-claro {
+    background: rgb(255 255 255 / 0.22);
+    -webkit-backdrop-filter: blur(7px) saturate(1.6) brightness(1.08);
+    backdrop-filter: blur(7px) saturate(1.6) brightness(1.08);
+    border: 1px solid rgb(255 255 255 / 0.45);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.6),
+      0 8px 24px -14px rgb(15 30 58 / 0.25);
+  }
+  .dark .glass-fosco,
+  .dark .glass-claro {
+    background: rgb(15 30 58 / 0.55);
+    border-color: rgb(255 255 255 / 0.1);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 10px 30px -12px rgb(0 0 0 / 0.5);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-fosco,
+    .glass-claro {
+      background: rgb(255 255 255 / 0.94);
+    }
+    .dark .glass-fosco,
+    .dark .glass-claro {
+      background: rgb(15 30 58 / 0.96);
+    }
+  }
+
+  /* Fundo "mesh" claro do brand system, para o vidro ter o que desfocar */
+  .mesh-brand-claro {
+    background:
+      radial-gradient(520px 340px at 92% 0%, rgb(237 125 49 / 0.24), transparent 70%),
+      radial-gradient(560px 380px at 0% 100%, rgb(90 150 235 / 0.26), transparent 70%),
+      radial-gradient(320px 240px at 55% 55%, rgb(120 90 200 / 0.08), transparent 70%);
+  }
+
+  /* Tipografia do brand system — aplicada só na área redesenhada */
+  .hero-brand {
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+  .hero-brand :is(h1, h2, h3, .font-brand-display) {
+    font-family: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+}
