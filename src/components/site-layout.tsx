@@ -114,8 +114,11 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
       {
         key: "a-imob365",
         label: "A imoB365",
+        // No desktop fica no top bar, à esquerda de "Sobre" (libera espaço na barra principal)
+        posicao: "topbar",
+        icon: Building2,
         panelClassName:
-          "absolute left-1/2 -translate-x-[200px] top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50",
+          "absolute left-0 top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50",
         columns: [{ eyebrow: "Conheça a imoB365", leaves: CORPORATE_A_IMOB365_LEAVES }],
         ctaLeaf: { label: "Agendar Consultoria", to: "/contato" },
         mobileLabel: "A imoB365",

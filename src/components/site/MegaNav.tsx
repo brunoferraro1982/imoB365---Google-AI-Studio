@@ -46,6 +46,10 @@ export type MegaNavGroup = {
   mobileLabel?: string;
   /** Estilo mobile "achatado" (ícone + texto simples, sem chip nem descrição) — usado por Área Técnica. */
   flatMobileStyle?: boolean;
+  /** Tema "brand": "topbar" mostra o grupo no top bar (desktop) em vez da barra principal. No mobile ele segue na gaveta. */
+  posicao?: "menu" | "topbar";
+  /** Ícone do gatilho quando o grupo fica no top bar. */
+  icon?: LucideIcon;
 };
 
 export type MegaNavConfig = {
@@ -69,7 +73,7 @@ export type MegaNavConfig = {
 };
 
 // ---------- variante "brand" (portal imoB365 · padrão apple.com + Liquid Glass) ----------
-// Top bar preto (rola com a página) + menu cinza-escuro translúcido fixo no topo;
+// Top bar preto + menu cinza-escuro translúcido, os dois fixos no topo ao rolar;
 // painéis no mesmo vidro; ícones em tile de vidro com ícone laranja.
 
 const MENU_VIDRO = "bg-[rgba(22,22,23,0.8)] backdrop-blur-[20px] backdrop-saturate-[1.8]";
@@ -87,8 +91,8 @@ function IconeVidro({ icon: Icon }: { icon: LucideIcon }) {
 /** Mini-tile de vidro escuro para o top bar preto. */
 export function IconeVidroTopo({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-[8px] border border-white/15 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors duration-200 group-hover:bg-white/[0.14]">
-      <Icon className="h-3.5 w-3.5 text-[#ed7d31]" aria-hidden="true" />
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-[7px] border border-white/15 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-colors duration-200 group-hover:bg-white/[0.14]">
+      <Icon className="h-3 w-3 text-[#ed7d31]" aria-hidden="true" />
     </span>
   );
 }
@@ -563,9 +567,9 @@ function MegaNavHeaderPadrao({ config }: { config: MegaNavConfig }) {
 }
 
 /**
- * Header do portal imoB365 (tema "brand", padrão apple.com): top bar PRETO que
- * rola com a página + menu cinza-escuro translúcido (vidro, valores da barra
- * da Apple) FIXO no topo ao rolar; painéis e menu mobile no mesmo vidro; logo branco.
+ * Header do portal imoB365 (tema "brand", padrão apple.com): top bar PRETO +
+ * menu cinza-escuro translúcido (vidro, valores da barra
+ * da Apple) — os dois FIXOS no topo ao rolar; painéis e menu mobile no mesmo vidro; logo branco.
  * Mesma lógica de hover/dropdown/mobile do header padrão — só o visual muda.
  */
 function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
@@ -587,13 +591,18 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
     setMenuTimeout(timeout);
   };
 
+  // Grupos marcados com posicao "topbar" (ex.: "A imoB365") saem da barra principal no desktop
+  const gruposTopo = config.groups.filter((g) => g.posicao === "topbar");
+  const gruposMenu = config.groups.filter((g) => g.posicao !== "topbar");
+
   return (
-    <>
-      {/* Top bar preto — rola junto com a página (como a barra global da Apple) */}
+    // Top bar + menu num único bloco FIXO no topo ao rolar
+    <header className="sticky top-0 z-40 font-sans">
+      {/* Top bar preto (compacto: menos altura, mesmas fontes) */}
       {config.topBar && (
-        <div className="bg-black px-6 py-1.5 font-sans text-[11px] font-semibold text-white/80">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
-            <div className="flex w-full flex-wrap items-center justify-center gap-5 sm:w-auto sm:justify-start">
+        <div className="relative z-20 bg-black px-6 py-1 text-[11px] font-semibold text-white/80">
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+            <div className="flex shrink-0 items-center gap-5">
               {config.topBar.contacts.map((c, i) => (
                 <Fragment key={c.label}>
                   {i > 0 && <span className="hidden select-none text-white/20 sm:inline">|</span>}
@@ -601,7 +610,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                     href={c.href}
                     target={c.href.startsWith("http") ? "_blank" : undefined}
                     rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="group flex items-center gap-2 transition-colors duration-200 hover:text-white"
+                    className="group flex items-center gap-2 whitespace-nowrap transition-colors duration-200 hover:text-white"
                   >
                     <IconeVidroTopo icon={c.icon} />
                     <span>{c.label}</span>
@@ -609,20 +618,71 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                 </Fragment>
               ))}
             </div>
-            {config.topBar.nav}
+            <div className="flex min-w-0 items-center gap-0.5 sm:gap-1">
+              {gruposTopo.map((group) => {
+                const isActive = activeMenu === group.key;
+                return (
+                  <div
+                    key={group.key}
+                    className="relative hidden lg:block"
+                    onMouseEnter={() => handleMouseEnter(group.key)}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <button
+                      className={`group flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-[12.5px] font-semibold transition-colors ${
+                        isActive
+                          ? "border-white/10 bg-white/10 text-white"
+                          : "border-transparent text-white/80 hover:border-white/10 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {group.icon && <IconeVidroTopo icon={group.icon} />}
+                      <span>{group.label}</span>
+                      <ChevronDown
+                        className={`h-3 w-3 transition-transform duration-200 ${isActive ? "rotate-180 text-[#ed7d31]" : "opacity-60"}`}
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {isActive && group.columns && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 6 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className={painelBrand(group.panelClassName)}
+                        >
+                          <BrandPanelColumn column={group.columns[0]} />
+                          {group.ctaLeaf && (
+                            <div className="mt-1 border-t border-white/10 pt-2">
+                              <Link
+                                to={group.ctaLeaf.to}
+                                className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-[#ed7d31]/25 transition hover:brightness-110"
+                                onClick={() => setActiveMenu(null)}
+                              >
+                                {group.ctaLeaf.label}
+                              </Link>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+              {config.topBar.nav}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Menu cinza-escuro em vidro (rgba(22,22,23,.8), como a Apple), FIXO no topo ao rolar. O vidro (fundo + blur) fica numa
-          camada irmã dos painéis — se ficasse no ancestral, viraria "backdrop root" e os
-          painéis não conseguiriam desfocar a página. */}
-      <header className="sticky top-0 z-40 isolate border-b border-white/10 font-sans">
+      {/* Menu cinza-escuro em vidro (rgba(22,22,23,.8), como a Apple). O vidro (fundo + blur)
+          fica numa camada irmã dos painéis — se ficasse no ancestral, viraria "backdrop root"
+          e os painéis não conseguiriam desfocar a página. */}
+      <div className="relative z-10 isolate border-b border-white/10">
         <div
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 -z-10 ${MENU_VIDRO}`}
         />
-        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-3">
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-2">
           <Link
             to={config.logoTo ?? "/"}
             className="flex shrink-0 items-center transition-transform hover:scale-[1.015]"
@@ -633,7 +693,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
           <nav
             className={`hidden shrink-0 items-center gap-0.5 text-[13px] font-semibold tracking-tight text-[#e8e8ed]/90 lg:flex xl:gap-1.5 xl:text-sm xl:tracking-normal`}
           >
-            {config.groups.map((group) => {
+            {gruposMenu.map((group) => {
               if (!group.columns || group.columns.length === 0) {
                 return (
                   <Link
@@ -711,10 +771,10 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
             {config.ctaButton && (
               <Link
                 to={config.ctaButton.to}
-                className="hidden cursor-pointer items-center gap-1.5 rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#ed7d31]/25 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 sm:inline-flex"
+                className="hidden cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#ed7d31]/25 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 sm:inline-flex"
               >
                 {config.ctaButton.icon && (
-                  <config.ctaButton.icon className="h-3.8 w-3.8 shrink-0" />
+                  <config.ctaButton.icon className="h-4 w-4 shrink-0" />
                 )}
                 <span>{config.ctaButton.label}</span>
               </Link>
@@ -785,7 +845,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
             </div>
           </div>
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   );
 }

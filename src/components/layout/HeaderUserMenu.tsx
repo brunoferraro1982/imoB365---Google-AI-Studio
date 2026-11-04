@@ -142,7 +142,7 @@ export function HeaderUserMenu() {
         <button
           id="btn-login-megamenu-trigger"
           onClick={() => setIsOpen(!isOpen)}
-          className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
+          className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-xs font-bold transition-all duration-200 cursor-pointer shadow-sm ${
             isOpen
               ? "border-primary bg-primary/5 text-primary"
               : "border-border/80 bg-card text-foreground/90 hover:border-primary/45 hover:text-primary hover:bg-muted/30"
