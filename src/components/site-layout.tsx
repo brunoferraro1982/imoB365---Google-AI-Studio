@@ -14,7 +14,6 @@ import {
   Instagram,
   Facebook,
   Linkedin,
-  SlidersHorizontal,
   Key,
   CreditCard,
   Calculator,
@@ -40,7 +39,13 @@ import { Logo } from "@/components/brand/Logo";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { MegaNavHeader, type MegaNavConfig, type MegaNavLeaf } from "@/components/site/MegaNav";
+import {
+  IconeVidro,
+  MegaNavHeader,
+  type MegaNavConfig,
+  type MegaNavLeaf,
+} from "@/components/site/MegaNav";
+import type { LucideIcon } from "lucide-react";
 
 export function SiteHeader() {
   return <SiteHeaderImpl />;
@@ -488,183 +493,168 @@ export function ParceirosMarquee() {
   );
 }
 
+// Dados legais exibidos no rodapé (credibilidade): razão social, CNPJ e CRECI.
+const EMPRESA = {
+  razaoSocial: "IMOB365 CORRETAGEM DE IMÓVEIS LTDA",
+  cnpj: "41.919.216/0001-32",
+  creci: "218052",
+};
+
+const REDES_SOCIAIS: { icon: LucideIcon; href: string; label: string }[] = [
+  { icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/imob365/", label: "Instagram" },
+  { icon: Linkedin, href: "https://www.linkedin.com/company/imob365/", label: "LinkedIn" },
+];
+
+/**
+ * Rodapé único do portal (home e demais páginas públicas) — mesmo design do
+ * header "brand": fundo preto, ícones em tile de vidro com ícone laranja e
+ * bloco de dados legais (razão social, CNPJ, CRECI) para credibilidade.
+ */
 export function SiteFooter() {
   const year = new Date().getFullYear();
 
-  // A Vitrine de Parceiros (ParceirosMarquee) aparece SÓ na home — o footer
-  // local de routes/index.tsx a renderiza. Aqui, no footer compartilhado das
-  // demais páginas públicas, ela não entra.
   return (
-    <>
-      <footer className="border-t border-border bg-secondary text-secondary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="grid gap-10 md:grid-cols-4">
-            <div className="space-y-4">
-              <Logo className="h-9 w-auto" variant="white" />
-              <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-                A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores
-                e clientes em todo o Brasil.
-              </p>
-              <div className="mt-5 flex gap-3">
-                {[
-                  { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
-                  {
-                    Icon: Instagram,
-                    href: "https://www.instagram.com/imob365/",
-                    label: "Instagram",
-                  },
-                  {
-                    Icon: Linkedin,
-                    href: "https://www.linkedin.com/company/imob365/",
-                    label: "LinkedIn",
-                  },
-                ].map(({ Icon, href, label }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <FooterCol
-              title="Encontrar"
-              links={[
-                { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
-                { label: "Alugar imóvel", to: "/buscar", icon: Key },
-                { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-                { label: "Empreendimentos", to: "/empreendimentos", icon: Landmark },
-              ]}
-            />
-            <FooterCol
-              title="Para imobiliárias"
-              links={[
-                { label: "Planos e preços", to: "/planos", icon: CreditCard },
-                { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
-                { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
-                { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
-                { label: "Acessar plataforma", to: "/login", icon: Users },
-                {
-                  label: "Calculadoras (ITBI, financiamento)",
-                  to: "/calculadoras",
-                  icon: Calculator,
-                  highlight: true,
-                },
-              ]}
-            />
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
-                Fale com a gente
-              </h4>
-              <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-                <li>
-                  <Link
-                    to="/atendimento"
-                    className="flex items-center gap-3 hover:text-primary transition-all duration-200"
-                  >
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                      <Headset className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-semibold text-white/95">Central de Atendimento</span>
-                  </Link>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                    <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
-                  </div>
-                  <span>Suporte 365 dias por ano</span>
-                </li>
-              </ul>
+    <footer className="hero-brand border-t border-white/10 bg-black text-[#a1a1a6]">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 md:grid-cols-4">
+          <div>
+            <Logo className="h-9 w-auto" variant="white" />
+            <p className="mt-4 text-sm font-medium leading-relaxed">
+              A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores e
+              clientes em todo o Brasil.
+            </p>
+            <div className="mt-5 flex gap-2.5">
+              {REDES_SOCIAIS.map(({ icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="group transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  <IconeVidro icon={icon} />
+                </a>
+              ))}
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
-            <span>© {year} imob365. Todos os direitos reservados.</span>
-            <div className="flex flex-wrap gap-5">
-              <Link to="/termos" className="hover:text-primary transition-colors">
-                Termos de uso
-              </Link>
-              <Link to="/privacidade" className="hover:text-primary transition-colors">
-                Política de privacidade
-              </Link>
-              <Link to="/lgpd" className="hover:text-primary transition-colors">
-                LGPD
-              </Link>
-              <Link to="/status" className="hover:text-primary transition-colors">
-                Status
-              </Link>
+          <FooterCol
+            title="Encontrar"
+            links={[
+              { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
+              { label: "Alugar imóvel", to: "/buscar", icon: Key },
+              { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
+              { label: "Empreendimentos", to: "/empreendimentos", icon: Landmark },
+            ]}
+          />
+          <FooterCol
+            title="Para imobiliárias"
+            links={[
+              { label: "Planos e preços", to: "/planos", icon: CreditCard },
+              { label: "Recursos da plataforma", to: "/plataforma", icon: LayoutGrid },
+              { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
+              { label: "Anunciar imóvel", to: "/signup", icon: PlusCircle },
+              { label: "Acessar plataforma", to: "/login", icon: Users },
+              { label: "Calculadoras", to: "/calculadoras", icon: Calculator, badge: "ITBI" },
+            ]}
+          />
+          <div>
+            <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#86868b]">
+              Fale com a gente
+            </h4>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              <li>
+                <Link
+                  to="/atendimento"
+                  className="group flex items-center gap-3 font-semibold text-[#f5f5f7] transition-colors hover:text-[#f4a46a]"
+                >
+                  <IconeVidro icon={Headset} />
+                  Central de Atendimento
+                </Link>
+              </li>
+              <li className="group flex items-center gap-3">
+                <IconeVidro icon={HeartHandshake} />
+                Suporte 365 dias por ano
+              </li>
+            </ul>
+
+            {/* Dados legais — credibilidade */}
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[#86868b]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#ed7d31]" aria-hidden="true" />
+                Empresa registrada
+              </div>
+              <p className="mt-2 text-xs font-semibold leading-snug text-[#f5f5f7]">
+                {EMPRESA.razaoSocial}
+              </p>
+              <dl className="mt-1.5 space-y-0.5 text-xs">
+                <div className="flex gap-1.5">
+                  <dt className="text-[#86868b]">CNPJ</dt>
+                  <dd className="tabular-nums">{EMPRESA.cnpj}</dd>
+                </div>
+                <div className="flex gap-1.5">
+                  <dt className="text-[#86868b]">CRECI</dt>
+                  <dd className="tabular-nums">{EMPRESA.creci}</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
-      </footer>
-    </>
+
+        <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs md:flex-row md:items-center">
+          <span>
+            © {year} imob365 · {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj} · CRECI {EMPRESA.creci}
+          </span>
+          <div className="flex flex-wrap gap-5">
+            {[
+              { to: "/termos", label: "Termos de uso" },
+              { to: "/privacidade", label: "Política de privacidade" },
+              { to: "/lgpd", label: "LGPD" },
+              { to: "/status", label: "Status" },
+            ].map((l) => (
+              <Link key={l.to} to={l.to} className="transition-colors hover:text-white">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
 
 interface FooterLink {
   label: string;
   to: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
+  icon: LucideIcon;
+  badge?: string;
 }
 
 function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">{title}</h4>
-      <ul className="mt-4 space-y-2 text-sm opacity-85">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const content = (
-            <span className="flex items-center gap-2 mb-0.5">
-              {Icon && (
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`}
-                />
+      <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#86868b]">
+        {title}
+      </h4>
+      <ul className="mt-4 space-y-1.5 text-sm">
+        {links.map((l) => (
+          <li key={l.label}>
+            <Link
+              to={l.to}
+              className="group flex items-center gap-3 rounded-xl py-0.5 transition-colors hover:text-white"
+            >
+              <IconeVidro icon={l.icon} />
+              <span>{l.label}</span>
+              {l.badge && (
+                <span className="rounded-full border border-[#ed7d31]/35 bg-[#ed7d31]/15 px-1.5 py-px text-[8px] font-black uppercase tracking-widest text-[#f4a46a]">
+                  {l.badge}
+                </span>
               )}
-              <span
-                className={
-                  l.highlight
-                    ? "text-primary font-bold tracking-wide relative"
-                    : "hover:text-white transition-all"
-                }
-              >
-                {l.label}
-                {l.highlight && (
-                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">
-                    ITBI
-                  </span>
-                )}
-              </span>
-            </span>
-          );
-
-          return (
-            <li key={l.label}>
-              {l.to.startsWith("/#") ? (
-                <a
-                  href={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </a>
-              ) : (
-                <Link
-                  to={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </Link>
-              )}
-            </li>
-          );
-        })}
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );

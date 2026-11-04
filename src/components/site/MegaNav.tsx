@@ -82,7 +82,7 @@ const MENU_VIDRO = "bg-[rgba(22,22,23,0.8)] backdrop-blur-[20px] backdrop-satura
 const TEXTO_MENU = "text-[#e8e8ed]";
 
 /** Ícone padronizado: tile de vidro com ícone laranja; no hover do item vira laranja sólido. */
-function IconeVidro({ icon: Icon }: { icon: LucideIcon }) {
+export function IconeVidro({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-white/15 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur transition-all duration-200 group-hover:border-transparent group-hover:bg-gradient-to-br group-hover:from-[#ed7d31] group-hover:to-[#b4520f] group-hover:ring-transparent group-hover:shadow-[0_6px_16px_-6px_rgba(237,125,49,0.7)]">
       <Icon className="h-4 w-4 text-[#ed7d31] transition-colors duration-200 group-hover:text-white" />

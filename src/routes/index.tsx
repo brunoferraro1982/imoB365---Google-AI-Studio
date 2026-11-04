@@ -1,4 +1,4 @@
-import { SiteHeader, ParceirosMarquee } from "@/components/site-layout";
+import { SiteHeader, SiteFooter, ParceirosMarquee } from "@/components/site-layout";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -14,13 +14,8 @@ import {
   Maximize2,
   ArrowRight,
   Building,
-  Instagram,
-  Facebook,
-  Linkedin,
   SlidersHorizontal,
-  Key,
   CreditCard,
-  Calculator,
   Calendar,
   Landmark,
   DollarSign,
@@ -39,7 +34,6 @@ import {
   Route as RouteIcon,
 } from "lucide-react";
 
-import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { formatBRL, FINALIDADE_LABEL, TIPO_LABEL, imovelFotoUrl } from "@/lib/format";
@@ -742,182 +736,6 @@ function Landing() {
       </section>
 
       <SiteFooter />
-    </div>
-  );
-}
-
-export function SiteFooter() {
-  const year = new Date().getFullYear();
-
-  return (
-    <>
-      <footer className="border-t border-border bg-secondary text-secondary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="grid gap-10 md:grid-cols-4">
-            <div className="space-y-4">
-              <Logo className="h-9 w-auto" variant="white" />
-              <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-                A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores
-                e clientes em todo o Brasil.
-              </p>
-              <div className="mt-5 flex gap-3">
-                {[
-                  { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
-                  {
-                    Icon: Instagram,
-                    href: "https://www.instagram.com/imob365/",
-                    label: "Instagram",
-                  },
-                  {
-                    Icon: Linkedin,
-                    href: "https://www.linkedin.com/company/imob365/",
-                    label: "LinkedIn",
-                  },
-                ].map(({ Icon, href, label }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <FooterCol
-              title="Encontrar"
-              links={[
-                { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
-                { label: "Alugar imóvel", to: "/buscar", icon: Key },
-                { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-                { label: "Lançamentos e novidades", to: "/buscar", icon: Sparkles },
-              ]}
-            />
-            <FooterCol
-              title="Para imobiliárias"
-              links={[
-                { label: "Planos e preços", to: "/planos", icon: CreditCard },
-                { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
-                { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
-                { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
-                { label: "Acessar plataforma", to: "/login", icon: Users },
-                {
-                  label: "Calculadoras (ITBI, financiamento)",
-                  to: "/calculadoras",
-                  icon: Calculator,
-                  highlight: true,
-                },
-              ]}
-            />
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
-                Fale com a gente
-              </h4>
-              <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-                <li>
-                  <Link
-                    to="/atendimento"
-                    className="flex items-center gap-3 hover:text-primary transition-all duration-200"
-                  >
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                      <Headset className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-semibold text-white/95">Central de Atendimento</span>
-                  </Link>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                    <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
-                  </div>
-                  <span>Suporte 365 dias por ano</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
-            <span>© {year} imob365. Todos os direitos reservados.</span>
-            <div className="flex flex-wrap gap-5">
-              <Link to="/termos" className="hover:text-primary transition-colors">
-                Termos de uso
-              </Link>
-              <Link to="/privacidade" className="hover:text-primary transition-colors">
-                Política de privacidade
-              </Link>
-              <Link to="/lgpd" className="hover:text-primary transition-colors">
-                LGPD
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </>
-  );
-}
-
-interface FooterLink {
-  label: string;
-  to: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
-}
-
-function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
-  return (
-    <div>
-      <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">{title}</h4>
-      <ul className="mt-4 space-y-2 text-sm opacity-85">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const content = (
-            <span className="flex items-center gap-2 mb-0.5">
-              {Icon && (
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`}
-                />
-              )}
-              <span
-                className={
-                  l.highlight
-                    ? "text-primary font-bold tracking-wide relative"
-                    : "hover:text-white transition-all"
-                }
-              >
-                {l.label}
-                {l.highlight && (
-                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">
-                    ITBI
-                  </span>
-                )}
-              </span>
-            </span>
-          );
-
-          return (
-            <li key={l.label}>
-              {l.to.startsWith("/#") ? (
-                <a
-                  href={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </a>
-              ) : (
-                <Link
-                  to={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </Link>
-              )}
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 }
