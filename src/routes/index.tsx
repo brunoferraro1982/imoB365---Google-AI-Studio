@@ -713,6 +713,9 @@ function Landing() {
         </div>
       </section>
 
+      {/* IMOBILIÁRIAS E CONSTRUTORAS PARCEIRAS — vitrine curada (Liquid Glass acinzentado) */}
+      <ParceirosMarquee />
+
       {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <h2 className="text-center text-3xl font-bold tracking-tight md:text-4xl">
@@ -748,7 +751,6 @@ export function SiteFooter() {
 
   return (
     <>
-      <ParceirosMarquee />
       <footer className="border-t border-border bg-secondary text-secondary-foreground">
         <div className="mx-auto max-w-6xl px-6 py-14">
           <div className="grid gap-10 md:grid-cols-4">

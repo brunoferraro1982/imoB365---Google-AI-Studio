@@ -347,7 +347,7 @@ type VitrineItem = {
 };
 
 const CHIP_CLASS =
-  "flex h-16 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-white px-6 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:shadow-lg";
+  "glass-fosco flex h-16 shrink-0 items-center justify-center rounded-2xl bg-white/85 px-6 transition hover:scale-105 hover:bg-white";
 
 function VitrineChip({ it }: { it: VitrineItem }) {
   const inner = it.logoUrl ? (
@@ -385,8 +385,8 @@ function VitrineChip({ it }: { it: VitrineItem }) {
 
 // Vitrine de Parceiros: faixa de logos de imobiliárias + construtoras, curada e
 // ordenada pelo super_admin (tabela `vitrine_parceiros`; velocidade em
-// `global_settings.vitrine_marquee`). Fundo neutro + cada logo num chip branco
-// pra clareza (logos coloridos sempre sobre branco, inclusive no tema escuro).
+// `global_settings.vitrine_marquee`). Fundo Liquid Glass acinzentado + cada logo
+// num chip de vidro quase branco (logos coloridos legíveis, inclusive no tema escuro).
 // Com poucos itens, renderiza estático e centralizado (sem a 2ª cópia do loop,
 // que fazia os logos "duplicarem" na tela). Compartilhado entre o SiteFooter
 // deste arquivo e o SiteFooter local de routes/index.tsx.
@@ -485,19 +485,27 @@ export function ParceirosMarquee() {
   const track = [...base, ...base];
 
   return (
-    <div className="overflow-hidden border-b border-border bg-muted/30 py-8">
-      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        Imobiliárias e Construtoras Parceiras
-      </p>
-      <div
-        className="flex w-max items-center gap-8"
-        style={{ animation: `marquee ${speed}s linear infinite` }}
-      >
-        {track.map((it, i) => (
-          <VitrineChip key={`${it.key}-${i}`} it={it} />
-        ))}
+    <section className="hero-brand relative isolate overflow-hidden border-t border-border py-12 md:py-14">
+      {/* degradê Liquid Glass acinzentado (mesmo dos blocos de parceiros/CTA da home) */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_10%_0%,rgba(148,163,184,.22),transparent_70%),radial-gradient(520px_320px_at_92%_100%,rgba(100,116,139,.16),transparent_70%)]" />
+      <div className="mx-auto max-w-6xl px-6 text-center">
+        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          Imobiliárias e Construtoras Parceiras
+        </h2>
       </div>
-    </div>
+      {/* py-2: espaço para a sombra/hover dos chips de vidro não ser cortado */}
+      <div className="mt-8 overflow-hidden py-2">
+        <div
+          className="flex w-max items-center gap-6"
+          style={{ animation: `marquee ${speed}s linear infinite` }}
+        >
+          {track.map((it, i) => (
+            <VitrineChip key={`${it.key}-${i}`} it={it} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
