@@ -65,8 +65,8 @@ export function ItbiPage() {
                   <Calculator className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-md font-bold text-foreground">Calculadora de ITBI</h2>
-                  <p className="text-3xs text-muted-foreground leading-none">
+                  <h2 className="text-base font-bold text-foreground">Calculadora de ITBI</h2>
+                  <p className="text-[10px] text-muted-foreground leading-none">
                     Simule de forma simples e rápida
                   </p>
                 </div>
@@ -116,19 +116,19 @@ export function ItbiPage() {
                 <div className="border-t border-border pt-4 mt-2 space-y-3.5">
                   <div className="flex justify-between items-center bg-muted/45 p-3 rounded-xl border border-border/60">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-muted-foreground font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase leading-none block">
                         ITBI Estimado
                       </span>
-                      <span className="text-2xs text-muted-foreground leading-none block">
+                      <span className="text-[11px] text-muted-foreground leading-none block">
                         Imposto municipal
                       </span>
                     </div>
-                    <span className="text-md font-extrabold text-orange-600">
+                    <span className="text-base font-extrabold text-orange-600">
                       {formatBRL(totalITBI)}
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-xl border border-dashed border-border/80 text-3xs">
+                  <div className="flex justify-between items-center p-3 rounded-xl border border-dashed border-border/80 text-[10px]">
                     <div className="space-y-0.5">
                       <span className="text-muted-foreground font-bold uppercase block">
                         Escritura e Registro Est.
@@ -142,10 +142,10 @@ export function ItbiPage() {
 
                   <div className="flex justify-between items-center bg-primary/[0.03] p-3.5 rounded-xl border border-primary/10">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-primary font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-primary font-bold uppercase leading-none block">
                         Investimento Operacional
                       </span>
-                      <span className="text-3xs text-muted-foreground leading-none block">
+                      <span className="text-[10px] text-muted-foreground leading-none block">
                         Imposto + Certidões
                       </span>
                     </div>
@@ -269,7 +269,7 @@ export function ItbiPage() {
 
               {/* Seção 4 */}
               <div className="space-y-2 border-t border-border pt-4">
-                <h2 className="text-md font-bold text-foreground">Como o imposto é calculado?</h2>
+                <h2 className="text-base font-bold text-foreground">Como o imposto é calculado?</h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   O valor do imposto é uma multiplicação simples da alíquota da sua cidade sobre o{" "}
                   <strong>Valor de Base do Imóvel</strong>. Esse valor de base geralmente é o maior

@@ -386,14 +386,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
               <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
                 Identificação
               </span>
-              <span className="font-mono text-3xs font-medium">{user.email}</span>
+              <span className="font-mono text-[10px] font-medium">{user.email}</span>
             </div>
             {profile.tipo_usuario && (
               <div className="flex justify-between items-center border-b border-border/50 pb-1.5">
                 <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
                   Perfil
                 </span>
-                <span className="font-semibold capitalize text-right text-3xs">
+                <span className="font-semibold capitalize text-right text-[10px]">
                   {profile.tipo_usuario === "imobiliaria"
                     ? "Imobiliária / Agência"
                     : "Corretor de Imóveis"}
@@ -405,7 +405,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 <span className="text-muted-foreground uppercase font-sans tracking-wider text-[10px] font-semibold">
                   Plano Pretendido
                 </span>
-                <span className="font-semibold text-right text-3xs">
+                <span className="font-semibold text-right text-[10px]">
                   Plano {profile.plano_pretendido}
                 </span>
               </div>
@@ -417,7 +417,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                     ? "Vínculo de Imobiliária"
                     : "Parceiro Comercial"}
                 </span>
-                <span className="font-semibold text-right text-3xs truncate max-w-[180px]">
+                <span className="font-semibold text-right text-[10px] truncate max-w-[180px]">
                   {profile.imobiliaria_nome}
                 </span>
               </div>
@@ -427,7 +427,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
                 Assinatura
               </span>
               <span
-                className={`font-semibold text-right text-3xs ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}
+                className={`font-semibold text-right text-[10px] ${profile.plano_pretendido === "Free" ? "text-green-600" : "text-amber-600"}`}
               >
                 {profile.plano_pretendido === "Free"
                   ? "Grátis (Ativação Direta)"
@@ -436,7 +436,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
             </div>
           </div>
 
-          <p className="mt-5 text-balance text-3xs text-muted-foreground leading-normal">
+          <p className="mt-5 text-balance text-[10px] text-muted-foreground leading-normal">
             Seu acesso e visibilidade aos dados do tenant serão ativados assim que o
             super-administrador validar os dados no painel global.
           </p>
@@ -756,7 +756,7 @@ function AdminLayout({
         <Link to="/" className="inline-flex shrink-0">
           <Logo className="h-8 w-auto" variant="white" />
         </Link>
-        <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-primary/35 bg-primary/20 px-2 py-0.5 text-3xs font-semibold uppercase tracking-wider text-primary">
+        <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-primary/35 bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
           Super-admin
         </span>
         <div className="ml-auto flex items-center gap-1">
@@ -834,7 +834,7 @@ function AdminLayout({
           <Link to="/" className="inline-flex">
             <Logo className="h-9.5 w-auto" variant="white" />
           </Link>
-          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/20 border border-primary/35 px-2.5 py-0.5 text-3xs font-semibold uppercase tracking-wider text-primary">
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/20 border border-primary/35 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
             Super-admin
           </span>
         </div>
