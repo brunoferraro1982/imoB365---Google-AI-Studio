@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -52,6 +52,7 @@ import {
   Star,
   StarOff,
   Home,
+  UserRound,
 } from "lucide-react";
 import { useConfirm } from "@/hooks/useConfirm";
 
@@ -111,6 +112,9 @@ const statusColor: Record<string, string> = {
 function AdminTenants() {
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [users, setUsers] = useState<ProfileUser[]>([]);
+  // user_id → id do perfil público de corretor (para o atalho "Perfil de corretor")
+  const [corretorPorUser, setCorretorPorUser] = useState<Record<string, string>>({});
+  const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
   // Contagem de imóveis (null = ainda carregando ou falhou — a tela segue sem ela)
   const [contagem, setContagem] = useState<{
@@ -150,15 +154,22 @@ function AdminTenants() {
   async function load() {
     setLoading(true);
     try {
-      const [{ data: t }, { data: p }, adminResult, contagemResult] = await Promise.all([
-        supabase.from("tenants").select("*").order("created_at", { ascending: false }),
-        supabase.from("plans").select("slug,nome,limites").eq("ativo", true),
-        listAdminUsers(),
-        contarImoveisAdmin().catch((err) => {
-          console.error("contarImoveisAdmin falhou:", err);
-          return null;
-        }),
-      ]);
+      const [{ data: t }, { data: p }, adminResult, contagemResult, { data: cs }] =
+        await Promise.all([
+          supabase.from("tenants").select("*").order("created_at", { ascending: false }),
+          supabase.from("plans").select("slug,nome,limites").eq("ativo", true),
+          listAdminUsers(),
+          contarImoveisAdmin().catch((err) => {
+            console.error("contarImoveisAdmin falhou:", err);
+            return null;
+          }),
+          supabase.from("corretores").select("id,user_id").not("user_id", "is", null),
+        ]);
+      setCorretorPorUser(
+        Object.fromEntries(
+          ((cs as { id: string; user_id: string }[]) ?? []).map((c) => [c.user_id, c.id]),
+        ),
+      );
       setContagem(contagemResult);
       setTenants((t as Tenant[]) ?? []);
       setPlans((p as Plan[]) ?? []);
@@ -553,6 +564,16 @@ function AdminTenants() {
                 <DropdownMenuSeparator />
               </>
             )}
+            {corretorPorUser[usr.id] && (
+              <DropdownMenuItem
+                onClick={() =>
+                  navigate({ to: "/admin/corretores/$id", params: { id: corretorPorUser[usr.id] } })
+                }
+              >
+                <UserRound className="h-3.5 w-3.5 mr-2" />
+                Perfil de corretor
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               onClick={() =>
                 setEditUserModal({
@@ -712,11 +733,19 @@ function AdminTenants() {
                       <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem
                           onClick={() =>
+                            navigate({ to: "/admin/tenants/$id", params: { id: t.id } })
+                          }
+                        >
+                          <Building2 className="h-3.5 w-3.5 mr-2" />
+                          Editar perfil
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
                             setEditTenantModal({ tenant: t, nome: t.nome, cnpj: t.cnpj ?? "" })
                           }
                         >
                           <Pencil className="h-3.5 w-3.5 mr-2" />
-                          Editar
+                          Edição rápida
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Select

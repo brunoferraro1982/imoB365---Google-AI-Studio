@@ -179,6 +179,8 @@ import { Route as ApiPublicSitemapIndexDotxmlRouteImport } from './routes/api.pu
 import { Route as ApiPublicHealthRouteImport } from './routes/api.public.health'
 import { Route as ApiAiSugestaoChamadoRouteImport } from './routes/api.ai.sugestao-chamado'
 import { Route as ApiAiAssistenteRouteImport } from './routes/api.ai.assistente'
+import { Route as AdminTenantsIdRouteImport } from './routes/admin.tenants_.$id'
+import { Route as AdminCorretoresIdRouteImport } from './routes/admin.corretores.$id'
 import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
 import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
@@ -1096,6 +1098,16 @@ const ApiAiAssistenteRoute = ApiAiAssistenteRouteImport.update({
   path: '/api/ai/assistente',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTenantsIdRoute = AdminTenantsIdRouteImport.update({
+  id: '/tenants_/$id',
+  path: '/tenants/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCorretoresIdRoute = AdminCorretoresIdRouteImport.update({
+  id: '/corretores/$id',
+  path: '/corretores/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAtendimentoPainelRoute = AdminAtendimentoPainelRouteImport.update({
   id: '/atendimento/painel',
   path: '/atendimento/painel',
@@ -1463,6 +1475,8 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
+  '/admin/corretores/$id': typeof AdminCorretoresIdRoute
+  '/admin/tenants/$id': typeof AdminTenantsIdRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
@@ -1678,6 +1692,8 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/conta': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
+  '/admin/corretores/$id': typeof AdminCorretoresIdRoute
+  '/admin/tenants/$id': typeof AdminTenantsIdRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
@@ -1899,6 +1915,8 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/conta/': typeof ContaIndexRoute
   '/admin/atendimento/painel': typeof AdminAtendimentoPainelRoute
+  '/admin/corretores/$id': typeof AdminCorretoresIdRoute
+  '/admin/tenants_/$id': typeof AdminTenantsIdRoute
   '/api/ai/assistente': typeof ApiAiAssistenteRoute
   '/api/ai/sugestao-chamado': typeof ApiAiSugestaoChamadoRoute
   '/api/public/health': typeof ApiPublicHealthRoute
@@ -2121,6 +2139,8 @@ export interface FileRouteTypes {
     | '/app/'
     | '/conta/'
     | '/admin/atendimento/painel'
+    | '/admin/corretores/$id'
+    | '/admin/tenants/$id'
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
@@ -2336,6 +2356,8 @@ export interface FileRouteTypes {
     | '/app'
     | '/conta'
     | '/admin/atendimento/painel'
+    | '/admin/corretores/$id'
+    | '/admin/tenants/$id'
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
@@ -2556,6 +2578,8 @@ export interface FileRouteTypes {
     | '/app/'
     | '/conta/'
     | '/admin/atendimento/painel'
+    | '/admin/corretores/$id'
+    | '/admin/tenants_/$id'
     | '/api/ai/assistente'
     | '/api/ai/sugestao-chamado'
     | '/api/public/health'
@@ -3979,6 +4003,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAiAssistenteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/tenants_/$id': {
+      id: '/admin/tenants_/$id'
+      path: '/tenants/$id'
+      fullPath: '/admin/tenants/$id'
+      preLoaderRoute: typeof AdminTenantsIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/corretores/$id': {
+      id: '/admin/corretores/$id'
+      path: '/corretores/$id'
+      fullPath: '/admin/corretores/$id'
+      preLoaderRoute: typeof AdminCorretoresIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/atendimento/painel': {
       id: '/admin/atendimento/painel'
       path: '/atendimento/painel'
@@ -4337,6 +4375,8 @@ interface AdminRouteChildren {
   AdminVitrineParceirosRoute: typeof AdminVitrineParceirosRoute
   AdminIndexRoute: typeof AdminIndexRoute
   AdminAtendimentoPainelRoute: typeof AdminAtendimentoPainelRoute
+  AdminCorretoresIdRoute: typeof AdminCorretoresIdRoute
+  AdminTenantsIdRoute: typeof AdminTenantsIdRoute
   AdminAtendimentoIndexRoute: typeof AdminAtendimentoIndexRoute
   AdminConstrutorasIdIngestaoRoute: typeof AdminConstrutorasIdIngestaoRoute
 }
@@ -4360,6 +4400,8 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminVitrineParceirosRoute: AdminVitrineParceirosRoute,
   AdminIndexRoute: AdminIndexRoute,
   AdminAtendimentoPainelRoute: AdminAtendimentoPainelRoute,
+  AdminCorretoresIdRoute: AdminCorretoresIdRoute,
+  AdminTenantsIdRoute: AdminTenantsIdRoute,
   AdminAtendimentoIndexRoute: AdminAtendimentoIndexRoute,
   AdminConstrutorasIdIngestaoRoute: AdminConstrutorasIdIngestaoRoute,
 }
