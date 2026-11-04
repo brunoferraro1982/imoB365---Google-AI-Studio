@@ -353,8 +353,9 @@ function Landing() {
         id="parceiros"
         className="hero-brand relative isolate scroll-mt-20 overflow-hidden border-b border-border bg-muted/30"
       >
-        {/* fundo neutro com leve tom azul (sem laranja) para o vidro ter o que desfocar */}
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(620px_380px_at_0%_100%,rgba(90,150,235,.18),transparent_70%),radial-gradient(520px_320px_at_100%_0%,rgba(90,150,235,.10),transparent_70%)]" />
+        {/* fundo Liquid Glass acinzentado suave (sem azul/laranja) */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_8%_100%,rgba(100,116,139,.16),transparent_70%),radial-gradient(480px_300px_at_95%_0%,rgba(148,163,184,.20),transparent_70%)]" />
 
         <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-[7fr_3fr] md:py-16">
           <div className="glass-fosco rounded-[28px] p-6 md:p-7">
