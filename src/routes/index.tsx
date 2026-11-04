@@ -526,6 +526,40 @@ function Landing() {
         </div>
       </section>
 
+      {/* CTA — Liquid Glass sobre degradê cinza-claro */}
+      <section className="hero-brand relative isolate overflow-hidden border-t border-border">
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_10%_0%,rgba(148,163,184,.22),transparent_70%),radial-gradient(520px_320px_at_92%_100%,rgba(100,116,139,.16),transparent_70%)]" />
+        <div className="mx-auto max-w-6xl px-6 py-14 md:py-16">
+          <div className="glass-fosco rounded-[28px] p-8 text-center md:p-12">
+            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+              Pronto para vender e alugar mais, com menos esforço?
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Teste grátis por 30 dias.</p>
+            <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground">
+              Após os 30 dias, seus dados continuam salvos na plataforma — para seguir usando, basta
+              escolher um plano de assinatura.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link to="/signup">
+                <Button size="lg" className="rounded-full px-7 shadow-lg shadow-primary/20">
+                  Começar agora
+                </Button>
+              </Link>
+              <Link to="/planos">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="rounded-full border-white/70 bg-white/60 px-7 backdrop-blur hover:bg-white/90"
+                >
+                  Ver planos e preços
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* EMPREENDIMENTOS / LANÇAMENTOS */}
       {empreendimentos.length > 0 && (
         <section className="border-t border-border bg-muted/30">
@@ -698,32 +732,6 @@ function Landing() {
                 </ul>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/15 via-card to-card p-10 text-center md:p-16">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Pronto para vender e alugar mais, com menos esforço?
-          </h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            Teste grátis por 30 dias. Sem cartão de crédito.
-          </p>
-          <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground">
-            Após os 30 dias, seus dados continuam salvos na plataforma — para seguir usando, basta
-            escolher um plano de assinatura.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/signup">
-              <Button size="lg">Começar agora</Button>
-            </Link>
-            <Link to="/planos">
-              <Button size="lg" variant="outline">
-                Ver planos e preços
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
