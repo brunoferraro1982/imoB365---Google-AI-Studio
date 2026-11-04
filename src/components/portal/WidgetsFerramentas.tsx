@@ -36,7 +36,7 @@ export function WidgetsFerramentas() {
 
   return (
     <>
-      <div className="grid h-full grid-cols-2 gap-3 md:grid-cols-1 md:gap-4">
+      <div className="grid h-full grid-cols-2 gap-3 md:grid-cols-1 md:grid-rows-2 md:gap-4">
         <Widget
           onClick={() => setAberta("ia")}
           icone={<Sparkles className="h-5 w-5 text-white" />}
@@ -100,18 +100,16 @@ function Widget({
       type="button"
       onClick={onClick}
       aria-haspopup="dialog"
-      className="glass-fosco group relative flex min-h-[132px] flex-1 flex-col justify-between overflow-hidden rounded-[26px] p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-5"
+      className="glass-fosco group relative flex h-full min-h-[132px] flex-col justify-between overflow-hidden rounded-[26px] p-4 text-left transition duration-200 hover:-translate-y-0.5 hover:bg-white/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:min-h-0 md:flex-row md:items-center md:justify-start md:gap-3.5"
     >
       <span className={`pointer-events-none absolute inset-0 ${brilho}`} />
-      <span className="relative flex items-start justify-between">
-        <span
-          className={`grid h-11 w-11 place-items-center rounded-[14px] bg-gradient-to-br ${corIcone} shadow-md`}
-        >
-          {icone}
-        </span>
-        <ArrowUpRight className="h-4 w-4 text-muted-foreground transition group-hover:text-foreground" />
+      <ArrowUpRight className="absolute right-3.5 top-3.5 h-4 w-4 text-muted-foreground transition group-hover:text-foreground" />
+      <span
+        className={`relative grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-gradient-to-br ${corIcone} shadow-md`}
+      >
+        {icone}
       </span>
-      <span className="relative mt-3 block">
+      <span className="relative mt-3 block md:mt-0 md:pr-4">
         <span className="font-brand-display block text-[15px] font-extrabold leading-tight tracking-tight text-foreground md:text-base">
           {titulo}
         </span>

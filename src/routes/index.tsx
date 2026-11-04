@@ -293,8 +293,10 @@ function Landing() {
           className="absolute inset-0 -z-30 bg-cover bg-center bg-no-repeat opacity-40 dark:opacity-10"
           style={{ backgroundImage: `url(${citySkylineHero})` }}
         />
-        <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/90 via-background/60 to-background/30 dark:from-background dark:via-background/80 dark:to-background/40" />
+        <div className="absolute inset-0 -z-20 bg-gradient-to-r from-background/95 via-background/65 to-transparent dark:from-background dark:via-background/80 dark:to-transparent" />
         <div className="mesh-brand-claro absolute inset-0 -z-10" />
+        {/* Brilho alaranjado do topo (destaque original da seção) */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--primary-glow)_15%,_transparent_55%)] opacity-35 dark:opacity-20" />
 
         <div className="mx-auto max-w-6xl px-6">
           <span className="glass-fosco inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold text-muted-foreground">
@@ -302,17 +304,16 @@ function Landing() {
             corretores e clientes
           </span>
 
-          {/* Busca inteligente (70%) + widgets de ferramentas (30%) */}
-          <div className="mt-5 grid items-stretch gap-4 md:grid-cols-[7fr_3fr]">
-            <BuscaIAHero />
-            <WidgetsFerramentas />
+          {/* Busca inteligente (70%) + widgets de ferramentas (30%), mesma altura */}
+          <div className="mt-5">
+            <BuscaIAHero lateral={<WidgetsFerramentas />} />
           </div>
 
           <div className="mt-8 flex flex-col items-start text-left md:mt-10">
             {/* Mobile: as frases rotativas têm comprimentos diferentes — o min-h
                 reserva o pior caso (2 linhas do fixo + 2 da frase) para a altura
                 do h1 não variar e não empurrar o conteúdo seguinte. */}
-            <h1 className="max-w-4xl md:max-w-none text-3xl sm:text-5xl md:text-[3.4rem] font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
+            <h1 className="max-w-4xl md:max-w-none text-4xl sm:text-6xl md:text-7xl font-extrabold leading-[1.08] tracking-tighter text-foreground min-h-[4.6em] sm:min-h-[2.8em]">
               Encontre o imóvel certo,
               <br />
               <span className="text-primary inline-block min-h-[1.26em] relative">

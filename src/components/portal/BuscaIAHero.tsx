@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   ArrowUp,
   Bath,
@@ -122,7 +122,7 @@ function interpretarLocal(texto: string, finalidadeEscolhida: Finalidade): Filtr
   return f;
 }
 
-export function BuscaIAHero() {
+export function BuscaIAHero({ lateral }: { lateral?: ReactNode } = {}) {
   const navigate = useNavigate();
   const interpretar = useServerFn(interpretarBuscaConversacional);
 
@@ -246,119 +246,124 @@ export function BuscaIAHero() {
         @media (prefers-reduced-motion: reduce) { .busca-ia-borda::before { animation: none; } }
       `}</style>
 
-      {/* ---------- caixa de IA ---------- */}
-      <div className="busca-ia-borda shadow-xl shadow-primary/10">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            void buscarComIA();
-          }}
-          className="glass-fosco relative rounded-[28px] bg-white/70 p-4 md:p-5"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#346ed6] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
-              <Sparkles className="h-3.5 w-3.5" />
-              Busca inteligente com IA
-            </span>
-            <div
-              role="radiogroup"
-              aria-label="Comprar ou alugar"
-              className="inline-flex rounded-full bg-muted/70 p-0.5 text-xs font-semibold"
-            >
-              {(
-                [
-                  ["todos", "Tanto faz"],
-                  ["venda", "Comprar"],
-                  ["aluguel", "Alugar"],
-                ] as const
-              ).map(([v, l]) => (
-                <button
-                  key={v}
-                  type="button"
-                  role="radio"
-                  aria-checked={finalidade === v}
-                  onClick={() => setFinalidade(v)}
-                  className={`rounded-full px-3 py-1 transition ${
-                    finalidade === v
-                      ? "bg-white text-foreground shadow-sm dark:bg-background"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {l}
-                </button>
-              ))}
+      {/* ---------- caixa de IA (+ coluna lateral com a mesma altura) ---------- */}
+      <div className="grid items-stretch gap-4 md:grid-cols-[7fr_3fr]">
+        <div className="busca-ia-borda h-full shadow-xl shadow-primary/10">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void buscarComIA();
+            }}
+            className="glass-fosco relative flex h-full flex-col justify-between gap-1 rounded-[28px] bg-white/70 p-4 md:p-5"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-[#346ed6] px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-sm">
+                <Sparkles className="h-3.5 w-3.5" />
+                Busca inteligente com IA
+              </span>
+              <div
+                role="radiogroup"
+                aria-label="Comprar ou alugar"
+                className="inline-flex rounded-full bg-muted/70 p-0.5 text-xs font-semibold"
+              >
+                {(
+                  [
+                    ["todos", "Tanto faz"],
+                    ["venda", "Comprar"],
+                    ["aluguel", "Alugar"],
+                  ] as const
+                ).map(([v, l]) => (
+                  <button
+                    key={v}
+                    type="button"
+                    role="radio"
+                    aria-checked={finalidade === v}
+                    onClick={() => setFinalidade(v)}
+                    className={`rounded-full px-3 py-1 transition ${
+                      finalidade === v
+                        ? "bg-white text-foreground shadow-sm dark:bg-background"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="mt-3 flex items-end gap-3 rounded-2xl border border-border bg-white/70 px-4 py-3 transition focus-within:border-primary/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 dark:bg-background">
-            <textarea
-              ref={textareaRef}
-              rows={2}
-              value={pedido}
-              onChange={(e) => {
-                setPedido(e.target.value);
-                if (erro) setErro(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void buscarComIA();
-                }
-              }}
-              disabled={carregando}
-              maxLength={400}
-              aria-label="Descreva o imóvel que você procura"
-              placeholder={`Descreva o imóvel dos seus sonhos… ex.: “${EXEMPLOS[exemplo]}”`}
-              className="max-h-[168px] min-h-[92px] md:min-h-[56px] w-full resize-none bg-transparent text-base font-medium leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/60 md:text-lg"
-            />
-            <button
-              type="submit"
-              disabled={carregando}
-              aria-label="Buscar com IA"
-              className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-[#346ed6] text-white shadow-lg transition hover:scale-105 hover:shadow-primary/30 disabled:cursor-wait disabled:opacity-80"
-            >
-              {carregando ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <ArrowUp className="h-5 w-5 stroke-[2.5px]" />
-              )}
-            </button>
-          </div>
-
-          {carregando ? (
-            <div
-              className="mt-3 flex items-center gap-2 px-1 text-sm font-semibold text-primary"
-              aria-live="polite"
-            >
-              <Sparkles className="h-4 w-4 animate-pulse" />
-              {PASSOS[passo]}
+            <div className="mt-3 flex items-end gap-3 rounded-2xl border border-border bg-white/70 px-4 py-3 transition focus-within:border-primary/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10 dark:bg-background">
+              <textarea
+                ref={textareaRef}
+                rows={2}
+                value={pedido}
+                onChange={(e) => {
+                  setPedido(e.target.value);
+                  if (erro) setErro(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    void buscarComIA();
+                  }
+                }}
+                disabled={carregando}
+                maxLength={400}
+                aria-label="Descreva o imóvel que você procura"
+                placeholder={`Descreva o imóvel dos seus sonhos… ex.: “${EXEMPLOS[exemplo]}”`}
+                className="max-h-[168px] min-h-[92px] md:min-h-[56px] w-full resize-none bg-transparent text-base font-medium leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/60 md:text-lg"
+              />
+              <button
+                type="submit"
+                disabled={carregando}
+                aria-label="Buscar com IA"
+                className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-[#346ed6] text-white shadow-lg transition hover:scale-105 hover:shadow-primary/30 disabled:cursor-wait disabled:opacity-80"
+              >
+                {carregando ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-5 w-5 stroke-[2.5px]" />
+                )}
+              </button>
             </div>
-          ) : erro ? (
-            <p className="mt-3 px-1 text-sm font-medium text-red-600">{erro}</p>
-          ) : (
-            <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
-              <span className="text-xs font-semibold text-muted-foreground">Experimente:</span>
-              {SUGESTOES.map((s) => (
-                <button
-                  key={s.label}
-                  type="button"
-                  onClick={() => void buscarComIA(s.texto)}
-                  title={s.texto}
-                  className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-primary dark:bg-background"
-                >
-                  <s.icon className="h-3.5 w-3.5" />
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
 
-          <p className="mt-3 px-1 text-[11px] leading-snug text-muted-foreground/80">
-            A IA da imoB365 entende o seu pedido e aplica os filtros da busca por você — dá para
-            ajustar tudo nos resultados.{" "}
-            <span className="hidden sm:inline">Enter para buscar · Shift+Enter quebra linha.</span>
-          </p>
-        </form>
+            {carregando ? (
+              <div
+                className="mt-3 flex items-center gap-2 px-1 text-sm font-semibold text-primary"
+                aria-live="polite"
+              >
+                <Sparkles className="h-4 w-4 animate-pulse" />
+                {PASSOS[passo]}
+              </div>
+            ) : erro ? (
+              <p className="mt-3 px-1 text-sm font-medium text-red-600">{erro}</p>
+            ) : (
+              <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
+                <span className="text-xs font-semibold text-muted-foreground">Experimente:</span>
+                {SUGESTOES.map((s) => (
+                  <button
+                    key={s.label}
+                    type="button"
+                    onClick={() => void buscarComIA(s.texto)}
+                    title={s.texto}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted-foreground transition hover:border-primary/50 hover:bg-primary/5 hover:text-primary dark:bg-background"
+                  >
+                    <s.icon className="h-3.5 w-3.5" />
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <p className="mt-3 px-1 text-[11px] leading-snug text-muted-foreground/80">
+              A IA da imoB365 entende o seu pedido e aplica os filtros da busca por você — dá para
+              ajustar tudo nos resultados.{" "}
+              <span className="hidden sm:inline">
+                Enter para buscar · Shift+Enter quebra linha.
+              </span>
+            </p>
+          </form>
+        </div>
+        {lateral}
       </div>
 
       {/* ---------- pesquisa tradicional ---------- */}
