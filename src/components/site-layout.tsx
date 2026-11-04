@@ -179,6 +179,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
       {
         key: "ferramentas",
         label: "Ferramentas & Simuladores",
+        labelCurto: "Ferramentas",
         panelClassName:
           "absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden",
         columns: [

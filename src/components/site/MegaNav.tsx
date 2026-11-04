@@ -50,6 +50,8 @@ export type MegaNavGroup = {
   posicao?: "menu" | "topbar";
   /** Ícone do gatilho quando o grupo fica no top bar. */
   icon?: LucideIcon;
+  /** Tema "brand": rótulo curto usado abaixo de 1280px (xl) para o menu caber alinhado ao top bar. */
+  labelCurto?: string;
 };
 
 export type MegaNavConfig = {
@@ -600,8 +602,9 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
     <header className="sticky top-0 z-40 font-sans">
       {/* Top bar preto (compacto: menos altura, mesmas fontes) */}
       {config.topBar && (
-        <div className="relative z-20 bg-black px-6 py-1 text-[11px] font-semibold text-white/80">
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+        <div className="relative z-20 bg-black py-1 text-[11px] font-semibold text-white/80">
+          {/* mesmo container do menu (max-w-6xl + px-6 por dentro) para as bordas alinharem */}
+          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6">
             <div className="flex shrink-0 items-center gap-5">
               {config.topBar.contacts.map((c, i) => (
                 <Fragment key={c.label}>
@@ -682,7 +685,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 -z-10 ${MENU_VIDRO}`}
         />
-        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-2">
+        <div className="relative mx-auto flex max-w-6xl items-center justify-between gap-3 px-6 py-2">
           <Link
             to={config.logoTo ?? "/"}
             className="flex shrink-0 items-center transition-transform hover:scale-[1.015]"
@@ -691,7 +694,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
           </Link>
 
           <nav
-            className={`hidden shrink-0 items-center gap-0.5 text-[13px] font-semibold tracking-tight text-[#e8e8ed]/90 lg:flex xl:gap-1.5 xl:text-sm xl:tracking-normal`}
+            className={`hidden shrink-0 items-center gap-0.5 text-[13px] font-semibold tracking-tight text-[#e8e8ed]/90 lg:flex xl:gap-0.5 xl:text-[13.5px] xl:tracking-normal`}
           >
             {gruposMenu.map((group) => {
               if (!group.columns || group.columns.length === 0) {
@@ -700,7 +703,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                     key={group.key}
                     to={group.to}
                     hash={group.hash}
-                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-white/10 hover:text-white xl:px-3"
+                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-white/10 hover:text-white"
                   >
                     <span>{group.label}</span>
                   </Link>
@@ -715,11 +718,18 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                   onMouseLeave={handleMouseLeave}
                 >
                   <button
-                    className={`flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors xl:px-3 ${
+                    className={`flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors ${
                       isActive ? "bg-white/10 text-white" : "hover:bg-white/10 hover:text-white"
                     }`}
                   >
-                    <span>{group.label}</span>
+                    {group.labelCurto ? (
+                      <>
+                        <span className="xl:hidden">{group.labelCurto}</span>
+                        <span className="hidden xl:inline">{group.label}</span>
+                      </>
+                    ) : (
+                      <span>{group.label}</span>
+                    )}
                     <ChevronDown
                       className={`h-3.5 w-3.5 transition-transform duration-200 ${isActive ? "rotate-180 text-[#ed7d31]" : "opacity-60"}`}
                     />
@@ -767,13 +777,15 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
             })}
           </nav>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {config.ctaButton && (
               <Link
                 to={config.ctaButton.to}
-                className="hidden cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#ed7d31]/25 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 sm:inline-flex"
+                className="hidden cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-3 py-2 text-xs xl:px-3.5 font-bold text-white shadow-md shadow-[#ed7d31]/25 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 sm:inline-flex"
               >
-                {config.ctaButton.icon && <config.ctaButton.icon className="h-4 w-4 shrink-0" />}
+                {config.ctaButton.icon && (
+                  <config.ctaButton.icon className="hidden h-4 w-4 shrink-0 xl:block" />
+                )}
                 <span>{config.ctaButton.label}</span>
               </Link>
             )}
