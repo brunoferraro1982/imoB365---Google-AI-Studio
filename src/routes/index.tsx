@@ -310,7 +310,7 @@ function Landing() {
           </div>
 
           {/* Título (3 linhas: fixo + frase rotativa em até 2) | texto — ~55/45; "Procurando por" em linha própria abaixo */}
-          <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-[11fr_9fr] md:items-center md:gap-10">
+          <div className="mt-7 grid gap-5 md:mt-9 md:grid-cols-[11fr_9fr] md:items-start md:gap-10">
             {/* min-h reserva o pior caso da frase rotativa para a altura do h1 não
                 variar e não empurrar o conteúdo seguinte (mobile: 2 linhas do fixo
                 + 2 da frase; desktop: 1 do fixo + 2 da frase). */}
@@ -325,14 +325,14 @@ function Landing() {
               </span>
             </h1>
             <div>
-              <p className="text-base md:text-[17px] text-muted-foreground font-semibold leading-relaxed">
+              <p className="text-base md:pt-2 md:text-[17px] text-muted-foreground font-semibold leading-relaxed">
                 Milhares de imóveis para comprar e alugar, ofertados por imobiliárias e corretores
                 parceiros em todo o Brasil. Atendimento humano, sem burocracia.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm">
             <span className="font-bold text-foreground tracking-tight">Procurando por:</span>
             {["Apartamento", "Casa", "Cobertura", "Comercial", "Terreno"].map((t) => (
               <Link
