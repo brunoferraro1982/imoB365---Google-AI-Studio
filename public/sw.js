@@ -1,4 +1,4 @@
-const CACHE = "imob365-v1";
+const CACHE = "imob365-v2";
 const ASSETS = ["/", "/favicon.png", "/manifest.webmanifest", "/hero-bg.jpg"];
 
 self.addEventListener("install", (event) => {

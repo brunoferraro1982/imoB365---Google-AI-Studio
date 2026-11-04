@@ -133,6 +133,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           : []),
       ],
       links: [
+        { rel: "icon", href: "/favicon.ico", sizes: "any" },
+        { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
         { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon.png" },
         { rel: "icon", type: "image/png", sizes: "192x192", href: "/icon-192.png" },
         { rel: "manifest", href: "/manifest.webmanifest" },
@@ -141,7 +143,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800;900&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800;900&family=Manrope:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap",
         },
         {
           rel: "stylesheet",

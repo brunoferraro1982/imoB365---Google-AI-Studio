@@ -6,21 +6,17 @@ import { useEffect, useState } from "react";
 import {
   Building2,
   Users,
-  Globe2,
   ShieldCheck,
   HeartHandshake,
-  Search,
   Building,
   Home,
   Headset,
   Instagram,
   Facebook,
   Linkedin,
-  SlidersHorizontal,
   Key,
   CreditCard,
   Calculator,
-  Activity,
   Layers,
   Terminal,
   BookOpen,
@@ -29,12 +25,27 @@ import {
   Landmark,
   Sparkles,
   Factory,
+  Compass,
+  BadgeCheck,
+  BarChart3,
+  Briefcase,
+  Quote,
+  Receipt,
+  MapPinned,
+  ServerCog,
+  LayoutGrid,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { HeaderUserMenu } from "@/components/layout/HeaderUserMenu";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { MegaNavHeader, type MegaNavConfig, type MegaNavLeaf } from "@/components/site/MegaNav";
+import {
+  IconeVidro,
+  MegaNavHeader,
+  type MegaNavConfig,
+  type MegaNavLeaf,
+} from "@/components/site/MegaNav";
+import type { LucideIcon } from "lucide-react";
 
 export function SiteHeader() {
   return <SiteHeaderImpl />;
@@ -43,6 +54,7 @@ export function SiteHeader() {
 const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   {
     key: "quem-somos",
+    icon: Users,
     to: "/a-imob365",
     hash: "quem-somos",
     label: "Quem Somos",
@@ -50,6 +62,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "nossa-abordagem",
+    icon: Compass,
     to: "/a-imob365",
     hash: "nossa-abordagem",
     label: "Nossa Abordagem",
@@ -57,6 +70,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "nosso-padrao",
+    icon: BadgeCheck,
     to: "/a-imob365",
     hash: "nosso-padrao",
     label: "Nosso Padrão de Curadoria",
@@ -64,6 +78,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "numeros",
+    icon: BarChart3,
     to: "/a-imob365",
     hash: "numeros",
     label: "Nossos Números",
@@ -71,6 +86,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "servicos",
+    icon: Briefcase,
     to: "/a-imob365",
     hash: "servicos",
     label: "Serviços",
@@ -78,6 +94,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
   },
   {
     key: "depoimentos",
+    icon: Quote,
     to: "/a-imob365",
     hash: "depoimentos",
     label: "Depoimentos",
@@ -91,7 +108,8 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
   // corretor/imobiliária), não pra /app/imoveis/novo, que quebraria sem tenant.
   const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
-    logo: <Logo className="h-7 w-auto" />,
+    tema: "brand",
+    logo: <Logo className="h-8 w-auto" variant="white" />,
     logoTo: "/",
     topBar: {
       contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],
@@ -101,8 +119,11 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
       {
         key: "a-imob365",
         label: "A imoB365",
+        // No desktop fica no top bar, à esquerda de "Sobre" (libera espaço na barra principal)
+        posicao: "topbar",
+        icon: Building2,
         panelClassName:
-          "absolute left-1/2 -translate-x-[200px] top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50",
+          "absolute left-0 top-full mt-2 w-[340px] rounded-2xl border border-border bg-background p-4 shadow-xl z-50",
         columns: [{ eyebrow: "Conheça a imoB365", leaves: CORPORATE_A_IMOB365_LEAVES }],
         ctaLeaf: { label: "Agendar Consultoria", to: "/contato" },
         mobileLabel: "A imoB365",
@@ -122,8 +143,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Comprar Imóvel",
                 desc: "Apartamentos, coberturas e casas exclusivas.",
                 icon: Building2,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "alugar",
@@ -131,17 +150,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Alugar Imóvel",
                 desc: "Locação ágil, sem burocracia ou fiador tradicional.",
                 icon: Key,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "empreendimentos",
                 to: "/empreendimentos",
                 label: "Empreendimentos",
                 desc: "Lançamentos e novos empreendimentos das parceiras.",
-                icon: Landmark,
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+                icon: Building,
               },
             ],
           },
@@ -154,19 +169,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Comparador",
                 desc: "Compare até 4 imóveis lado a lado em tempo real.",
                 icon: Layers,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100/70 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
               },
               {
                 key: "busca-mapa",
                 to: "/buscar",
                 label: "Busca por Mapa",
                 desc: "Navegue pelas melhores regiões de forma geométrica.",
-                icon: Search,
-                iconClassName: "text-primary",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
+                icon: MapPinned,
               },
             ],
           },
@@ -175,6 +184,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
       {
         key: "ferramentas",
         label: "Ferramentas & Simuladores",
+        labelCurto: "Ferramentas",
         panelClassName:
           "absolute left-1/2 -translate-x-1/2 top-full mt-2 w-[480px] rounded-2xl border border-border bg-background p-5 shadow-xl grid grid-cols-2 gap-4.5 z-50 overflow-hidden",
         columns: [
@@ -186,20 +196,14 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 to: "/calculadora-financiamento",
                 label: "Financiamento SAC",
                 desc: "Estime as parcelas decrescentes do imóvel de forma simples.",
-                icon: Calculator,
-                iconClassName: "text-primary",
-                mobileChipClassName:
-                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
+                icon: Landmark,
               },
               {
                 key: "itbi",
                 to: "/calculadora-itbi",
                 label: "Imposto de ITBI",
                 desc: "Verifique taxas de prefeitura e cartório de registro.",
-                icon: Calculator,
-                iconClassName: "text-orange-500",
-                mobileChipClassName:
-                  "bg-orange-100 text-orange-700 group-hover:bg-orange-500 group-hover:text-white",
+                icon: Receipt,
               },
               {
                 key: "mudanca",
@@ -207,9 +211,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Custo de Mudança",
                 desc: "Planeje custos de frete e logística para o novo lar.",
                 icon: Truck,
-                iconClassName: "text-indigo-500",
-                mobileChipClassName:
-                  "bg-indigo-100 text-indigo-700 group-hover:bg-indigo-600 group-hover:text-white",
               },
               {
                 key: "avaliacao",
@@ -217,9 +218,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Quanto Vale meu Imóvel",
                 desc: "Estimativa de valor por CEP, metragem e tipo do imóvel.",
                 icon: Home,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white",
               },
             ],
           },
@@ -231,7 +229,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Score Serasa Experian",
                 desc: "Validação de CPF de inquilinos e proponentes integrados na hora da proposta (/leads).",
                 icon: ShieldCheck,
-                iconClassName: "text-sky-700",
                 badge: "Novo",
                 static: true,
               },
@@ -242,10 +239,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Assistente de IA",
                 desc: "Pergunte sobre financiamento, ITBI, mudança e mercado imobiliário.",
                 icon: Sparkles,
-                iconClassName: "text-primary",
                 badge: "Novo",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
             ],
           },
@@ -267,19 +261,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Planos & Valores",
                 desc: "Do Free ao Business, escolha o plano do tamanho da sua operação.",
                 icon: CreditCard,
-                iconClassName: "animate-pulse text-primary",
-                mobileChipClassName:
-                  "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white",
               },
               {
                 key: "plataforma",
                 to: "/plataforma",
                 label: "Plataforma & Recursos",
                 desc: "Veja tudo que está incluído: imóveis, financeiro, marketing, jurídico e e-learning.",
-                icon: Globe2,
-                iconClassName: "text-emerald-600",
-                mobileChipClassName:
-                  "bg-emerald-100 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+                icon: LayoutGrid,
               },
             ],
           },
@@ -302,7 +290,6 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Central de Ajuda",
                 desc: "Guias rápidos por jornada: cadastro, comissões, portais e contratos.",
                 icon: BookOpen,
-                iconClassName: "text-sky-600",
               },
               {
                 key: "docs-api",
@@ -310,16 +297,13 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
                 label: "Documentação API",
                 desc: "Disparadores REST e webhooks técnicos para ERPs de imobiliárias.",
                 icon: Terminal,
-                labelClassName: "text-emerald-600",
-                iconClassName: "text-emerald-600",
               },
               {
                 key: "status",
                 to: "/status",
                 label: "Servidores & APIs",
                 desc: "Verificação em tempo real da integridade de bancos de dados.",
-                icon: Activity,
-                iconClassName: "text-pink-600",
+                icon: ServerCog,
               },
             ],
           },
@@ -347,7 +331,7 @@ type VitrineItem = {
 };
 
 const CHIP_CLASS =
-  "flex h-16 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-white px-6 shadow-md ring-1 ring-black/5 transition hover:scale-105 hover:shadow-lg";
+  "glass-fosco flex h-16 shrink-0 items-center justify-center rounded-2xl bg-white/85 px-6 transition hover:scale-105 hover:bg-white";
 
 function VitrineChip({ it }: { it: VitrineItem }) {
   const inner = it.logoUrl ? (
@@ -385,8 +369,8 @@ function VitrineChip({ it }: { it: VitrineItem }) {
 
 // Vitrine de Parceiros: faixa de logos de imobiliárias + construtoras, curada e
 // ordenada pelo super_admin (tabela `vitrine_parceiros`; velocidade em
-// `global_settings.vitrine_marquee`). Fundo neutro + cada logo num chip branco
-// pra clareza (logos coloridos sempre sobre branco, inclusive no tema escuro).
+// `global_settings.vitrine_marquee`). Fundo Liquid Glass acinzentado + cada logo
+// num chip de vidro quase branco (logos coloridos legíveis, inclusive no tema escuro).
 // Com poucos itens, renderiza estático e centralizado (sem a 2ª cópia do loop,
 // que fazia os logos "duplicarem" na tela). Compartilhado entre o SiteFooter
 // deste arquivo e o SiteFooter local de routes/index.tsx.
@@ -485,199 +469,192 @@ export function ParceirosMarquee() {
   const track = [...base, ...base];
 
   return (
-    <div className="overflow-hidden border-b border-border bg-muted/30 py-8">
-      <p className="mb-5 text-center text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        Imobiliárias e Construtoras Parceiras
-      </p>
-      <div
-        className="flex w-max items-center gap-8"
-        style={{ animation: `marquee ${speed}s linear infinite` }}
-      >
-        {track.map((it, i) => (
-          <VitrineChip key={`${it.key}-${i}`} it={it} />
-        ))}
+    <section className="hero-brand relative isolate overflow-hidden border-t border-border py-12 md:py-14">
+      {/* degradê Liquid Glass acinzentado (mesmo dos blocos de parceiros/CTA da home) */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_10%_0%,rgba(148,163,184,.22),transparent_70%),radial-gradient(520px_320px_at_92%_100%,rgba(100,116,139,.16),transparent_70%)]" />
+      <div className="mx-auto max-w-6xl px-6 text-center">
+        <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+          Imobiliárias e Construtoras Parceiras
+        </h2>
       </div>
-    </div>
+      {/* py-2: espaço para a sombra/hover dos chips de vidro não ser cortado */}
+      <div className="mt-8 overflow-hidden py-2">
+        <div
+          className="flex w-max items-center gap-6"
+          style={{ animation: `marquee ${speed}s linear infinite` }}
+        >
+          {track.map((it, i) => (
+            <VitrineChip key={`${it.key}-${i}`} it={it} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
+// Dados legais exibidos no rodapé (credibilidade): razão social, CNPJ e CRECI.
+const EMPRESA = {
+  razaoSocial: "IMOB365 CORRETAGEM DE IMÓVEIS LTDA",
+  cnpj: "41.919.216/0001-32",
+  creci: "218052",
+};
+
+const REDES_SOCIAIS: { icon: LucideIcon; href: string; label: string }[] = [
+  { icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/imob365/", label: "Instagram" },
+  { icon: Linkedin, href: "https://www.linkedin.com/company/imob365/", label: "LinkedIn" },
+];
+
+/**
+ * Rodapé único do portal (home e demais páginas públicas) — mesmo design do
+ * header "brand": fundo preto, ícones em tile de vidro com ícone laranja e
+ * bloco de dados legais (razão social, CNPJ, CRECI) para credibilidade.
+ */
 export function SiteFooter() {
   const year = new Date().getFullYear();
 
-  // A Vitrine de Parceiros (ParceirosMarquee) aparece SÓ na home — o footer
-  // local de routes/index.tsx a renderiza. Aqui, no footer compartilhado das
-  // demais páginas públicas, ela não entra.
   return (
-    <>
-      <footer className="border-t border-border bg-secondary text-secondary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-14">
-          <div className="grid gap-10 md:grid-cols-4">
-            <div className="space-y-4">
-              <Logo className="h-9 w-auto" variant="white" />
-              <p className="mt-4 text-sm opacity-80 leading-relaxed font-medium">
-                A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores
-                e clientes em todo o Brasil.
-              </p>
-              <div className="mt-5 flex gap-3">
-                {[
-                  { Icon: Facebook, href: "https://www.facebook.com/imob365/", label: "Facebook" },
-                  {
-                    Icon: Instagram,
-                    href: "https://www.instagram.com/imob365/",
-                    label: "Instagram",
-                  },
-                  {
-                    Icon: Linkedin,
-                    href: "https://www.linkedin.com/company/imob365/",
-                    label: "LinkedIn",
-                  },
-                ].map(({ Icon, href, label }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-white/70 hover:text-primary hover:border-primary/50 hover:bg-white/10 transition-all duration-300 hover:scale-105"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <FooterCol
-              title="Encontrar"
-              links={[
-                { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
-                { label: "Alugar imóvel", to: "/buscar", icon: Key },
-                { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
-                { label: "Empreendimentos", to: "/empreendimentos", icon: Landmark },
-              ]}
-            />
-            <FooterCol
-              title="Para imobiliárias"
-              links={[
-                { label: "Planos e preços", to: "/planos", icon: CreditCard },
-                { label: "Recursos da plataforma", to: "/plataforma", icon: SlidersHorizontal },
-                { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
-                { label: "Anunciar imóvel", to: "/signup", icon: Building2 },
-                { label: "Acessar plataforma", to: "/login", icon: Users },
-                {
-                  label: "Calculadoras (ITBI, financiamento)",
-                  to: "/calculadoras",
-                  icon: Calculator,
-                  highlight: true,
-                },
-              ]}
-            />
-            <div className="space-y-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">
-                Fale com a gente
-              </h4>
-              <ul className="mt-4 space-y-3.5 text-sm opacity-85">
-                <li>
-                  <Link
-                    to="/atendimento"
-                    className="flex items-center gap-3 hover:text-primary transition-all duration-200"
-                  >
-                    <div className="p-2 bg-white/5 rounded-lg border border-white/10 shrink-0">
-                      <Headset className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="font-semibold text-white/95">Central de Atendimento</span>
-                  </Link>
-                </li>
-                <li className="flex items-center gap-3">
-                  <div className="p-2 bg-white/5 rounded-lg border border-white/10">
-                    <HeartHandshake className="h-4 w-4 text-primary animate-pulse" />
-                  </div>
-                  <span>Suporte 365 dias por ano</span>
-                </li>
-              </ul>
+    <footer className="hero-brand border-t border-white/10 bg-black text-[#a1a1a6]">
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 md:grid-cols-4">
+          <div>
+            <Logo className="h-9 w-auto" variant="white" />
+            <p className="mt-4 text-sm font-medium leading-relaxed">
+              A plataforma completa para quem vive de imóveis. Conectamos imobiliárias, corretores e
+              clientes em todo o Brasil.
+            </p>
+            <div className="mt-5 flex gap-2.5">
+              {REDES_SOCIAIS.map(({ icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="group transition-transform duration-200 hover:-translate-y-0.5"
+                >
+                  <IconeVidro icon={icon} />
+                </a>
+              ))}
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs opacity-70 md:flex-row md:items-center">
-            <span>© {year} imob365. Todos os direitos reservados.</span>
-            <div className="flex flex-wrap gap-5">
-              <Link to="/termos" className="hover:text-primary transition-colors">
-                Termos de uso
-              </Link>
-              <Link to="/privacidade" className="hover:text-primary transition-colors">
-                Política de privacidade
-              </Link>
-              <Link to="/lgpd" className="hover:text-primary transition-colors">
-                LGPD
-              </Link>
-              <Link to="/status" className="hover:text-primary transition-colors">
-                Status
-              </Link>
+          <FooterCol
+            title="Encontrar"
+            links={[
+              { label: "Comprar imóvel", to: "/buscar", icon: Building2 },
+              { label: "Alugar imóvel", to: "/buscar", icon: Key },
+              { label: "Imobiliárias parceiras", to: "/buscar", icon: Building },
+              { label: "Empreendimentos", to: "/empreendimentos", icon: Landmark },
+            ]}
+          />
+          <FooterCol
+            title="Para imobiliárias"
+            links={[
+              { label: "Planos e preços", to: "/planos", icon: CreditCard },
+              { label: "Recursos da plataforma", to: "/plataforma", icon: LayoutGrid },
+              { label: "Central de Ajuda", to: "/ajuda", icon: BookOpen },
+              { label: "Anunciar imóvel", to: "/signup", icon: PlusCircle },
+              { label: "Acessar plataforma", to: "/login", icon: Users },
+              { label: "Calculadoras", to: "/calculadoras", icon: Calculator, badge: "ITBI" },
+            ]}
+          />
+          <div>
+            <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#86868b]">
+              Fale com a gente
+            </h4>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              <li>
+                <Link
+                  to="/atendimento"
+                  className="group flex items-center gap-3 font-semibold text-[#f5f5f7] transition-colors hover:text-[#f4a46a]"
+                >
+                  <IconeVidro icon={Headset} />
+                  Central de Atendimento
+                </Link>
+              </li>
+              <li className="group flex items-center gap-3">
+                <IconeVidro icon={HeartHandshake} />
+                Suporte 365 dias por ano
+              </li>
+            </ul>
+
+            {/* Dados legais — credibilidade */}
+            <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[#86868b]">
+                <ShieldCheck className="h-3.5 w-3.5 text-[#ed7d31]" aria-hidden="true" />
+                Empresa registrada
+              </div>
+              <p className="mt-2 text-xs font-semibold leading-snug text-[#f5f5f7]">
+                {EMPRESA.razaoSocial}
+              </p>
+              <dl className="mt-1.5 space-y-0.5 text-xs">
+                <div className="flex gap-1.5">
+                  <dt className="text-[#86868b]">CNPJ</dt>
+                  <dd className="tabular-nums">{EMPRESA.cnpj}</dd>
+                </div>
+                <div className="flex gap-1.5">
+                  <dt className="text-[#86868b]">CRECI</dt>
+                  <dd className="tabular-nums">{EMPRESA.creci}</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
-      </footer>
-    </>
+
+        <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs md:flex-row md:items-center">
+          <span>
+            © {year} imob365 · {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj} · CRECI {EMPRESA.creci}
+          </span>
+          <div className="flex flex-wrap gap-5">
+            {[
+              { to: "/termos", label: "Termos de uso" },
+              { to: "/privacidade", label: "Política de privacidade" },
+              { to: "/lgpd", label: "LGPD" },
+              { to: "/status", label: "Status" },
+            ].map((l) => (
+              <Link key={l.to} to={l.to} className="transition-colors hover:text-white">
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
 
 interface FooterLink {
   label: string;
   to: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
+  icon: LucideIcon;
+  badge?: string;
 }
 
 function FooterCol({ title, links }: { title: string; links: FooterLink[] }) {
   return (
     <div>
-      <h4 className="text-sm font-semibold uppercase tracking-wide opacity-90">{title}</h4>
-      <ul className="mt-4 space-y-2 text-sm opacity-85">
-        {links.map((l) => {
-          const Icon = l.icon;
-          const content = (
-            <span className="flex items-center gap-2 mb-0.5">
-              {Icon && (
-                <Icon
-                  className={`h-4 w-4 shrink-0 transition-all group-hover:scale-110 ${l.highlight ? "text-primary animate-pulse stroke-[2.25px]" : "opacity-60 group-hover:opacity-100 group-hover:text-white"}`}
-                />
+      <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#86868b]">
+        {title}
+      </h4>
+      <ul className="mt-4 space-y-1.5 text-sm">
+        {links.map((l) => (
+          <li key={l.label}>
+            <Link
+              to={l.to}
+              className="group flex items-center gap-3 rounded-xl py-0.5 transition-colors hover:text-white"
+            >
+              <IconeVidro icon={l.icon} />
+              <span>{l.label}</span>
+              {l.badge && (
+                <span className="rounded-full border border-[#ed7d31]/35 bg-[#ed7d31]/15 px-1.5 py-px text-[8px] font-black uppercase tracking-widest text-[#f4a46a]">
+                  {l.badge}
+                </span>
               )}
-              <span
-                className={
-                  l.highlight
-                    ? "text-primary font-bold tracking-wide relative"
-                    : "hover:text-white transition-all"
-                }
-              >
-                {l.label}
-                {l.highlight && (
-                  <span className="ml-1.5 inline-block text-[9px] bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.2 rounded-full uppercase font-black tracking-widest leading-none scale-90">
-                    ITBI
-                  </span>
-                )}
-              </span>
-            </span>
-          );
-
-          return (
-            <li key={l.label}>
-              {l.to.startsWith("/#") ? (
-                <a
-                  href={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </a>
-              ) : (
-                <Link
-                  to={l.to}
-                  className="group inline-flex items-center text-secondary-foreground hover:translate-x-1.5 transition-all duration-200"
-                >
-                  {content}
-                </Link>
-              )}
-            </li>
-          );
-        })}
+            </Link>
+          </li>
+        ))}
       </ul>
     </div>
   );
