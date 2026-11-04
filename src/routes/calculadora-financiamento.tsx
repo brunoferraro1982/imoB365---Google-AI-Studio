@@ -100,8 +100,8 @@ export function FinanciamentoPage() {
                   <Calculator className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-md font-bold text-foreground">Simulador SAC</h2>
-                  <p className="text-3xs text-muted-foreground leading-none">
+                  <h2 className="text-base font-bold text-foreground">Simulador SAC</h2>
+                  <p className="text-[10px] text-muted-foreground leading-none">
                     Cálculo de Amortização Constante
                   </p>
                 </div>
@@ -183,7 +183,7 @@ export function FinanciamentoPage() {
                 <div className="border-t border-border pt-4 mt-2 space-y-3">
                   <div className="flex justify-between items-center bg-muted/45 p-3 rounded-xl border border-border/60">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-muted-foreground font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-muted-foreground font-bold uppercase leading-none block">
                         Primeira Parcela
                       </span>
                       <span className="text-[10px] text-muted-foreground leading-none block">
@@ -197,7 +197,7 @@ export function FinanciamentoPage() {
 
                   <div className="flex justify-between items-center bg-emerald-500/[0.02] p-3 rounded-xl border border-emerald-500/10">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-emerald-700 font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-emerald-700 font-bold uppercase leading-none block">
                         Última Parcela
                       </span>
                       <span className="text-[10px] text-muted-foreground leading-none block">
@@ -209,7 +209,7 @@ export function FinanciamentoPage() {
                     </span>
                   </div>
 
-                  <div className="flex justify-between items-center p-3 rounded-xl border border-dashed border-border/80 text-3xs">
+                  <div className="flex justify-between items-center p-3 rounded-xl border border-dashed border-border/80 text-[10px]">
                     <div className="space-y-0.5">
                       <span className="text-muted-foreground font-bold uppercase block">
                         Amortização Fixa / Mês
@@ -223,10 +223,10 @@ export function FinanciamentoPage() {
 
                   <div className="flex justify-between items-center bg-primary/[0.03] p-3.5 rounded-xl border border-primary/10">
                     <div className="space-y-0.5">
-                      <span className="text-3xs text-primary font-bold uppercase leading-none block">
+                      <span className="text-[10px] text-primary font-bold uppercase leading-none block">
                         Valor Total Acumulado
                       </span>
-                      <span className="text-3xs text-muted-foreground leading-none block">
+                      <span className="text-[10px] text-muted-foreground leading-none block">
                         Principal + {formatBRL(financiamentoResult.totalJuros)} juros
                       </span>
                     </div>
@@ -361,7 +361,7 @@ export function FinanciamentoPage() {
 
               {/* Seção de Conclusão */}
               <div className="space-y-2 border-t border-border pt-4">
-                <h2 className="text-md font-bold text-foreground">
+                <h2 className="text-base font-bold text-foreground">
                   A Importância do Planejamento Prévio
                 </h2>
                 <p className="text-sm text-muted-foreground leading-relaxed">

@@ -323,7 +323,7 @@ export function HeaderUserMenu() {
                           <div className="space-y-1">
                             <Label
                               htmlFor="menu-email"
-                              className="text-3xs font-bold text-muted-foreground uppercase"
+                              className="text-[10px] font-bold text-muted-foreground uppercase"
                             >
                               E-mail
                             </Label>
@@ -334,13 +334,13 @@ export function HeaderUserMenu() {
                               required
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
-                              className="text-2xs h-8.5"
+                              className="text-[11px] h-8.5"
                             />
                           </div>
                           <div className="space-y-1">
                             <Label
                               htmlFor="menu-pass"
-                              className="text-3xs font-bold text-muted-foreground uppercase"
+                              className="text-[10px] font-bold text-muted-foreground uppercase"
                             >
                               Senha de acesso
                             </Label>
@@ -351,7 +351,7 @@ export function HeaderUserMenu() {
                               required
                               value={password}
                               onChange={(e) => setPassword(e.target.value)}
-                              className="text-2xs h-8.5"
+                              className="text-[11px] h-8.5"
                             />
                           </div>
                         </div>
@@ -371,7 +371,7 @@ export function HeaderUserMenu() {
                             <div className="space-y-1 sm:col-span-1">
                               <Label
                                 htmlFor="menu-reg-name"
-                                className="text-3xs font-bold text-muted-foreground uppercase"
+                                className="text-[10px] font-bold text-muted-foreground uppercase"
                               >
                                 Seu Nome
                               </Label>
@@ -381,13 +381,13 @@ export function HeaderUserMenu() {
                                 required
                                 value={nome}
                                 onChange={(e) => setNome(e.target.value)}
-                                className="text-2xs h-8.5"
+                                className="text-[11px] h-8.5"
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-1">
                               <Label
                                 htmlFor="menu-reg-email"
-                                className="text-3xs font-bold text-muted-foreground uppercase"
+                                className="text-[10px] font-bold text-muted-foreground uppercase"
                               >
                                 E-mail
                               </Label>
@@ -398,13 +398,13 @@ export function HeaderUserMenu() {
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="text-2xs h-8.5"
+                                className="text-[11px] h-8.5"
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-1">
                               <Label
                                 htmlFor="menu-reg-pass"
-                                className="text-3xs font-bold text-muted-foreground uppercase"
+                                className="text-[10px] font-bold text-muted-foreground uppercase"
                               >
                                 Criar Senha
                               </Label>
@@ -416,7 +416,7 @@ export function HeaderUserMenu() {
                                 required
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="text-2xs h-8.5"
+                                className="text-[11px] h-8.5"
                               />
                             </div>
                           </div>
@@ -536,7 +536,7 @@ export function HeaderUserMenu() {
                           <Link
                             to="/conta/favoritos"
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-[11px] font-extrabold text-foreground"
                           >
                             <Heart className="h-3.5 w-3.5 text-rose-500 fill-rose-55 animate-pulse" />
                             <span>Meus Favoritos</span>
@@ -544,7 +544,7 @@ export function HeaderUserMenu() {
                           <Link
                             to="/conta/buscas"
                             onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-2xs font-extrabold text-foreground"
+                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-muted text-[11px] font-extrabold text-foreground"
                           >
                             <Bookmark className="h-3.5 w-3.5 text-amber-500" />
                             <span>Minhas Buscas</span>
@@ -612,7 +612,7 @@ export function HeaderUserMenu() {
                       >
                         <Button
                           size="sm"
-                          className="w-full rounded-lg font-bold text-2xs h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:opacity-90 transition-opacity"
+                          className="w-full rounded-lg font-bold text-[11px] h-8.5 bg-gradient-to-r from-primary via-[#e86620] to-orange-500 text-white shadow-sm hover:opacity-90 transition-opacity"
                         >
                           <PlusCircle className="h-3.5 w-3.5 shrink-0" />
                           <span>Anunciar novo imóvel</span>
@@ -623,7 +623,7 @@ export function HeaderUserMenu() {
                         variant="ghost"
                         size="sm"
                         onClick={handleSignOut}
-                        className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-2xs font-extrabold flex items-center justify-center gap-1.5"
+                        className="w-full text-destructive hover:bg-red-50 hover:text-destructive h-8.5 text-[11px] font-extrabold flex items-center justify-center gap-1.5"
                       >
                         <LogOut className="h-3.5 w-3.5" />
                         <span>Sair</span>

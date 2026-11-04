@@ -702,7 +702,7 @@ export function BlogManager({
                       </div>
                     </div>
 
-                    <div className="bg-muted/40 p-3 rounded-lg border border-border/50 text-2xs space-y-1.5 text-muted-foreground">
+                    <div className="bg-muted/40 p-3 rounded-lg border border-border/50 text-[11px] space-y-1.5 text-muted-foreground">
                       <div className="flex justify-between">
                         <span>Slug ativo:</span>
                         <span className="font-mono truncate max-w-[100px]">
