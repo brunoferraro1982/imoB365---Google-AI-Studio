@@ -104,7 +104,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
   const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
     tema: "brand",
-    logo: <Logo className="h-8 w-auto" />,
+    logo: <Logo className="h-8 w-auto" variant="white" />,
     logoTo: "/",
     topBar: {
       contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],

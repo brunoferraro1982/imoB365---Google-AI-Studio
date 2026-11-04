@@ -63,22 +63,22 @@ export type MegaNavConfig = {
   /**
    * "padrao" (default): visual claro de sempre — usado pelos sites das imobiliárias.
    * "brand": portal imoB365 (padrão apple.com + Liquid Glass) — top bar preto,
-   * menu cinza-claro translúcido fixo ao rolar, ícones padronizados em tile de vidro.
+   * menu cinza-escuro translúcido fixo ao rolar, ícones padronizados em tile de vidro.
    */
   tema?: "padrao" | "brand";
 };
 
 // ---------- variante "brand" (portal imoB365 · padrão apple.com + Liquid Glass) ----------
-// Top bar preto (rola com a página) + menu cinza-claro translúcido fixo no topo;
-// painéis no mesmo vidro cinza-claro; ícones em tile de vidro claro com ícone laranja.
+// Top bar preto (rola com a página) + menu cinza-escuro translúcido fixo no topo;
+// painéis no mesmo vidro; ícones em tile de vidro com ícone laranja.
 
-const MENU_VIDRO = "bg-[#f5f5f7]/80 backdrop-blur-xl backdrop-saturate-[1.8]";
-const TEXTO_MENU = "text-[#1d1d1f]";
+const MENU_VIDRO = "bg-[rgba(22,22,23,0.8)] backdrop-blur-[20px] backdrop-saturate-[1.8]";
+const TEXTO_MENU = "text-[#e8e8ed]";
 
-/** Ícone padronizado: tile de vidro claro com ícone laranja; no hover do item vira laranja sólido. */
+/** Ícone padronizado: tile de vidro com ícone laranja; no hover do item vira laranja sólido. */
 function IconeVidro({ icon: Icon }: { icon: LucideIcon }) {
   return (
-    <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-white bg-white/75 shadow-[0_1px_2px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/[0.06] backdrop-blur transition-all duration-200 group-hover:border-transparent group-hover:bg-gradient-to-br group-hover:from-[#ed7d31] group-hover:to-[#b4520f] group-hover:ring-transparent group-hover:shadow-[0_6px_16px_-6px_rgba(237,125,49,0.7)]">
+    <span className="relative grid h-8 w-8 shrink-0 place-items-center rounded-[10px] border border-white/15 bg-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur transition-all duration-200 group-hover:border-transparent group-hover:bg-gradient-to-br group-hover:from-[#ed7d31] group-hover:to-[#b4520f] group-hover:ring-transparent group-hover:shadow-[0_6px_16px_-6px_rgba(237,125,49,0.7)]">
       <Icon className="h-4 w-4 text-[#ed7d31] transition-colors duration-200 group-hover:text-white" />
     </span>
   );
@@ -96,12 +96,12 @@ export function IconeVidroTopo({ icon: Icon }: { icon: LucideIcon }) {
 /** Troca só as classes de cor/borda/sombra do painel; posição e largura continuam do config. */
 function painelBrand(cls?: string) {
   return (cls ?? "")
-    .replace("border-border", "border-black/[0.06]")
+    .replace("border-border", "border-white/10")
     .replace(
       "bg-background",
-      `bg-[#f5f5f7]/90 backdrop-blur-2xl backdrop-saturate-[1.8] ${TEXTO_MENU}`,
+      `bg-[rgba(22,22,23,0.88)] backdrop-blur-2xl backdrop-saturate-[1.8] ${TEXTO_MENU}`,
     )
-    .replace("shadow-xl", "shadow-2xl shadow-black/15 ring-1 ring-inset ring-white/70");
+    .replace("shadow-xl", "shadow-2xl shadow-black/40 ring-1 ring-inset ring-white/5");
 }
 
 function BrandLeafConteudo({ leaf }: { leaf: MegaNavLeaf }) {
@@ -109,12 +109,12 @@ function BrandLeafConteudo({ leaf }: { leaf: MegaNavLeaf }) {
     <>
       {leaf.icon && <IconeVidro icon={leaf.icon} />}
       <span className="flex min-w-0 flex-col">
-        <span className="flex items-center gap-1.5 text-xs font-bold text-[#1d1d1f] transition-colors group-hover:text-[#b4520f]">
+        <span className="flex items-center gap-1.5 text-xs font-bold text-[#f5f5f7] transition-colors group-hover:text-[#f4a46a]">
           {leaf.label}
           {leaf.badge && <BrandBadge>{leaf.badge}</BrandBadge>}
         </span>
         {leaf.desc && (
-          <span className="mt-0.5 text-[10px] leading-snug text-[#6e6e73]">{leaf.desc}</span>
+          <span className="mt-0.5 text-[10px] leading-snug text-[#a1a1a6]">{leaf.desc}</span>
         )}
       </span>
     </>
@@ -123,14 +123,15 @@ function BrandLeafConteudo({ leaf }: { leaf: MegaNavLeaf }) {
 
 function BrandBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="rounded-full border border-[#ed7d31]/30 bg-[#ed7d31]/10 px-1.5 py-px text-[8px] font-black uppercase tracking-widest text-[#b4520f]">
+    <span className="rounded-full border border-[#ed7d31]/30 bg-[#ed7d31]/15 px-1.5 py-px text-[8px] font-black uppercase tracking-widest text-[#f4a46a]">
       {children}
     </span>
   );
 }
 
 function BrandLeafLink({ leaf, onClick }: { leaf: MegaNavLeaf; onClick?: () => void }) {
-  const cls = "group flex items-start gap-3 rounded-xl p-2.5 transition-colors hover:bg-white/70";
+  const cls =
+    "group flex items-start gap-3 rounded-xl p-2.5 transition-colors hover:bg-white/[0.07]";
   if (leaf.to) {
     return (
       <Link to={leaf.to} hash={leaf.hash} className={cls} onClick={onClick}>
@@ -167,7 +168,7 @@ function BrandPanelColumn({ column }: { column: MegaNavColumn }) {
           leaf.static ? (
             <div
               key={leaf.key}
-              className="group flex items-start gap-3 rounded-xl border border-white bg-white/60 p-3 ring-1 ring-black/[0.05]"
+              className="group flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-3"
             >
               <BrandLeafConteudo leaf={leaf} />
             </div>
@@ -563,8 +564,8 @@ function MegaNavHeaderPadrao({ config }: { config: MegaNavConfig }) {
 
 /**
  * Header do portal imoB365 (tema "brand", padrão apple.com): top bar PRETO que
- * rola com a página + menu cinza-claro translúcido (vidro) FIXO no topo ao
- * rolar; painéis e menu mobile no mesmo vidro claro; logo de letras pretas.
+ * rola com a página + menu cinza-escuro translúcido (vidro, valores da barra
+ * da Apple) FIXO no topo ao rolar; painéis e menu mobile no mesmo vidro; logo branco.
  * Mesma lógica de hover/dropdown/mobile do header padrão — só o visual muda.
  */
 function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
@@ -613,10 +614,10 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
         </div>
       )}
 
-      {/* Menu cinza-claro em vidro, FIXO no topo ao rolar. O vidro (fundo + blur) fica numa
+      {/* Menu cinza-escuro em vidro (rgba(22,22,23,.8), como a Apple), FIXO no topo ao rolar. O vidro (fundo + blur) fica numa
           camada irmã dos painéis — se ficasse no ancestral, viraria "backdrop root" e os
           painéis não conseguiriam desfocar a página. */}
-      <header className="sticky top-0 z-40 isolate border-b border-black/[0.08] font-sans">
+      <header className="sticky top-0 z-40 isolate border-b border-white/10 font-sans">
         <div
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 -z-10 ${MENU_VIDRO}`}
@@ -630,7 +631,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
           </Link>
 
           <nav
-            className={`hidden shrink-0 items-center gap-0.5 text-[13px] font-semibold tracking-tight text-[#1d1d1f]/85 lg:flex xl:gap-1.5 xl:text-sm xl:tracking-normal`}
+            className={`hidden shrink-0 items-center gap-0.5 text-[13px] font-semibold tracking-tight text-[#e8e8ed]/90 lg:flex xl:gap-1.5 xl:text-sm xl:tracking-normal`}
           >
             {config.groups.map((group) => {
               if (!group.columns || group.columns.length === 0) {
@@ -639,7 +640,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                     key={group.key}
                     to={group.to}
                     hash={group.hash}
-                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-black/[0.05] hover:text-black xl:px-3"
+                    className="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors hover:bg-white/10 hover:text-white xl:px-3"
                   >
                     <span>{group.label}</span>
                   </Link>
@@ -655,9 +656,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                 >
                   <button
                     className={`flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-lg px-2 py-2 transition-colors xl:px-3 ${
-                      isActive
-                        ? "bg-black/[0.06] text-black"
-                        : "hover:bg-black/[0.05] hover:text-black"
+                      isActive ? "bg-white/10 text-white" : "hover:bg-white/10 hover:text-white"
                     }`}
                   >
                     <span>{group.label}</span>
@@ -679,7 +678,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                           group.columns!.map((col, i) => (
                             <div
                               key={col.eyebrow ?? i}
-                              className={i > 0 ? "border-l border-black/[0.08] pl-4" : undefined}
+                              className={i > 0 ? "border-l border-white/10 pl-4" : undefined}
                             >
                               <BrandPanelColumn column={col} />
                             </div>
@@ -688,7 +687,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                           <>
                             <BrandPanelColumn column={group.columns![0]} />
                             {group.ctaLeaf && (
-                              <div className="mt-1 border-t border-black/[0.08] pt-2">
+                              <div className="mt-1 border-t border-white/10 pt-2">
                                 <Link
                                   to={group.ctaLeaf.to}
                                   className="flex items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-3 py-2 text-[11px] font-bold text-white shadow-md shadow-[#ed7d31]/25 transition hover:brightness-110"
@@ -729,7 +728,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full text-[#1d1d1f] transition-colors hover:bg-black/[0.06]"
+                    className="rounded-full text-[#e8e8ed] transition-colors hover:bg-white/10 hover:text-white"
                     aria-label="Menu de navegação"
                   >
                     <Menu className="h-5 w-5" />
@@ -737,9 +736,9 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                 </SheetTrigger>
                 <SheetContent
                   side="right"
-                  className={`flex w-[310px] flex-col border-black/[0.08] p-0 sm:w-[370px] ${MENU_VIDRO} ${TEXTO_MENU}`}
+                  className={`flex w-[310px] flex-col border-white/10 p-0 [&>button]:text-white sm:w-[370px] ${MENU_VIDRO} ${TEXTO_MENU}`}
                 >
-                  <SheetHeader className="border-b border-black/[0.08] px-6 py-5">
+                  <SheetHeader className="border-b border-white/10 px-6 py-5">
                     <SheetTitle className="flex items-center justify-between text-left font-bold tracking-tight">
                       <span className="shrink-0">{config.logo}</span>
                     </SheetTitle>
@@ -767,7 +766,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                           key={group.key}
                           to={group.to}
                           hash={group.hash}
-                          className="flex items-center gap-3.5 px-3 py-2 font-semibold text-[#6e6e73] transition-colors hover:text-black"
+                          className="flex items-center gap-3.5 px-3 py-2 font-semibold text-[#a1a1a6] transition-colors hover:text-white"
                           onClick={closeMobile}
                         >
                           <span>{group.mobileLabel ?? group.label}</span>
