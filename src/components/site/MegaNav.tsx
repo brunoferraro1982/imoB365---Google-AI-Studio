@@ -773,9 +773,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                 to={config.ctaButton.to}
                 className="hidden cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full bg-gradient-to-r from-[#ed7d31] to-[#b4520f] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#ed7d31]/25 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 sm:inline-flex"
               >
-                {config.ctaButton.icon && (
-                  <config.ctaButton.icon className="h-4 w-4 shrink-0" />
-                )}
+                {config.ctaButton.icon && <config.ctaButton.icon className="h-4 w-4 shrink-0" />}
                 <span>{config.ctaButton.label}</span>
               </Link>
             )}
