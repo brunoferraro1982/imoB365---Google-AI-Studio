@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Info, Newspaper, Handshake, MessagesSquare, type LucideIcon } from "lucide-react";
-import { IconeVidroClaro } from "@/components/site/MegaNav";
+import { IconeVidroTopo } from "@/components/site/MegaNav";
 
 /**
- * InstitutionalNav — menu institucional do top bar do portal (faixa de vidro
- * claro do header "brand"). Hover/ativo em pílula de vidro; ícones em
- * mini-tiles de vidro com ícone laranja (mesmo padrão do mega menu).
+ * InstitutionalNav — menu institucional do top bar PRETO do portal (header
+ * "brand", padrão apple.com). Hover/ativo em pílula de vidro escuro; ícones em
+ * mini-tiles de vidro com ícone laranja.
  */
 const ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: "/sobre", label: "Sobre", icon: Info },
@@ -24,10 +24,10 @@ export function InstitutionalNav() {
         <Link
           key={to}
           to={to}
-          className="group flex items-center gap-1.5 rounded-full border border-transparent px-2 py-0.5 text-[12.5px] font-semibold text-slate-700 transition-colors hover:border-white hover:bg-white/80 hover:text-slate-900 hover:shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ed7d31]/60"
-          activeProps={{ className: "border-white bg-white/80 text-slate-900 shadow-sm" }}
+          className="group flex items-center gap-1.5 rounded-full border border-transparent px-2 py-0.5 text-[12.5px] font-semibold text-white/80 transition-colors hover:border-white/10 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#ed7d31]/60"
+          activeProps={{ className: "border-white/10 bg-white/10 text-white" }}
         >
-          <IconeVidroClaro icon={icon} />
+          <IconeVidroTopo icon={icon} />
           <span>{label}</span>
         </Link>
       ))}

@@ -154,6 +154,15 @@
     overflow-x: hidden;
     max-width: 100%;
   }
+  /* "clip" corta o estouro igual ao "hidden", mas NÃO transforma html/body em
+     container de rolagem — com "hidden", todo position: sticky do site parava
+     de funcionar (ex.: o menu do header não ficava fixo ao rolar). */
+  @supports (overflow-x: clip) {
+    html,
+    body {
+      overflow-x: clip;
+    }
+  }
 
   body {
     background-color: var(--color-background);

@@ -104,7 +104,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
   const anunciarTo = !user ? "/signup" : tenantId ? "/app/imoveis/novo" : "/onboarding";
   return {
     tema: "brand",
-    logo: <Logo className="h-8 w-auto" variant="white" />,
+    logo: <Logo className="h-8 w-auto" />,
     logoTo: "/",
     topBar: {
       contacts: [{ icon: Headset, label: "Central de Atendimento", href: "/atendimento" }],
@@ -303,7 +303,7 @@ function buildCorporateNavConfig(user: unknown, tenantId: string | null): MegaNa
     ],
     ctaButton: { label: "Anunciar Imóvel", to: anunciarTo, icon: PlusCircle },
     mobileQuickAction: { label: "Anunciar meu Imóvel", to: anunciarTo, icon: PlusCircle },
-    extraCtas: () => <HeaderUserMenu tom="escuro" />,
+    extraCtas: () => <HeaderUserMenu />,
   };
 }
 
