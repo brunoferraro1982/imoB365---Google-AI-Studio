@@ -47,8 +47,8 @@ export function useSiteWidgets(tenantId: string | undefined) {
 
 function WidgetCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+    <div className="glass-fosco h-full rounded-3xl p-5">
+      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
         {title}
       </h3>
       {children}
@@ -219,7 +219,7 @@ function BannerPublicitarioWidget({ widget }: { widget: SiteWidget }) {
   if (!imagem_url && !texto) return null;
 
   const content = (
-    <div className="overflow-hidden rounded-2xl border border-border shadow-sm">
+    <div className="glass-fosco overflow-hidden rounded-3xl">
       {imagem_url && (
         <img src={imagem_url} alt={texto || "Publicidade"} className="w-full object-cover" />
       )}
@@ -312,7 +312,7 @@ export function SiteWidgetsLayout({
   return (
     <div className={`mx-auto grid max-w-6xl gap-10 px-6 ${gridColsClass}`}>
       {hasLeft && (
-        <aside className="hidden space-y-6 xl:block">
+        <aside className="hidden space-y-5 self-start xl:sticky xl:top-24 xl:block">
           {esquerda.map((w) => (
             <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
           ))}
@@ -320,13 +320,39 @@ export function SiteWidgetsLayout({
       )}
       <div className="min-w-0">{children}</div>
       {hasRight && (
-        <aside className="hidden space-y-6 xl:block">
+        <aside className="hidden space-y-5 self-start xl:sticky xl:top-24 xl:block">
           {direita.map((w) => (
             <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
           ))}
         </aside>
       )}
     </div>
+  );
+}
+
+/**
+ * Home do site: os widgets ativos (esquerda + direita) viram uma faixa de
+ * cartões de vidro em largura total, em vez de colunas laterais que
+ * espremiam a grade de imóveis. Some quando não há widgets.
+ */
+export function SiteWidgetsFaixa({ ctx, widgets }: { ctx: SiteCtx; widgets: SiteWidget[] }) {
+  if (!widgets.length) return null;
+  const cols =
+    widgets.length >= 4
+      ? "sm:grid-cols-2 lg:grid-cols-4"
+      : widgets.length === 3
+        ? "sm:grid-cols-2 lg:grid-cols-3"
+        : widgets.length === 2
+          ? "sm:grid-cols-2"
+          : "";
+  return (
+    <section className="mx-auto max-w-6xl px-4 py-10 md:px-6">
+      <div className={`grid items-stretch gap-4 ${cols}`}>
+        {widgets.map((w) => (
+          <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -347,7 +373,7 @@ export function TenantSiteLayoutWithWidgets({
   const { esquerda, direita } = useSiteWidgets(ctx.tenantId);
   return (
     <TenantSiteLayout ctx={ctx}>
-      <section className="py-16">
+      <section className="py-12 md:py-16">
         <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
           {children}
         </SiteWidgetsLayout>

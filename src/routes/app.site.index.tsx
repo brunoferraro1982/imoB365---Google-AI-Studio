@@ -27,7 +27,16 @@ import { slugify } from "@/lib/format";
 import { uploadTenantBrandingImage } from "@/lib/tenantBranding";
 import { useConfirm } from "@/hooks/useConfirm";
 import { SectionOrderEditor, type SectionItem } from "@/components/site/SectionOrderEditor";
-import { SECTION_LABELS, DEFAULT_SECOES, type SectionDbItem } from "@/lib/siteSections";
+import {
+  SECTION_LABELS,
+  DEFAULT_SECOES,
+  normalizarSecoes,
+  type Diferencial,
+  type Passo,
+  type SectionDbItem,
+} from "@/lib/siteSections";
+import { Switch } from "@/components/ui/switch";
+import { DiferenciaisEditor, PassosEditor } from "@/components/site/EditorBlocosSite";
 import { saveTenantSiteSettings, saveTenantPage } from "@/lib/siteContent.functions";
 
 export const Route = createFileRoute("/app/site/")({
@@ -58,6 +67,10 @@ type Settings = {
   hotjar_id: string | null;
   head_custom_html: string | null;
   secoes: SectionDbItem[];
+  hero_imagem_url: string | null;
+  hero_formulario: boolean;
+  diferenciais: Diferencial[] | null;
+  como_funciona: Passo[] | null;
 };
 
 type Page = {
@@ -109,6 +122,10 @@ const EMPTY: Settings = {
   hotjar_id: "",
   head_custom_html: "",
   secoes: DEFAULT_SECOES,
+  hero_imagem_url: null,
+  hero_formulario: true,
+  diferenciais: null,
+  como_funciona: null,
 };
 
 function SitePage() {
@@ -134,6 +151,7 @@ function SitePage() {
   const [tema, setTema] = useState<Tema>({});
   const [savingMarca, setSavingMarca] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingCapa, setUploadingCapa] = useState(false);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -167,7 +185,9 @@ function SitePage() {
         setS({
           ...EMPTY,
           ...cfg,
-          secoes: (cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES,
+          secoes: normalizarSecoes(cfg.secoes as SectionDbItem[] | null),
+          diferenciais: (cfg.diferenciais as Diferencial[] | null) ?? null,
+          como_funciona: (cfg.como_funciona as Passo[] | null) ?? null,
         });
       else setS({ ...EMPTY, tenant_id: tenantId });
       setPages((pg ?? []) as Page[]);
@@ -211,6 +231,22 @@ function SitePage() {
       toast.error(err.message);
     } finally {
       setUploadingLogo(false);
+    }
+  }
+
+  async function uploadCapa(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !tenantId) return;
+    setUploadingCapa(true);
+    try {
+      const url = await uploadTenantBrandingImage(tenantId, file, { prefixo: "capa", maxMB: 5 });
+      set("hero_imagem_url", url);
+      toast.success("Foto de capa enviada — clique em Salvar para publicar");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar a foto");
+    } finally {
+      setUploadingCapa(false);
     }
   }
 
@@ -556,6 +592,70 @@ function SitePage() {
                 maxLength={40}
               />
             </Field>
+            <Field label="Foto de capa (opcional)">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative h-24 w-40 overflow-hidden rounded-lg border border-border bg-muted">
+                  {s.hero_imagem_url ? (
+                    <img
+                      src={s.hero_imagem_url}
+                      alt="Capa"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center px-2 text-center text-[11px] text-muted-foreground">
+                      Sem foto — usa um degradê na cor do site
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-input px-3 py-2 text-sm hover:bg-muted">
+                    <Upload className="h-4 w-4" />
+                    {uploadingCapa
+                      ? "Enviando…"
+                      : s.hero_imagem_url
+                        ? "Trocar foto"
+                        : "Enviar foto"}
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={uploadCapa}
+                      disabled={uploadingCapa}
+                    />
+                  </label>
+                  {s.hero_imagem_url && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="justify-start gap-1.5 text-destructive"
+                      onClick={() => set("hero_imagem_url", null)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" /> Remover foto
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Foto horizontal (ex.: a cidade, a praia, um imóvel), até 5MB. Fica ao fundo do topo
+                do site, com efeito de vidro por cima.
+              </p>
+            </Field>
+            <div className="flex items-start justify-between gap-4 rounded-lg border border-border p-4">
+              <div>
+                <Label htmlFor="hero-form" className="text-sm font-medium">
+                  Mostrar formulário de contato no topo
+                </Label>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Os contatos caem direto em Leads, com origem "site".
+                </p>
+              </div>
+              <Switch
+                id="hero-form"
+                checked={s.hero_formulario !== false}
+                onCheckedChange={(v) => set("hero_formulario", v)}
+              />
+            </div>
           </div>
         </section>
 
@@ -569,6 +669,22 @@ function SitePage() {
             onChange={(html) => set("sobre_html", html)}
             placeholder="Ex: Há mais de 10 anos ajudando famílias a encontrar o imóvel ideal no litoral sul de SP…"
           />
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Diferenciais</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Três cartões com o que torna seu atendimento diferente. Já vêm com um texto padrão.
+          </p>
+          <DiferenciaisEditor valor={s.diferenciais} onChange={(v) => set("diferenciais", v)} />
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Como funciona</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Os passos do seu atendimento, do primeiro contato à chave na mão.
+          </p>
+          <PassosEditor valor={s.como_funciona} onChange={(v) => set("como_funciona", v)} />
         </section>
 
         <section className="rounded-xl border border-border bg-card p-6">

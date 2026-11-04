@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Instagram,
   Facebook,
@@ -7,11 +8,22 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  ArrowUpRight,
+  Menu,
+  BadgeCheck,
   ArrowLeft,
+  Search,
+  Building2,
+  Calculator,
+  Briefcase,
+  Headset,
+  type LucideIcon,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { MegaNavHeader, type MegaNavConfig } from "@/components/site/MegaNav";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { waHref as montarWaHref, usePrefetchSite, type PaginaSite } from "@/lib/tenantSite";
+import { Logo } from "@/components/brand/Logo";
+import { IconeVidroTopo } from "@/components/site/MegaNav";
 
 export type SiteCtx = {
   tenantId: string;
@@ -22,6 +34,8 @@ export type SiteCtx = {
    * de tema.logo_url é tratada como foto pessoal (retrato na hero), não
    * como logo de empresa (não aparece como ícone no header/rodapé). */
   tipoTenant?: string | null;
+  /** CRECI exibido no selo do hero e no rodapé (pessoal ou jurídico). */
+  creci?: string | null;
   settings: {
     contato_telefone?: string | null;
     contato_whatsapp?: string | null;
@@ -32,206 +46,446 @@ export type SiteCtx = {
     youtube_url?: string | null;
     linkedin_url?: string | null;
     cor_destaque?: string | null;
+    meta_description?: string | null;
+    hero_titulo?: string | null;
+    hero_subtitulo?: string | null;
+    hero_cta_label?: string | null;
+    hero_imagem_url?: string | null;
+    hero_formulario?: boolean | null;
+    sobre_html?: string | null;
+    diferenciais?: unknown;
+    como_funciona?: unknown;
   };
   pages: { slug: string; titulo: string }[];
   hasBlog?: boolean;
   hasSobre?: boolean;
+  empreendimentosTotal?: number;
 };
 
-function buildTenantNavConfig(ctx: SiteCtx): MegaNavConfig {
-  const waHref = ctx.settings.contato_whatsapp
-    ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
-    : null;
+type NavItem = { key: string; label: string; to: string; hash?: string; pagina?: PaginaSite };
+
+function navItems(ctx: SiteCtx): NavItem[] {
+  const base = `/site/${ctx.tenantSlug}`;
+  return [
+    { key: "inicio", label: "Início", to: base, pagina: "inicio" as const },
+    { key: "imoveis", label: "Imóveis", to: `${base}/imoveis`, pagina: "imoveis" as const },
+    ...((ctx.empreendimentosTotal ?? 0) > 0
+      ? [
+          {
+            key: "lancamentos",
+            label: "Lançamentos",
+            to: `${base}/lancamentos`,
+            pagina: "lancamentos" as const,
+          },
+        ]
+      : []),
+    ...(ctx.hasSobre
+      ? [{ key: "sobre", label: "Sobre", to: base, hash: "sobre", pagina: "inicio" as const }]
+      : []),
+    ...ctx.pages.map((p) => ({
+      key: `page-${p.slug}`,
+      label: p.titulo,
+      to: `${base}/p/${p.slug}`,
+    })),
+    ...(ctx.hasBlog ? [{ key: "blog", label: "Blog", to: `${base}/blog` }] : []),
+    { key: "contato", label: "Contato", to: base, hash: "contato" },
+  ];
+}
+
+export function SiteMarca({ ctx, claro }: { ctx: SiteCtx; claro?: boolean }) {
   const isCorretor = ctx.tipoTenant === "corretor";
-  return {
-    logo:
-      ctx.logoUrl && !isCorretor ? (
-        <img src={ctx.logoUrl} alt={ctx.tenantNome} className="h-9 max-w-[170px] object-contain" />
+  if (ctx.logoUrl && !isCorretor)
+    return (
+      <img src={ctx.logoUrl} alt={ctx.tenantNome} className="h-9 max-w-[170px] object-contain" />
+    );
+  return (
+    <span className="flex items-center gap-2.5">
+      {isCorretor && ctx.logoUrl ? (
+        <img
+          src={ctx.logoUrl}
+          alt=""
+          className="h-9 w-9 rounded-full object-cover ring-2 ring-white/70 shadow-sm"
+        />
       ) : (
-        <span className="text-lg font-bold tracking-tight">{ctx.tenantNome}</span>
-      ),
-    logoTo: `/site/${ctx.tenantSlug}`,
-    groups: [
-      { key: "inicio", label: "Início", to: `/site/${ctx.tenantSlug}` },
-      { key: "imoveis", label: "Imóveis", to: `/site/${ctx.tenantSlug}`, hash: "imoveis" },
-      ...(ctx.hasSobre
-        ? [{ key: "sobre", label: "Sobre", to: `/site/${ctx.tenantSlug}`, hash: "sobre" }]
-        : []),
-      ...ctx.pages.map((p) => ({
-        key: `page-${p.slug}`,
-        label: p.titulo,
-        to: `/site/${ctx.tenantSlug}/p/${p.slug}`,
-      })),
-      ...(ctx.hasBlog ? [{ key: "blog", label: "Blog", to: `/site/${ctx.tenantSlug}/blog` }] : []),
-      { key: "contato", label: "Contato", to: `/site/${ctx.tenantSlug}`, hash: "contato" },
-    ],
-    extraCtas: () =>
-      waHref ? (
-        <a href={waHref} target="_blank" rel="noopener noreferrer" className="hidden sm:block">
-          <Button
-            size="sm"
-            className="gap-1.5 rounded-full bg-primary text-primary-foreground shadow-sm hover:opacity-90"
-          >
-            <MessageCircle className="h-3.5 w-3.5" />
-            Fale conosco
-          </Button>
-        </a>
-      ) : null,
-  };
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground shadow-sm">
+          {ctx.tenantNome.trim().charAt(0).toUpperCase()}
+        </span>
+      )}
+      <span className="flex flex-col leading-tight">
+        <span
+          className={`font-brand-display text-[15px] font-extrabold tracking-tight ${claro ? "text-white" : "text-foreground"}`}
+        >
+          {ctx.tenantNome}
+        </span>
+        {isCorretor && (
+          <span className={`text-[11px] ${claro ? "text-white/60" : "text-muted-foreground"}`}>
+            Corretor de imóveis{ctx.creci ? ` · CRECI ${ctx.creci}` : ""}
+          </span>
+        )}
+      </span>
+    </span>
+  );
+}
+
+// Links principais do portal imoB365 na barra preta acima do site do tenant.
+const LINKS_PORTAL: { label: string; to: string; icon: LucideIcon }[] = [
+  { label: "Buscar imóveis", to: "/buscar", icon: Search },
+  { label: "Empreendimentos", to: "/empreendimentos", icon: Building2 },
+  { label: "Simuladores", to: "/calculadora-financiamento", icon: Calculator },
+  { label: "Para imobiliárias", to: "/planos", icon: Briefcase },
+  { label: "Central de Atendimento", to: "/atendimento", icon: Headset },
+];
+
+/**
+ * Top bar da imoB365 (identidade do portal: preto + ícones em vidro laranja)
+ * acima do header do tenant — caminho de volta ao portal e atalhos
+ * principais. Rola junto com a página; só o header do tenant fica fixo.
+ */
+function PortalTopBar() {
+  return (
+    <div className="relative z-50 bg-black text-[11.5px] font-semibold text-white/80">
+      <div className="mx-auto flex h-9 max-w-6xl items-center justify-between gap-3 px-4 md:px-6">
+        <Link
+          to="/"
+          className="group flex shrink-0 items-center gap-2 transition-colors hover:text-white"
+          aria-label="Voltar ao portal imoB365"
+        >
+          <IconeVidroTopo icon={ArrowLeft} />
+          <span className="hidden sm:inline">Voltar ao portal</span>
+          <Logo flat variant="white" className="h-[18px] w-auto" />
+        </Link>
+        <nav className="hidden items-center gap-1 md:flex" aria-label="Portal imoB365">
+          {LINKS_PORTAL.map((l) => (
+            <Link
+              key={l.to + l.label}
+              to={l.to}
+              className="group flex items-center gap-1.5 whitespace-nowrap rounded-full border border-transparent px-2 py-0.5 transition-colors hover:border-white/10 hover:bg-white/10 hover:text-white"
+            >
+              <IconeVidroTopo icon={l.icon} />
+              <span className={l.label.length > 18 ? "hidden lg:inline" : ""}>{l.label}</span>
+            </Link>
+          ))}
+        </nav>
+        <Link to="/buscar" className="group flex items-center gap-1.5 whitespace-nowrap md:hidden">
+          <IconeVidroTopo icon={Search} />
+          Buscar imóveis
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function SiteHeader({ ctx }: { ctx: SiteCtx }) {
+  const prefetch = usePrefetchSite(ctx);
+  const [rolou, setRolou] = useState(false);
+  const [aberto, setAberto] = useState(false);
+  const wa = montarWaHref(ctx, `Olá! Vim pelo site de ${ctx.tenantNome}.`);
+  const itens = navItems(ctx);
+
+  useEffect(() => {
+    const onScroll = () => setRolou(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header className="sticky top-0 z-40">
+      {/* O vidro fica numa camada irmã: se o backdrop-filter ficasse no
+          próprio header, ele viraria "backdrop root" e o Sheet/menus
+          filhos não desfocariam o conteúdo de trás. */}
+      <div
+        aria-hidden
+        className={`absolute inset-0 border-b transition-all duration-300 ${
+          rolou
+            ? "border-black/5 bg-white/70 shadow-[0_8px_30px_-18px_rgba(15,23,42,0.35)] backdrop-blur-2xl backdrop-saturate-[1.8] dark:border-white/10 dark:bg-[#0b1220]/70"
+            : "border-transparent bg-white/40 backdrop-blur-xl backdrop-saturate-[1.6] dark:bg-[#0b1220]/40"
+        }`}
+      />
+      <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
+        <Link
+          to="/site/$slug"
+          params={{ slug: ctx.tenantSlug }}
+          className="flex min-w-0 shrink-0 items-center"
+        >
+          <SiteMarca ctx={ctx} />
+        </Link>
+
+        <nav className="hidden items-center gap-0.5 rounded-full border border-black/5 bg-white/50 p-1 text-[13.5px] font-semibold text-foreground/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-white/10 dark:bg-white/5 lg:flex">
+          {itens.map((i) => (
+            <Link
+              key={i.key}
+              to={i.to}
+              hash={i.hash}
+              activeOptions={{ exact: true, includeHash: false }}
+              onMouseEnter={() => i.pagina && prefetch(i.pagina)}
+              onFocus={() => i.pagina && prefetch(i.pagina)}
+              className="whitespace-nowrap rounded-full px-3.5 py-1.5 transition-colors hover:bg-white hover:text-foreground dark:hover:bg-white/10"
+            >
+              {i.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          {wa && (
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-[13px] font-bold text-primary-foreground shadow-[0_8px_20px_-8px_color-mix(in_oklab,var(--primary)_70%,transparent)] transition hover:opacity-90 sm:inline-flex"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Fale comigo
+            </a>
+          )}
+          <Sheet open={aberto} onOpenChange={setAberto}>
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label="Abrir menu"
+                className="grid h-10 w-10 place-items-center rounded-full border border-black/5 bg-white/60 text-foreground shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/10 lg:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent
+              side="right"
+              className="w-[300px] border-l border-white/40 bg-white/80 p-0 backdrop-blur-2xl dark:bg-[#0b1220]/85"
+            >
+              <SheetHeader className="border-b border-black/5 p-5 text-left dark:border-white/10">
+                <SheetTitle asChild>
+                  <div>
+                    <SiteMarca ctx={ctx} />
+                  </div>
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col p-3">
+                {itens.map((i) => (
+                  <Link
+                    key={i.key}
+                    to={i.to}
+                    hash={i.hash}
+                    onClick={() => setAberto(false)}
+                    className="rounded-xl px-4 py-3 text-[15px] font-semibold text-foreground/85 transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+                  >
+                    {i.label}
+                  </Link>
+                ))}
+              </nav>
+              {wa && (
+                <div className="px-5">
+                  <a
+                    href={wa}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"
+                  >
+                    <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
+                  </a>
+                </div>
+              )}
+              <div className="mx-3 mt-6 rounded-2xl bg-black p-3 text-white/85">
+                <Link
+                  to="/"
+                  onClick={() => setAberto(false)}
+                  className="group flex items-center gap-2 px-1 pb-2 text-xs font-semibold"
+                >
+                  <IconeVidroTopo icon={ArrowLeft} /> Voltar ao portal
+                  <Logo flat variant="white" className="ml-auto h-4 w-auto" />
+                </Link>
+                <div className="grid gap-0.5 border-t border-white/10 pt-2">
+                  {LINKS_PORTAL.map((l) => (
+                    <Link
+                      key={l.to + l.label}
+                      to={l.to}
+                      onClick={() => setAberto(false)}
+                      className="group flex items-center gap-2 rounded-lg px-1 py-1.5 text-[13px] hover:bg-white/10"
+                    >
+                      <IconeVidroTopo icon={l.icon} /> {l.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+const REDES = [
+  { k: "instagram_url", label: "Instagram", icon: Instagram },
+  { k: "facebook_url", label: "Facebook", icon: Facebook },
+  { k: "youtube_url", label: "YouTube", icon: Youtube },
+  { k: "linkedin_url", label: "LinkedIn", icon: Linkedin },
+] as const;
+
+function SiteFooter({ ctx }: { ctx: SiteCtx }) {
+  const wa = montarWaHref(ctx, `Olá! Vim pelo site de ${ctx.tenantNome}.`);
+  const redes = REDES.filter((r) => ctx.settings[r.k]);
+  const s = ctx.settings;
+
+  return (
+    <footer className="site-hero-fundo relative mt-10 overflow-hidden text-zinc-300">
+      {wa && (
+        <div className="mx-auto max-w-6xl px-4 pt-14 md:px-6">
+          <div className="glass-escuro flex flex-col items-start justify-between gap-5 rounded-[28px] p-6 md:flex-row md:items-center md:p-8">
+            <div>
+              <p className="font-brand-display text-xl font-extrabold text-white md:text-2xl">
+                Encontrou o imóvel ideal?
+              </p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Fale agora com {ctx.tenantNome} pelo WhatsApp — resposta rápida.
+              </p>
+            </div>
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg transition hover:opacity-90"
+            >
+              <MessageCircle className="h-4 w-4" /> Iniciar conversa
+            </a>
+          </div>
+        </div>
+      )}
+
+      <div className="mx-auto grid max-w-6xl gap-4 px-4 py-12 md:grid-cols-3 md:px-6">
+        <div className="glass-escuro rounded-3xl p-6">
+          <SiteMarca ctx={ctx} claro />
+          {ctx.creci && ctx.tipoTenant !== "corretor" && (
+            <p className="mt-4 flex items-center gap-2 text-sm text-zinc-400">
+              <BadgeCheck className="h-4 w-4 text-primary" /> CRECI {ctx.creci}
+            </p>
+          )}
+          {s.endereco && (
+            <p className="mt-4 flex items-start gap-2 text-sm text-zinc-400">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {s.endereco}
+            </p>
+          )}
+        </div>
+        <div className="glass-escuro rounded-3xl p-6">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-500">Contato</h3>
+          <ul className="space-y-3 text-sm">
+            {s.contato_telefone && (
+              <li>
+                <a
+                  href={`tel:${s.contato_telefone.replace(/\D/g, "")}`}
+                  className="flex items-center gap-2 hover:text-white"
+                >
+                  <Phone className="h-4 w-4 text-primary" /> {s.contato_telefone}
+                </a>
+              </li>
+            )}
+            {s.contato_email && (
+              <li>
+                <a
+                  href={`mailto:${s.contato_email}`}
+                  className="flex items-center gap-2 break-all hover:text-white"
+                >
+                  <Mail className="h-4 w-4 shrink-0 text-primary" /> {s.contato_email}
+                </a>
+              </li>
+            )}
+            {wa && (
+              <li>
+                <a
+                  href={wa}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 hover:text-white"
+                >
+                  <MessageCircle className="h-4 w-4 text-primary" /> WhatsApp
+                </a>
+              </li>
+            )}
+          </ul>
+        </div>
+        <div className="glass-escuro rounded-3xl p-6">
+          <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
+            {redes.length ? "Redes sociais" : "Navegue"}
+          </h3>
+          {redes.length ? (
+            <div className="flex flex-wrap gap-2.5">
+              {redes.map((r) => (
+                <a
+                  key={r.k}
+                  href={s[r.k] as string}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={r.label}
+                  className="grid h-10 w-10 place-items-center rounded-xl border border-white/15 bg-white/[0.08] text-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] transition hover:border-transparent hover:bg-primary hover:text-primary-foreground"
+                >
+                  <r.icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              {navItems(ctx)
+                .slice(0, 5)
+                .map((i) => (
+                  <li key={i.key}>
+                    <Link to={i.to} hash={i.hash} className="hover:text-white">
+                      {i.label}
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-zinc-500 sm:flex-row md:px-6">
+          <span>
+            © {new Date().getFullYear()} {ctx.tenantNome}
+            {ctx.creci ? ` · CRECI ${ctx.creci}` : ""}
+          </span>
+          <Link to="/" className="inline-flex items-center gap-1 hover:text-white">
+            Site criado com <span className="font-semibold text-zinc-400">imoB365</span>
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 export function TenantSiteLayout({ ctx, children }: { ctx: SiteCtx; children: React.ReactNode }) {
   const cor = ctx.settings.cor_destaque || undefined;
-  const waHref = ctx.settings.contato_whatsapp
-    ? `https://wa.me/${ctx.settings.contato_whatsapp.replace(/\D/g, "")}`
-    : null;
-
   return (
     <div
-      className="min-h-screen bg-background text-foreground"
-      style={cor ? ({ "--site-accent": cor, "--primary": cor } as React.CSSProperties) : undefined}
+      className="hero-brand relative min-h-screen bg-[#f6f7f9] text-foreground dark:bg-[#0b1220]"
+      style={
+        cor
+          ? ({ "--site-accent": cor, "--primary": cor, "--ring": cor } as React.CSSProperties)
+          : undefined
+      }
     >
-      <div className="border-b border-border/60 bg-muted/30 px-6 py-1.5 text-center text-[11px] text-muted-foreground">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1 transition-colors hover:text-primary"
-        >
-          <ArrowLeft className="h-3 w-3" /> Voltar ao portal imoB365
-        </Link>
+      <div aria-hidden className="site-mesh pointer-events-none fixed inset-0 -z-0" />
+      <PortalTopBar />
+      <SiteHeader ctx={ctx} />
+      <main className="relative">{children}</main>
+      <SiteFooter ctx={ctx} />
+    </div>
+  );
+}
+
+/** Esqueleto de carregamento no mesmo visual (substitui o "Carregando…"). */
+export function SiteSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#f6f7f9] dark:bg-[#0b1220]">
+      <div className="h-9 bg-black" />
+      <div className="h-16 border-b border-black/5 bg-white/60" />
+      <div className="site-hero-fundo h-[520px] animate-pulse" />
+      <div className="mx-auto grid max-w-6xl gap-6 px-6 py-16 sm:grid-cols-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-72 animate-pulse rounded-3xl bg-white/70" />
+        ))}
       </div>
-      <MegaNavHeader config={buildTenantNavConfig(ctx)} />
-
-      <main>{children}</main>
-
-      <footer className="mt-20 border-t border-border bg-zinc-950 text-zinc-300">
-        <div className="h-1 w-full bg-primary" />
-
-        {waHref && (
-          <div className="border-b border-white/10">
-            <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-              <div>
-                <p className="text-lg font-bold text-white">Encontrou o imóvel ideal?</p>
-                <p className="mt-1 text-sm text-zinc-400">
-                  Fale agora com {ctx.tenantNome} pelo WhatsApp.
-                </p>
-              </div>
-              <a href={waHref} target="_blank" rel="noopener noreferrer">
-                <Button className="gap-2 rounded-full bg-primary px-6 text-primary-foreground hover:opacity-90">
-                  <MessageCircle className="h-4 w-4" />
-                  Iniciar conversa
-                </Button>
-              </a>
-            </div>
-          </div>
-        )}
-
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
-          <div>
-            <div className="flex items-center gap-2 text-base font-bold text-white">
-              {ctx.logoUrl && ctx.tipoTenant !== "corretor" ? (
-                <img
-                  src={ctx.logoUrl}
-                  alt={ctx.tenantNome}
-                  className="h-8 max-w-[150px] object-contain"
-                />
-              ) : (
-                ctx.tenantNome
-              )}
-            </div>
-            {ctx.settings.endereco && (
-              <p className="mt-4 flex items-start gap-2 text-sm text-zinc-400">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {ctx.settings.endereco}
-              </p>
-            )}
-          </div>
-          <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
-              Contato
-            </h3>
-            <ul className="space-y-3 text-sm">
-              {ctx.settings.contato_telefone && (
-                <li className="flex items-center gap-2 text-zinc-300">
-                  <Phone className="h-4 w-4 text-primary" /> {ctx.settings.contato_telefone}
-                </li>
-              )}
-              {ctx.settings.contato_email && (
-                <li className="flex items-center gap-2 text-zinc-300">
-                  <Mail className="h-4 w-4 text-primary" /> {ctx.settings.contato_email}
-                </li>
-              )}
-              {waHref && (
-                <li>
-                  <a
-                    href={waHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-zinc-300 hover:text-white"
-                  >
-                    <MessageCircle className="h-4 w-4 text-primary" /> WhatsApp
-                  </a>
-                </li>
-              )}
-            </ul>
-          </div>
-          <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-zinc-500">
-              Redes sociais
-            </h3>
-            <div className="flex gap-3">
-              {ctx.settings.instagram_url && (
-                <a
-                  href={ctx.settings.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Instagram"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  <Instagram className="h-4 w-4" />
-                </a>
-              )}
-              {ctx.settings.facebook_url && (
-                <a
-                  href={ctx.settings.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Facebook"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  <Facebook className="h-4 w-4" />
-                </a>
-              )}
-              {ctx.settings.youtube_url && (
-                <a
-                  href={ctx.settings.youtube_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="YouTube"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  <Youtube className="h-4 w-4" />
-                </a>
-              )}
-              {ctx.settings.linkedin_url && (
-                <a
-                  href={ctx.settings.linkedin_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="LinkedIn"
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/5 text-zinc-400 transition-colors hover:bg-primary hover:text-primary-foreground"
-                >
-                  <Linkedin className="h-4 w-4" />
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-white/10 py-5 text-center text-xs text-zinc-500">
-          © {new Date().getFullYear()} {ctx.tenantNome} — site criado com{" "}
-          <Link to="/" className="font-semibold text-zinc-400 hover:text-white">
-            imoB365
-          </Link>
-        </div>
-      </footer>
     </div>
   );
 }

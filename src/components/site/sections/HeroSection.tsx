@@ -1,26 +1,57 @@
-import { Building2, MapPin, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, BadgeCheck, Building2, MessageCircle } from "lucide-react";
 import type { LayoutKey } from "@/lib/siteSections";
 import type { SiteCtx } from "@/components/site/TenantSiteLayout";
+import { waHref } from "@/lib/tenantSite";
+import { FormLeadSite } from "./ui";
 
 type Stat = { icon: typeof Building2; label: string; value: string };
 
-// Retrato pessoal do corretor autônomo — só aparece quando o tenant é do
-// tipo 'corretor' (ctx.tipoTenant), dando à mesma imagem de tema.logo_url
-// o tratamento de foto de perfil (grande, circular, com selo de profissão)
-// em vez de logo apertado no header. Imobiliárias continuam sem isso.
-function CorretorRetrato({ ctx, align = "center" }: { ctx: SiteCtx; align?: "center" | "left" }) {
-  if (ctx.tipoTenant !== "corretor" || !ctx.logoUrl) return null;
+/** Boutique e Editorial usam o hero claro; os demais, o hero escuro. */
+export function heroClaro(variant: LayoutKey) {
+  return variant === "boutique" || variant === "editorial";
+}
+
+// Retrato do corretor autônomo (tema.logo_url tratado como foto de perfil)
+// ou logo da imobiliária, com selo de profissão + CRECI.
+function Identidade({ ctx, claro }: { ctx: SiteCtx; claro: boolean }) {
+  const isCorretor = ctx.tipoTenant === "corretor";
+  const selo = isCorretor ? "Corretor de imóveis" : "Imobiliária";
   return (
-    <div className={`mb-6 flex ${align === "center" ? "justify-center" : "justify-start"}`}>
-      <div className="relative">
-        <img
-          src={ctx.logoUrl}
-          alt={ctx.tenantNome}
-          className="h-24 w-24 rounded-full border-4 border-background object-cover shadow-lg ring-2 ring-primary/25 md:h-28 md:w-28"
-        />
-        <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary-foreground shadow-sm">
-          Corretor de Imóveis
+    <div className="mb-6 flex items-center gap-4">
+      {ctx.logoUrl &&
+        (isCorretor ? (
+          <img
+            src={ctx.logoUrl}
+            alt={ctx.tenantNome}
+            className={`h-20 w-20 shrink-0 rounded-full object-cover shadow-xl md:h-24 md:w-24 ${
+              claro ? "ring-4 ring-white" : "ring-4 ring-white/20"
+            }`}
+          />
+        ) : (
+          <span
+            className={`grid h-16 shrink-0 place-items-center rounded-2xl px-4 ${claro ? "glass-fosco" : "bg-white/95"}`}
+          >
+            <img
+              src={ctx.logoUrl}
+              alt={ctx.tenantNome}
+              className="h-10 max-w-[140px] object-contain"
+            />
+          </span>
+        ))}
+      <div className="min-w-0">
+        <p
+          className={`font-brand-display truncate text-lg font-extrabold ${claro ? "text-foreground" : "text-white"}`}
+        >
+          {ctx.tenantNome}
+        </p>
+        <span
+          className={`mt-1 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+            claro ? "glass-fosco text-foreground/80" : "glass-escuro text-white/85"
+          }`}
+        >
+          <BadgeCheck className="h-3.5 w-3.5 text-primary" />
+          {selo}
+          {ctx.creci ? ` · CRECI ${ctx.creci}` : ""}
         </span>
       </div>
     </div>
@@ -39,191 +70,111 @@ export function HeroSection({
     hero_titulo?: string | null;
     hero_subtitulo?: string | null;
     hero_cta_label?: string | null;
+    hero_imagem_url?: string | null;
+    hero_formulario?: boolean | null;
   };
   stats: Stat[];
 }) {
-  if (variant === "vitrine") {
-    return (
-      <section className="relative overflow-hidden border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto max-w-6xl px-6 py-16 text-center md:py-20">
-          <CorretorRetrato ctx={ctx} />
-          <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-xs font-semibold">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Site oficial de {ctx.tenantNome}
-          </div>
-          <h1 className="mx-auto max-w-3xl text-4xl font-black tracking-tight md:text-6xl">
-            {hero.hero_titulo || ctx.tenantNome}
-          </h1>
-          {hero.hero_subtitulo && (
-            <p className="mx-auto mt-5 max-w-2xl text-lg opacity-90">{hero.hero_subtitulo}</p>
-          )}
-          <div className="mt-8 flex flex-col items-center gap-8">
-            <a href="#imoveis">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full px-8 shadow-lg shadow-black/10"
-              >
-                {hero.hero_cta_label || "Ver imóveis"}
-              </Button>
-            </a>
-            {stats.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
-                {stats.map((s) => (
-                  <div key={s.label} className="flex items-center gap-2.5">
-                    <s.icon className="h-5 w-5 opacity-80" />
-                    <div className="text-left">
-                      <div className="text-lg font-bold leading-tight">{s.value}</div>
-                      <div className="text-xs opacity-75">{s.label}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const claro = heroClaro(variant);
+  const comForm = hero.hero_formulario !== false;
+  const foto = hero.hero_imagem_url || null;
+  const wa = waHref(ctx, `Olá! Vim pelo site de ${ctx.tenantNome}.`);
+  const titulo = hero.hero_titulo || ctx.tenantNome;
 
-  if (variant === "boutique") {
-    return (
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-2xl px-6 py-24 text-center md:py-32">
-          <CorretorRetrato ctx={ctx} />
-          <div className="mb-6 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5" />
-            {ctx.tenantNome}
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight md:text-5xl">
-            {hero.hero_titulo || ctx.tenantNome}
-          </h1>
-          {hero.hero_subtitulo && (
-            <p className="mx-auto mt-5 max-w-lg text-base text-muted-foreground">
-              {hero.hero_subtitulo}
-            </p>
-          )}
-          <div className="mt-9">
-            <a href="#imoveis">
-              <Button size="lg" variant="outline" className="rounded-none px-8">
-                {hero.hero_cta_label || "Ver imóveis"}
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const fundo = claro ? (
+    <>
+      {foto && (
+        <img src={foto} alt="" className="absolute inset-0 h-full w-full object-cover opacity-30" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/85 via-white/70 to-white/40 dark:from-[#0b1220]/90 dark:via-[#0b1220]/75 dark:to-[#0b1220]/50" />
+      <div className="site-mesh absolute inset-0" />
+    </>
+  ) : (
+    <>
+      <div className="site-hero-fundo absolute inset-0" />
+      {foto && (
+        <>
+          <img src={foto} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="site-hero-veu absolute inset-0" />
+        </>
+      )}
+    </>
+  );
 
-  if (variant === "editorial") {
-    return (
-      <section className="border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-5xl px-6 py-20 md:py-24">
-          <CorretorRetrato ctx={ctx} align="left" />
-          <div className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {ctx.tenantNome}
-          </div>
-          <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
-            {hero.hero_titulo || ctx.tenantNome}
-          </h1>
-          {hero.hero_subtitulo && (
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground">
-              {hero.hero_subtitulo}
-            </p>
-          )}
-          <div className="mt-8">
-            <a href="#imoveis">
-              <Button size="lg" className="rounded-md px-8">
-                {hero.hero_cta_label || "Ver imóveis"}
-              </Button>
-            </a>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (variant === "amplo") {
-    return (
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="h-1.5 w-full bg-primary" />
-        <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <CorretorRetrato ctx={ctx} align="left" />
-          <div className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Site oficial de {ctx.tenantNome}
-          </div>
-          <h1 className="max-w-2xl text-3xl font-bold tracking-tight md:text-5xl">
-            {hero.hero_titulo || ctx.tenantNome}
-          </h1>
-          {hero.hero_subtitulo && (
-            <p className="mt-4 max-w-xl text-base text-muted-foreground">{hero.hero_subtitulo}</p>
-          )}
-          <div className="mt-8 flex flex-wrap items-center gap-8">
-            <a href="#imoveis">
-              <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
-                {hero.hero_cta_label || "Ver imóveis"}
-              </Button>
-            </a>
-            {stats.length > 0 && (
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                {stats.map((s) => (
-                  <div key={s.label} className="flex items-center gap-2.5">
-                    <s.icon className="h-4 w-4 text-primary" />
-                    <div className="text-left">
-                      <div className="text-base font-bold leading-tight">{s.value}</div>
-                      <div className="text-xs text-muted-foreground">{s.label}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // classico (default) — visual atual, sem nenhuma mudança
   return (
-    <section className="relative overflow-hidden border-b border-border">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_color-mix(in_oklab,_var(--primary)_22%,_transparent),_transparent_65%)]" />
-      <div className="absolute -right-24 -top-24 -z-10 h-72 w-72 rounded-full bg-primary/10 blur-3xl" />
-      <div className="mx-auto max-w-6xl px-6 py-24 text-center md:py-32">
-        <CorretorRetrato ctx={ctx} />
-        <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold text-primary">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          Site oficial de {ctx.tenantNome}
-        </div>
-        <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
-          {hero.hero_titulo || ctx.tenantNome}
-        </h1>
-        {hero.hero_subtitulo && (
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
-            {hero.hero_subtitulo}
-          </p>
-        )}
-        <div className="mt-9">
-          <a href="#imoveis">
-            <Button size="lg" className="rounded-full px-8 shadow-lg shadow-primary/20">
-              {hero.hero_cta_label || "Ver imóveis"}
-            </Button>
-          </a>
-        </div>
-
-        {stats.length > 0 && (
-          <div className="mx-auto mt-16 flex max-w-2xl flex-wrap items-center justify-center gap-x-10 gap-y-6 border-t border-border/60 pt-10">
-            {stats.map((s) => (
-              <div key={s.label} className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <s.icon className="h-5 w-5" />
+    <section className={`relative overflow-hidden ${claro ? "text-foreground" : "text-white"}`}>
+      {fundo}
+      <div
+        className={`relative mx-auto grid max-w-6xl items-center gap-10 px-4 md:px-6 ${
+          variant === "boutique" ? "py-20 md:py-28" : "py-14 md:py-20"
+        } ${comForm ? "lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]" : ""}`}
+      >
+        <div className={comForm ? "" : "max-w-3xl"}>
+          <Identidade ctx={ctx} claro={claro} />
+          <h1
+            className={`font-brand-display font-extrabold tracking-tight ${
+              variant === "boutique"
+                ? "text-[2.1rem] leading-[1.1] md:text-5xl"
+                : "text-[2.25rem] leading-[1.05] md:text-[3.4rem]"
+            }`}
+          >
+            {titulo}
+          </h1>
+          {hero.hero_subtitulo && (
+            <p
+              className={`mt-5 max-w-xl text-base leading-relaxed md:text-lg ${claro ? "text-muted-foreground" : "text-white/75"}`}
+            >
+              {hero.hero_subtitulo}
+            </p>
+          )}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <a
+              href="#imoveis"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-[0_12px_28px_-12px_color-mix(in_oklab,var(--primary)_85%,transparent)] transition hover:opacity-90"
+            >
+              {hero.hero_cta_label || "Ver imóveis"} <ArrowRight className="h-4 w-4" />
+            </a>
+            {wa && (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition ${
+                  claro ? "glass-fosco hover:bg-white" : "glass-escuro hover:bg-white/15"
+                }`}
+              >
+                <MessageCircle className="h-4 w-4" /> WhatsApp
+              </a>
+            )}
+          </div>
+          {stats.length > 0 && (
+            <div className="mt-8 grid grid-cols-3 gap-2 sm:mt-10 sm:flex sm:flex-wrap sm:gap-3">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className={`flex flex-col items-start gap-2 rounded-2xl p-3 sm:flex-row sm:items-center sm:gap-3 sm:px-4 ${claro ? "glass-fosco" : "glass-escuro"}`}
+                >
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/90 text-primary-foreground">
+                    <s.icon className="h-4 w-4" />
+                  </span>
+                  <span className="text-left">
+                    <span className="font-brand-display block text-xl font-extrabold leading-none">
+                      {s.value}
+                    </span>
+                    <span
+                      className={`text-xs ${claro ? "text-muted-foreground" : "text-white/65"}`}
+                    >
+                      {s.label}
+                    </span>
+                  </span>
                 </div>
-                <div className="text-left">
-                  <div className="text-xl font-bold leading-tight">{s.value}</div>
-                  <div className="text-xs text-muted-foreground">{s.label}</div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+        </div>
+        {comForm && (
+          <div className="w-full lg:max-w-md lg:justify-self-end">
+            <FormLeadSite ctx={ctx} escuro={!claro} />
           </div>
         )}
       </div>

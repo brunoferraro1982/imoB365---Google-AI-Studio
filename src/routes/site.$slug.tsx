@@ -1,17 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState, useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Building2, MapPin, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { TenantSiteLayout, type SiteCtx } from "@/components/site/TenantSiteLayout";
-import { SiteWidgetsLayout, useSiteWidgets } from "@/components/site/SiteWidgets";
+import { TenantSiteLayout, SiteSkeleton } from "@/components/site/TenantSiteLayout";
+import { SiteWidgetsFaixa, useSiteWidgets } from "@/components/site/SiteWidgets";
 import { TrackingPixels } from "@/components/site/TrackingPixels";
 import { HeroSection } from "@/components/site/sections/HeroSection";
 import { ImoveisSection } from "@/components/site/sections/ImoveisSection";
+import { EmpreendimentosSection } from "@/components/site/sections/EmpreendimentosSection";
+import {
+  ComoFuncionaSection,
+  DiferenciaisSection,
+} from "@/components/site/sections/DiferenciaisSection";
 import { SobreSection } from "@/components/site/sections/SobreSection";
 import { BlogDestaqueSection } from "@/components/site/sections/BlogDestaqueSection";
 import { ContactSection } from "@/components/site/sections/ContactSection";
-import { DEFAULT_SECOES, type LayoutKey, type SectionDbItem, type Zona } from "@/lib/siteSections";
+import { MobileCtaBar } from "@/components/site/sections/ui";
+import { LIMITE_HOME_IMOVEIS, useImoveisSite, useSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import {
+  normalizarSecoes,
+  type LayoutKey,
+  type SectionDbItem,
+  type Zona,
+} from "@/lib/siteSections";
 
 export const Route = createFileRoute("/site/$slug")({
   component: TenantHome,
@@ -29,172 +40,88 @@ export const Route = createFileRoute("/site/$slug")({
   }),
 });
 
-function photoUrl(path: string) {
-  return supabase.storage.from("imovel-fotos").getPublicUrl(path).data.publicUrl;
-}
-
 function TenantHome() {
   const { slug } = Route.useParams();
   const { preview } = Route.useSearch();
   const { tenantId: authTenantId } = useAuth();
-  const [ctx, setCtx] = useState<SiteCtx | null>(null);
-  const [hero, setHero] = useState<any>({});
-  const [sobre, setSobre] = useState<string>("");
-  const [layout, setLayout] = useState<LayoutKey>("classico");
-  const [secoes, setSecoes] = useState<SectionDbItem[]>(DEFAULT_SECOES);
-  const [imoveis, setImoveis] = useState<any[]>([]);
-  const [imoveisTotal, setImoveisTotal] = useState(0);
-  const [fotosMap, setFotosMap] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [notFoundState, setNotFoundState] = useState(false);
+  const ctxQuery = useSiteCtx(slug, { preview, authTenantId });
+  const ctx = ctxQuery.data ?? null;
+  const imoveisQuery = useImoveisSite(ctx?.tenantId, LIMITE_HOME_IMOVEIS);
+  const imoveis = imoveisQuery.data?.imoveis ?? [];
+  const imoveisTotal = imoveisQuery.data?.total ?? 0;
+  const fotosMap = imoveisQuery.data?.fotosMap ?? {};
+  const cfg = (ctx?.settings ?? {}) as Record<string, unknown>;
+  const layout = (cfg.layout as LayoutKey) || "classico";
+  const secoes = useMemo(
+    () => normalizarSecoes(cfg.secoes as SectionDbItem[] | null),
+    [cfg.secoes],
+  );
+  const loading = ctxQuery.isPending || (!!ctx && imoveisQuery.isPending);
+  const notFoundState = !ctxQuery.isPending && !ctx;
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id,slug,nome,tema,tipo_tenant")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (!tenant) {
-        setNotFoundState(true);
-        setLoading(false);
-        return;
-      }
-      // A prévia (usada em /app/site/previa) só ignora o filtro de publicado
-      // quando o próprio membro do tenant está olhando o seu site — a
-      // policy RLS `site_settings_members_read` já cobre esse acesso, então
-      // isso só controla a query no cliente, não abre nenhum acesso novo.
-      const isOwnTenantPreview = preview && authTenantId === tenant.id;
-      let settingsQuery = supabase
-        .from("tenant_site_settings")
-        .select("*")
-        .eq("tenant_id", tenant.id);
-      if (!isOwnTenantPreview) settingsQuery = settingsQuery.eq("publicado", true);
-
-      const [
-        { data: cfg },
-        { data: pages },
-        { data: imv },
-        { count: blogCount },
-        { count: imoveisCount },
-      ] = await Promise.all([
-        settingsQuery.maybeSingle(),
-        supabase
-          .from("tenant_pages")
-          .select("slug,titulo")
-          .eq("tenant_id", tenant.id)
-          .eq("publicada", true)
-          .order("ordem"),
-        supabase
-          .from("imoveis")
-          .select(
-            "id,slug,titulo,tipo,finalidade,preco,quartos,banheiros,area_util,endereco_bairro,endereco_cidade,endereco_uf",
-          )
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .eq("status", "ativo")
-          .order("publicado_em", { ascending: false })
-          .limit(12),
-        supabase
-          .from("blog_posts")
-          .select("id", { count: "exact", head: true })
-          .eq("tenant_id", tenant.id)
-          .eq("status", "publicado"),
-        // Contagem real (não a amostra de até 12 em destaque acima) — usada
-        // no stat do hero e pra decidir se mostra o link "Ver todos".
-        supabase
-          .from("imoveis")
-          .select("id", { count: "exact", head: true })
-          .eq("tenant_id", tenant.id)
-          .eq("publicado", true)
-          .eq("status", "ativo"),
-      ]);
-      if (!cfg) {
-        setNotFoundState(true);
-        setLoading(false);
-        return;
-      }
-      setCtx({
-        tenantId: tenant.id,
-        tenantSlug: tenant.slug,
-        tenantNome: tenant.nome,
-        logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
-        tipoTenant: (tenant as { tipo_tenant?: string | null }).tipo_tenant,
-        settings: cfg,
-        pages: (pages ?? []) as any,
-        hasBlog: (blogCount ?? 0) > 0,
-        hasSobre: !!cfg.sobre_html?.trim(),
-      });
-      setHero(cfg);
-      setSobre(cfg.sobre_html ?? "");
-      setLayout((cfg.layout as LayoutKey) || "classico");
-      setSecoes((cfg.secoes as SectionDbItem[] | null) ?? DEFAULT_SECOES);
-      setImoveis(imv ?? []);
-      setImoveisTotal(imoveisCount ?? imv?.length ?? 0);
-      if (imv && imv.length) {
-        const { data: fotos } = await supabase
-          .from("imovel_fotos")
-          .select("imovel_id,storage_path,capa,ordem")
-          .in(
-            "imovel_id",
-            imv.map((i) => i.id),
-          )
-          .order("capa", { ascending: false })
-          .order("ordem");
-        const map: Record<string, string> = {};
-        (fotos ?? []).forEach((f) => {
-          if (!map[f.imovel_id]) map[f.imovel_id] = photoUrl(f.storage_path);
-        });
-        setFotosMap(map);
-      }
-      setLoading(false);
-    })();
-  }, [slug, preview, authTenantId]);
+  useTituloSite(ctx);
 
   const stats = useMemo(() => {
     const cidades = new Set(imoveis.map((i) => i.endereco_cidade).filter(Boolean));
-    const tipos = new Set(imoveis.map((i) => i.tipo).filter(Boolean));
+    const emp = ctx?.empreendimentosTotal ?? 0;
     return [
       imoveisTotal > 0 && {
         icon: Building2,
         label: imoveisTotal === 1 ? "imóvel disponível" : "imóveis disponíveis",
         value: String(imoveisTotal),
       },
+      emp > 0 && {
+        icon: Sparkles,
+        label: emp === 1 ? "lançamento" : "lançamentos",
+        value: String(emp),
+      },
       cidades.size > 1 && { icon: MapPin, label: "cidades atendidas", value: String(cidades.size) },
-      tipos.size > 1 && { icon: Sparkles, label: "tipos de imóvel", value: String(tipos.size) },
     ].filter(Boolean) as { icon: typeof Building2; label: string; value: string }[];
-  }, [imoveis, imoveisTotal]);
+  }, [imoveis, imoveisTotal, ctx?.empreendimentosTotal]);
 
   const { esquerda, direita } = useSiteWidgets(ctx?.tenantId);
 
   const orderedSections = useMemo(() => secoes.slice().sort((a, b) => a.ordem - b.ordem), [secoes]);
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        Carregando…
-      </div>
-    );
+  if (loading) return <SiteSkeleton />;
   if (notFoundState || !ctx) return <NotPublished />;
 
-  function renderBlock(s: SectionDbItem, compact: boolean) {
+  const comFormHero = ctx.settings.hero_formulario !== false;
+  const alvoForm = comFormHero ? "receber-opcoes" : "contato";
+  const sobre = ctx.settings.sobre_html?.trim() ?? "";
+
+  function renderBlock(s: SectionDbItem, compact: boolean): ReactNode {
     switch (s.key) {
       case "imoveis":
         return (
           <ImoveisSection
             variant={layout}
-            imoveis={imoveis}
+            imoveis={layout === "boutique" ? imoveis.slice(0, 6) : imoveis}
             fotosMap={fotosMap}
             compact={compact}
             totalCount={imoveisTotal}
             tenantSlug={slug}
           />
         );
+      case "empreendimentos":
+        return (ctx!.empreendimentosTotal ?? 0) > 0 ? (
+          <EmpreendimentosSection
+            tenantId={ctx!.tenantId}
+            tenantSlug={ctx!.tenantSlug}
+            total={ctx!.empreendimentosTotal ?? 0}
+            compact={compact}
+          />
+        ) : null;
+      case "diferenciais":
+        return <DiferenciaisSection ctx={ctx!} compact={compact} />;
+      case "como_funciona":
+        return <ComoFuncionaSection ctx={ctx!} compact={compact} alvoForm={alvoForm} />;
       case "sobre":
-        return sobre ? <SobreSection variant={layout} sobre={sobre} compact={compact} /> : null;
+        return sobre ? (
+          <SobreSection variant={layout} ctx={ctx!} sobre={sobre} compact={compact} />
+        ) : null;
       case "blog_destaque":
-        return (
+        return !ctx!.hasBlog ? null : (
           <BlogDestaqueSection
             variant={layout}
             tenantId={ctx!.tenantId}
@@ -209,18 +136,18 @@ function TenantHome() {
     }
   }
 
+  const visiveis = orderedSections.filter((s) => s.visivel && renderBlock(s, false) !== null);
+  const widgets = [...esquerda, ...direita];
+
+  let corpo: ReactNode;
   if (layout === "amplo") {
-    const visible = orderedSections.filter((s) => s.visivel && renderBlock(s, true) !== null);
-    const byZona = (zona: Zona) => visible.filter((s) => (s.zona ?? "content") === zona);
+    const byZona = (zona: Zona) => visiveis.filter((s) => (s.zona ?? "content") === zona);
     const navbarItems = byZona("navbar");
     const contentItems = byZona("content");
     const metaItems = byZona("meta");
     const hasNavbar = navbarItems.length > 0;
     const hasMeta = metaItems.length > 0;
-    // Sem largura fixa forçada abaixo de lg — empilha em 1 coluna no mobile
-    // em vez de esconder navbar/meta (eram `hidden lg:block`, sumiam de vez
-    // no celular). A partir de lg, vira grid com as colunas laterais de
-    // 260px que existirem.
+    // Colunas laterais só a partir de lg; no celular tudo empilha em 1 coluna.
     const gridColsClass =
       hasNavbar && hasMeta
         ? "lg:grid-cols-[260px_minmax(0,1fr)_260px]"
@@ -229,18 +156,13 @@ function TenantHome() {
           : hasMeta
             ? "lg:grid-cols-[minmax(0,1fr)_260px]"
             : "";
-
-    return (
-      <TenantSiteLayout ctx={ctx}>
-        <TrackingPixels pixels={ctx.settings as any} />
-
-        <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
-
-        <div className={`mx-auto grid max-w-6xl gap-10 px-6 py-16 ${gridColsClass}`}>
+    corpo = (
+      <>
+        <div className={`mx-auto grid max-w-6xl gap-10 px-4 py-14 md:px-6 ${gridColsClass}`}>
           {hasNavbar && (
-            <aside className="space-y-12">
+            <aside className="space-y-8 self-start lg:sticky lg:top-24">
               {navbarItems.map((s) => (
-                <div key={s.key} id={s.key}>
+                <div key={s.key} id={s.key} className="scroll-mt-24">
                   {renderBlock(s, true)}
                 </div>
               ))}
@@ -248,88 +170,65 @@ function TenantHome() {
           )}
           <div className="min-w-0 space-y-16">
             {contentItems.map((s) => (
-              <div key={s.key} id={s.key}>
+              <div key={s.key} id={s.key} className="scroll-mt-24">
                 {renderBlock(s, false)}
               </div>
             ))}
           </div>
           {hasMeta && (
-            <aside className="space-y-12">
+            <aside className="space-y-8 self-start lg:sticky lg:top-24">
               {metaItems.map((s) => (
-                <div key={s.key} id={s.key}>
+                <div key={s.key} id={s.key} className="scroll-mt-24">
                   {renderBlock(s, true)}
                 </div>
               ))}
             </aside>
           )}
         </div>
-      </TenantSiteLayout>
+        <SiteWidgetsFaixa ctx={ctx} widgets={widgets} />
+      </>
     );
+  } else {
+    corpo = visiveis.map((s) => (
+      <div key={s.key}>
+        <section
+          id={s.key === "blog_destaque" ? "blog" : s.key}
+          className="mx-auto max-w-6xl scroll-mt-24 px-4 py-12 md:px-6 md:py-16"
+        >
+          {renderBlock(s, false)}
+        </section>
+        {/* Widgets do tenant logo depois da carteira de imóveis. */}
+        {s.key === "imoveis" && <SiteWidgetsFaixa ctx={ctx} widgets={widgets} />}
+      </div>
+    ));
   }
 
   return (
     <TenantSiteLayout ctx={ctx}>
-      <TrackingPixels pixels={ctx.settings as any} />
-
-      <HeroSection variant={layout} ctx={ctx} hero={hero} stats={stats} />
-
-      {orderedSections.map((s) => {
-        if (!s.visivel) return null;
-        switch (s.key) {
-          case "imoveis":
-            return (
-              <section key={s.key} id="imoveis" className="mx-auto max-w-6xl px-6 py-20">
-                <SiteWidgetsLayout ctx={ctx} esquerda={esquerda} direita={direita}>
-                  <ImoveisSection
-                    variant={layout}
-                    imoveis={imoveis}
-                    fotosMap={fotosMap}
-                    totalCount={imoveisTotal}
-                    tenantSlug={slug}
-                  />
-                </SiteWidgetsLayout>
-              </section>
-            );
-          case "sobre":
-            return sobre ? (
-              <div key={s.key} id="sobre">
-                <SobreSection variant={layout} sobre={sobre} />
-              </div>
-            ) : null;
-          case "blog_destaque":
-            return (
-              <section key={s.key} id="blog" className="mx-auto max-w-6xl px-6 py-20">
-                <BlogDestaqueSection
-                  variant={layout}
-                  tenantId={ctx.tenantId}
-                  tenantSlug={ctx.tenantSlug}
-                />
-              </section>
-            );
-          case "contato":
-            return (
-              <div key={s.key} id="contato">
-                <ContactSection variant={layout} ctx={ctx} />
-              </div>
-            );
-          default:
-            return null;
-        }
-      })}
+      <TrackingPixels pixels={ctx.settings as never} />
+      <HeroSection variant={layout} ctx={ctx} hero={ctx.settings} stats={stats} />
+      {corpo}
+      <MobileCtaBar ctx={ctx} alvo={alvoForm} />
+      <div className="h-16 md:hidden" aria-hidden />
     </TenantSiteLayout>
   );
 }
 
 function NotPublished() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-center">
-      <h1 className="text-2xl font-bold">Site indisponível</h1>
-      <p className="max-w-md text-sm text-muted-foreground">
-        Esta imobiliária ainda não publicou seu site público.
-      </p>
-      <Link to="/" className="text-sm text-primary hover:underline">
-        ← Voltar ao início
-      </Link>
+    <div className="site-mesh flex min-h-screen flex-col items-center justify-center gap-3 bg-[#f6f7f9] px-6 text-center">
+      <div className="glass-fosco max-w-md rounded-3xl p-8">
+        <h1 className="text-2xl font-bold">Site indisponível</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Este site ainda não foi publicado ou o endereço está incorreto.
+        </p>
+        <Link
+          to="/"
+          className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
+        >
+          ← Voltar ao portal imoB365
+        </Link>
+      </div>
     </div>
   );
 }
