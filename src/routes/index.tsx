@@ -348,76 +348,83 @@ function Landing() {
         </div>
       </section>
 
-      {/* IMOBILIÁRIAS PARCEIRAS */}
-      <section id="parceiros" className="scroll-mt-20 border-b border-border bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Corretores e Imobiliárias parceiras
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Trabalhamos lado a lado com quem entende do mercado local.
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {!tenantsLoaded &&
-              Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-28 animate-pulse rounded-xl border border-border bg-card"
-                />
-              ))}
-            {tenants.map((t) => (
-              <Link
-                key={t.id}
-                to="/site/$slug"
-                params={{ slug: t.slug }}
-                className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  {t.logoUrl ? (
-                    <img
-                      src={t.logoUrl}
-                      alt={t.nome}
-                      className="h-14 w-14 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <Building className="h-6 w-6" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold group-hover:text-primary">
-                    {t.nome}
+      {/* IMOBILIÁRIAS PARCEIRAS (Liquid Glass) — parceiros à esquerda | cadastro à direita */}
+      <section
+        id="parceiros"
+        className="hero-brand relative isolate scroll-mt-20 overflow-hidden border-b border-border bg-muted/30"
+      >
+        {/* fundo da marca para o vidro ter o que desfocar */}
+        <div className="mesh-brand-claro absolute inset-0 -z-10" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--primary-glow)_10%,_transparent_55%)] opacity-25 dark:opacity-15" />
+
+        <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-2 md:py-16">
+          <div className="glass-fosco rounded-[28px] p-6 md:p-7">
+            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+              Corretores e Imobiliárias parceiras
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Trabalhamos lado a lado com quem entende do mercado local.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {!tenantsLoaded &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="glass-claro h-24 animate-pulse rounded-2xl" />
+                ))}
+              {tenants.map((t) => (
+                <Link
+                  key={t.id}
+                  to="/site/$slug"
+                  params={{ slug: t.slug }}
+                  className="glass-claro group flex items-center gap-4 rounded-2xl bg-white/55 p-4 transition hover:-translate-y-0.5 hover:bg-white/80"
+                >
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {t.logoUrl ? (
+                      <img
+                        src={t.logoUrl}
+                        alt={t.nome}
+                        className="h-14 w-14 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <Building className="h-6 w-6" />
+                    )}
                   </div>
-                  <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
-                  {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
-                    <p
-                      className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
-                      title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    >
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Você ou sua imobiliária ainda não estão aqui?
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
-              </p>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold group-hover:text-primary">
+                      {t.nome}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
+                    {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
+                      <p
+                        className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
+                        title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      >
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
             </div>
-            <Link to="/signup" className="mt-4 inline-block md:mt-0">
-              <Button>Quero efetuar o cadastro agora!</Button>
+          </div>
+
+          <div className="glass-fosco relative flex flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-9">
+            <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(260px_200px_at_100%_0%,rgba(237,125,49,.22),transparent_70%)]" />
+            <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
+              <Building className="h-6 w-6" />
+            </span>
+            <h3 className="relative mt-5 text-2xl font-bold tracking-tight md:text-3xl">
+              Você ou sua imobiliária ainda não estão aqui?
+            </h3>
+            <p className="relative mt-2 text-muted-foreground">
+              Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
+            </p>
+            <Link to="/signup" className="relative mt-6 inline-block">
+              <Button size="lg" className="rounded-full px-6 shadow-lg shadow-primary/20">
+                Quero efetuar o cadastro agora!
+              </Button>
             </Link>
           </div>
         </div>
