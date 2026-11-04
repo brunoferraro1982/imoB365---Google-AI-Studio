@@ -348,6 +348,81 @@ function Landing() {
         </div>
       </section>
 
+      {/* IMOBILIÁRIAS PARCEIRAS */}
+      <section id="parceiros" className="scroll-mt-20 border-b border-border bg-muted/30">
+        <div className="mx-auto max-w-6xl px-6 py-20">
+          <div className="flex items-end justify-between">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                Corretores e Imobiliárias parceiras
+              </h2>
+              <p className="mt-2 text-muted-foreground">
+                Trabalhamos lado a lado com quem entende do mercado local.
+              </p>
+            </div>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {!tenantsLoaded &&
+              Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-28 animate-pulse rounded-xl border border-border bg-card"
+                />
+              ))}
+            {tenants.map((t) => (
+              <Link
+                key={t.id}
+                to="/site/$slug"
+                params={{ slug: t.slug }}
+                className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  {t.logoUrl ? (
+                    <img
+                      src={t.logoUrl}
+                      alt={t.nome}
+                      className="h-14 w-14 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <Building className="h-6 w-6" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold group-hover:text-primary">
+                    {t.nome}
+                  </div>
+                  <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
+                  {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
+                    <p
+                      className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
+                      title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    >
+                      <MapPin className="h-3 w-3 shrink-0" />
+                      {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
+            <div>
+              <h3 className="text-lg font-semibold">
+                Você ou sua imobiliária ainda não estão aqui?
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
+              </p>
+            </div>
+            <Link to="/signup" className="mt-4 inline-block md:mt-0">
+              <Button>Quero efetuar o cadastro agora!</Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* IMÓVEIS EM DESTAQUE */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="flex items-end justify-between">
@@ -545,81 +620,6 @@ function Landing() {
           </div>
         </section>
       )}
-
-      {/* IMOBILIÁRIAS PARCEIRAS */}
-      <section id="parceiros" className="scroll-mt-20 border-y border-border bg-muted/30">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-                Corretores e Imobiliárias parceiras
-              </h2>
-              <p className="mt-2 text-muted-foreground">
-                Trabalhamos lado a lado com quem entende do mercado local.
-              </p>
-            </div>
-          </div>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {!tenantsLoaded &&
-              Array.from({ length: 4 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="h-28 animate-pulse rounded-xl border border-border bg-card"
-                />
-              ))}
-            {tenants.map((t) => (
-              <Link
-                key={t.id}
-                to="/site/$slug"
-                params={{ slug: t.slug }}
-                className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:border-primary/40 hover:shadow-sm"
-              >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  {t.logoUrl ? (
-                    <img
-                      src={t.logoUrl}
-                      alt={t.nome}
-                      className="h-14 w-14 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <Building className="h-6 w-6" />
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold group-hover:text-primary">
-                    {t.nome}
-                  </div>
-                  <div className="text-xs text-muted-foreground">{t.total} imóveis ativos</div>
-                  {(t.cidadesAtuacao?.length || t.regiaoAtuacao) && (
-                    <p
-                      className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground"
-                      title={[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    >
-                      <MapPin className="h-3 w-3 shrink-0" />
-                      {[...(t.cidadesAtuacao ?? []), t.regiaoAtuacao].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-          <div className="mt-10 rounded-2xl border border-border bg-card p-6 text-center md:flex md:items-center md:justify-between md:text-left">
-            <div>
-              <h3 className="text-lg font-semibold">
-                Você ou sua imobiliária ainda não estão aqui?
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Cadastre-se grátis e comece a divulgar seus imóveis em minutos.
-              </p>
-            </div>
-            <Link to="/signup" className="mt-4 inline-block md:mt-0">
-              <Button>Quero efetuar o cadastro agora!</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* COMO AJUDAMOS — valores */}
       <section className="mx-auto max-w-6xl px-6 py-20">
