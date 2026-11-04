@@ -41,6 +41,7 @@ export type Database = {
           conteudo: string;
           created_at: string;
           id: string;
+          perguntas: string[];
           titulo: string;
           updated_at: string;
         };
@@ -51,6 +52,7 @@ export type Database = {
           conteudo: string;
           created_at?: string;
           id?: string;
+          perguntas?: string[];
           titulo: string;
           updated_at?: string;
         };
@@ -61,6 +63,7 @@ export type Database = {
           conteudo?: string;
           created_at?: string;
           id?: string;
+          perguntas?: string[];
           titulo?: string;
           updated_at?: string;
         };
@@ -6706,11 +6709,13 @@ export type Database = {
       };
       tenant_site_settings: {
         Row: {
+          como_funciona: Json | null;
           contato_email: string | null;
           contato_telefone: string | null;
           contato_whatsapp: string | null;
           cor_destaque: string | null;
           created_at: string;
+          diferenciais: Json | null;
           endereco: string | null;
           facebook_url: string | null;
           fb_pixel_id: string | null;
@@ -6719,6 +6724,8 @@ export type Database = {
           gtm_id: string | null;
           head_custom_html: string | null;
           hero_cta_label: string | null;
+          hero_formulario: boolean;
+          hero_imagem_url: string | null;
           hero_subtitulo: string | null;
           hero_titulo: string | null;
           hotjar_id: string | null;
@@ -6734,11 +6741,13 @@ export type Database = {
           youtube_url: string | null;
         };
         Insert: {
+          como_funciona?: Json | null;
           contato_email?: string | null;
           contato_telefone?: string | null;
           contato_whatsapp?: string | null;
           cor_destaque?: string | null;
           created_at?: string;
+          diferenciais?: Json | null;
           endereco?: string | null;
           facebook_url?: string | null;
           fb_pixel_id?: string | null;
@@ -6747,6 +6756,8 @@ export type Database = {
           gtm_id?: string | null;
           head_custom_html?: string | null;
           hero_cta_label?: string | null;
+          hero_formulario?: boolean;
+          hero_imagem_url?: string | null;
           hero_subtitulo?: string | null;
           hero_titulo?: string | null;
           hotjar_id?: string | null;
@@ -6762,11 +6773,13 @@ export type Database = {
           youtube_url?: string | null;
         };
         Update: {
+          como_funciona?: Json | null;
           contato_email?: string | null;
           contato_telefone?: string | null;
           contato_whatsapp?: string | null;
           cor_destaque?: string | null;
           created_at?: string;
+          diferenciais?: Json | null;
           endereco?: string | null;
           facebook_url?: string | null;
           fb_pixel_id?: string | null;
@@ -6775,6 +6788,8 @@ export type Database = {
           gtm_id?: string | null;
           head_custom_html?: string | null;
           hero_cta_label?: string | null;
+          hero_formulario?: boolean;
+          hero_imagem_url?: string | null;
           hero_subtitulo?: string | null;
           hero_titulo?: string | null;
           hotjar_id?: string | null;

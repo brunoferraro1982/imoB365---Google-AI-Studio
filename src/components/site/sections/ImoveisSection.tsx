@@ -1,10 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Bed, Bath, Maximize2, MapPin, Building2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Bath, BedDouble, Building2, Car, MapPin, Maximize2 } from "lucide-react";
 import { formatBRL, FINALIDADE_LABEL } from "@/lib/format";
 import type { LayoutKey } from "@/lib/siteSections";
+import { SecaoTitulo } from "./ui";
 
-type ImovelCard = {
+export type ImovelCard = {
   id: string;
   slug: string;
   titulo: string;
@@ -12,10 +12,86 @@ type ImovelCard = {
   preco: number | null;
   quartos: number | null;
   banheiros: number | null;
+  vagas?: number | null;
   area_util: number | null;
   endereco_bairro: string | null;
   endereco_cidade: string | null;
 };
+
+/** Card de imóvel no padrão Liquid Glass (home e /site/$slug/imoveis). */
+export function CardImovelSite({
+  imovel: i,
+  foto,
+  destaque,
+}: {
+  imovel: ImovelCard;
+  foto?: string;
+  destaque?: boolean;
+}) {
+  const local = [i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ");
+  return (
+    <Link
+      to="/imovel/$slug"
+      params={{ slug: i.slug }}
+      className="group flex flex-col overflow-hidden rounded-3xl border border-white/70 bg-white/75 shadow-[0_14px_40px_-24px_rgba(15,23,42,0.45)] backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_50px_-24px_rgba(15,23,42,0.55)] dark:border-white/10 dark:bg-white/5"
+    >
+      <div
+        className={`relative w-full overflow-hidden bg-muted ${destaque ? "aspect-[16/10]" : "aspect-[4/3]"}`}
+      >
+        {foto ? (
+          <img
+            src={foto}
+            alt={i.titulo}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 grid place-items-center text-muted-foreground/50">
+            <Building2 className="h-10 w-10" />
+          </div>
+        )}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/45 to-transparent" />
+        <span className="absolute left-3 top-3 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+          {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
+        </span>
+        <span className="absolute bottom-3 left-3 rounded-xl border border-white/50 bg-white/85 px-3 py-1.5 text-[15px] font-extrabold text-foreground shadow-sm backdrop-blur-md">
+          {i.preco != null ? formatBRL(i.preco) : "Sob consulta"}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="line-clamp-2 font-semibold leading-snug text-foreground">{i.titulo}</h3>
+        {local && (
+          <p className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{local}</span>
+          </p>
+        )}
+        <div className="mt-auto flex flex-wrap gap-x-3.5 gap-y-1 pt-3 text-xs text-muted-foreground">
+          {i.quartos != null && i.quartos > 0 && (
+            <span className="flex items-center gap-1">
+              <BedDouble className="h-3.5 w-3.5" /> {i.quartos}{" "}
+              {i.quartos === 1 ? "dorm." : "dorms."}
+            </span>
+          )}
+          {i.banheiros != null && i.banheiros > 0 && (
+            <span className="flex items-center gap-1">
+              <Bath className="h-3.5 w-3.5" /> {i.banheiros}
+            </span>
+          )}
+          {i.vagas != null && i.vagas > 0 && (
+            <span className="flex items-center gap-1">
+              <Car className="h-3.5 w-3.5" /> {i.vagas}
+            </span>
+          )}
+          {i.area_util != null && (
+            <span className="flex items-center gap-1">
+              <Maximize2 className="h-3.5 w-3.5" /> {Number(i.area_util).toLocaleString("pt-BR")} m²
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
 
 export function ImoveisSection({
   variant,
@@ -31,132 +107,52 @@ export function ImoveisSection({
   /** Renderização em 1 coluna, para quando o bloco está numa área lateral estreita (layout 'amplo'). */
   compact?: boolean;
   /** Contagem real de imóveis publicados do tenant — pode ser maior que
-   * `imoveis.length` (a home só busca uma amostra em destaque). Quando
-   * maior, mostra o link "Ver todos". */
+   * `imoveis.length` (a home só busca uma amostra em destaque). */
   totalCount?: number;
   tenantSlug?: string;
 }) {
-  // Container query (@sm/@lg), não breakpoint de viewport (sm/lg) — a
-  // seção pode ser renderizada dentro de uma coluna estreita quando há
-  // widgets de conteúdo nos dois lados (SiteWidgetsLayout), e nesse caso
-  // o breakpoint de viewport ativava 3 colunas mesmo com pouco espaço
-  // real disponível, espremendo os cards. Com @container, o grid responde
-  // à largura de verdade do espaço que tem, não à largura da janela.
+  // Container query: responde à largura real do espaço (o layout 'amplo'
+  // pode colocar a seção numa coluna mais estreita que a janela).
   const gridCols = compact
     ? ""
     : variant === "boutique"
-      ? "@sm:grid-cols-2"
-      : "@sm:grid-cols-2 @lg:grid-cols-3";
-
-  const cardShadow =
-    variant === "boutique"
-      ? "border border-border/60 shadow-none"
-      : "border border-border shadow-sm hover:shadow-xl hover:shadow-primary/10";
+      ? "@md:grid-cols-2"
+      : "@md:grid-cols-2 @3xl:grid-cols-3";
+  const total = totalCount ?? imoveis.length;
+  const verTodos =
+    !compact && tenantSlug && total > imoveis.length ? (
+      <Link
+        to="/site/$slug/imoveis"
+        params={{ slug: tenantSlug }}
+        className="glass-fosco inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-bold text-foreground transition hover:bg-white"
+      >
+        Ver todos os {total} imóveis <ArrowRight className="h-4 w-4" />
+      </Link>
+    ) : null;
 
   return (
     <div className="@container">
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2
-            className={
-              compact
-                ? "text-lg font-bold tracking-tight"
-                : "text-2xl font-bold tracking-tight md:text-3xl"
-            }
-          >
-            Imóveis em destaque
-          </h2>
-          {!compact && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {imoveis.length > 0
-                ? `${imoveis.length} ${imoveis.length === 1 ? "opção selecionada" : "opções selecionadas"} para você`
-                : "Em breve, novidades por aqui"}
-            </p>
-          )}
-        </div>
-      </div>
+      <SecaoTitulo
+        compact={compact}
+        eyebrow="Carteira"
+        titulo="Imóveis em destaque"
+        subtitulo={
+          imoveis.length > 0
+            ? "Selecionados e acompanhados de perto — agende sua visita pelo WhatsApp."
+            : "Em breve, novidades por aqui."
+        }
+        acao={verTodos}
+      />
       {imoveis.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border py-16 text-center">
+        <div className="glass-fosco rounded-3xl py-16 text-center">
           <Building2 className="mx-auto h-8 w-8 text-muted-foreground/50" />
           <p className="mt-3 text-sm text-muted-foreground">Nenhum imóvel publicado no momento.</p>
         </div>
       ) : (
-        <div className={`grid gap-8 ${gridCols}`}>
-          {(compact ? imoveis.slice(0, 4) : imoveis).map((i, idx) => {
-            const featured = !compact && variant === "vitrine" && idx < 2;
-            return (
-              <Link
-                key={i.id}
-                to="/imovel/$slug"
-                params={{ slug: i.slug }}
-                className={`group overflow-hidden rounded-2xl bg-card transition-all duration-300 hover:-translate-y-1 ${cardShadow} ${
-                  featured ? "@sm:col-span-2 @lg:col-span-1" : ""
-                }`}
-              >
-                <div
-                  className={`relative overflow-hidden bg-muted ${featured ? "aspect-[16/9]" : "aspect-[4/3]"}`}
-                >
-                  {fotosMap[i.id] ? (
-                    <img
-                      src={fotosMap[i.id]}
-                      alt={i.titulo}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                      sem foto
-                    </div>
-                  )}
-                  <Badge className="absolute left-3 top-3 shadow-sm">
-                    {FINALIDADE_LABEL[i.finalidade] ?? i.finalidade}
-                  </Badge>
-                </div>
-                <div className="p-4">
-                  <h3 className="line-clamp-2 font-semibold leading-snug">{i.titulo}</h3>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />{" "}
-                    {[i.endereco_bairro, i.endereco_cidade].filter(Boolean).join(", ") || "—"}
-                  </p>
-                  <div className="mt-3 space-y-1.5">
-                    <span className="block text-lg font-bold text-primary">
-                      {formatBRL(i.preco)}
-                    </span>
-                    {!compact && (
-                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                        {i.quartos != null && (
-                          <span className="flex items-center gap-1">
-                            <Bed className="h-3 w-3" /> {i.quartos}
-                          </span>
-                        )}
-                        {i.banheiros != null && (
-                          <span className="flex items-center gap-1">
-                            <Bath className="h-3 w-3" /> {i.banheiros}
-                          </span>
-                        )}
-                        {i.area_util != null && (
-                          <span className="flex items-center gap-1">
-                            <Maximize2 className="h-3 w-3" /> {i.area_util}m²
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
-      {!compact && tenantSlug && totalCount != null && totalCount > imoveis.length && (
-        <div className="mt-8 text-center">
-          <Link
-            to="/site/$slug/imoveis"
-            params={{ slug: tenantSlug }}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
-          >
-            Ver todos os {totalCount} imóveis
-          </Link>
+        <div className={`grid gap-6 ${gridCols}`}>
+          {(compact ? imoveis.slice(0, 4) : imoveis).map((i) => (
+            <CardImovelSite key={i.id} imovel={i} foto={fotosMap[i.id]} />
+          ))}
         </div>
       )}
     </div>

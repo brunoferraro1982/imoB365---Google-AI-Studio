@@ -42,6 +42,26 @@ const siteSettingsSchema = z
     hotjar_id: z.string().nullable().optional(),
     layout: z.string().nullable().optional(),
     secoes: z.array(z.any()).optional(),
+    // Redesign Liquid Glass do site do tenant — textos renderizados como
+    // texto puro (nunca HTML), só com limite de tamanho.
+    hero_imagem_url: z.string().url().max(1000).nullable().optional(),
+    hero_formulario: z.boolean().optional(),
+    diferenciais: z
+      .array(
+        z.object({
+          icone: z.string().max(30),
+          titulo: z.string().max(80),
+          texto: z.string().max(240),
+        }),
+      )
+      .max(6)
+      .nullable()
+      .optional(),
+    como_funciona: z
+      .array(z.object({ titulo: z.string().max(80), texto: z.string().max(240) }))
+      .max(5)
+      .nullable()
+      .optional(),
   })
   .passthrough();
 

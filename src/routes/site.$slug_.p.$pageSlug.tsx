@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { SiteSkeleton, type SiteCtx } from "@/components/site/TenantSiteLayout";
+import { obterSiteCtx, useTituloSite } from "@/lib/tenantSite";
+import { useQueryClient } from "@tanstack/react-query";
 import { TenantSiteLayoutWithWidgets } from "@/components/site/SiteWidgets";
 
 export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
@@ -17,6 +19,7 @@ export const Route = createFileRoute("/site/$slug_/p/$pageSlug")({
 
 function TenantPage() {
   const { slug, pageSlug } = Route.useParams();
+  const qc = useQueryClient();
   const [ctx, setCtx] = useState<SiteCtx | null>(null);
   const [page, setPage] = useState<{ titulo: string; conteudo_html: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,67 +27,27 @@ function TenantPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: tenant } = await supabase
-        .from("tenants")
-        .select("id,slug,nome,tema")
-        .eq("slug", slug)
+      const c = await obterSiteCtx(qc, slug);
+      if (!c) {
+        setLoading(false);
+        return;
+      }
+      const { data: pg } = await supabase
+        .from("tenant_pages")
+        .select("titulo,conteudo_html")
+        .eq("tenant_id", c.tenantId)
+        .eq("slug", pageSlug)
+        .eq("publicada", true)
         .maybeSingle();
-      if (!tenant) {
-        setLoading(false);
-        return;
-      }
-      const [{ data: cfg }, { data: pages }, { data: pg }, { count: blogCount }] =
-        await Promise.all([
-          supabase
-            .from("tenant_site_settings")
-            .select("*")
-            .eq("tenant_id", tenant.id)
-            .eq("publicado", true)
-            .maybeSingle(),
-          supabase
-            .from("tenant_pages")
-            .select("slug,titulo")
-            .eq("tenant_id", tenant.id)
-            .eq("publicada", true)
-            .order("ordem"),
-          supabase
-            .from("tenant_pages")
-            .select("titulo,conteudo_html")
-            .eq("tenant_id", tenant.id)
-            .eq("slug", pageSlug)
-            .eq("publicada", true)
-            .maybeSingle(),
-          supabase
-            .from("blog_posts")
-            .select("id", { count: "exact", head: true })
-            .eq("tenant_id", tenant.id)
-            .eq("status", "publicado"),
-        ]);
-      if (!cfg) {
-        setLoading(false);
-        return;
-      }
-      setCtx({
-        tenantId: tenant.id,
-        tenantSlug: tenant.slug,
-        tenantNome: tenant.nome,
-        logoUrl: (tenant.tema as { logo_url?: string } | null)?.logo_url,
-        settings: cfg,
-        pages: (pages ?? []) as any,
-        hasBlog: (blogCount ?? 0) > 0,
-        hasSobre: !!cfg.sobre_html?.trim(),
-      });
+      setCtx(c);
       setPage(pg ?? null);
       setLoading(false);
     })();
-  }, [slug, pageSlug]);
+  }, [slug, pageSlug, qc]);
 
-  if (loading)
-    return (
-      <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
-        Carregando…
-      </div>
-    );
+  useTituloSite(ctx, page?.titulo);
+
+  if (loading) return <SiteSkeleton />;
   if (!ctx || !page) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-3 text-center">
@@ -98,8 +61,10 @@ function TenantPage() {
 
   return (
     <TenantSiteLayoutWithWidgets ctx={ctx}>
-      <article className="mx-auto max-w-3xl">
-        <h1 className="mb-6 text-3xl font-bold tracking-tight">{page.titulo}</h1>
+      <article className="glass-fosco mx-auto max-w-3xl rounded-[32px] p-6 md:p-10">
+        <h1 className="font-brand-display mb-6 text-3xl font-extrabold tracking-tight md:text-4xl">
+          {page.titulo}
+        </h1>
         <div
           className="prose prose-sm max-w-none [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-6"
           dangerouslySetInnerHTML={{ __html: page.conteudo_html }}
