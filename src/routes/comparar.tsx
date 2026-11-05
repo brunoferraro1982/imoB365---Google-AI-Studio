@@ -110,17 +110,24 @@ function CompararPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="hero-brand min-h-screen bg-white dark:bg-[#0b1220]">
       <SiteHeader />
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        <h1 className="text-3xl font-bold tracking-tight">Comparar imóveis</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Compare até 4 imóveis lado a lado.</p>
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 md:px-6 md:pt-10">
+        <div className="glass-fosco rounded-[28px] px-6 py-8 md:px-10">
+          <span className="inline-block rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+            Comparação
+          </span>
+          <h1 className="font-brand-display mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+            Comparar <span className="text-primary">imóveis</span>
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">Compare até 4 imóveis lado a lado.</p>
+        </div>
 
         <div className="mt-8">
           {loading ? (
             <p className="text-center text-sm text-muted-foreground">Carregando…</p>
           ) : items.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-card p-16 text-center">
+            <div className="glass-fosco rounded-3xl p-16 text-center">
               <p className="text-sm text-muted-foreground">
                 Nenhum imóvel selecionado. Vá em buscar e marque a opção "Comparar".
               </p>
