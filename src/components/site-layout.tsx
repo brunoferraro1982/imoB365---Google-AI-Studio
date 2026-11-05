@@ -77,14 +77,6 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
     desc: "Como selecionamos cada imóvel",
   },
   {
-    key: "numeros",
-    icon: BarChart3,
-    to: "/a-imob365",
-    hash: "numeros",
-    label: "Nossos Números",
-    desc: "Cobertura nacional, SLA de atendimento, R$3MI+",
-  },
-  {
     key: "servicos",
     icon: Briefcase,
     to: "/a-imob365",

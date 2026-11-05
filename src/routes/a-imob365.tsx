@@ -6,7 +6,7 @@ import {
   ShieldCheck,
   Building2,
   ArrowRight,
-  Phone,
+  MessageCircle,
   TrendingUp,
   Users,
   Star,
@@ -16,7 +16,6 @@ import {
   Home,
   Wrench,
   Award,
-  Globe,
 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { TestimonialsSection } from "@/components/portal/TestimonialsSection";
@@ -49,7 +48,7 @@ interface Service {
 const FALLBACK_SERVICES = [
   {
     id: "1",
-    titulo: "Administração de Imóveis",
+    titulo: "Administração de imóveis",
     descricao: "Administramos seu imóvel para que você tenha tranquilidade jurídica e financeira.",
     icone_url: null,
     ordem: 1,
@@ -58,7 +57,7 @@ const FALLBACK_SERVICES = [
   },
   {
     id: "2",
-    titulo: "Gestão Contratual",
+    titulo: "Gestão contratual",
     descricao: "Gestão, elaboração e administração contratual com segurança jurídica total.",
     icone_url: null,
     ordem: 2,
@@ -67,7 +66,7 @@ const FALLBACK_SERVICES = [
   },
   {
     id: "3",
-    titulo: "Consultoria Imobiliária",
+    titulo: "Consultoria imobiliária",
     descricao: "Parceria imobiliária com corretores e clientes em busca do ativo ideal.",
     icone_url: null,
     ordem: 3,
@@ -76,7 +75,7 @@ const FALLBACK_SERVICES = [
   },
   {
     id: "4",
-    titulo: "Lançamentos Exclusivos",
+    titulo: "Lançamentos exclusivos",
     descricao: "Acesso antecipado e exclusivo a imóveis de alto padrão em pré-lançamento.",
     icone_url: null,
     ordem: 4,
@@ -85,7 +84,7 @@ const FALLBACK_SERVICES = [
   },
   {
     id: "5",
-    titulo: "Imóveis Mobiliados",
+    titulo: "Imóveis mobiliados",
     descricao: "Adquira seu imóvel sem se preocupar com a decoração — cuidamos de tudo.",
     icone_url: null,
     ordem: 5,
@@ -94,7 +93,7 @@ const FALLBACK_SERVICES = [
   },
   {
     id: "6",
-    titulo: "Alto Padrão",
+    titulo: "Alto padrão",
     descricao: "Carteira exclusiva com os melhores imóveis de alto padrão da região.",
     icone_url: null,
     ordem: 6,
@@ -106,19 +105,19 @@ const FALLBACK_SERVICES = [
 const PILARES = [
   {
     icon: BarChart3,
-    titulo: "Dados e Performance",
+    titulo: "Dados e performance",
     desc: "Analisamos o m² real, o histórico de valorização e o potencial de ROI (Retorno sobre Investimento) de cada ativo.",
     color: "bg-blue-100/70 text-blue-800",
   },
   {
     icon: ShieldCheck,
-    titulo: "Curadoria de Luxo",
+    titulo: "Curadoria de luxo",
     desc: "Selecionamos apenas empreendimentos que atendem a rigorosos padrões de acabamento, localização e liquidez.",
     color: "bg-primary/10 text-primary",
   },
   {
     icon: Building2,
-    titulo: "Tecnologia e Transparência",
+    titulo: "Tecnologia e transparência",
     desc: "Utilizamos as ferramentas mais modernas do mercado — incluindo um assistente de IA próprio pra tirar dúvidas sobre financiamento, ITBI e mercado imobiliário — pra facilitar a jornada de compra e gestão com segurança jurídica total.",
     color: "bg-emerald-100/70 text-emerald-800",
   },
@@ -132,12 +131,20 @@ const VALORES = [
   "Comprometimento com a valorização do patrimônio a longo prazo",
 ];
 
-const STATS = [
-  { valor: "SLA", label: "Prazos de resposta definidos", icon: Star },
-  { valor: "Brasil", label: "Cobertura de atendimento", icon: Globe },
-  { valor: "R$ 3MI+", label: "Portfólio disponível", icon: TrendingUp },
-  { valor: "100%", label: "Foco no seu patrimônio", icon: Eye },
-];
+/** "Imóveis de Alto Padrão" → "Imóveis de alto padrão" (títulos vindos do banco). */
+function fraseCase(t: string) {
+  const baixo = t.toLocaleLowerCase("pt-BR");
+  return baixo.charAt(0).toLocaleUpperCase("pt-BR") + baixo.slice(1);
+}
+
+// Blocos alternam fundo branco (predominante) e cinza-claro, como na home.
+const BLOCO_BRANCO = "relative scroll-mt-24 bg-white px-4 py-12 md:py-14 dark:bg-[#0b1220]";
+const BLOCO_CINZA =
+  "relative scroll-mt-24 bg-gradient-to-b from-[#f3f4f6] to-[#eef0f3] px-4 py-12 md:py-14 dark:from-[#0f172a] dark:to-[#0f172a]";
+const SELO =
+  "inline-block rounded-full bg-primary/10 px-3 py-1 text-[11px] font-bold tracking-wide text-primary";
+const CARD =
+  "rounded-3xl border border-black/5 bg-white/80 shadow-[0_14px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl dark:border-white/10 dark:bg-white/5";
 
 function AImob365Page() {
   const [services, setServices] = useState<Service[]>([]);
@@ -170,49 +177,51 @@ function AImob365Page() {
       });
   }, []);
 
+  const listaServicos =
+    services.length > 0
+      ? services.map((sv) => ({
+          id: sv.id,
+          titulo: fraseCase(sv.titulo),
+          descricao: sv.descricao,
+          icone_url: sv.icone_url,
+          icon: Building2,
+          color: "bg-primary/10 text-primary",
+        }))
+      : FALLBACK_SERVICES;
+
   return (
     <>
       <SiteHeader />
-      <div className="min-h-screen bg-background">
-        {/* ─── HERO ───────────────────────────────────────────────── */}
+      <div className="hero-brand min-h-screen bg-white dark:bg-[#0b1220]">
+        {/* ─── TOPO ───────────────────────────────────────────────── */}
         <section
           id="hero"
-          className="relative py-20 px-4 bg-gradient-to-b from-neutral-950 via-neutral-900 to-background overflow-hidden"
+          className="relative overflow-hidden bg-white px-4 pb-8 pt-8 md:pt-10 dark:bg-[#0b1220]"
         >
-          {/* Background pattern */}
-          <div
-            className="absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage: "radial-gradient(circle at 25px 25px, white 2px, transparent 0)",
-              backgroundSize: "50px 50px",
-            }}
-          />
-
-          <div className="container max-w-4xl mx-auto text-center space-y-6 relative z-10">
-            <span className="inline-block bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-primary/30">
+          <div aria-hidden className="mesh-brand-claro pointer-events-none absolute inset-0" />
+          <div className="glass-fosco relative mx-auto max-w-6xl space-y-4 rounded-[28px] px-6 py-9 text-center md:px-10 md:py-11">
+            <span className="inline-block rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
               A imoB365
             </span>
-            <p className="text-white/60 text-sm font-semibold uppercase tracking-widest">
+            <p className="text-sm font-semibold text-muted-foreground">
               Desde a análise até o registro
             </p>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
-              Não Somos uma Imobiliária.
-              <br />
-              <span className="text-primary">Somos Parceiros do Seu Patrimônio.</span>
+            <h1 className="font-brand-display text-[1.9rem] font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]">
+              Não somos uma imobiliária.{" "}
+              <span className="text-primary">Somos parceiros do seu patrimônio.</span>
             </h1>
-            <p className="text-white/65 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
-              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura. Atuamos
-              em todo o Brasil, com inteligência, dados, total transparência e prazos de resposta
-              definidos.
+            <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura, com
+              inteligência, dados e total transparência.
             </p>
-            <div className="flex flex-wrap gap-3 justify-center pt-2">
+            <div className="flex flex-wrap justify-center gap-3 pt-1">
               <a
                 href="#quem-somos"
                 onClick={(e) => {
                   e.preventDefault();
                   document.getElementById("quem-somos")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-primary/25 transition hover:bg-primary/90"
               >
                 Conheça nossa história <ArrowRight className="h-4 w-4" />
               </a>
@@ -222,7 +231,7 @@ function AImob365Page() {
                   e.preventDefault();
                   document.getElementById("servicos")?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors"
+                className="glass-claro inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold transition hover:bg-white/60"
               >
                 Ver serviços
               </a>
@@ -230,299 +239,234 @@ function AImob365Page() {
           </div>
         </section>
 
-        {/* ─── QUEM SOMOS ─────────────────────────────────────────── */}
-        <section id="quem-somos" className="py-16 px-4 scroll-mt-20">
-          <div className="container max-w-5xl mx-auto">
-            <div className="text-center mb-10">
-              <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-                Quem Somos
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
-                Inteligência Estratégica no Mercado Imobiliário
+        {/* ─── QUEM SOMOS (cinza) ─────────────────────────────────── */}
+        <section id="quem-somos" className={BLOCO_CINZA}>
+          <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-2">
+            <div className={`${CARD} space-y-4 p-6 md:p-8`}>
+              <span className={SELO}>Quem somos</span>
+              <h2 className="font-brand-display text-2xl font-extrabold tracking-tight sm:text-3xl">
+                Inteligência estratégica no mercado imobiliário
               </h2>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Missão */}
-              <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-3">
-                <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Star className="h-5 w-5 text-primary" />
-                </div>
-                <h3 className="font-black text-sm uppercase tracking-wide">Nossa Missão</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Transformar decisões imobiliárias em patrimônio sólido, conectando clientes
-                  exigentes às melhores oportunidades do mercado imobiliário de alto padrão com
-                  inteligência, dados e total transparência.
-                </p>
-              </div>
-
-              {/* Visão */}
-              <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-3">
-                <div className="h-10 w-10 rounded-xl bg-blue-100/70 flex items-center justify-center">
-                  <Eye className="h-5 w-5 text-blue-700" />
-                </div>
-                <h3 className="font-black text-sm uppercase tracking-wide">Nossa Visão</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Ser a referência nacional em consultoria imobiliária de alto padrão, reconhecida
-                  pela excelência na análise de mercado e pelo compromisso inabalável com os
-                  interesses de nossos clientes.
-                </p>
-              </div>
-
-              {/* Valores */}
-              <div className="rounded-2xl border border-border/60 bg-card p-6 space-y-3">
-                <div className="h-10 w-10 rounded-xl bg-emerald-100/70 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-700" />
-                </div>
-                <h3 className="font-black text-sm uppercase tracking-wide">Nossos Valores</h3>
-                <ul className="space-y-1.5">
-                  {VALORES.map((v) => (
-                    <li
-                      key={v}
-                      className="flex items-start gap-2 text-[11px] text-muted-foreground"
-                    >
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                      {v}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Narrativa */}
-            <div className="mt-8 rounded-2xl bg-muted/40 border border-border/40 p-6 md:p-8">
-              <p className="text-sm text-foreground/80 leading-relaxed">
+              <p className="text-sm leading-relaxed text-foreground/80">
                 A <strong>imoB365</strong> nasceu para preencher uma lacuna no mercado imobiliário
                 de alto padrão: a necessidade de uma consultoria que entenda o imóvel não apenas
                 como uma moradia, mas como um <strong>ativo estratégico</strong>. Atuamos em todo o
                 Brasil com <strong>qualidade de atendimento e prazos definidos</strong>, para
                 garantir que cada oportunidade seja capturada no momento certo.
               </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl bg-primary/[0.06] p-4">
+                  <p className="flex items-center gap-2 text-sm font-bold">
+                    <Star className="h-4 w-4 text-primary" /> Nossa missão
+                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    Transformar decisões imobiliárias em patrimônio sólido, conectando clientes
+                    exigentes às melhores oportunidades do alto padrão.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-blue-500/[0.06] p-4">
+                  <p className="flex items-center gap-2 text-sm font-bold">
+                    <Eye className="h-4 w-4 text-blue-700" /> Nossa visão
+                  </p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                    Ser a referência nacional em consultoria imobiliária de alto padrão, pela
+                    excelência na análise de mercado.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className={`${CARD} p-6 md:p-8`}>
+              <p className="flex items-center gap-2 text-sm font-bold">
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" /> Nossos valores
+              </p>
+              <ul className="mt-4 space-y-3">
+                {VALORES.map((v) => (
+                  <li
+                    key={v}
+                    className="flex items-start gap-3 rounded-2xl bg-white/70 p-3 text-sm text-foreground/85 dark:bg-white/5"
+                  >
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    {v}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
 
-        {/* ─── NOSSA ABORDAGEM ─────────────────────────────────────── */}
-        <section id="nossa-abordagem" className="py-14 px-4 bg-muted/30 scroll-mt-20">
-          <div className="container max-w-4xl mx-auto">
-            <div className="text-center mb-10">
-              <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-                Nossa Abordagem
-              </span>
-              <h2 className="text-2xl font-black tracking-tight">
+        {/* ─── NOSSA ABORDAGEM (branco) ───────────────────────────── */}
+        <section id="nossa-abordagem" className={BLOCO_BRANCO}>
+          <div className="mx-auto grid max-w-6xl items-center gap-6 md:grid-cols-2">
+            <div className="space-y-3">
+              <span className={SELO}>Nossa abordagem</span>
+              <h2 className="font-brand-display text-2xl font-extrabold tracking-tight sm:text-3xl">
                 Diferente das imobiliárias tradicionais
               </h2>
-              <p className="text-sm text-muted-foreground mt-2 max-w-lg mx-auto">
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 Nossa metodologia é baseada em três pilares que garantem resultados reais e
                 patrimônio valorizado.
               </p>
             </div>
-            <div className="grid gap-5 sm:grid-cols-3">
+            <div className="space-y-3">
               {PILARES.map((p, i) => (
-                <div
-                  key={p.titulo}
-                  className="rounded-2xl border border-border/60 bg-card p-5 space-y-3 relative overflow-hidden"
-                >
-                  <span className="absolute top-4 right-4 text-5xl font-black text-muted/20 select-none leading-none">
-                    {i + 1}
-                  </span>
+                <div key={p.titulo} className={`${CARD} flex gap-4 p-5`}>
                   <div
-                    className={`h-10 w-10 rounded-xl ${p.color} flex items-center justify-center`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${p.color}`}
                   >
                     <p.icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-bold text-sm">{p.titulo}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{p.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ─── NOSSO PADRÃO DE CURADORIA ──────────────────────────── */}
-        <section id="nosso-padrao" className="py-14 px-4 scroll-mt-20">
-          <div className="container max-w-4xl mx-auto">
-            <div className="grid gap-8 md:grid-cols-2 items-center">
-              <div className="space-y-5">
-                <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-                  Nosso Padrão de Curadoria
-                </span>
-                <h2 className="text-2xl font-black tracking-tight">
-                  Cada imóvel passa por uma análise rigorosa antes de chegar até você
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Não trabalhamos com volume — trabalhamos com precisão. Cada oportunidade que chega
-                  até você já passou por uma triagem de dados, liquidez e potencial de valorização,
-                  para que sua decisão seja sempre segura.
-                </p>
-                <div className="space-y-3">
-                  {[
-                    { icon: BarChart3, label: "Análise de dados de mercado em tempo real" },
-                    { icon: TrendingUp, label: "Histórico e potencial de valorização" },
-                    { icon: Building2, label: "Empreendimentos de alto padrão e liquidez" },
-                    { icon: ShieldCheck, label: "Segurança jurídica em cada etapa" },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <item.icon className="h-4 w-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-semibold">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-border/60 bg-gradient-to-br from-primary/5 to-primary/20 p-8 text-center space-y-6">
-                <p className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-                  Unimos
-                </p>
-                {["Curadoria técnica", "Análise de dados", "Atendimento personalizado"].map(
-                  (item) => (
-                    <div
-                      key={item}
-                      className="rounded-xl bg-background/70 border border-border/40 py-3 px-4"
-                    >
-                      <span className="text-sm font-bold">{item}</span>
-                    </div>
-                  ),
-                )}
-                <p className="text-xs text-muted-foreground">
-                  Para investidores e famílias que buscam o melhor do mercado imobiliário de alto
-                  padrão
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── NÚMEROS ─────────────────────────────────────────────── */}
-        <section id="numeros" className="py-14 bg-primary text-white scroll-mt-20">
-          <div className="container max-w-4xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-widest mb-2">
-                Nossos Números
-              </p>
-              <h2 className="text-xl font-black">Resultados que falam por si</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-              {STATS.map((s) => (
-                <div key={s.label} className="space-y-1">
-                  <div className="flex justify-center mb-2">
-                    <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center">
-                      <s.icon className="h-5 w-5 text-white/80" />
-                    </div>
+                  <div>
+                    <h3 className="text-sm font-bold">
+                      <span className="text-primary">{i + 1}.</span> {p.titulo}
+                    </h3>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{p.desc}</p>
                   </div>
-                  <p className="text-3xl font-black">{s.valor}</p>
-                  <p className="text-xs text-white/70 leading-snug">{s.label}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ─── SERVIÇOS ────────────────────────────────────────────── */}
-        <section id="servicos" className="py-14 px-4 bg-muted/20 scroll-mt-20">
-          <div className="container max-w-5xl mx-auto">
-            <div className="text-center mb-10">
-              <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-                Serviços
-              </span>
-              <h2 className="text-2xl font-black tracking-tight">
-                Soluções Imobiliárias Completas
+        {/* ─── NOSSO PADRÃO DE CURADORIA (cinza) ──────────────────── */}
+        <section id="nosso-padrao" className={BLOCO_CINZA}>
+          <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2">
+            <div className={`${CARD} space-y-4 p-6 md:p-8`}>
+              <span className={SELO}>Nosso padrão de curadoria</span>
+              <h2 className="font-brand-display text-2xl font-extrabold tracking-tight">
+                Cada imóvel passa por uma análise rigorosa antes de chegar até você
               </h2>
-              <p className="text-sm text-muted-foreground mt-2 max-w-lg mx-auto">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Não trabalhamos com volume — trabalhamos com precisão. Cada oportunidade já passou
+                por uma triagem de dados, liquidez e potencial de valorização.
+              </p>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {[
+                  { icon: BarChart3, label: "Dados de mercado em tempo real" },
+                  { icon: TrendingUp, label: "Histórico e potencial de valorização" },
+                  { icon: Building2, label: "Alto padrão e liquidez" },
+                  { icon: ShieldCheck, label: "Segurança jurídica em cada etapa" },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <item.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-xs font-semibold">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col justify-center gap-3 rounded-3xl bg-gradient-to-br from-[#0f1e3a] to-[#1b2f57] p-6 text-white md:p-8">
+              <p className="text-xs font-semibold text-white/60">Unimos</p>
+              {["Curadoria técnica", "Análise de dados", "Atendimento personalizado"].map(
+                (item) => (
+                  <div key={item} className="glass-escuro rounded-2xl px-4 py-3 text-sm font-bold">
+                    {item}
+                  </div>
+                ),
+              )}
+              <p className="text-xs text-white/60">
+                Para investidores e famílias que buscam o melhor do mercado imobiliário de alto
+                padrão.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── SERVIÇOS (branco) ──────────────────────────────────── */}
+        <section id="servicos" className={BLOCO_BRANCO}>
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-6 grid items-end gap-3 md:grid-cols-2">
+              <div className="space-y-3">
+                <span className={SELO}>Serviços</span>
+                <h2 className="font-brand-display text-2xl font-extrabold tracking-tight sm:text-3xl">
+                  Soluções imobiliárias completas
+                </h2>
+              </div>
+              <p className="text-sm text-muted-foreground">
                 Da curadoria ao contrato, cuidamos de cada etapa para que você invista com
                 tranquilidade em qualquer região do país.
               </p>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(services.length > 0
-                ? services.map((s) => ({
-                    id: s.id,
-                    titulo: s.titulo,
-                    descricao: s.descricao,
-                    icone_url: s.icone_url,
-                    icon: Building2,
-                    color: "bg-primary/10 text-primary",
-                  }))
-                : FALLBACK_SERVICES
-              ).map((s) => (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {listaServicos.map((sv) => (
                 <Link
-                  key={s.id}
+                  key={sv.id}
                   to="/contato"
-                  className="group flex flex-col gap-3 rounded-2xl border border-border/60 bg-card p-5 hover:border-primary/40 hover:shadow-md transition-all"
+                  className={`${CARD} group flex items-start gap-3 p-4 transition hover:-translate-y-0.5`}
                 >
                   <div
-                    className={`h-10 w-10 rounded-xl ${s.color} flex items-center justify-center`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${sv.color}`}
                   >
-                    {s.icone_url ? (
-                      <img src={s.icone_url} alt="" className="h-6 w-6 object-cover rounded" />
+                    {sv.icone_url ? (
+                      <img src={sv.icone_url} alt="" className="h-6 w-6 rounded object-cover" />
                     ) : (
-                      <s.icon className="h-5 w-5" />
+                      <sv.icon className="h-5 w-5" />
                     )}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-sm group-hover:text-primary transition-colors">
-                      {s.titulo}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold transition-colors group-hover:text-primary">
+                      {sv.titulo}
                     </h3>
-                    {s.descricao && (
-                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                        {s.descricao}
+                    {sv.descricao && (
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        {sv.descricao}
                       </p>
                     )}
                   </div>
-                  <span className="text-[10px] font-bold text-primary flex items-center gap-1 mt-auto">
-                    Saiba mais <ArrowRight className="h-3 w-3" />
-                  </span>
+                  <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary opacity-0 transition group-hover:opacity-100" />
                 </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ─── DEPOIMENTOS ─────────────────────────────────────────── */}
-        <div id="depoimentos" className="scroll-mt-20">
+        {/* ─── DEPOIMENTOS (cinza) ────────────────────────────────── */}
+        <div
+          id="depoimentos"
+          className="scroll-mt-24 bg-gradient-to-b from-[#f3f4f6] to-[#eef0f3] dark:from-[#0f172a] dark:to-[#0f172a]"
+        >
           <TestimonialsSection />
         </div>
 
-        {/* ─── PARCEIROS ───────────────────────────────────────────── */}
-        <div id="parceiros" className="scroll-mt-20">
+        {/* ─── PARCEIROS (branco) ─────────────────────────────────── */}
+        <div id="parceiros" className="scroll-mt-24 bg-white dark:bg-[#0b1220]">
           <PartnersSection />
         </div>
 
-        {/* ─── CTA FINAL ───────────────────────────────────────────── */}
-        <section className="py-16 px-4 text-center bg-gradient-to-b from-background to-muted/40">
-          <div className="container max-w-2xl mx-auto space-y-4">
-            <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-              Pronto para começar?
-            </span>
-            <h2 className="text-2xl font-black tracking-tight">
-              Agende uma conversa sem compromisso
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
-              Vamos entender seus objetivos e apresentar as oportunidades certas para o seu perfil
-              de investimento.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center pt-2">
+        {/* ─── CTA FINAL (branco, compacto) ───────────────────────── */}
+        <section className={BLOCO_BRANCO}>
+          <div
+            className={`${CARD} mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-6 text-center md:flex-row md:text-left`}
+          >
+            <div>
+              <p className="font-brand-display text-lg font-extrabold">
+                Agende uma conversa sem compromisso
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Vamos entender seus objetivos e apresentar as oportunidades certas para o seu
+                perfil.
+              </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
               <Link
                 to="/contato"
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white hover:bg-primary/90 transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-primary/90"
               >
-                Agendar Consultoria <ArrowRight className="h-4 w-4" />
+                Agendar consultoria <ArrowRight className="h-4 w-4" />
               </Link>
               <a
                 href="https://wa.me/5513997794382"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-bold hover:bg-muted transition-colors"
+                className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
               >
-                <Phone className="h-4 w-4" /> WhatsApp
+                <MessageCircle className="h-4 w-4" /> WhatsApp
               </a>
               <Link
                 to="/buscar"
-                className="inline-flex items-center gap-2 rounded-xl border border-border px-6 py-3 text-sm font-bold hover:bg-muted transition-colors"
+                className="glass-claro inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold transition hover:bg-white/60"
               >
-                Ver Imóveis
+                Ver imóveis
               </Link>
             </div>
           </div>
