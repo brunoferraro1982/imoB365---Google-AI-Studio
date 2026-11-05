@@ -197,7 +197,7 @@ function EmpreendimentosPublic() {
                               <img
                                 src={e.construtora_ref.logo_url}
                                 alt={e.construtora_ref.nome}
-                                className="h-4 w-4 rounded object-contain"
+                                className="h-4 w-auto max-w-[72px] object-contain"
                               />
                             )}
                             por {e.construtora_ref.nome}

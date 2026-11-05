@@ -135,11 +135,13 @@ function ConstrutoraPublic() {
         <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
           <aside className="h-fit rounded-xl border border-border bg-card p-6 text-center">
             {construtora.logo_url ? (
-              <img
-                src={construtora.logo_url}
-                alt={construtora.nome}
-                className="mx-auto h-24 w-24 rounded-lg object-cover"
-              />
+              <div className="mx-auto flex h-24 w-full max-w-[220px] items-center justify-center rounded-lg bg-white p-3">
+                <img
+                  src={construtora.logo_url}
+                  alt={construtora.nome}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
             ) : (
               <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                 <Factory className="h-10 w-10" />
