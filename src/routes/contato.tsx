@@ -8,9 +8,6 @@ import { toast } from "sonner";
 import { Phone, Mail, Globe, Headset, ArrowRight, CheckCircle2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { seoHead, getSeoConfig } from "@/lib/seo";
-// Foto livre (Unsplash License, autor Vagaro) já desfocada no próprio
-// arquivo — o desfoque é parte da imagem, não só CSS.
-import fotoAtendimento from "@/assets/images/contato-atendimento.jpg";
 
 export const Route = createFileRoute("/contato")({
   head: async () =>
@@ -18,7 +15,8 @@ export const Route = createFileRoute("/contato")({
       seo: await getSeoConfig(),
       path: "/contato",
       title: "Contato | imoB365 — Consultoria Imobiliária",
-      description: "Entre em contato com a imoB365. Atendimento 365 dias por ano em todo o Brasil.",
+      description:
+        "Entre em contato com a imoB365. Atendimento de qualidade, com prazos de resposta definidos em todo o Brasil.",
     }),
   component: ContatoPage,
 });
@@ -41,7 +39,7 @@ const CONTATOS = [
   {
     icon: Globe,
     titulo: "Atendimento",
-    desc: "Todo o Brasil, 365 dias por ano",
+    desc: "Todo o Brasil, com prazos de resposta (SLA) definidos",
     href: null,
     color: "bg-primary/10 text-primary",
   },
@@ -96,18 +94,10 @@ function ContatoPage() {
       <div className="hero-brand relative min-h-screen bg-[#f6f7f9] dark:bg-[#0b1220]">
         <div aria-hidden className="mesh-brand-claro pointer-events-none absolute inset-0" />
 
-        {/* ─── TOPO: foto de atendimento desfocada + vidro ─────────── */}
-        <section id="hero" className="relative overflow-hidden px-4 pb-10 pt-8 md:pb-12 md:pt-10">
-          <img
-            src={fotoAtendimento}
-            alt=""
-            aria-hidden
-            className="absolute inset-0 h-full w-full scale-105 object-cover object-[70%_40%] dark:opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/20 to-transparent dark:from-[#0b1220]/80 dark:via-[#0b1220]/50 dark:to-[#0b1220]/30" />
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#f6f7f9] dark:to-[#0b1220]" />
-          <div className="relative mx-auto max-w-6xl md:py-6">
-            <div className="glass-fosco space-y-4 rounded-[28px] px-6 py-8 text-center md:max-w-xl md:px-9 md:text-left">
+        {/* ─── TOPO: bloco "Fale Conosco" em vidro, largura total ──── */}
+        <section id="hero" className="relative px-4 pb-6 pt-8 md:pt-10">
+          <div className="relative mx-auto max-w-6xl">
+            <div className="glass-fosco space-y-4 rounded-[28px] px-6 py-8 text-center md:px-10 md:py-10">
               <span className="inline-block rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
                 Fale Conosco
               </span>
@@ -115,11 +105,7 @@ function ContatoPage() {
                 Vamos conversar sobre o seu{" "}
                 <span className="text-primary">próximo patrimônio.</span>
               </h1>
-              <p className="mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base md:mx-0">
-                Atendimento 365 dias por ano. Nossa equipe retorna em até 2 horas nos dias úteis —
-                conte pra gente o que você procura.
-              </p>
-              <div className="flex flex-wrap justify-center gap-3 pt-1 md:justify-start">
+              <div className="flex flex-wrap justify-center gap-3 pt-1">
                 <a
                   href="#formulario"
                   onClick={(e) => {
@@ -198,7 +184,7 @@ function ContatoPage() {
                       Prefere falar agora?
                     </p>
                     <p className="text-xs text-white/70">
-                      Abra um chamado e acompanhe a resposta da nossa equipe, todos os dias.
+                      Abra um chamado e acompanhe cada etapa, com prazo de resposta definido.
                     </p>
                   </div>
                   <a
@@ -219,7 +205,7 @@ function ContatoPage() {
                 Conte pra gente o que você procura
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Nossa equipe retorna em até 2 horas nos dias úteis.
+                Atendimento de qualidade: cada mensagem vira um chamado com prazo de resposta.
               </p>
 
               {done ? (
