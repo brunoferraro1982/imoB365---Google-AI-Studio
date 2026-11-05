@@ -77,14 +77,6 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
     desc: "Como selecionamos cada imóvel",
   },
   {
-    key: "numeros",
-    icon: BarChart3,
-    to: "/a-imob365",
-    hash: "numeros",
-    label: "Nossos Números",
-    desc: "365 dias, cobertura nacional, R$3MI+",
-  },
-  {
     key: "servicos",
     icon: Briefcase,
     to: "/a-imob365",
@@ -576,7 +568,7 @@ export function SiteFooter() {
               </li>
               <li className="group flex items-center gap-3">
                 <IconeVidro icon={HeartHandshake} />
-                Suporte 365 dias por ano
+                Atendimento com SLA definido
               </li>
             </ul>
 
