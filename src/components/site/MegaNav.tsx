@@ -604,7 +604,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
       {config.topBar && (
         <div className="relative z-20 bg-black py-1 text-[11px] font-semibold text-white/80">
           {/* mesmo container do menu (max-w-6xl + px-6 por dentro) para as bordas alinharem */}
-          <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-6">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-1 px-6">
             <div className="flex shrink-0 items-center gap-5">
               {config.topBar.contacts.map((c, i) => (
                 <Fragment key={c.label}>
@@ -621,7 +621,7 @@ function MegaNavHeaderBrand({ config }: { config: MegaNavConfig }) {
                 </Fragment>
               ))}
             </div>
-            <div className="flex min-w-0 items-center gap-0.5 sm:gap-1">
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-0.5 sm:gap-1">
               {gruposTopo.map((group) => {
                 const isActive = activeMenu === group.key;
                 return (
