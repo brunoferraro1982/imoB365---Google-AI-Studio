@@ -152,7 +152,7 @@ const DETALHES: Record<string, Detalhe> = {
       "Projeto de interiores sob medida",
       "Compra, entrega e montagem",
       "Vistoria final com checklist",
-      "Pronto para morar ou para temporada",
+      "Pronto para morar",
     ],
     fluxo: [
       { icon: Home, titulo: "Escolha do imóvel", texto: "Perfil de uso e orçamento" },
