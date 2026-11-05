@@ -18,7 +18,7 @@ export function InstitutionalNav() {
   return (
     <nav
       aria-label="Institucional"
-      className="flex min-w-0 items-center justify-start gap-0.5 overflow-x-auto sm:justify-end [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden"
+      className="flex min-w-0 flex-wrap items-center justify-end gap-x-0.5 gap-y-1 sm:gap-1"
     >
       {ITEMS.map(({ to, label, icon }) => (
         <Link

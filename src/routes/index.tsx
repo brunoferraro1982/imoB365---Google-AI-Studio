@@ -351,15 +351,15 @@ function Landing() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-slate-100 via-zinc-50 to-slate-200/80 dark:from-zinc-900 dark:via-zinc-950 dark:to-zinc-900" />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(560px_340px_at_8%_100%,rgba(100,116,139,.16),transparent_70%),radial-gradient(480px_300px_at_95%_0%,rgba(148,163,184,.20),transparent_70%)]" />
 
-        <div className="mx-auto grid max-w-6xl items-stretch gap-6 px-6 py-14 md:grid-cols-[7fr_3fr] md:py-16">
-          <div className="glass-fosco rounded-[28px] p-6 md:p-7">
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] items-stretch gap-6 px-6 py-14 md:grid-cols-[7fr_3fr] md:py-16">
+          <div className="glass-fosco min-w-0 rounded-[28px] p-6 md:p-7">
             <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
               Corretores e Imobiliárias parceiras
             </h2>
             <p className="mt-2 text-muted-foreground">
               Trabalhamos lado a lado com quem entende do mercado local.
             </p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {!tenantsLoaded &&
                 Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="glass-claro h-24 animate-pulse rounded-2xl" />
@@ -369,7 +369,7 @@ function Landing() {
                   key={t.id}
                   to="/site/$slug"
                   params={{ slug: t.slug }}
-                  className="glass-claro group flex items-center gap-4 rounded-2xl bg-white/55 p-4 transition hover:-translate-y-0.5 hover:bg-white/80"
+                  className="glass-claro group flex min-w-0 items-center gap-4 rounded-2xl bg-white/55 p-4 transition hover:-translate-y-0.5 hover:bg-white/80"
                 >
                   <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
                     {t.logoUrl ? (
@@ -404,7 +404,7 @@ function Landing() {
             </div>
           </div>
 
-          <div className="glass-fosco relative flex flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-7">
+          <div className="glass-fosco relative flex min-w-0 flex-col items-start justify-center overflow-hidden rounded-[28px] p-6 md:p-7">
             <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-[#ed7d31] to-[#b4520f] text-white shadow-md">
               <Building className="h-6 w-6" />
             </span>
