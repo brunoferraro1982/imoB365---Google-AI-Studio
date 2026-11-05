@@ -416,11 +416,15 @@ export async function sincronizarFornecedor(sb: SupabaseClient, fonte: Fonte): P
   rel.resumo = rel.primeira_execucao
     ? `Primeira execução: estado de referência gravado (${Object.keys(atual).length} itens no Drive). Mudanças serão detectadas a partir da próxima.`
     : `${rel.aplicado.length} alteração(ões) aplicada(s), ${rel.revisar.length} item(ns) para revisar, ${rel.erros.length} erro(s).`;
-  await sb
+  const { error: errSalvar } = await sb
     .from("fornecedor_sync")
     .upsert(
       { fonte, snapshot, relatorio: rel, executado_em: rel.executado_em },
       { onConflict: "fonte" },
     );
+  if (errSalvar) {
+    rel.erros.push(`Estado não gravado (fornecedor_sync): ${errSalvar.message}`);
+    rel.resumo += " ATENÇÃO: estado não foi gravado.";
+  }
   return rel;
 }
