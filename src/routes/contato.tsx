@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Phone, Mail, Globe, Headset, ArrowRight, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Mail, Globe, Headset, ArrowRight, CheckCircle2 } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { seoHead, getSeoConfig } from "@/lib/seo";
 
@@ -23,11 +23,11 @@ export const Route = createFileRoute("/contato")({
 
 const CONTATOS = [
   {
-    icon: Phone,
-    titulo: "Telefone",
+    icon: MessageCircle,
+    titulo: "WhatsApp",
     desc: "(13) 99779-4382",
-    href: "tel:+5513997794382",
-    color: "bg-blue-100/70 text-blue-800",
+    href: "https://wa.me/5513997794382?text=Ol%C3%A1!%20Vim%20pela%20p%C3%A1gina%20de%20contato%20da%20imoB365.",
+    color: "bg-emerald-100/70 text-emerald-700",
   },
   {
     icon: Mail,
@@ -48,7 +48,7 @@ const CONTATOS = [
     titulo: "Central de atendimento",
     desc: "Abra um chamado com nossa equipe",
     href: "/atendimento",
-    color: "bg-emerald-100/70 text-emerald-800",
+    color: "bg-sky-100/70 text-sky-800",
   },
 ];
 
@@ -166,6 +166,8 @@ function ContatoPage() {
                     <a
                       key={c.titulo}
                       href={c.href}
+                      target={c.href.startsWith("http") ? "_blank" : undefined}
+                      rel={c.href.startsWith("http") ? "noopener noreferrer" : undefined}
                       className={`${cls} hover:-translate-y-0.5 hover:bg-white`}
                     >
                       {conteudo}
