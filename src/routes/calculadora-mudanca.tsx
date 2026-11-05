@@ -2,18 +2,31 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import {
   Calculator,
-  ArrowLeft,
-  BookOpen,
-  Truck,
-  ListChecks,
-  Calendar,
+  CalendarCheck,
+  Package,
   Sparkles,
+  Truck,
+  Building2,
+  Ruler,
+  Route as RotaIcon,
+  Trash2,
+  Tag,
+  Zap,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { seoHead, getSeoConfig } from "@/lib/seo";
+import {
+  BLOCO_BRANCO,
+  BLOCO_CINZA,
+  CARD_GLASS,
+  HeroGlass,
+  PaginaGlass,
+  SELO,
+  TITULO_SECAO,
+} from "@/components/portal/PaginaGlass";
+import { Fluxograma, type Etapa } from "@/components/portal/Fluxograma";
 
 export const Route = createFileRoute("/calculadora-mudanca")({
   component: MudancaPage,
@@ -31,6 +44,20 @@ const formatBRL = (v: number) => {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 };
 
+const FLUXO_CRONOGRAMA: Etapa[] = [
+  { icon: Trash2, titulo: "30 dias antes", texto: "Triagem e desapego" },
+  { icon: Package, titulo: "15 dias antes", texto: "Caixas e serviços" },
+  { icon: Building2, titulo: "7 dias antes", texto: "Síndico e portaria" },
+  { icon: CalendarCheck, titulo: "Dia da mudança", texto: "Caminhão e equipe" },
+];
+
+const FLUXO_ORCAMENTO: Etapa[] = [
+  { icon: Ruler, titulo: "Cubagem", texto: "Área e volume de móveis" },
+  { icon: RotaIcon, titulo: "Distância", texto: "Km percorridos" },
+  { icon: Zap, titulo: "Acesso", texto: "Escada e sem elevador" },
+  { icon: Truck, titulo: "Estimativa", texto: "Caminhão e logística" },
+];
+
 export function MudancaPage() {
   const [areaImovel, setAreaImovel] = useState<number>(60);
   const [distanciaKm, setDistanciaKm] = useState<number>(20);
@@ -45,49 +72,52 @@ export function MudancaPage() {
   }, [areaImovel, distanciaKm, andarSemElevador]);
 
   return (
-    <div className="min-h-screen bg-muted/20">
+    <div className="min-h-screen bg-white">
       <SiteHeader />
-
-      <main className="mx-auto max-w-6xl px-4 py-8 md:py-12">
-        <div className="mb-6">
+      <PaginaGlass>
+        <HeroGlass
+          selo="Calculadora gratuita"
+          seloIcon={Calculator}
+          titulo="Custo de mudança"
+          destaque="sem surpresas no dia do frete."
+          subtitulo="Estime o frete e a logística da sua mudança, com um checklist de organização para os 30 dias antes."
+        >
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+            className="glass-claro inline-flex items-center gap-1.5 self-center rounded-full px-4 py-2 text-xs font-bold transition hover:bg-white/60"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Voltar para a Home
+            ← Voltar para a home
           </Link>
-        </div>
+        </HeroGlass>
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          {/* LADO DA CALCULADORA (1 COLUNA) */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-xs sticky top-24">
+        {/* Orçamento (50%) + explicação (50%) */}
+        <section className={BLOCO_CINZA}>
+          <div className="mx-auto grid max-w-6xl items-start gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} p-6 md:sticky md:top-24 md:p-8`}>
               <div className="mb-5 flex items-center gap-2.5">
                 <div className="rounded-xl bg-indigo-500/10 p-2.5 text-indigo-600">
                   <Truck className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-foreground">Orçamento de Logística</h2>
-                  <p className="text-[10px] text-muted-foreground leading-none">
-                    Cote custos médios de frete
-                  </p>
+                  <h2 className="text-base font-bold text-foreground">Orçamento de logística</h2>
+                  <p className="text-[11px] text-muted-foreground">Cote custos médios de frete</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="mud-area" className="text-xs font-bold text-muted-foreground">
-                    Tamanho do Imóvel (m² de área útil)
+                    Tamanho do imóvel (m² de área útil)
                   </Label>
                   <Input
                     id="mud-area"
                     type="number"
                     value={areaImovel || ""}
                     onChange={(e) => setAreaImovel(Number(e.target.value))}
-                    className="font-semibold text-sm"
+                    className="bg-white/80 text-sm font-semibold dark:bg-white/5"
                     placeholder="Ex: 60"
                   />
-                  <span className="text-[10px] text-muted-foreground leading-tight block">
+                  <span className="block text-[11px] leading-tight text-muted-foreground">
                     Determina o volume total de móveis e utensílios estimados.
                   </span>
                 </div>
@@ -97,25 +127,25 @@ export function MudancaPage() {
                     htmlFor="mud-distancia"
                     className="text-xs font-bold text-muted-foreground"
                   >
-                    Distância de Transporte (km)
+                    Distância de transporte (km)
                   </Label>
                   <Input
                     id="mud-distancia"
                     type="number"
                     value={distanciaKm || ""}
                     onChange={(e) => setDistanciaKm(Number(e.target.value))}
-                    className="font-semibold text-sm"
+                    className="bg-white/80 text-sm font-semibold dark:bg-white/5"
                     placeholder="Ex: 20"
                   />
                 </div>
 
-                <div className="pt-2">
-                  <label className="flex items-start gap-2.5 text-xs font-medium text-foreground cursor-pointer select-none">
+                <div className="pt-1">
+                  <label className="flex cursor-pointer select-none items-start gap-2.5 text-xs font-medium text-foreground">
                     <input
                       type="checkbox"
                       checked={andarSemElevador}
                       onChange={(e) => setAndarSemElevador(e.target.checked)}
-                      className="mt-0.5 rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer"
+                      className="mt-0.5 h-3.5 w-3.5 cursor-pointer rounded border-border text-primary focus:ring-primary"
                     />
                     <span className="leading-tight">
                       Mudança acima do 2º andar em prédio de escadas (sem elevador)
@@ -123,166 +153,135 @@ export function MudancaPage() {
                   </label>
                 </div>
 
-                <div className="border-t border-border pt-4 mt-2 space-y-3.5">
-                  <div className="flex justify-between items-center bg-muted/45 p-3.5 rounded-xl border border-border/60">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground font-bold uppercase leading-none block">
-                        Custo Estimado
+                <div className="mt-2 space-y-3 border-t border-black/5 pt-4 dark:border-white/10">
+                  <div className="flex items-center justify-between rounded-2xl bg-white/70 p-3.5 dark:bg-white/5">
+                    <div>
+                      <span className="block text-[10px] font-bold uppercase text-muted-foreground">
+                        Custo estimado
                       </span>
-                      <span className="text-[11px] text-muted-foreground leading-none block">
-                        Caminhão + Logística
+                      <span className="block text-[11px] text-muted-foreground">
+                        Caminhão + logística
                       </span>
                     </div>
                     <span className="text-base font-extrabold text-[#4F46E5]">
                       {formatBRL(estimatedMovingCost)}
                     </span>
                   </div>
-
-                  <p className="text-[10px] text-muted-foreground italic leading-normal">
-                    *Este cálculo indica valores referenciais e de referência para transportadoras
-                    especializadas terrestres. Os valores reais podem mudar com necessidade de
-                    embalagens especiais, seguro de cargas ou montagem/desmontagem técnica de
+                  <p className="text-[11px] italic leading-normal text-muted-foreground">
+                    *Valores referenciais para transportadoras terrestres. Podem mudar com
+                    embalagens especiais, seguro de cargas ou montagem e desmontagem técnica de
                     móveis.
                   </p>
                 </div>
               </div>
             </div>
+
+            <div className={`${CARD_GLASS} space-y-4 p-6 md:p-8`}>
+              <span className={SELO}>Como funciona o orçamento</span>
+              <h2 className={TITULO_SECAO}>Frete = volume + distância + acesso</h2>
+              <p className="text-sm leading-relaxed text-foreground/80">
+                O frete é composto pela <strong>cubagem</strong> (espaço ocupado no baú do caminhão)
+                e pela <strong>distância percorrida</strong>. Dificuldades de acesso, como subir
+                escadas com armários pesados, também elevam o preço pelo tempo e pelos auxiliares
+                extras.
+              </p>
+              <p className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Tag className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                Desapegar antes da vistoria da transportadora é a forma mais simples de reduzir o
+                custo.
+              </p>
+            </div>
           </div>
+        </section>
 
-          {/* CONTEÚDO DO BLOG / EXPLICAÇÃO (2 COLUNAS) */}
-          <div className="lg:col-span-2 space-y-8 bg-card border border-border p-6 md:p-8 rounded-2xl shadow-xs">
-            <article className="prose prose-slate max-w-none space-y-6">
-              <div className="space-y-2 border-b border-border pb-4">
-                <span className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-850 text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">
-                  <BookOpen className="h-3 w-3 inline" /> Manual Prático
-                </span>
-                <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground leading-tight">
-                  Guia Definitivo da Mudança de Imóvel: Cronograma e Organização Descomplicada
-                </h1>
-                <p className="text-xs text-muted-foreground">
-                  Tempo de leitura: 4 minutos • Atualizado em Maio de 2026 • Canal do Corretor
-                </p>
-              </div>
-
-              {/* Seção 1 */}
-              <div className="space-y-3">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-indigo-600 shrink-0" /> Como Funciona o
-                  Orçamento de Mudanças?
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  O valor de frete de uma mudança é composto pela cubagem (espaço total ocupado no
-                  baú do caminhão) e a distância geográfica percorrida. Fatores adicionais, como
-                  dificuldades de acesso físico no embarque/desembarque (ex: erguer móveis por
-                  janelas, subir múltiplos lances de escadas com armários pesados), também impactam
-                  o preço final devido ao tempo operacional e número de auxiliares extras exigidos.
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Planejar os volumes, separar pertences e desapegar de itens acumulados antes da
-                  visita de vistoria da transportadora é o melhor método financeiro para encolher
-                  custos imprevistos de última hora.
-                </p>
-              </div>
-
-              {/* Seção 2 */}
-              <div className="space-y-3">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <ListChecks className="h-5 w-5 text-emerald-600 shrink-0" /> Checklist
-                  Organizacional: Cronograma 30 Dias
-                </h2>
-
-                <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
-                  <div className="border border-border p-3.5 rounded-xl space-y-1">
-                    <span className="font-bold text-foreground text-xs">
-                      📅 30 dias antes: Organização e Desapego
-                    </span>
-                    <p>
-                      Faça uma triagem completa em armários, gavetas e depósitos. Separe roupas,
-                      eletrodomésticos e móveis que não deseja levar e faça uma doação ou venda de
-                      usados. Quanto menos volume, mais em conta fica o transporte.
-                    </p>
-                  </div>
-
-                  <div className="border border-border p-3.5 rounded-xl space-y-1">
-                    <span className="font-bold text-foreground text-xs">
-                      📦 15 dias antes: Embalagens e Transferência de Serviços
-                    </span>
-                    <p>
-                      Inicie a aquisição de caixas de papelão reforçadas, fitas adesivas industriais
-                      e jornal/plástico bolha. Crie etiquetas claras identificando o conteúdo por
-                      cômodo (ex: COZINHA - PRATOS FRÁGEIS). Solicite o desligamento ou
-                      transferência de serviços essenciais como internet de fibra, luz, gás encanado
-                      e entregas recorrentes de correio.
-                    </p>
-                  </div>
-
-                  <div className="border border-border p-3.5 rounded-xl space-y-1">
-                    <span className="font-bold text-foreground text-xs">
-                      🏢 7 dias antes: Alinhamento de Condomínios e Regras
-                    </span>
-                    <p>
-                      Comunique formalmente as regras e horários de entrada e saída de caminhões aos
-                      síndicos e portarias de ambos os edifícios (do que está saindo e do que está
-                      entrando). Em quase todos os prédios, mudanças só são autorizadas de segunda a
-                      sexta, em horários comerciais específicos para evitar ruídos irritantes aos
-                      moradores.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dicas ao corretor */}
-              <div className="bg-primary/[0.02] border border-primary/10 p-5 rounded-xl space-y-4">
-                <h3 className="text-sm font-extrabold text-primary uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4" /> Dica de Préstimo de Serviço para o Corretor de
-                  Elite
-                </h3>
-
-                <div className="space-y-3 text-xs leading-relaxed text-muted-foreground">
-                  <div className="flex gap-2.5">
-                    <span className="text-primary font-bold text-base shrink-0 select-none">
-                      1.
-                    </span>
-                    <p>
-                      <strong>Envie o Checklist de Mudança no Pos-Venda:</strong>
-                      Logo no momento de assinatura do contrato de compra ou locação, presenteie o
-                      seu cliente enviando este guia interativo de custos e tarefas por WhatsApp.
-                      Esta atitude surpreende o cliente com uma experiência de cuidado (Care
-                      Quality) que vai além da burocracia comercial padrão, trazendo indicações
-                      consistentes de indicações futuras.
-                    </p>
-                  </div>
-
-                  <div className="flex gap-2.5">
-                    <span className="text-primary font-bold text-base shrink-0 select-none">
-                      2.
-                    </span>
-                    <p>
-                      <strong>Parceria com Transportadoras Locais:</strong>
-                      Faça parcerias estreitas com empresas confiáveis e bem-avaliadas de mudanças
-                      terrestres na sua cidade regional. Ofereça cupons de descontos exclusives aos
-                      seus clientes assinados e mostre-se um hub completo de resoluções de moradia.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conclusão */}
-              <div className="space-y-2 border-t border-border pt-4">
-                <h2 className="text-base font-bold text-foreground">
-                  Iniciando a Vida Nova sem Stress
-                </h2>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Uma mudança planejada e estruturada transforma o que de costume é visto como um
-                  momento estressante e caótico em um processo memorável, celebrando o início de um
-                  novo ciclo com leveza e serenidade.
-                </p>
-              </div>
-            </article>
+        {/* Fluxo do orçamento (texto 50% + fluxograma 50%) */}
+        <section className={BLOCO_BRANCO}>
+          <div className="mx-auto grid max-w-6xl items-center gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} space-y-3 p-6 md:p-8`}>
+              <span className={SELO}>Orçamento</span>
+              <h2 className={TITULO_SECAO}>Do volume ao custo estimado</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                A calculadora usa a área do imóvel, a distância e o acesso ao prédio para chegar ao
+                valor referencial da mudança.
+              </p>
+            </div>
+            <Fluxograma
+              titulo="Orçamento da mudança"
+              legenda="Fluxo do orçamento"
+              etapas={FLUXO_ORCAMENTO}
+              resultado="Custo referencial para pedir orçamento"
+            />
           </div>
-        </div>
-      </main>
+        </section>
 
+        {/* Cronograma de 30 dias (cinza) */}
+        <section className={BLOCO_CINZA}>
+          <div className="mx-auto grid max-w-6xl items-center gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} space-y-3 p-6 md:p-8`}>
+              <span className={SELO}>Cronograma de 30 dias</span>
+              <h2 className={TITULO_SECAO}>Organização, embalagens e condomínio</h2>
+              <ul className="space-y-2.5 text-sm text-muted-foreground">
+                <li>
+                  <strong>30 dias antes:</strong> faça a triagem de armários, gavetas e depósitos.
+                  Doe ou venda o que não vai levar.
+                </li>
+                <li>
+                  <strong>15 dias antes:</strong> compre caixas reforçadas, etiquete por cômodo e
+                  transfira internet, luz e gás.
+                </li>
+                <li>
+                  <strong>7 dias antes:</strong> avise o síndico e a portaria dos dois prédios sobre
+                  o caminhão. Em geral, mudanças são autorizadas só em dias úteis, em horário
+                  comercial.
+                </li>
+              </ul>
+            </div>
+            <Fluxograma
+              titulo="Cronograma da mudança"
+              legenda="Fluxo do cronograma"
+              etapas={FLUXO_CRONOGRAMA}
+              resultado="Mudança sem imprevistos"
+            />
+          </div>
+        </section>
+
+        {/* Dicas para o corretor (branco) */}
+        <section className={BLOCO_BRANCO}>
+          <div className="mx-auto grid max-w-6xl items-stretch gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} space-y-3 p-6 md:p-8`}>
+              <span className={SELO}>
+                <Sparkles className="mr-1 inline h-3 w-3" /> Para o corretor
+              </span>
+              <h2 className={TITULO_SECAO}>Encante o cliente no pós-venda</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Logo após a assinatura do contrato, envie este guia de custos e tarefas pelo
+                WhatsApp. É um gesto de cuidado que vai além da burocracia e gera indicações.
+              </p>
+            </div>
+            <div className={`${CARD_GLASS} space-y-3 p-6 md:p-8`}>
+              <span className={SELO}>Parcerias</span>
+              <h2 className={TITULO_SECAO}>Transportadoras de confiança</h2>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Tenha parceiros locais bem avaliados e ofereça descontos exclusivos aos seus
+                clientes. Assim você vira o ponto de referência completo para a moradia nova.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Conclusão (cinza) */}
+        <section className={BLOCO_CINZA}>
+          <div className={`${CARD_GLASS} mx-auto max-w-6xl p-6 text-center md:p-8`}>
+            <p className="font-brand-display text-lg font-extrabold">
+              Começando a vida nova sem stress
+            </p>
+            <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
+              Uma mudança planejada transforma um momento caótico em um processo leve, que celebra o
+              início de um novo ciclo.
+            </p>
+          </div>
+        </section>
+      </PaginaGlass>
       <SiteFooter />
     </div>
   );

@@ -431,9 +431,9 @@ function Buscar() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="hero-brand min-h-screen bg-white dark:bg-[#0b1220]">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 md:px-6 md:pt-10">
         {buscaIa && (
           <div className="mb-6 flex items-start gap-3 rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/10 via-violet-500/5 to-transparent p-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary to-violet-600 text-white shadow">
@@ -458,11 +458,16 @@ function Buscar() {
             </button>
           </div>
         )}
-        <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="glass-fosco flex flex-wrap items-end justify-between gap-3 rounded-[28px] p-6 md:p-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Buscar imóveis</h1>
+            <span className="inline-block rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+              Catálogo nacional
+            </span>
+            <h1 className="font-brand-display mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+              Buscar <span className="text-primary">imóveis</span>
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Catálogo nacional da plataforma imob365.
+              Filtre por cidade, tipo, preço e características, e veja no mapa ou na lista.
             </p>
           </div>
           <div className="flex gap-2">
@@ -518,7 +523,7 @@ function Buscar() {
           </div>
         </div>
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+        <div className="glass-fosco mt-6 space-y-4 rounded-3xl p-5 md:p-6">
           <div className="grid gap-3 md:grid-cols-12">
             <Input
               placeholder="Cidade, bairro ou palavra-chave"
@@ -771,7 +776,7 @@ function Buscar() {
           ) : loading ? (
             <p className="text-center text-sm text-muted-foreground">Carregando…</p>
           ) : filtered.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border bg-card p-16 text-center text-sm text-muted-foreground">
+            <div className="glass-fosco rounded-3xl p-16 text-center text-sm text-muted-foreground">
               <p>
                 Nenhum imóvel
                 {finalidade !== "todos" &&
@@ -805,7 +810,7 @@ function Buscar() {
               {filtered.map((i: any) => (
                 <div
                   key={i.id}
-                  className="group relative overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-lg"
+                  className="group relative overflow-hidden rounded-3xl border border-black/5 bg-white/80 shadow-[0_14px_40px_-28px_rgba(15,23,42,0.45)] backdrop-blur-xl transition hover:-translate-y-0.5 dark:border-white/10 dark:bg-white/5"
                 >
                   <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                     <Link
@@ -887,7 +892,7 @@ function Buscar() {
           o mesmo canto bottom-6/right-6 em toda página pública */}
       <div className="fixed bottom-24 right-6 z-40 select-none">
         {conversationalOpen ? (
-          <div className="w-[340px] rounded-2xl border border-primary/20 bg-card p-4 shadow-2xl space-y-3 transition-all duration-300">
+          <div className="glass-fosco w-[340px] space-y-3 rounded-3xl p-4 shadow-2xl transition-all duration-300">
             <div className="flex items-center justify-between border-b border-border pb-2">
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5 text-primary" />

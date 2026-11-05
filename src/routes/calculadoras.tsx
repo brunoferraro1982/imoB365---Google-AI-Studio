@@ -1,3 +1,5 @@
+import { Fluxograma, type Etapa } from "@/components/portal/Fluxograma";
+import { FileCheck2, Landmark, Truck } from "lucide-react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { Calculator, Home, Wallet, TrendingUp, AlertTriangle, ArrowRight } from "lucide-react";
@@ -21,14 +23,26 @@ export const Route = createFileRoute("/calculadoras")({
 const brl = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
+const FLUXO_PLANEJAMENTO: Etapa[] = [
+  { icon: Home, titulo: "Avalie", texto: "Quanto vale o imóvel" },
+  { icon: Landmark, titulo: "Financie", texto: "Parcelas no SAC" },
+  { icon: FileCheck2, titulo: "Calcule o ITBI", texto: "Imposto e cartório" },
+  { icon: Truck, titulo: "Mude", texto: "Frete e cronograma" },
+];
+
 function CalculadorasPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="hero-brand min-h-screen bg-white dark:bg-[#0b1220]">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Calculadoras imobiliárias</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+      <main className="mx-auto max-w-6xl px-4 pb-16 pt-8 md:px-6 md:pt-10">
+        <header className="glass-fosco mb-8 rounded-[28px] px-6 py-9 text-center md:px-10 md:py-10">
+          <span className="inline-block rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+            Ferramentas gratuitas
+          </span>
+          <h1 className="font-brand-display mt-4 text-3xl font-extrabold tracking-tight md:text-4xl">
+            Calculadoras <span className="text-primary">imobiliárias</span>
+          </h1>
+          <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground">
             Ferramentas gratuitas para você planejar a compra ou a mudança.
           </p>
         </header>
@@ -38,6 +52,14 @@ function CalculadorasPage() {
           <FinanciamentoCalc />
           <MudancaCalc />
         </div>
+        <section className="mt-10">
+          <Fluxograma
+            titulo="Planejamento da compra"
+            legenda="Ordem sugerida"
+            etapas={FLUXO_PLANEJAMENTO}
+            resultado="Compra planejada, sem surpresas"
+          />
+        </section>
       </main>
       <SiteFooter />
     </div>
@@ -46,7 +68,7 @@ function CalculadorasPage() {
 
 function Card({ icon: Icon, title, children }: any) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl p-6">
       <div className="mb-4 flex items-center gap-2">
         <div className="rounded-md bg-primary/10 p-2 text-primary">
           <Icon className="h-5 w-5" />

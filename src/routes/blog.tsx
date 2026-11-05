@@ -3,7 +3,28 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getCorporateTenantId } from "@/lib/corporateTenant";
 import { NewsletterCapture } from "@/components/portal/NewsletterCapture";
-import { Calendar, Tag } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Calculator,
+  Calendar,
+  Handshake,
+  MessageCircleQuestion,
+  Sparkles,
+  Tag,
+} from "lucide-react";
+import {
+  BLOCO_BRANCO,
+  BLOCO_CINZA,
+  CARD_GLASS,
+  FaixaEtapas,
+  HeroGlass,
+  PaginaGlass,
+  SELO,
+  TITULO_SECAO,
+  fraseCase,
+} from "@/components/portal/PaginaGlass";
+import { Fluxograma, type Etapa } from "@/components/portal/Fluxograma";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { BlogColumnsLayout } from "@/components/blog/BlogColumnsLayout";
 import { seoHead, getSeoConfig } from "@/lib/seo";
@@ -19,6 +40,20 @@ export const Route = createFileRoute("/blog")({
     }),
   component: BlogPage,
 });
+
+const ETAPAS_TOPO = [
+  { icon: BookOpen, titulo: "Leia" },
+  { icon: Calculator, titulo: "Simule" },
+  { icon: MessageCircleQuestion, titulo: "Tire dúvidas" },
+  { icon: Handshake, titulo: "Decida" },
+];
+
+const FLUXO_LEITURA: Etapa[] = [
+  { icon: BookOpen, titulo: "Leia o artigo", texto: "Mercado, tendências e guias" },
+  { icon: Calculator, titulo: "Simule", texto: "Financiamento, ITBI e mudança" },
+  { icon: Sparkles, titulo: "Pergunte à IA", texto: "Dúvidas respondidas na hora" },
+  { icon: Handshake, titulo: "Fale conosco", texto: "Especialista no seu caso" },
+];
 
 interface Post {
   id: string;
@@ -89,59 +124,48 @@ export default function BlogPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <SiteHeader />
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <section className="py-12 px-4 bg-gradient-to-b from-muted/40 to-background">
-          <div className="container max-w-4xl mx-auto text-center space-y-3">
-            <span className="inline-block bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">
-              Blog
-            </span>
-            <h1 className="text-2xl font-black tracking-tight">
-              Tenha as principais notícias do mercado imobiliário
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Análises, tendências e guias de investimento imobiliário.
-            </p>
-          </div>
-        </section>
-
-        {/* Filtros por categoria */}
-        {categorias.length > 0 && (
-          <div className="border-b border-border/40">
-            <div className="container max-w-4xl mx-auto px-4">
-              <div className="flex gap-1 py-2 overflow-x-auto">
-                {[null, ...categorias].map((cat) => (
-                  <button
-                    key={cat ?? "all"}
-                    onClick={() => setCatFilter(cat)}
-                    className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${
-                      catFilter === cat
-                        ? "bg-primary text-white"
-                        : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {cat ?? "Todos"}
-                  </button>
-                ))}
-              </div>
+      <PaginaGlass>
+        <HeroGlass
+          selo="Blog"
+          titulo="Notícias, análises e guias"
+          destaque="do mercado imobiliário."
+          subtitulo="Tendências, valorização e investimento explicados de forma simples — para você decidir com mais segurança."
+        >
+          <FaixaEtapas etapas={ETAPAS_TOPO} rotulo="Do conteúdo à decisão" />
+          {categorias.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {[null, ...categorias].map((cat) => (
+                <button
+                  key={cat ?? "all"}
+                  type="button"
+                  onClick={() => setCatFilter(cat)}
+                  className={`rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors ${
+                    catFilter === cat
+                      ? "bg-primary text-white"
+                      : "bg-primary/10 text-primary hover:bg-primary/15"
+                  }`}
+                >
+                  {cat ? fraseCase(cat) : "Todos"}
+                </button>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </HeroGlass>
 
         {/* Posts grid + colunas de imóveis à venda/locação e parceiros */}
-        <section className="py-10">
+        <section className={BLOCO_BRANCO}>
           <BlogColumnsLayout>
             {/* Eyebrow espelhando o rótulo das colunas laterais — junto com o
                 badge azul (em vez do laranja usado pelos cards de imóvel),
                 deixa claro de longe o que é conteúdo editorial x anúncio. */}
-            <h2 className="mb-4 flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-muted-foreground">
+            <h2 className="mb-4 flex items-center gap-1.5 text-sm font-bold text-muted-foreground">
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" aria-hidden />
-              Artigos do Blog
+              Artigos do blog
             </h2>
             {loading ? (
               <div className="grid gap-5 sm:grid-cols-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-48 rounded-2xl bg-muted animate-pulse" />
+                  <div key={i} className="h-48 animate-pulse rounded-3xl bg-muted" />
                 ))}
               </div>
             ) : filteredPosts.length === 0 ? (
@@ -155,7 +179,7 @@ export default function BlogPage() {
                     key={p.id}
                     to="/blog/$slug"
                     params={{ slug: p.slug }}
-                    className="group rounded-2xl border border-border/60 bg-card overflow-hidden hover:border-blue-400/50 hover:shadow-md transition-all"
+                    className={`${CARD_GLASS} group overflow-hidden transition hover:-translate-y-0.5`}
                   >
                     {p.imagem_url && (
                       <img
@@ -167,9 +191,9 @@ export default function BlogPage() {
                     <div className="p-4 space-y-2">
                       {p.categoria && (
                         <div className="flex flex-wrap gap-1">
-                          <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                             <Tag className="h-2.5 w-2.5" />
-                            {p.categoria}
+                            {fraseCase(p.categoria)}
                           </span>
                         </div>
                       )}
@@ -195,19 +219,57 @@ export default function BlogPage() {
           </BlogColumnsLayout>
         </section>
 
-        {/* Newsletter */}
-        <section className="py-10 px-4 bg-muted/30 border-t border-border/40">
-          <div className="container max-w-md mx-auto text-center space-y-3">
-            <h3 className="font-black text-sm tracking-tight">
-              Receba lançamentos em primeira mão
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Novidades sobre pré-vendas e valorização imobiliária direto no seu e-mail.
-            </p>
-            <NewsletterCapture source="blog" className="justify-center" />
+        {/* Do conteúdo à decisão: texto 50% + fluxograma 50% */}
+        <section className={BLOCO_CINZA}>
+          <div className="mx-auto grid max-w-6xl items-center gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} space-y-4 p-6 md:p-8`}>
+              <span className={SELO}>Como usar o blog</span>
+              <h2 className={TITULO_SECAO}>Do artigo à decisão certa</h2>
+              <p className="text-sm leading-relaxed text-foreground/80">
+                Cada artigo conversa com as ferramentas do portal: depois de ler, simule os números,
+                tire dúvidas com a nossa IA e, quando quiser, fale com um especialista.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to="/calculadora-financiamento"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-primary/90"
+                >
+                  Simular financiamento <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+                <Link
+                  to="/contato"
+                  className="glass-claro inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition hover:bg-white/60"
+                >
+                  Falar com especialista
+                </Link>
+              </div>
+            </div>
+            <Fluxograma
+              titulo="Do conteúdo à decisão"
+              legenda="Fluxo de leitura"
+              etapas={FLUXO_LEITURA}
+              resultado="Decisão segura e bem informada"
+            />
           </div>
         </section>
-      </div>
+
+        {/* Newsletter (branco, 50%) */}
+        <section className={BLOCO_BRANCO}>
+          <div
+            className={`${CARD_GLASS} mx-auto grid max-w-6xl items-center gap-4 p-6 md:grid-cols-2 md:p-8`}
+          >
+            <div>
+              <p className="font-brand-display text-lg font-extrabold">
+                Receba lançamentos em primeira mão
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Novidades sobre pré-vendas e valorização imobiliária direto no seu e-mail.
+              </p>
+            </div>
+            <NewsletterCapture source="blog" className="justify-center md:justify-end" />
+          </div>
+        </section>
+      </PaginaGlass>
       <SiteFooter />
     </>
   );
