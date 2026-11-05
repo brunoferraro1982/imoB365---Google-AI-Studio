@@ -337,17 +337,11 @@ export function SiteWidgetsLayout({
  */
 export function SiteWidgetsFaixa({ ctx, widgets }: { ctx: SiteCtx; widgets: SiteWidget[] }) {
   if (!widgets.length) return null;
-  const cols =
-    widgets.length >= 4
-      ? "sm:grid-cols-2 lg:grid-cols-4"
-      : widgets.length === 3
-        ? "sm:grid-cols-2 lg:grid-cols-3"
-        : widgets.length === 2
-          ? "sm:grid-cols-2"
-          : "";
+  // auto-fit: widgets sem conteúdo (ex.: blog sem posts) não deixam coluna
+  // vazia — os cartões que existem esticam para ocupar a faixa.
   return (
     <section className="mx-auto max-w-6xl px-4 py-10 md:px-6">
-      <div className={`grid items-stretch gap-4 ${cols}`}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,260px),1fr))] items-stretch gap-4">
         {widgets.map((w) => (
           <SiteWidgetCard key={w.id} widget={w} ctx={ctx} />
         ))}
