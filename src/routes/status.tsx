@@ -1,6 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, XCircle } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Eye,
+  Radar,
+  Search,
+  Timer,
+  XCircle,
+} from "lucide-react";
+import {
+  BLOCO_BRANCO,
+  BLOCO_CINZA,
+  CARD_GLASS,
+  HeroGlass,
+  PaginaGlass,
+  SELO,
+  TITULO_SECAO,
+} from "@/components/portal/PaginaGlass";
+import { Fluxograma, type Etapa } from "@/components/portal/Fluxograma";
 import { SiteHeader, SiteFooter } from "@/components/site-layout";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { buscarResumoHistorico, type ResumoDiario, type StatusValue } from "@/lib/statusPage";
@@ -152,6 +171,13 @@ function HistoricoStrip({ historico }: { historico: ResumoDiario[] }) {
   );
 }
 
+const FLUXO_MONITORAMENTO: Etapa[] = [
+  { icon: Timer, titulo: "Checagem", texto: "Automática a cada 5 minutos" },
+  { icon: Radar, titulo: "Detecção", texto: "Falha ou lentidão registrada" },
+  { icon: Search, titulo: "Investigação", texto: "Causa identificada pela equipe" },
+  { icon: Eye, titulo: "Monitoramento", texto: "Correção acompanhada aqui" },
+];
+
 function StatusPage() {
   const { servicos, incidentes } = Route.useLoaderData();
 
@@ -181,79 +207,108 @@ function StatusPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-
-      <div className="mx-auto max-w-4xl px-6 py-12 md:py-16">
-        <h1 className="text-3xl font-bold tracking-tight">Status da plataforma</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Atualizado automaticamente a cada 5 minutos. Horários em UTC.{" "}
-          <a
-            href="/api/public/status.json"
-            className="underline underline-offset-2 hover:text-foreground"
+      <PaginaGlass>
+        <HeroGlass
+          selo="Status"
+          seloIcon={Activity}
+          titulo="Status da plataforma"
+          destaque="monitorado a cada 5 minutos."
+          subtitulo={
+            <>
+              Horários em UTC.{" "}
+              <a
+                href="/api/public/status.json"
+                className="text-primary underline underline-offset-2"
+              >
+                Ver como JSON
+              </a>
+              .
+            </>
+          }
+        >
+          <div
+            className={`mx-auto inline-flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold ${bannerConfig.cls}`}
           >
-            Ver como JSON
-          </a>
-          .
-        </p>
+            <StatusPill status={piorStatus} /> <span>· {bannerConfig.texto}</span>
+          </div>
+        </HeroGlass>
 
-        <div className={`mt-8 rounded-xl border px-5 py-4 text-sm font-medium ${bannerConfig.cls}`}>
-          {bannerConfig.texto}
-        </div>
-
-        <div className="mt-8 divide-y divide-border rounded-xl border border-border bg-card">
-          {servicos.map((s) => (
-            <div key={s.slug} className="p-5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="font-medium">{s.nome}</div>
-                  {s.descricao && (
-                    <div className="text-xs text-muted-foreground">{s.descricao}</div>
-                  )}
-                </div>
-                <StatusPill status={s.status} />
-              </div>
-              <div className="mt-3">
-                <HistoricoStrip historico={s.historico} />
-                <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
-                  <span>90 dias atrás</span>
-                  <span>hoje</span>
-                </div>
-              </div>
+        <section className={BLOCO_CINZA}>
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-6 space-y-2">
+              <span className={SELO}>Serviços</span>
+              <h2 className={TITULO_SECAO}>Disponibilidade nos últimos 90 dias</h2>
             </div>
-          ))}
-        </div>
-
-        <p className="mt-4 text-xs text-muted-foreground">
-          Nota técnica: as checagens rodam a partir da própria infraestrutura da plataforma. Numa
-          interrupção total do servidor, este status pode ficar temporariamente desatualizado em vez
-          de refletir "fora do ar" — para esse cenário, uma checagem externa independente é o
-          próximo passo de evolução deste monitoramento.
-        </p>
-
-        <h2 className="mt-12 text-xl font-semibold tracking-tight">Histórico de incidentes</h2>
-
-        {incidentesAbertos.length === 0 && incidentesResolvidos.length === 0 && (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Nenhum incidente registrado nos últimos períodos.
-          </p>
-        )}
-
-        {incidentesAbertos.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {incidentesAbertos.map((i) => (
-              <IncidenteCard key={i.id} incidente={i} />
-            ))}
+            <div className="grid gap-4 md:grid-cols-2">
+              {servicos.map((s) => (
+                <div key={s.slug} className={`${CARD_GLASS} p-5`}>
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="font-bold">{s.nome}</div>
+                      {s.descricao && (
+                        <div className="text-xs text-muted-foreground">{s.descricao}</div>
+                      )}
+                    </div>
+                    <StatusPill status={s.status} />
+                  </div>
+                  <div className="mt-3">
+                    <HistoricoStrip historico={s.historico} />
+                    <div className="mt-1 flex justify-between text-[11px] text-muted-foreground">
+                      <span>90 dias atrás</span>
+                      <span>hoje</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+        </section>
 
-        {incidentesResolvidos.length > 0 && (
-          <div className="mt-4 space-y-3">
-            {incidentesResolvidos.map((i) => (
-              <IncidenteCard key={i.id} incidente={i} />
-            ))}
+        <section className={BLOCO_BRANCO}>
+          <div className="mx-auto grid max-w-6xl items-center gap-5 md:grid-cols-2">
+            <div className={`${CARD_GLASS} space-y-3 p-6 md:p-8`}>
+              <span className={SELO}>Como monitoramos</span>
+              <h2 className={TITULO_SECAO}>Da checagem à solução</h2>
+              <p className="text-sm leading-relaxed text-foreground/80">
+                Cada serviço é checado automaticamente a cada 5 minutos. Quando algo sai do normal,
+                o incidente é aberto aqui e atualizado a cada etapa até a solução.
+              </p>
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                Nota técnica: as checagens rodam a partir da própria infraestrutura da plataforma.
+                Numa interrupção total do servidor, este status pode ficar temporariamente
+                desatualizado em vez de refletir "fora do ar" — para esse cenário, uma checagem
+                externa independente é o próximo passo de evolução deste monitoramento.
+              </p>
+            </div>
+            <Fluxograma
+              titulo="Monitoramento e incidentes"
+              legenda="Fluxo de monitoramento"
+              etapas={FLUXO_MONITORAMENTO}
+              resultado="Serviço normalizado e registrado"
+            />
           </div>
-        )}
-      </div>
+        </section>
 
+        <section className={BLOCO_CINZA}>
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-6 space-y-2">
+              <span className={SELO}>Incidentes</span>
+              <h2 className={TITULO_SECAO}>Histórico de incidentes</h2>
+            </div>
+            {incidentesAbertos.length === 0 && incidentesResolvidos.length === 0 && (
+              <div className={`${CARD_GLASS} flex items-center gap-3 p-5 text-sm`}>
+                <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                Nenhum incidente registrado nos últimos períodos.
+              </div>
+            )}
+            <div className="space-y-3">
+              {[...incidentesAbertos, ...incidentesResolvidos].map((i) => (
+                <IncidenteCard key={i.id} incidente={i} />
+              ))}
+            </div>
+          </div>
+        </section>
+      </PaginaGlass>
       <SiteFooter />
     </div>
   );
@@ -261,9 +316,9 @@ function StatusPage() {
 
 function IncidenteCard({ incidente }: { incidente: IncidenteResumo }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className={`${CARD_GLASS} p-5`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="font-medium">{incidente.titulo}</div>
+        <div className="font-bold">{incidente.titulo}</div>
         <div className="flex items-center gap-2 text-xs">
           <span className="rounded-full border border-border px-2 py-0.5 text-muted-foreground">
             {IMPACTO_LABEL[incidente.impacto]}
