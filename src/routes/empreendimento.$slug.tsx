@@ -245,7 +245,7 @@ function EmpreendimentoDetail() {
                   <img
                     src={emp.construtora_ref.logo_url}
                     alt={emp.construtora_ref.nome}
-                    className="h-5 w-5 rounded object-contain"
+                    className="h-5 w-auto max-w-[96px] object-contain"
                   />
                 )}
                 por {emp.construtora_ref.nome}
