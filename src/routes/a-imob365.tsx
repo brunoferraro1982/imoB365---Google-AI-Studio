@@ -32,7 +32,7 @@ export const Route = createFileRoute("/a-imob365")({
       path: "/a-imob365",
       title: "A imoB365 | Inteligência Imobiliária de Alto Padrão",
       description:
-        "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento 365 dias por ano em todo o Brasil.",
+        "Não somos uma imobiliária — somos parceiros do seu patrimônio. Consultoria especializada em ativos de alto padrão, com dados, tecnologia e atendimento com prazos de resposta definidos em todo o Brasil.",
     }),
   component: AImob365Page,
 });
@@ -133,7 +133,7 @@ const VALORES = [
 ];
 
 const STATS = [
-  { valor: "365", label: "Dias por ano atendendo", icon: Star },
+  { valor: "SLA", label: "Prazos de resposta definidos", icon: Star },
   { valor: "Brasil", label: "Cobertura de atendimento", icon: Globe },
   { valor: "R$ 3MI+", label: "Portfólio disponível", icon: TrendingUp },
   { valor: "100%", label: "Foco no seu patrimônio", icon: Eye },
@@ -201,8 +201,9 @@ function AImob365Page() {
               <span className="text-primary">Somos Parceiros do Seu Patrimônio.</span>
             </h1>
             <p className="text-white/65 leading-relaxed max-w-2xl mx-auto text-sm sm:text-base">
-              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura. Operamos
-              365 dias por ano, em todo o Brasil, com inteligência, dados e total transparência.
+              A imoB365 transforma decisões imobiliárias em vantagem patrimonial duradoura. Atuamos
+              em todo o Brasil, com inteligência, dados, total transparência e prazos de resposta
+              definidos.
             </p>
             <div className="flex flex-wrap gap-3 justify-center pt-2">
               <a
@@ -293,9 +294,9 @@ function AImob365Page() {
               <p className="text-sm text-foreground/80 leading-relaxed">
                 A <strong>imoB365</strong> nasceu para preencher uma lacuna no mercado imobiliário
                 de alto padrão: a necessidade de uma consultoria que entenda o imóvel não apenas
-                como uma moradia, mas como um <strong>ativo estratégico</strong>. Operamos{" "}
-                <strong>365 dias por ano</strong>, em todo o Brasil, para garantir que cada
-                oportunidade seja capturada no momento certo.
+                como uma moradia, mas como um <strong>ativo estratégico</strong>. Atuamos em todo o
+                Brasil com <strong>qualidade de atendimento e prazos definidos</strong>, para
+                garantir que cada oportunidade seja capturada no momento certo.
               </p>
             </div>
           </div>

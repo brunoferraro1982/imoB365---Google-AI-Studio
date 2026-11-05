@@ -82,7 +82,7 @@ const CORPORATE_A_IMOB365_LEAVES: MegaNavLeaf[] = [
     to: "/a-imob365",
     hash: "numeros",
     label: "Nossos Números",
-    desc: "365 dias, cobertura nacional, R$3MI+",
+    desc: "Cobertura nacional, SLA de atendimento, R$3MI+",
   },
   {
     key: "servicos",
@@ -576,7 +576,7 @@ export function SiteFooter() {
               </li>
               <li className="group flex items-center gap-3">
                 <IconeVidro icon={HeartHandshake} />
-                Suporte 365 dias por ano
+                Atendimento com SLA definido
               </li>
             </ul>
 

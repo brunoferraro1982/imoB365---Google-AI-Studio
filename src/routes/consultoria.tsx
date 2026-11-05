@@ -91,7 +91,7 @@ function ConsultoriaPage() {
         <section className="py-12 px-4 bg-primary text-white text-center">
           <h2 className="text-xl font-black tracking-tight mb-2">Você tem alguma dúvida?</h2>
           <p className="text-white/80 text-sm mb-5">
-            Nossa equipe está disponível 365 dias por ano para te atender.
+            Nossa equipe atende com qualidade e prazos de resposta definidos (SLA).
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
