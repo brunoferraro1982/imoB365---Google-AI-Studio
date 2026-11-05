@@ -2965,6 +2965,27 @@ export type Database = {
           },
         ];
       };
+      fornecedor_sync: {
+        Row: {
+          executado_em: string;
+          fonte: string;
+          relatorio: Json | null;
+          snapshot: Json;
+        };
+        Insert: {
+          executado_em?: string;
+          fonte: string;
+          relatorio?: Json | null;
+          snapshot?: Json;
+        };
+        Update: {
+          executado_em?: string;
+          fonte?: string;
+          relatorio?: Json | null;
+          snapshot?: Json;
+        };
+        Relationships: [];
+      };
       global_settings: {
         Row: {
           key: string;

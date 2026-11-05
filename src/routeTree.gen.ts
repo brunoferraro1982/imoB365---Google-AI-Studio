@@ -205,6 +205,7 @@ import { Route as ApiPublicV1LeadsRouteImport } from './routes/api.public.v1.lea
 import { Route as ApiPublicV1ImoveisRouteImport } from './routes/api.public.v1.imoveis'
 import { Route as ApiPublicEmailTemplatesTypeRouteImport } from './routes/api.public.email-templates.$type'
 import { Route as ApiPublicCronVisitasNotificacoesRouteImport } from './routes/api.public.cron.visitas-notificacoes'
+import { Route as ApiPublicCronSyncFornecedoresRouteImport } from './routes/api.public.cron.sync-fornecedores'
 import { Route as ApiPublicCronStatusCleanupRouteImport } from './routes/api.public.cron.status-cleanup'
 import { Route as ApiPublicCronStatusCheckRouteImport } from './routes/api.public.cron.status-check'
 import { Route as ApiPublicCronSnapshotRouteImport } from './routes/api/public/cron.snapshot'
@@ -1241,6 +1242,12 @@ const ApiPublicCronVisitasNotificacoesRoute =
     path: '/api/public/cron/visitas-notificacoes',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronSyncFornecedoresRoute =
+  ApiPublicCronSyncFornecedoresRouteImport.update({
+    id: '/api/public/cron/sync-fornecedores',
+    path: '/api/public/cron/sync-fornecedores',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronStatusCleanupRoute =
   ApiPublicCronStatusCleanupRouteImport.update({
     id: '/api/public/cron/status-cleanup',
@@ -1578,6 +1585,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
+  '/api/public/cron/sync-fornecedores': typeof ApiPublicCronSyncFornecedoresRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
@@ -1796,6 +1804,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
+  '/api/public/cron/sync-fornecedores': typeof ApiPublicCronSyncFornecedoresRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
@@ -2020,6 +2029,7 @@ export interface FileRoutesById {
   '/api/public/cron/snapshot': typeof ApiPublicCronSnapshotRoute
   '/api/public/cron/status-check': typeof ApiPublicCronStatusCheckRoute
   '/api/public/cron/status-cleanup': typeof ApiPublicCronStatusCleanupRoute
+  '/api/public/cron/sync-fornecedores': typeof ApiPublicCronSyncFornecedoresRoute
   '/api/public/cron/visitas-notificacoes': typeof ApiPublicCronVisitasNotificacoesRoute
   '/api/public/email-templates/$type': typeof ApiPublicEmailTemplatesTypeRoute
   '/api/public/v1/imoveis': typeof ApiPublicV1ImoveisRouteWithChildren
@@ -2245,6 +2255,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/snapshot'
     | '/api/public/cron/status-check'
     | '/api/public/cron/status-cleanup'
+    | '/api/public/cron/sync-fornecedores'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
@@ -2463,6 +2474,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/snapshot'
     | '/api/public/cron/status-check'
     | '/api/public/cron/status-cleanup'
+    | '/api/public/cron/sync-fornecedores'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
@@ -2686,6 +2698,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/snapshot'
     | '/api/public/cron/status-check'
     | '/api/public/cron/status-cleanup'
+    | '/api/public/cron/sync-fornecedores'
     | '/api/public/cron/visitas-notificacoes'
     | '/api/public/email-templates/$type'
     | '/api/public/v1/imoveis'
@@ -2796,6 +2809,7 @@ export interface RootRouteChildren {
   ApiPublicCronSnapshotRoute: typeof ApiPublicCronSnapshotRoute
   ApiPublicCronStatusCheckRoute: typeof ApiPublicCronStatusCheckRoute
   ApiPublicCronStatusCleanupRoute: typeof ApiPublicCronStatusCleanupRoute
+  ApiPublicCronSyncFornecedoresRoute: typeof ApiPublicCronSyncFornecedoresRoute
   ApiPublicCronVisitasNotificacoesRoute: typeof ApiPublicCronVisitasNotificacoesRoute
   ApiPublicEmailTemplatesTypeRoute: typeof ApiPublicEmailTemplatesTypeRoute
   ApiPublicV1ImoveisRoute: typeof ApiPublicV1ImoveisRouteWithChildren
@@ -4198,6 +4212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronVisitasNotificacoesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/sync-fornecedores': {
+      id: '/api/public/cron/sync-fornecedores'
+      path: '/api/public/cron/sync-fornecedores'
+      fullPath: '/api/public/cron/sync-fornecedores'
+      preLoaderRoute: typeof ApiPublicCronSyncFornecedoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/status-cleanup': {
       id: '/api/public/cron/status-cleanup'
       path: '/api/public/cron/status-cleanup'
@@ -4750,6 +4771,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronSnapshotRoute: ApiPublicCronSnapshotRoute,
   ApiPublicCronStatusCheckRoute: ApiPublicCronStatusCheckRoute,
   ApiPublicCronStatusCleanupRoute: ApiPublicCronStatusCleanupRoute,
+  ApiPublicCronSyncFornecedoresRoute: ApiPublicCronSyncFornecedoresRoute,
   ApiPublicCronVisitasNotificacoesRoute: ApiPublicCronVisitasNotificacoesRoute,
   ApiPublicEmailTemplatesTypeRoute: ApiPublicEmailTemplatesTypeRoute,
   ApiPublicV1ImoveisRoute: ApiPublicV1ImoveisRouteWithChildren,
