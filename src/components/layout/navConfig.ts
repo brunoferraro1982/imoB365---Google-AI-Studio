@@ -4,6 +4,7 @@
  * ativo/rótulo usados pelo trilho, pelo submenu e pela barra inferior.
  */
 import {
+  MessageCircle,
   Building2,
   Users,
   UserCircle2,
@@ -64,9 +65,19 @@ export type Module = {
   icon: LucideIcon;
   items: Item[];
   requiredModule?: AppModule;
+  /** Destaque visual no trilho (ex.: chat, principal canal do corretor). */
+  destaque?: boolean;
 };
 
 export const tenantModules: Module[] = [
+  {
+    id: "chat",
+    label: "Chat",
+    curto: "Chat",
+    icon: MessageCircle,
+    destaque: true,
+    items: [{ to: "/app/chat", label: "Conversas", icon: MessageCircle }],
+  },
   {
     id: "dashboard",
     label: "Dashboard",

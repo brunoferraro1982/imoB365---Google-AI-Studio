@@ -46,3 +46,20 @@ export function ChatBadge({ to = "/app/chat" }: { to?: string }) {
     </Link>
   );
 }
+
+/** Contador de não lidas para o item de chat no trilho (sem novo canal realtime: o ChatBadge do topo já assina). */
+export function ChatUnreadBadge() {
+  const fn = useServerFn(getUnreadTotal);
+  const { data } = useQuery({
+    queryKey: ["chat", "unread"],
+    queryFn: () => fn({ data: undefined }),
+    refetchInterval: 60_000,
+  });
+  const total = (data?.corretor ?? 0) + (data?.interessado ?? 0);
+  if (total <= 0) return null;
+  return (
+    <span className="inline-flex h-4 min-w-[16px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-primary shadow">
+      {total > 99 ? "99+" : total}
+    </span>
+  );
+}

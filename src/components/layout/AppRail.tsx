@@ -10,6 +10,10 @@ export type RailSection = {
   curto?: string;
   icon: LucideIcon;
   items: { to: string }[];
+  /** Destaque visual permanente (ex.: chat). */
+  destaque?: boolean;
+  /** Indicador extra no canto do item (ex.: contador de não lidas). */
+  badge?: ReactNode;
 };
 
 /**
@@ -44,14 +48,19 @@ export function AppRail({
               to={s.items[0].to}
               title={s.label}
               aria-current={ativo ? "page" : undefined}
-              className={`flex flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-center text-[10.5px] font-medium leading-tight transition-colors ${
-                ativo
-                  ? "bg-primary/20 text-primary shadow-sm"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+              className={`relative flex flex-col items-center gap-1 rounded-xl px-1 py-2.5 text-center text-[10.5px] leading-tight transition-colors ${
+                s.destaque
+                  ? ativo
+                    ? "bg-primary text-primary-foreground font-bold shadow-md shadow-primary/30"
+                    : "bg-primary/15 font-bold text-primary ring-1 ring-primary/40 hover:bg-primary/25"
+                  : ativo
+                    ? "bg-primary/20 font-medium text-primary shadow-sm"
+                    : "font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
               }`}
             >
               <s.icon className={`h-5 w-5 shrink-0 ${ativo ? "stroke-[2.25px]" : "opacity-85"}`} />
               <span className="line-clamp-1 w-full">{s.curto ?? s.label}</span>
+              {s.badge && <span className="absolute right-1 top-1">{s.badge}</span>}
             </Link>
           );
         })}

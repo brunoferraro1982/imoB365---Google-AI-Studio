@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getPendingMfaFactorId } from "@/lib/mfaGate";
-import { ChatBadge } from "@/components/chat/ChatBadge";
+import { ChatBadge, ChatUnreadBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
 import { LogOut, Menu, ShieldCheck } from "lucide-react";
@@ -252,6 +252,8 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           curto: m.curto,
           icon: m.icon,
           items: m.items,
+          destaque: m.destaque,
+          badge: m.id === "chat" ? <ChatUnreadBadge /> : undefined,
         }))}
         activeId={activeModule.id}
         ariaLabel="Módulos"
