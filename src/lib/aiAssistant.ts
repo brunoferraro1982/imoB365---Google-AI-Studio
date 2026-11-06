@@ -360,6 +360,7 @@ const TELAS_BACKEND: { prefixo: string; nome: string }[] = [
   { prefixo: "/app/financeiro", nome: "Financeiro (contas a pagar e receber)" },
   { prefixo: "/app/locacao/repasses", nome: "Repasses de aluguel ao proprietário (locação)" },
   { prefixo: "/app/locacao/prestacao-contas", nome: "Prestação de contas (locação)" },
+  { prefixo: "/app/leads/captacao", nome: "Captação Automática de leads" },
   { prefixo: "/app/portais/meta", nome: "Redes sociais (Marketing)" },
   { prefixo: "/app/parcerias", nome: "Parcerias (Marketing)" },
   { prefixo: "/app/site", nome: "Site da imobiliária" },

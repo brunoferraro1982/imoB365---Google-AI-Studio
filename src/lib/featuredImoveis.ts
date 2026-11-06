@@ -34,7 +34,7 @@ export type ImovelComposivel = {
 function normalizar(s: string | null | undefined): string {
   // NFD + remove diacríticos via property escape \p{Diacritic} (fonte 100%
   // ASCII — evita caractere combinante literal no arquivo, gotcha já
-  // documentado no projeto em aiAssistant.ts / o módulo de captação).
+  // documentado no projeto em aiAssistant.ts / captacao.ts).
   return (s ?? "")
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")

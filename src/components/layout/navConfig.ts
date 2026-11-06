@@ -4,6 +4,7 @@
  * ativo/rótulo usados pelo trilho, pelo submenu e pela barra inferior.
  */
 import {
+  Radar,
   Palette,
   Share2,
   Clock,
@@ -124,6 +125,7 @@ export const tenantModules: Module[] = [
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/leads", label: "Leads", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
+      { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
       { to: "/app/parceiros-comerciais", label: "Parceiros Comerciais", icon: Briefcase },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },

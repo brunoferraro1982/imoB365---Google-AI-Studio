@@ -127,6 +127,7 @@ import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
 import { Route as AppMarketingGoogleAdsRouteImport } from './routes/app.marketing.google-ads'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
+import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -213,6 +214,7 @@ import { Route as ApiPublicCronGerarCobrancasMercadopagoRouteImport } from './ro
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronConstrutoraIngestaoRouteImport } from './routes/api.public.cron.construtora-ingestao'
+import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
@@ -819,6 +821,11 @@ const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   path: '/leads/configuracao',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLeadsCaptacaoRoute = AppLeadsCaptacaoRouteImport.update({
+  id: '/leads/captacao',
+  path: '/leads/captacao',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
   id: '/leads/analise-risco',
   path: '/leads/analise-risco',
@@ -1286,6 +1293,11 @@ const ApiPublicCronConstrutoraIngestaoRoute =
     path: '/api/public/cron/construtora-ingestao',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronCaptacaoRoute = ApiPublicCronCaptacaoRouteImport.update({
+  id: '/api/public/cron/captacao',
+  path: '/api/public/cron/captacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronBuscasAlertasRoute =
   ApiPublicCronBuscasAlertasRouteImport.update({
     id: '/api/public/cron/buscas-alertas',
@@ -1509,6 +1521,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -1541,6 +1554,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -1723,6 +1737,7 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -1755,6 +1770,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -1943,6 +1959,7 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -1975,6 +1992,7 @@ export interface FileRoutesById {
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
+  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -2164,6 +2182,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2196,6 +2215,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2378,6 +2398,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2410,6 +2431,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2597,6 +2619,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2629,6 +2652,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
+    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2737,6 +2761,7 @@ export interface RootRouteChildren {
   ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
   ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
+  ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronConstrutoraIngestaoRoute: typeof ApiPublicCronConstrutoraIngestaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
@@ -3601,6 +3626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeadsConfiguracaoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leads/captacao': {
+      id: '/app/leads/captacao'
+      path: '/leads/captacao'
+      fullPath: '/app/leads/captacao'
+      preLoaderRoute: typeof AppLeadsCaptacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/analise-risco': {
       id: '/app/leads/analise-risco'
       path: '/leads/analise-risco'
@@ -4203,6 +4235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronConstrutoraIngestaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/captacao': {
+      id: '/api/public/cron/captacao'
+      path: '/api/public/cron/captacao'
+      fullPath: '/api/public/cron/captacao'
+      preLoaderRoute: typeof ApiPublicCronCaptacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/buscas-alertas': {
       id: '/api/public/cron/buscas-alertas'
       path: '/api/public/cron/buscas-alertas'
@@ -4467,6 +4506,7 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
+  AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
   AppMarketingGoogleAdsRoute: typeof AppMarketingGoogleAdsRoute
@@ -4530,6 +4570,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
+  AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
   AppMarketingGoogleAdsRoute: AppMarketingGoogleAdsRoute,
@@ -4656,6 +4697,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
   ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
+  ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronConstrutoraIngestaoRoute: ApiPublicCronConstrutoraIngestaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,

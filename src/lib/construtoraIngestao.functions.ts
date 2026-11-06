@@ -19,7 +19,7 @@ import { extrairImovelDeTexto } from "@/lib/construtoraIngestaoAI";
 // policy de escrita pra super_admin/robô (ver
 // supabase/migrations/20260730100000_construtora_ingestao.sql). Como isso
 // contorna a RLS, checamos super_admin explicitamente aqui, sem depender
-// dela — mesmo padrão de o módulo de captação (removido).
+// dela — mesmo padrão de src/lib/captacao.functions.ts.
 //
 // Achado real em produção: o ciclo completo (crawl + Drive + Gemini) leva
 // 20-25+ minutos pro dataset real do GMV — bem além do proxy_read_timeout
