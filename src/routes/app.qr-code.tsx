@@ -441,7 +441,7 @@ function QrCodePage() {
         </div>
 
         <div className="lg:col-span-2">
-          <div className="sticky top-6 rounded-xl border border-border bg-card p-5 text-center">
+          <div className="sticky top-16 rounded-xl border border-border bg-card p-5 text-center">
             {ultimoQr ? (
               <>
                 <img

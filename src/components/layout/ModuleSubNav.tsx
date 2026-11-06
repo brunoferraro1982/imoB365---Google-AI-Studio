@@ -10,7 +10,7 @@
  */
 import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
-import type { ComponentType } from "react";
+import { isItemActive, type Item as SubItem } from "@/components/layout/navConfig";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -18,34 +18,15 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-type SubItem = { to: string; label: string; icon: ComponentType<{ className?: string }> };
-
-// Reaproveita 1:1 a regra do aside do AppShell: trata o caso especial "/app" e
-// desempata por prefixo (o item mais específico vence entre irmãos).
-function itemAtivo(item: SubItem, items: SubItem[], current: string): boolean {
-  if (item.to === "/app") return current === "/app";
-  return (
-    current === item.to ||
-    (current.startsWith(item.to + "/") &&
-      !items.some(
-        (s) =>
-          s.to !== item.to &&
-          s.to !== "/app" &&
-          current.startsWith(s.to) &&
-          s.to.length > item.to.length,
-      ))
-  );
-}
-
 export function ModuleSubNav({ items, current }: { items: SubItem[]; current: string }) {
   // Módulo de item único não precisa de sub-nav.
   if (items.length <= 1) return null;
 
-  const atual = items.find((it) => itemAtivo(it, items, current)) ?? items[0];
+  const atual = items.find((it) => isItemActive(it, items, current)) ?? items[0];
   const IconAtual = atual.icon;
 
   return (
-    <div className="sticky top-15 z-20 border-b border-sidebar-border/70 bg-sidebar/95 px-3 py-2 backdrop-blur-md md:hidden print:hidden">
+    <div className="sticky top-12 z-20 border-b border-border/70 bg-card/95 px-3 py-2 backdrop-blur-md lg:hidden print:hidden">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border/70 bg-sidebar-accent/30 px-3 py-2 text-sm font-medium text-sidebar-foreground">
@@ -59,7 +40,7 @@ export function ModuleSubNav({ items, current }: { items: SubItem[]; current: st
           className="max-h-[70vh] w-[calc(100vw-1.5rem)] overflow-y-auto"
         >
           {items.map((item) => {
-            const active = itemAtivo(item, items, current);
+            const active = isItemActive(item, items, current);
             return (
               <DropdownMenuItem key={item.to} asChild>
                 <Link
