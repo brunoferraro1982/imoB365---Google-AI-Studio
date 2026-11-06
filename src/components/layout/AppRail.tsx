@@ -59,7 +59,9 @@ export function AppRail({
               }`}
             >
               <s.icon className={`h-5 w-5 shrink-0 ${ativo ? "stroke-[2.25px]" : "opacity-85"}`} />
-              <span className="line-clamp-1 w-full">{s.curto ?? s.label}</span>
+              <span className="line-clamp-1 w-full text-[10px] tracking-tight">
+                {s.curto ?? s.label}
+              </span>
               {s.badge && <span className="absolute right-1 top-1">{s.badge}</span>}
             </Link>
           );

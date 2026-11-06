@@ -4,6 +4,7 @@
  * ativo/rótulo usados pelo trilho, pelo submenu e pela barra inferior.
  */
 import {
+  Clock,
   MessageCircle,
   Building2,
   Users,
@@ -57,7 +58,13 @@ import {
 import { canAccessModule, isModuleEnabled, type AppModule } from "@/lib/permissions";
 import type { AppRole } from "@/hooks/useAuth";
 
-export type Item = { to: string; label: string; icon: LucideIcon };
+export type Item = {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+  /** Item só aparece se o plano incluir este módulo. */
+  requiredModule?: AppModule;
+};
 export type Module = {
   id: string;
   label: string;
@@ -72,23 +79,26 @@ export type Module = {
 
 export const tenantModules: Module[] = [
   {
-    id: "chat",
-    label: "Chat",
-    curto: "Chat",
-    icon: MessageCircle,
-    destaque: true,
-    items: [{ to: "/app/chat", label: "Conversas", icon: MessageCircle }],
-  },
-  {
     id: "atendimento",
-    requiredModule: "atendimento" as AppModule,
-    label: "Central de Atendimento",
-    curto: "Central",
-    destaque: true,
+    label: "Atendimento",
+    curto: "Atendimento",
     icon: Headset,
+    destaque: true,
     items: [
-      { to: "/app/atendimento", label: "Chamados", icon: Headset },
-      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
+      { to: "/app/atendimento", label: "Painel", icon: LayoutDashboard },
+      { to: "/app/chat", label: "Conversas", icon: MessageCircle },
+      {
+        to: "/app/atendimento/chamados",
+        label: "Chamados",
+        icon: Headset,
+        requiredModule: "atendimento" as AppModule,
+      },
+      {
+        to: "/app/configuracoes/atendimento-sla",
+        label: "SLA e canais",
+        icon: Clock,
+        requiredModule: "atendimento" as AppModule,
+      },
     ],
   },
   {
@@ -371,10 +381,10 @@ export function modulosVisiveis({
   enabledModules: AppModule[];
   isSuperAdmin: boolean;
 }): Module[] {
-  return tenantModules.filter((m) => {
-    if (isSuperAdmin) return true;
-    const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
-    const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
-    return roleOk && planOk;
-  });
+  const podeVer = (mod?: AppModule) =>
+    isSuperAdmin || !mod || (canAccessModule(roles, mod) && isModuleEnabled(enabledModules, mod));
+  return tenantModules
+    .filter((m) => podeVer(m.requiredModule))
+    .map((m) => ({ ...m, items: m.items.filter((it) => podeVer(it.requiredModule)) }))
+    .filter((m) => m.items.length > 0);
 }
