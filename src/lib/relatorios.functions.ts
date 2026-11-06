@@ -26,6 +26,8 @@ export type RelatoriosData = {
   financeiro_por_centro_custo: { centro_custo: string; entradas: number; saidas: number }[];
   financeiro_por_plano_conta: { plano_conta: string; tipo: string; total: number }[];
   ranking_corretores: { corretor: string; leads: number; ganhos: number }[];
+  /** false quando as métricas de tráfego não puderam ser lidas (erro na RPC). */
+  metricas_disponiveis: boolean;
   ranking_imoveis: {
     id: string;
     titulo: string;
@@ -315,7 +317,11 @@ export const getRelatorios = createServerFn({ method: "POST" })
     // pública); favoritos da tabela favoritos. Tudo agregado pela RPC
     // relatorio_metricas_imoveis (tenant resolvido do próprio auth.uid()).
     const activeListings = imoveis.filter((x) => x.status === "ativo" && x.publicado);
-    const { data: metricasRows } = await (supabase as any).rpc("relatorio_metricas_imoveis");
+    const { data: metricasRows, error: metricasErro } = await (supabase as any).rpc(
+      "relatorio_metricas_imoveis",
+    );
+    if (metricasErro)
+      console.error("[relatorios] relatorio_metricas_imoveis:", metricasErro.message);
     const metricasMap = new Map<
       string,
       { views: number; whatsapp_clicks: number; favoritos: number }
@@ -370,6 +376,7 @@ export const getRelatorios = createServerFn({ method: "POST" })
       financeiro_por_plano_conta,
       ranking_corretores,
       ranking_imoveis,
+      metricas_disponiveis: !metricasErro,
       imoveis_por_tipo,
       funil_conversao,
       tempo_medio_dias,

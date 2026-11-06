@@ -144,10 +144,12 @@ function ImovelDetail() {
     const key = `iv:${imovel.id}`;
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
-    void (supabase as any).rpc("public_record_imovel_evento", {
-      _imovel_id: imovel.id,
-      _tipo: "view",
-    });
+    (supabase as any)
+      .rpc("public_record_imovel_evento", {
+        _imovel_id: imovel.id,
+        _tipo: "view",
+      })
+      .then(() => undefined);
   }, [imovel?.id]);
 
   useEffect(() => {
@@ -339,10 +341,12 @@ function ImovelDetail() {
                     target="_blank"
                     rel="noreferrer"
                     onClick={() =>
-                      void (supabase as any).rpc("public_record_imovel_evento", {
-                        _imovel_id: imovel.id,
-                        _tipo: "whatsapp_click",
-                      })
+                      (supabase as any)
+                        .rpc("public_record_imovel_evento", {
+                          _imovel_id: imovel.id,
+                          _tipo: "whatsapp_click",
+                        })
+                        .then(() => undefined)
                     }
                     className="mt-4 flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
                   >

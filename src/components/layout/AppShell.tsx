@@ -1,272 +1,30 @@
-import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, Outlet, useNavigate, useRouterState, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { getPendingMfaFactorId } from "@/lib/mfaGate";
-import { ChatBadge } from "@/components/chat/ChatBadge";
+import { ChatBadge, ChatUnreadBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
-import {
-  Building2,
-  Users,
-  UserCircle2,
-  FileText,
-  Banknote,
-  Wallet,
-  Globe2,
-  Settings,
-  Mail,
-  LayoutDashboard,
-  ShieldCheck,
-  BarChart3,
-  Globe,
-  Calendar,
-  Landmark,
-  Building,
-  Home,
-  CheckSquare,
-  LogOut,
-  Scale,
-  Megaphone,
-  FileSignature,
-  Link2,
-  QrCode,
-  Flag,
-  Gauge,
-  ChevronRight,
-  Sparkles,
-  GraduationCap,
-  BookOpen,
-  PlayCircle,
-  Library,
-  LayoutGrid,
-  HeartHandshake,
-  Upload,
-  Receipt,
-  Eye,
-  Radar,
-  CreditCard,
-  Target,
-  Activity,
-  PenTool,
-  Headset,
-  Factory,
-  GalleryHorizontalEnd,
-  Route,
-  IdCard,
-  Briefcase,
-  Menu,
-  MessageCircle,
-  Moon,
-  Sun,
-  Monitor,
-  Search,
-} from "lucide-react";
+import { LogOut, Menu, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { ForbiddenBanner } from "@/components/ui/ForbiddenBanner";
-import { useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessModule, isModuleEnabled } from "@/lib/permissions";
-import type { AppModule } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ModuleSubNav } from "@/components/layout/ModuleSubNav";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
-import { useTheme } from "@/components/theme/ThemeProvider";
+import { AppRail } from "@/components/layout/AppRail";
+import { AppSubMenu, SUBMENU_ABERTO_KEY } from "@/components/layout/AppSubMenu";
+import { AppTopBar } from "@/components/layout/AppTopBar";
+import { TemaSelector } from "@/components/layout/TemaSelector";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+  activeSection,
+  adminGroups,
+  modulosVisiveis,
+  isItemActive,
+  tenantModules,
+  type Item,
+} from "@/components/layout/navConfig";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
-
-type Item = { to: string; label: string; icon: typeof Building2 };
-type Module = {
-  id: string;
-  label: string;
-  icon: typeof Building2;
-  items: Item[];
-  requiredModule?: AppModule;
-};
-
-const tenantModules: Module[] = [
-  {
-    id: "dashboard",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    items: [
-      { to: "/app", label: "Painel inicial", icon: LayoutDashboard },
-      { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
-    ],
-  },
-  {
-    id: "imobiliario",
-    label: "Imobiliário",
-    icon: Building,
-    items: [
-      { to: "/app/imoveis", label: "Publicar Imóveis", icon: Building2 },
-      { to: "/app/locacao", label: "Locação", icon: Home },
-      { to: "/app/imoveis/importar", label: "Importar imóveis", icon: Upload },
-      { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
-      { to: "/app/leads", label: "Leads", icon: Users },
-      { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
-      { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
-      { to: "/app/parceiros-comerciais", label: "Parceiros Comerciais", icon: Briefcase },
-      { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
-      { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
-      { to: "/app/roteiro-visitas", label: "Roteiro de Visitas", icon: Route },
-      { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
-      { to: "/app/cartao-virtual", label: "Cartão Virtual", icon: IdCard },
-    ],
-  },
-  {
-    id: "atendimento",
-    requiredModule: "atendimento" as AppModule,
-    label: "Central de Atendimento",
-    icon: Headset,
-    items: [
-      { to: "/app/atendimento", label: "Chamados", icon: Headset },
-      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
-    ],
-  },
-  {
-    id: "elearning",
-    requiredModule: "elearning" as AppModule,
-    label: "E-Learning",
-    icon: GraduationCap,
-    items: [
-      { to: "/app/elearning", label: "Meus cursos", icon: BookOpen },
-      { to: "/app/elearning/admin", label: "Gerenciar cursos", icon: PlayCircle },
-    ],
-  },
-  {
-    id: "juridico",
-    requiredModule: "juridico" as AppModule,
-    label: "Jurídico",
-    icon: Scale,
-    items: [
-      { to: "/app/contratos/painel", label: "Painel", icon: LayoutDashboard },
-      { to: "/app/contratos", label: "Contratos", icon: FileText },
-      { to: "/app/contratos/modelos", label: "Modelos de contrato", icon: FileSignature },
-      { to: "/app/contratos/modelos/biblioteca", label: "Biblioteca de modelos", icon: Library },
-      { to: "/app/cartorios", label: "Cartórios", icon: Landmark },
-    ],
-  },
-  {
-    id: "financeiro",
-    requiredModule: "financeiro" as AppModule,
-    label: "Financeiro",
-    icon: Banknote,
-    items: [
-      { to: "/app/financeiro/dashboard", label: "Dashboard executivo", icon: BarChart3 },
-      { to: "/app/financeiro", label: "Contas a pagar e receber", icon: Banknote },
-      { to: "/app/comissoes", label: "Comissões", icon: Wallet },
-      { to: "/app/locacao/repasses", label: "Repasses (locação)", icon: Landmark },
-      { to: "/app/locacao/prestacao-contas", label: "Prestação de contas", icon: FileText },
-      { to: "/app/financeiro/plano-contas", label: "Plano de contas", icon: FileText },
-      { to: "/app/financeiro/centros-custo", label: "Centros de custo", icon: Building },
-    ],
-  },
-  {
-    id: "site",
-    requiredModule: "marketing" as AppModule,
-    label: "Site",
-    icon: Globe,
-    items: [
-      { to: "/app/site/previa", label: "Prévia do Site", icon: Eye },
-      { to: "/app/site", label: "Site da imobiliária", icon: Globe },
-      { to: "/app/site/widgets-conteudo", label: "Widgets de Conteúdo", icon: LayoutGrid },
-      { to: "/app/site/blog", label: "Blog & Artigos", icon: FileText },
-      { to: "/app/qr-code", label: "Gerador de QR Code", icon: QrCode },
-    ],
-  },
-  {
-    id: "marketing",
-    requiredModule: "marketing" as AppModule,
-    label: "Marketing",
-    icon: Megaphone,
-    items: [
-      { to: "/app/portais", label: "Portais & Redes sociais", icon: Globe2 },
-      { to: "/app/marketing/google-ads", label: "Google Ads", icon: Target },
-      { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
-    ],
-  },
-  {
-    id: "ajustes",
-    label: "Configurações",
-    icon: Settings,
-    items: [
-      { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
-      { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
-      { to: "/app/configuracoes/funis", label: "Funis", icon: BarChart3 },
-      { to: "/app/configuracoes/scoring", label: "Lead scoring", icon: Gauge },
-      { to: "/app/configuracoes/cadencias", label: "Cadências", icon: Calendar },
-      {
-        to: "/app/configuracoes/integracoes-bancarias",
-        label: "Integrações Bancárias",
-        icon: CreditCard,
-      },
-      {
-        to: "/app/configuracoes/conciliacao-bancaria",
-        label: "Conciliação Bancária",
-        icon: Landmark,
-      },
-      {
-        to: "/app/configuracoes/assinatura-eletronica",
-        label: "Assinatura eletrônica",
-        icon: PenTool,
-      },
-      {
-        to: "/app/configuracoes/nota-fiscal",
-        label: "Nota Fiscal",
-        icon: Receipt,
-      },
-      {
-        to: "/app/configuracoes/atendimento-canais",
-        label: "Canais de Atendimento",
-        icon: Headset,
-      },
-      {
-        to: "/app/configuracoes/atendimento-sla",
-        label: "SLA de Atendimento",
-        icon: Headset,
-      },
-      { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },
-      { to: "/app/configuracoes/campos", label: "Campos personalizados", icon: FileText },
-      { to: "/app/configuracoes/webhooks", label: "Webhooks", icon: Link2 },
-      { to: "/app/configuracoes/api", label: "API", icon: FileSignature },
-      { to: "/app/configuracoes/notificacoes", label: "Notificações", icon: Mail },
-      { to: "/app/configuracoes/golive", label: "Go-live", icon: Sparkles },
-      { to: "/app/configuracoes/seguranca", label: "Segurança", icon: ShieldCheck },
-      { to: "/app/configuracoes/privacidade", label: "Privacidade (LGPD)", icon: ShieldCheck },
-    ],
-  },
-];
-
-const adminNav: Item[] = [
-  { to: "/admin", label: "Visão geral", icon: LayoutDashboard },
-  { to: "/admin/tenants", label: "Imobiliárias", icon: Building2 },
-  { to: "/admin/construtoras", label: "Construtoras", icon: Factory },
-  { to: "/admin/importar-imoveis", label: "Assistente de importação", icon: Sparkles },
-  { to: "/admin/vitrine-parceiros", label: "Vitrine de Parceiros", icon: GalleryHorizontalEnd },
-  { to: "/admin/google-ads", label: "Google Ads", icon: Target },
-  { to: "/admin/atendimento", label: "Central de Atendimento", icon: Headset },
-  { to: "/admin/atendimento/painel", label: "Painel de Atendimento", icon: BarChart3 },
-  { to: "/admin/faturamento", label: "Faturamento", icon: Receipt },
-  { to: "/admin/blog", label: "Blog corporativo", icon: FileText },
-  { to: "/admin/planos", label: "Planos", icon: Banknote },
-  { to: "/admin/limites", label: "Limites por plano", icon: Gauge },
-  { to: "/admin/modulos", label: "Módulos", icon: Globe2 },
-  { to: "/admin/flags", label: "Feature flags", icon: Flag },
-  { to: "/admin/integracoes", label: "Integrações", icon: Settings },
-  { to: "/admin/emails", label: "E-mails", icon: Mail },
-  { to: "/admin/auditoria", label: "Auditoria", icon: ShieldCheck },
-  { to: "/admin/seo", label: "SEO & Search Console", icon: Search },
-  { to: "/admin/status", label: "Status & Infraestrutura", icon: Activity },
-];
 
 export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const { user, loading, isSuperAdmin, profile, roles, tenantId, enabledModules = [] } = useAuth();
@@ -275,9 +33,14 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   const showForbidden = searchParams.forbidden === "1";
   const navigate = useNavigate();
   const router = useRouterState();
-  const { theme, setTheme } = useTheme();
-  const proximoTema = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
   const [mfaGate, setMfaGate] = useState<"checking" | "ok" | "pending">("checking");
+  // Submenu recolhível (desktop). Preferência salva no navegador.
+  const [submenuAberto, setSubmenuAberto] = useState(
+    () => typeof window === "undefined" || localStorage.getItem(SUBMENU_ABERTO_KEY) !== "0",
+  );
+  useEffect(() => {
+    localStorage.setItem(SUBMENU_ABERTO_KEY, submenuAberto ? "1" : "0");
+  }, [submenuAberto]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -461,271 +224,75 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   }
 
   if (variant === "admin") {
-    return (
-      <AdminLayout
-        items={adminNav}
-        current={current}
-        email={user.email ?? ""}
-        onSignOut={signOut}
-      />
-    );
+    return <AdminLayout current={current} email={user.email ?? ""} onSignOut={signOut} />;
   }
 
-  // Tenant: top module bar + filtered sidebar
-  // IAM: filtrar módulos pelo que o usuário tem acesso
-  const visibleModules = tenantModules.filter((m) => {
-    // Central de Atendimento não entra na barra de módulos — vive como badge
-    // ao lado de "Planos & Assinatura" no canto direito (ver abaixo).
-    if (m.id === "atendimento") return false;
-    // Super admins (por role ou por e-mail) enxergam todos os módulos
-    if (isSuperAdmin) return true;
-    // Guard 1: role tem acesso ao módulo
-    const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
-    // Guard 2: plano do tenant inclui o módulo (lista vazia = tudo habilitado — fallback para Tenant 0)
-    const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
-    return roleOk && planOk;
-  });
+  // Tenant: trilho de módulos (vertical) + submenu + barra utilitária.
+  // Visibilidade por papel (Guard 1) e plano (Guard 2), na mesma regra do painel inicial.
+  const visibleModules = modulosVisiveis({ roles, enabledModules, isSuperAdmin });
 
-  const atendimentoModule = tenantModules.find((m) => m.id === "atendimento")!;
-  const atendimentoVisible =
-    isSuperAdmin ||
-    ((!atendimentoModule.requiredModule ||
-      canAccessModule(roles, atendimentoModule.requiredModule)) &&
-      (!atendimentoModule.requiredModule ||
-        isModuleEnabled(enabledModules, atendimentoModule.requiredModule)));
-
-  // Escolhe o módulo pelo item de maior prefixo (mais específico) entre TODOS
-  // os grupos, não o primeiro grupo (em ordem de array) que contenha algum
-  // match — dois itens de grupos diferentes podem ter `to` um prefixo do
-  // outro (ex.: /app/locacao no Imobiliário vs. /app/locacao/repasses no
-  // Financeiro), e o mais específico é sempre o que deve vencer.
-  let activeModule = tenantModules[0];
-  let bestMatchLength = -1;
-  for (const m of tenantModules) {
-    for (const it of m.items) {
-      const matches =
-        it.to === "/app"
-          ? current === "/app"
-          : current === it.to || current.startsWith(it.to + "/");
-      if (matches && it.to.length > bestMatchLength) {
-        activeModule = m;
-        bestMatchLength = it.to.length;
-      }
-    }
-  }
+  // Módulo ativo pelo caminho. Em /app é o Início (item "Dashboards").
+  const activeModule = activeSection(tenantModules, current) ?? tenantModules[0];
+  const itemAtual = activeModule.items.find((it) => isItemActive(it, activeModule.items, current));
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/20">
-      {/* TOP MODULE BAR */}
-      <header className="sticky top-0 z-30 border-b border-sidebar-border/85 bg-sidebar/95 text-sidebar-foreground backdrop-blur-md shadow-sm print:hidden">
-        <div className="flex h-15 items-center gap-3 px-3 md:gap-6 md:px-5">
-          <Link
-            to="/"
-            className="flex shrink-0 items-center transition-transform hover:scale-[1.02]"
-          >
-            <Logo className="h-8.5 w-auto" variant="white" />
-          </Link>
-          <nav className="hidden flex-1 items-center gap-1 overflow-x-auto py-1 scrollbar-none lg:flex">
-            {visibleModules.map((m) => {
-              const active = m.id === activeModule.id;
-              const first = m.items[0];
-              return (
-                <Link
-                  key={m.id}
-                  to={first.to}
-                  title={m.label}
-                  className={`group flex shrink-0 items-center whitespace-nowrap rounded-lg px-3.5 py-2.5 text-sm font-medium transition-all duration-250 relative ${
-                    active
-                      ? "gap-2 bg-primary/15 text-primary border border-primary/20 shadow-sm"
-                      : "gap-0 text-sidebar-foreground/75 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:gap-2"
-                  }`}
-                >
-                  <m.icon
-                    className={`h-5 w-5 shrink-0 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
-                  />
-                  <span
-                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ease-out ${
-                      active
-                        ? "max-w-40 opacity-100"
-                        : "max-w-0 opacity-0 group-hover:max-w-40 group-hover:opacity-100"
-                    }`}
-                  >
-                    {m.label}
-                  </span>
-                  {active && (
-                    <span className="absolute -bottom-[1px] left-1/2 -translate-x-1/2 w-8 h-[2px] bg-primary rounded-full" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="ml-auto flex items-center gap-2 md:gap-3">
+    <div className="flex min-h-screen bg-muted/20">
+      <AppRail
+        sections={visibleModules.map((m) => ({
+          id: m.id,
+          label: m.label,
+          curto: m.curto,
+          icon: m.icon,
+          items: m.items,
+          destaque: m.destaque,
+          badge: m.id === "chat" ? <ChatUnreadBadge /> : undefined,
+        }))}
+        activeId={activeModule?.id}
+        ariaLabel="Módulos"
+        footer={
+          <>
+            <Link
+              to="/"
+              className="rounded-lg px-2 py-1.5 text-center text-[10px] font-semibold text-sidebar-foreground/75 hover:bg-sidebar-accent/60"
+            >
+              ← Site
+            </Link>
             {isSuperAdmin && (
               <Link
                 to="/admin"
-                className="hidden rounded-full border border-sidebar-border px-3 py-1 text-xs font-semibold tracking-wide text-sidebar-foreground/80 hover:bg-sidebar-accent/80 md:inline-block transition-colors"
+                className="rounded-lg px-2 py-1 text-center text-[10px] font-semibold text-primary hover:bg-sidebar-accent/60"
               >
                 Super-admin
               </Link>
             )}
-            {atendimentoVisible && (
-              <Link
-                to={atendimentoModule.items[0].to}
-                className={`hidden items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold tracking-wide transition-colors duration-250 md:flex ${
-                  activeModule.id === "atendimento"
-                    ? "border-primary/30 bg-primary/15 text-primary"
-                    : "border-sidebar-border text-sidebar-foreground/80 hover:bg-sidebar-accent/80"
-                }`}
-              >
-                <Headset className="h-3.5 w-3.5" />
-                <span>Central de Atendimento</span>
-              </Link>
-            )}
-            <Link
-              to="/app/contratacao"
-              className="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold tracking-wide text-primary transition-all duration-250 select-none hover:scale-[1.01] hover:bg-primary/25 md:flex"
-            >
-              <Sparkles className="h-3 w-3.5 stroke-[2.5] text-primary animate-pulse" />
-              <span>Planos & Assinatura</span>
-            </Link>
-            <span className="hidden md:inline-flex">
+          </>
+        }
+      />
+      {activeModule && (
+        <AppSubMenu
+          title={activeModule.label}
+          icon={activeModule.icon}
+          items={activeModule.items}
+          current={current}
+          aberto={submenuAberto}
+          onToggle={() => setSubmenuAberto((v) => !v)}
+          ariaLabel={`Menu de ${activeModule.label}`}
+        />
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AppTopBar
+          trilha={activeModule ? [activeModule.label, ...(itemAtual ? [itemAtual.label] : [])] : []}
+          actions={
+            <>
               <ChatBadge />
-            </span>
-            {/* NotificationBell fica sempre visível — é um dropdown próprio (aninhar
-                no menu "Mais" quebraria seu painel); é compacto e não estoura. */}
-            <NotificationBell />
-            <ThemeToggle className="hidden rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:inline-flex" />
-            <div className="hidden truncate rounded-md bg-sidebar-accent/40 px-2 py-1 text-xs font-medium text-sidebar-foreground/70 md:block max-w-[140px]">
-              {user.email}
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={signOut}
-              className="hidden rounded-full text-sidebar-foreground/80 transition-colors hover:bg-destructive/15 hover:text-destructive-foreground md:inline-flex"
-              aria-label="Sair"
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
-
-            {/* Mobile: agrupa as ações secundárias (chat, planos, atendimento,
-                tema, sair, e-mail) num único dropdown pra não estourar o header. */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Mais opções"
-                  className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60 md:hidden"
-                >
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
-                  {user.email}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {isSuperAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">
-                      <ShieldCheck className="mr-2 h-4 w-4" /> Super-admin
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                {atendimentoVisible && (
-                  <DropdownMenuItem asChild>
-                    <Link to={atendimentoModule.items[0].to}>
-                      <Headset className="mr-2 h-4 w-4" /> Central de Atendimento
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to="/app/contratacao">
-                    <Sparkles className="mr-2 h-4 w-4" /> Planos & Assinatura
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/app/chat">
-                    <MessageCircle className="mr-2 h-4 w-4" /> Chat
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setTheme(proximoTema)}>
-                  {theme === "light" ? (
-                    <Sun className="mr-2 h-4 w-4" />
-                  ) : theme === "dark" ? (
-                    <Moon className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Monitor className="mr-2 h-4 w-4" />
-                  )}
-                  Alternar tema
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={signOut}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile: sub-abas do módulo ativo (no desktop isso vive no aside lateral). */}
-      <ModuleSubNav items={activeModule.items} current={current} />
-
-      <div className="flex flex-1">
-        {/* SUBMENU LATERAL DO MÓDULO ATIVO */}
-        <aside className="hidden w-62 shrink-0 flex-col border-r border-border/80 bg-card/65 backdrop-blur-sm md:flex transition-all duration-300 print:hidden">
-          <div className="border-b border-border/70 px-5 py-4.5 bg-muted/10">
-            <div className="flex items-center gap-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground/90">
-              <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
-                <activeModule.icon className="h-3.5 w-3.5" />
-              </span>
-              <span>{activeModule.label}</span>
-            </div>
-          </div>
-          <nav className="flex flex-1 flex-col gap-1 p-3">
-            {activeModule.items.map((item) => {
-              const active =
-                item.to === "/app"
-                  ? current === "/app"
-                  : current === item.to ||
-                    (current.startsWith(item.to + "/") &&
-                      !activeModule.items.some(
-                        (sibling) =>
-                          sibling.to !== item.to &&
-                          sibling.to !== "/app" &&
-                          current.startsWith(sibling.to) &&
-                          sibling.to.length > item.to.length,
-                      ));
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={`group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200 ${
-                    active
-                      ? "bg-primary/10 font-semibold text-primary shadow-xs border-l-3 border-primary pl-2"
-                      : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                  }`}
-                >
-                  <item.icon
-                    className={`h-4.5 w-4.5 transition-all duration-200 group-hover:scale-105 ${active ? "text-primary stroke-[2.25px]" : "text-muted-foreground/70"}`}
-                  />
-                  <span className="flex-1 truncate">{item.label}</span>
-                  {active ? (
-                    <ChevronRight className="h-3.5 w-3.5 text-primary opacity-100 translate-x-0 transition-transform" />
-                  ) : (
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/30 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
-
+            </>
+          }
+          email={user.email ?? ""}
+          isSuperAdmin={isSuperAdmin}
+          onSignOut={signOut}
+        />
+        {/* Abaixo de lg: sub-páginas do módulo ativo em dropdown (sticky sob a barra utilitária). */}
+        {activeModule && <ModuleSubNav items={activeModule.items} current={current} />}
         <main className="min-w-0 flex-1 overflow-x-hidden pb-24 lg:pb-0">
           <Outlet />
         </main>
@@ -735,161 +302,162 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   );
 }
 
+/** Rótulo do badge por item (contagens do super-admin). */
+const badgeAdmin = (item: Item) =>
+  item.label === "Aprovações" ? (
+    <ApprovalsNavBadge />
+  ) : item.label === "Faturamento" ? (
+    <FaturamentoNavBadge />
+  ) : null;
+
 function AdminLayout({
-  items,
   current,
   email,
   onSignOut,
 }: {
-  items: Item[];
   current: string;
   email: string;
   onSignOut: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [submenuAberto, setSubmenuAberto] = useState(
+    () => typeof window === "undefined" || localStorage.getItem(SUBMENU_ABERTO_KEY) !== "0",
+  );
+  useEffect(() => {
+    localStorage.setItem(SUBMENU_ABERTO_KEY, submenuAberto ? "1" : "0");
+  }, [submenuAberto]);
+  const grupoAtivo = activeSection(adminGroups, current) ?? adminGroups[0];
+  const itemAtual = grupoAtivo.items.find((it) => isItemActive(it, grupoAtivo.items, current));
   return (
-    <div className="flex min-h-screen flex-col bg-muted/15 md:flex-row">
-      {/* Mobile: top bar do admin — a sidebar abaixo é hidden md:flex, então sem
-          isto o /admin ficava sem navegação nenhuma no celular. O hambúrguer
-          abre um Sheet com o menu admin completo + Voltar ao app + Sair. */}
-      <header className="sticky top-0 z-30 flex h-15 items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 text-sidebar-foreground md:hidden print:hidden">
-        <Link to="/" className="inline-flex shrink-0">
-          <Logo className="h-8 w-auto" variant="white" />
-        </Link>
-        <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-primary/35 bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-          Super-admin
-        </span>
-        <div className="ml-auto flex items-center gap-1">
-          <NotificationBell />
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Menu do admin"
-                className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="flex w-[300px] flex-col bg-sidebar p-0 text-sidebar-foreground"
-            >
-              <SheetHeader className="border-b border-sidebar-border/70 px-5 py-4 text-left">
-                <SheetTitle className="text-sidebar-foreground">Super-admin</SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
-                {items.map((item) => {
-                  const active =
-                    current === item.to || (item.to !== "/admin" && current.startsWith(item.to));
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      onClick={() => setMenuOpen(false)}
-                      className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                        active
-                          ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
-                      }`}
-                    >
-                      <item.icon
-                        className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
-                      />
-                      {item.label}
-                      {item.label === "Aprovações" && <ApprovalsNavBadge />}
-                      {item.label === "Faturamento" && <FaturamentoNavBadge />}
-                    </Link>
-                  );
-                })}
-              </nav>
-              <div className="border-t border-sidebar-border/70 p-3">
-                <Link
-                  to="/app"
-                  onClick={() => setMenuOpen(false)}
-                  className="mb-2 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65"
-                >
-                  ← Voltar ao app
-                </Link>
-                <div className="mb-2 truncate px-3 font-mono text-xs text-sidebar-foreground/60">
-                  {email}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onSignOut}
-                  className="w-full justify-start rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground"
-                >
-                  <LogOut className="mr-2 h-4 w-4" /> Sair
-                </Button>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </header>
-
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-5 text-sidebar-foreground md:flex">
-        <div className="flex flex-col gap-3 px-1">
-          <Link to="/" className="inline-flex">
-            <Logo className="h-9.5 w-auto" variant="white" />
-          </Link>
-          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary/20 border border-primary/35 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
-            Super-admin
-          </span>
-        </div>
-
-        <nav className="mt-8 flex flex-1 flex-col gap-1.5">
-          {items.map((item) => {
-            const active =
-              current === item.to || (item.to !== "/admin" && current.startsWith(item.to));
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 rounded-lg px-3.5 py-2 text-sm transition-all duration-200 ${
-                  active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border-l-2 border-primary pl-2.5"
-                    : "text-sidebar-foreground/65 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                }`}
-              >
-                <item.icon
-                  className={`h-4.5 w-4.5 ${active ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
-                />
-                {item.label}
-                {item.label === "Aprovações" && <ApprovalsNavBadge />}
-                {item.label === "Faturamento" && <FaturamentoNavBadge />}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-4 border-t border-sidebar-border/80 pt-4">
+    <div className="flex min-h-screen bg-muted/20">
+      <AppRail
+        sections={adminGroups.map((g) => ({
+          id: g.id,
+          label: g.label,
+          curto: g.curto,
+          icon: g.icon,
+          items: g.items,
+        }))}
+        activeId={grupoAtivo.id}
+        ariaLabel="Super-admin"
+        footer={
           <Link
             to="/app"
-            className="mb-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65 transition-colors"
+            className="rounded-lg px-2 py-1.5 text-center text-[10px] font-semibold text-sidebar-foreground/75 hover:bg-sidebar-accent/60"
           >
-            ← Voltar ao app
+            ← App
           </Link>
-          <div className="flex items-center justify-between gap-2 px-3 py-2 mb-2 bg-sidebar-accent/30 rounded-lg">
-            <div className="truncate text-xs text-sidebar-foreground/65 font-mono max-w-[140px]">
-              {email}
-            </div>
+        }
+      />
+      <AppSubMenu
+        title={grupoAtivo.label}
+        icon={grupoAtivo.icon}
+        items={grupoAtivo.items}
+        current={current}
+        aberto={submenuAberto}
+        onToggle={() => setSubmenuAberto((v) => !v)}
+        ariaLabel={`Menu de ${grupoAtivo.label}`}
+        renderBadge={badgeAdmin}
+      />
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Abaixo de lg: top bar própria do admin, com o menu completo no Sheet. */}
+        <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-sidebar-border bg-sidebar px-3 text-sidebar-foreground lg:hidden print:hidden">
+          <Link to="/" className="inline-flex shrink-0">
+            <Logo className="h-7 w-auto" variant="white" />
+          </Link>
+          <span className="inline-flex w-fit shrink-0 items-center rounded-full border border-primary/35 bg-primary/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+            Super-admin
+          </span>
+          <div className="ml-auto flex items-center gap-1">
             <NotificationBell />
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Menu do admin"
+                  className="rounded-full text-sidebar-foreground/80 hover:bg-sidebar-accent/60"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="flex w-[300px] flex-col bg-sidebar p-0 text-sidebar-foreground"
+              >
+                <SheetHeader className="border-b border-sidebar-border/70 px-5 py-4 text-left">
+                  <SheetTitle className="text-sidebar-foreground">Super-admin</SheetTitle>
+                </SheetHeader>
+                <nav
+                  aria-label="Menu do super-admin"
+                  className="flex flex-1 flex-col gap-4 overflow-y-auto p-3"
+                >
+                  {adminGroups.map((g) => (
+                    <div key={g.id} className="flex flex-col gap-1">
+                      <span className="px-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-sidebar-foreground/50">
+                        {g.label}
+                      </span>
+                      {g.items.map((item) => {
+                        const ativo = isItemActive(item, g.items, current);
+                        return (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                              ativo
+                                ? "bg-sidebar-accent font-semibold text-sidebar-accent-foreground"
+                                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50"
+                            }`}
+                          >
+                            <item.icon
+                              className={`h-4 w-4 ${ativo ? "text-primary stroke-[2.25px]" : "opacity-80"}`}
+                            />
+                            {item.label}
+                            {badgeAdmin(item)}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </nav>
+                <div className="space-y-3 border-t border-sidebar-border/70 p-3">
+                  <TemaSelector />
+                  <Link
+                    to="/app"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-sidebar-foreground/75 hover:bg-sidebar-accent/65"
+                  >
+                    ← Voltar ao app
+                  </Link>
+                  <div className="truncate px-3 font-mono text-xs text-sidebar-foreground/60">
+                    {email}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onSignOut}
+                    className="w-full justify-start rounded-lg text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" /> Sair
+                  </Button>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onSignOut}
-            className="w-full justify-start text-sidebar-foreground/80 hover:bg-destructive/15 hover:text-destructive-foreground rounded-lg transition-colors"
-          >
-            <LogOut className="mr-2 h-4 w-4" /> Sair
-          </Button>
+        </header>
+        <div className="hidden lg:block">
+          <AppTopBar
+            trilha={[grupoAtivo.label, ...(itemAtual ? [itemAtual.label] : [])]}
+            email={email}
+            isSuperAdmin
+            onSignOut={onSignOut}
+          />
         </div>
-      </aside>
-      <main className="flex-1 overflow-x-hidden pb-24 lg:pb-0">
-        <Outlet />
-      </main>
+        <main className="min-w-0 flex-1 overflow-x-hidden">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

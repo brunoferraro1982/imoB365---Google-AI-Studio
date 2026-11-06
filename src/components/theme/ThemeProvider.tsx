@@ -31,7 +31,8 @@ function applyTheme(t: Theme, path: string): "light" | "dark" {
 
 function readStoredTheme(): Theme {
   if (typeof window === "undefined") return "system";
-  return (localStorage.getItem("imob365_theme") as Theme | null) ?? "system";
+  // Padrão claro: o escuro só vale quando o usuário escolhe (ou seleciona "Automático").
+  return (localStorage.getItem("imob365_theme") as Theme | null) ?? "light";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -70,7 +71,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         .eq("id", uid)
         .maybeSingle()
         .then(({ data: p }) => {
-          const t = (p?.tema_preferido as Theme) || "system";
+          const t = (p?.tema_preferido as Theme) || "light";
           setThemeState(t);
           setResolved(applyTheme(t, window.location.pathname));
         });
@@ -88,9 +89,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(t);
     setResolved(applyTheme(t, window.location.pathname));
     localStorage.setItem("imob365_theme", t);
-    supabase.auth.getUser().then(({ data }) => {
+    // O builder do supabase-js só envia a requisição quando é aguardado; sem
+    // await/then a escolha ficava só no localStorage e voltava no próximo login.
+    supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
-      if (uid) supabase.from("profiles").update({ tema_preferido: t }).eq("id", uid);
+      if (!uid) return;
+      const { error } = await supabase.from("profiles").update({ tema_preferido: t }).eq("id", uid);
+      if (error) console.error("[ThemeProvider] Falha ao salvar tema no perfil:", error.message);
     });
   }
 

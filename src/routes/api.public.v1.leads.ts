@@ -20,10 +20,12 @@ async function authenticate(req: Request) {
     .maybeSingle();
   if (!data || !data.ativo) return null;
   if (data.expires_at && new Date(data.expires_at) < new Date()) return null;
+  // O builder só executa ao ser aguardado (then); sem isso o last_used_at nunca era gravado.
   void supabaseAdmin
     .from("tenant_api_keys")
     .update({ last_used_at: new Date().toISOString() })
-    .eq("id", data.id);
+    .eq("id", data.id)
+    .then(() => undefined);
   return data;
 }
 

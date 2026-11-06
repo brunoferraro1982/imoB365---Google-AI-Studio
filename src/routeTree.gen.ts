@@ -173,7 +173,7 @@ import { Route as AppConfiguracoesApiRouteImport } from './routes/app.configurac
 import { Route as AppComissoesNovoRouteImport } from './routes/app.comissoes.novo'
 import { Route as AppComissoesIdRouteImport } from './routes/app.comissoes.$id'
 import { Route as AppChatIdRouteImport } from './routes/app.chat.$id'
-import { Route as AppAtendimentoPainelRouteImport } from './routes/app.atendimento.painel'
+import { Route as AppAtendimentoChamadosRouteImport } from './routes/app.atendimento.chamados'
 import { Route as AppAdminAprovacoesRouteImport } from './routes/app.admin.aprovacoes'
 import { Route as ApiPublicStatusDotjsonRouteImport } from './routes/api.public.status[.]json'
 import { Route as ApiPublicSitemapIndexDotxmlRouteImport } from './routes/api.public.sitemap-index[.]xml'
@@ -1069,9 +1069,9 @@ const AppChatIdRoute = AppChatIdRouteImport.update({
   path: '/chat/$id',
   getParentRoute: () => AppRoute,
 } as any)
-const AppAtendimentoPainelRoute = AppAtendimentoPainelRouteImport.update({
-  id: '/atendimento/painel',
-  path: '/atendimento/painel',
+const AppAtendimentoChamadosRoute = AppAtendimentoChamadosRouteImport.update({
+  id: '/atendimento/chamados',
+  path: '/atendimento/chamados',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAdminAprovacoesRoute = AppAdminAprovacoesRouteImport.update({
@@ -1496,7 +1496,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
-  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
+  '/app/atendimento/chamados': typeof AppAtendimentoChamadosRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -1715,7 +1715,7 @@ export interface FileRoutesByTo {
   '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
-  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
+  '/app/atendimento/chamados': typeof AppAtendimentoChamadosRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -1940,7 +1940,7 @@ export interface FileRoutesById {
   '/api/public/sitemap-index.xml': typeof ApiPublicSitemapIndexDotxmlRoute
   '/api/public/status.json': typeof ApiPublicStatusDotjsonRoute
   '/app/admin/aprovacoes': typeof AppAdminAprovacoesRoute
-  '/app/atendimento/painel': typeof AppAtendimentoPainelRoute
+  '/app/atendimento/chamados': typeof AppAtendimentoChamadosRoute
   '/app/chat/$id': typeof AppChatIdRoute
   '/app/comissoes/$id': typeof AppComissoesIdRoute
   '/app/comissoes/novo': typeof AppComissoesNovoRoute
@@ -2166,7 +2166,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
-    | '/app/atendimento/painel'
+    | '/app/atendimento/chamados'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -2385,7 +2385,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
-    | '/app/atendimento/painel'
+    | '/app/atendimento/chamados'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -2609,7 +2609,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap-index.xml'
     | '/api/public/status.json'
     | '/app/admin/aprovacoes'
-    | '/app/atendimento/painel'
+    | '/app/atendimento/chamados'
     | '/app/chat/$id'
     | '/app/comissoes/$id'
     | '/app/comissoes/novo'
@@ -3988,11 +3988,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppChatIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/app/atendimento/painel': {
-      id: '/app/atendimento/painel'
-      path: '/atendimento/painel'
-      fullPath: '/app/atendimento/painel'
-      preLoaderRoute: typeof AppAtendimentoPainelRouteImport
+    '/app/atendimento/chamados': {
+      id: '/app/atendimento/chamados'
+      path: '/atendimento/chamados'
+      fullPath: '/app/atendimento/chamados'
+      preLoaderRoute: typeof AppAtendimentoChamadosRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/admin/aprovacoes': {
@@ -4541,7 +4541,7 @@ interface AppRouteChildren {
   AppVisitasRoute: typeof AppVisitasRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAdminAprovacoesRoute: typeof AppAdminAprovacoesRoute
-  AppAtendimentoPainelRoute: typeof AppAtendimentoPainelRoute
+  AppAtendimentoChamadosRoute: typeof AppAtendimentoChamadosRoute
   AppChatIdRoute: typeof AppChatIdRoute
   AppComissoesIdRoute: typeof AppComissoesIdRoute
   AppComissoesNovoRoute: typeof AppComissoesNovoRoute
@@ -4606,7 +4606,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppVisitasRoute: AppVisitasRoute,
   AppIndexRoute: AppIndexRoute,
   AppAdminAprovacoesRoute: AppAdminAprovacoesRoute,
-  AppAtendimentoPainelRoute: AppAtendimentoPainelRoute,
+  AppAtendimentoChamadosRoute: AppAtendimentoChamadosRoute,
   AppChatIdRoute: AppChatIdRoute,
   AppComissoesIdRoute: AppComissoesIdRoute,
   AppComissoesNovoRoute: AppComissoesNovoRoute,

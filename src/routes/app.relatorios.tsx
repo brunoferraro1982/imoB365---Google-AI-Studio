@@ -457,6 +457,12 @@ function RelatoriosPage() {
               </p>
             </div>
 
+            {data.metricas_disponiveis === false && (
+              <p className="rounded-lg border border-amber-300/60 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+                Não foi possível carregar as métricas de tráfego agora. Os valores abaixo podem
+                estar zerados; tente atualizar a página em instantes.
+              </p>
+            )}
             {!data.ranking_imoveis || data.ranking_imoveis.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">
                 Nenhum anúncio disponível para análise de performance de tráfego.

@@ -15,23 +15,16 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useState } from "react";
 
 type Item = { to: string; label: string; icon: typeof MoreHorizontal };
-type Module = { id: string; label: string; icon: typeof MoreHorizontal; items: Item[] };
+type Module = {
+  id: string;
+  label: string;
+  curto?: string;
+  icon: typeof MoreHorizontal;
+  items: Item[];
+};
 
 // Ordem preferida na barra (os que existirem em visibleModules entram, até 4).
 const PRIMARIOS = ["dashboard", "imobiliario", "financeiro", "atendimento", "site", "marketing"];
-
-// Rótulos curtos pra barra (o label do módulo às vezes é longo demais p/ mobile).
-const CURTO: Record<string, string> = {
-  dashboard: "Início",
-  imobiliario: "Imóveis",
-  financeiro: "Financeiro",
-  atendimento: "Atend.",
-  site: "Site",
-  marketing: "Mkt",
-  juridico: "Jurídico",
-  elearning: "Cursos",
-  ajustes: "Config",
-};
 
 function moduloAtivo(mod: Module, pathname: string): boolean {
   return mod.items.some((it) => pathname === it.to || pathname.startsWith(it.to + "/"));
@@ -58,7 +51,7 @@ export function BottomNav({ modules }: { modules: Module[] }) {
             }`}
           >
             <m.icon className={`h-5 w-5 ${active ? "stroke-[2.25px]" : "opacity-85"}`} />
-            <span className="max-w-full truncate px-1">{CURTO[m.id] ?? m.label}</span>
+            <span className="max-w-full truncate px-1">{m.curto ?? m.label}</span>
           </Link>
         );
       })}

@@ -515,7 +515,7 @@ function ContratacaoPage() {
         </div>
 
         {/* RIGHT COLUMN: RECAP & CONFIRM BUTTON (4 COLS) */}
-        <div className="lg:col-span-4 sticky top-24">
+        <div className="lg:col-span-4 sticky top-16">
           <div className="rounded-2xl border border-border bg-white dark:bg-card p-6 shadow-md space-y-5">
             <h3 className="text-base font-bold text-foreground border-b border-border/60 pb-3 flex items-center justify-between">
               <span>Resumo do Faturamento</span>
