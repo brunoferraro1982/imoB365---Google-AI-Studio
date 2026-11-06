@@ -283,7 +283,7 @@ function ConversationView({ id, role, basePath }: { id: string; role: Role; base
           Nunca compartilhe senhas, códigos ou dados bancários por este chat.
         </div>
 
-        {/* Card do Imóvel para Contexto Rápido (Igual ao OLX) */}
+        {/* Card do Imóvel para Contexto Rápido (padrão de mercado) */}
         {conv.imovel && (
           <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/30 px-4 py-2.5 text-sm sm:px-6">
             <div className="flex items-center gap-3 min-w-0">
@@ -369,7 +369,7 @@ function ConversationView({ id, role, basePath }: { id: string; role: Role; base
           )}
         </div>
 
-        {/* Respostas rápidas (interessado/comprador - Igual ao OLX) */}
+        {/* Respostas rápidas (interessado/comprador) */}
         {role === "interessado" && (
           <div className="flex gap-2 overflow-x-auto border-t border-border bg-card/60 px-4 py-2 scrollbar-none [scrollbar-width:none]">
             {[

@@ -309,8 +309,9 @@ function CaptacaoPage() {
           <Sparkles className="mx-auto h-8 w-8 text-primary" />
           <h1 className="mt-4 text-xl font-bold">Captação Automática</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Robô que varre a Chaves na Mão em ciclos configuráveis e insere leads novos direto no
-            seu funil — disponível nos planos <strong>Pro</strong> e <strong>Business</strong>.
+            Robô que varre anúncios de portais imobiliários em ciclos configuráveis e insere leads
+            novos direto no seu funil — disponível nos planos <strong>Pro</strong> e{" "}
+            <strong>Business</strong>.
           </p>
           <a href="/app/contratacao">
             <Button className="mt-6">Ver planos</Button>

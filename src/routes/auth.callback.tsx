@@ -50,7 +50,7 @@ function AuthCallback() {
           // antes do redirect OAuth, já que o roundtrip perde estado React).
           // Sem esse sinal, todo cadastro novo vira cliente por padrão — mesmo
           // padrão das plataformas de referência (Zillow, Redfin, QuintoAndar,
-          // VivaReal): virar profissional é sempre opt-in e posterior.
+          // QuintoAndar): virar profissional é sempre opt-in e posterior.
           if (consumeProfessionalSignupIntent()) {
             void navigate({ to: "/onboarding", replace: true });
             return;
