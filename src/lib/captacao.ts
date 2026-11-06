@@ -251,7 +251,7 @@ export async function processarCaptacoes(
           tenant_id: config.tenant_id,
           nome: listing.anunciante ?? `Anúncio — ${listing.bairro ?? config.cidade}`,
           origem: "captacao_automatica",
-          mensagem: `Captado automaticamente via ${config.nome}.\n${listing.titulo}\n${listing.endereco ?? ""}\nLink: ${listing.url}`,
+          mensagem: `Captado automaticamente.\n${listing.titulo}\n${listing.endereco ?? ""}`,
         })
         .select("id")
         .single();

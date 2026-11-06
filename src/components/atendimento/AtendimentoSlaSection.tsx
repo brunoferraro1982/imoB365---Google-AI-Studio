@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 // plans.slug reais (confirmado contra dev): "pro"/"business", sem prefixo
-// "plan-" — mesma convenção já usada em app.leads.captacao.tsx.
+// "plan-" — mesma convenção do restante do app.
 const PLANOS_COM_ACESSO = ["pro", "business"];
 
 // SLA por tenant (item #3 do pedido original) — tenant_atendimento_config

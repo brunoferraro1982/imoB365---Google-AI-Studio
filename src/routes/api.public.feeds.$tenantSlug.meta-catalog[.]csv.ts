@@ -4,7 +4,7 @@ import { checkRateLimit, getClientIpFromRequest } from "@/lib/rateLimit";
 
 // Catálogo de produtos (vertical "Real Estate") pro Commerce Manager da
 // Meta — o tenant cola esta URL como "Data Feed" agendado no próprio painel
-// da Meta (mesmo modelo mental já usado pelos feeds VivaReal/ZAP/OLX: o
+// da Meta (mesmo modelo mental já usado pelos feeds de portais: o
 // portal/plataforma é quem periodicamente busca essa URL, nenhuma automação
 // nossa empurra dado nenhum). Alimenta Dynamic Ads e, quando o anunciante
 // tem posicionamento habilitado, também pode aparecer no Marketplace —
