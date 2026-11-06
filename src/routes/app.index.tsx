@@ -25,7 +25,7 @@ type LeadRow = {
   created_at: string;
 };
 
-// Painel inicial em liquid glass: é o "Dashboards" do menu Início.
+// Painel de gestão em liquid glass: é o item "Painel de gestão" do menu Início.
 // Reúne o painel de gestão (KPIs e leads) e widgets de cada módulo do plano.
 function AppPainel() {
   const { tenantId, profile, roles, enabledModules, isSuperAdmin } = useAuth();

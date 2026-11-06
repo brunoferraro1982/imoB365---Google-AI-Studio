@@ -107,7 +107,7 @@ export const tenantModules: Module[] = [
     curto: "Início",
     icon: LayoutDashboard,
     items: [
-      { to: "/app", label: "Dashboards", icon: LayoutDashboard },
+      { to: "/app", label: "Painel de gestão", icon: LayoutDashboard },
       { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
     ],
   },

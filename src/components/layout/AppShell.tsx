@@ -250,14 +250,22 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
         activeId={activeModule?.id}
         ariaLabel="Módulos"
         footer={
-          isSuperAdmin ? (
+          <>
             <Link
-              to="/admin"
+              to="/"
               className="rounded-lg px-2 py-1.5 text-center text-[10px] font-semibold text-sidebar-foreground/75 hover:bg-sidebar-accent/60"
             >
-              Super-admin
+              ← Site
             </Link>
-          ) : undefined
+            {isSuperAdmin && (
+              <Link
+                to="/admin"
+                className="rounded-lg px-2 py-1 text-center text-[10px] font-semibold text-primary hover:bg-sidebar-accent/60"
+              >
+                Super-admin
+              </Link>
+            )}
+          </>
         }
       />
       {activeModule && (

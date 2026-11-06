@@ -33,7 +33,12 @@ export function AppRail({
 }) {
   return (
     <aside className="sticky top-0 hidden h-screen w-21 shrink-0 flex-col border-r border-sidebar-border/80 bg-sidebar text-sidebar-foreground lg:flex print:hidden">
-      <Link to="/" className="flex justify-center pt-4 pb-3" aria-label="Início do portal">
+      <Link
+        to="/"
+        className="flex justify-center pt-4 pb-3"
+        aria-label="Voltar ao site"
+        title="Voltar ao site"
+      >
         <LogoIcon className="h-9 w-9" />
       </Link>
       <nav
