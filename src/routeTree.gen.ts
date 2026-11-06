@@ -101,7 +101,6 @@ import { Route as AdminBlogRouteImport } from './routes/admin.blog'
 import { Route as AdminAuditoriaRouteImport } from './routes/admin.auditoria'
 import { Route as ContaChatIndexRouteImport } from './routes/conta.chat.index'
 import { Route as AppSiteIndexRouteImport } from './routes/app.site.index'
-import { Route as AppPortaisIndexRouteImport } from './routes/app.portais.index'
 import { Route as AppLocacaoIndexRouteImport } from './routes/app.locacao.index'
 import { Route as AppLeadsIndexRouteImport } from './routes/app.leads.index'
 import { Route as AppImoveisIndexRouteImport } from './routes/app.imoveis.index'
@@ -128,7 +127,6 @@ import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
 import { Route as AppMarketingGoogleAdsRouteImport } from './routes/app.marketing.google-ads'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
-import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -215,7 +213,6 @@ import { Route as ApiPublicCronGerarCobrancasMercadopagoRouteImport } from './ro
 import { Route as ApiPublicCronExpireTrialsRouteImport } from './routes/api.public.cron.expire-trials'
 import { Route as ApiPublicCronContratosSlaRouteImport } from './routes/api.public.cron.contratos-sla'
 import { Route as ApiPublicCronConstrutoraIngestaoRouteImport } from './routes/api.public.cron.construtora-ingestao'
-import { Route as ApiPublicCronCaptacaoRouteImport } from './routes/api.public.cron.captacao'
 import { Route as ApiPublicCronBuscasAlertasRouteImport } from './routes/api.public.cron.buscas-alertas'
 import { Route as ApiPublicCronAtendimentoSlaRouteImport } from './routes/api.public.cron.atendimento-sla'
 import { Route as ApiPublicCronAtendimentoEmailRouteImport } from './routes/api.public.cron.atendimento-email'
@@ -226,8 +223,6 @@ import { Route as ApiPublicSitemapTenantSlugSitemapDotxmlRouteImport } from './r
 import { Route as ApiPublicMetaOauthCallbackRouteImport } from './routes/api.public.meta.oauth.callback'
 import { Route as ApiPublicMercadopagoOauthCallbackRouteImport } from './routes/api.public.mercadopago.oauth.callback'
 import { Route as ApiPublicGoogleadsOauthCallbackRouteImport } from './routes/api.public.googleads.oauth.callback'
-import { Route as ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.vrsync[.]xml'
-import { Route as ApiPublicFeedsTenantSlugOlxDotxmlRouteImport } from './routes/api.public.feeds.$tenantSlug.olx[.]xml'
 import { Route as ApiPublicFeedsTenantSlugMetaCatalogDotcsvRouteImport } from './routes/api.public.feeds.$tenantSlug.meta-catalog[.]csv'
 import { Route as ApiPublicDocusignOauthCallbackRouteImport } from './routes/api.public.docusign.oauth.callback'
 import { Route as ApiPublicCanvaOauthCallbackRouteImport } from './routes/api.public.canva.oauth.callback'
@@ -693,11 +688,6 @@ const AppSiteIndexRoute = AppSiteIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppSiteRoute,
 } as any)
-const AppPortaisIndexRoute = AppPortaisIndexRouteImport.update({
-  id: '/portais/',
-  path: '/portais/',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLocacaoIndexRoute = AppLocacaoIndexRouteImport.update({
   id: '/locacao/',
   path: '/locacao/',
@@ -827,11 +817,6 @@ const AppLocacaoPrestacaoContasRoute =
 const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   id: '/leads/configuracao',
   path: '/leads/configuracao',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLeadsCaptacaoRoute = AppLeadsCaptacaoRouteImport.update({
-  id: '/leads/captacao',
-  path: '/leads/captacao',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
@@ -1301,11 +1286,6 @@ const ApiPublicCronConstrutoraIngestaoRoute =
     path: '/api/public/cron/construtora-ingestao',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicCronCaptacaoRoute = ApiPublicCronCaptacaoRouteImport.update({
-  id: '/api/public/cron/captacao',
-  path: '/api/public/cron/captacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicCronBuscasAlertasRoute =
   ApiPublicCronBuscasAlertasRouteImport.update({
     id: '/api/public/cron/buscas-alertas',
@@ -1363,18 +1343,6 @@ const ApiPublicGoogleadsOauthCallbackRoute =
   ApiPublicGoogleadsOauthCallbackRouteImport.update({
     id: '/api/public/googleads/oauth/callback',
     path: '/api/public/googleads/oauth/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicFeedsTenantSlugVrsyncDotxmlRoute =
-  ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport.update({
-    id: '/api/public/feeds/$tenantSlug/vrsync.xml',
-    path: '/api/public/feeds/$tenantSlug/vrsync.xml',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicFeedsTenantSlugOlxDotxmlRoute =
-  ApiPublicFeedsTenantSlugOlxDotxmlRouteImport.update({
-    id: '/api/public/feeds/$tenantSlug/olx.xml',
-    path: '/api/public/feeds/$tenantSlug/olx.xml',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute =
@@ -1541,7 +1509,6 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
-  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -1568,14 +1535,12 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
-  '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
-  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -1611,8 +1576,6 @@ export interface FileRoutesByFullPath {
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
-  '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
-  '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
@@ -1760,7 +1723,6 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
-  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -1787,14 +1749,12 @@ export interface FileRoutesByTo {
   '/app/imoveis': typeof AppImoveisIndexRoute
   '/app/leads': typeof AppLeadsIndexRoute
   '/app/locacao': typeof AppLocacaoIndexRoute
-  '/app/portais': typeof AppPortaisIndexRoute
   '/app/site': typeof AppSiteIndexRoute
   '/conta/chat': typeof ContaChatIndexRoute
   '/admin/construtoras/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
-  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -1830,8 +1790,6 @@ export interface FileRoutesByTo {
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
-  '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
-  '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
@@ -1985,7 +1943,6 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
-  '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
@@ -2012,14 +1969,12 @@ export interface FileRoutesById {
   '/app/imoveis/': typeof AppImoveisIndexRoute
   '/app/leads/': typeof AppLeadsIndexRoute
   '/app/locacao/': typeof AppLocacaoIndexRoute
-  '/app/portais/': typeof AppPortaisIndexRoute
   '/app/site/': typeof AppSiteIndexRoute
   '/conta/chat/': typeof ContaChatIndexRoute
   '/admin/construtoras_/$id/ingestao': typeof AdminConstrutorasIdIngestaoRoute
   '/api/public/cron/atendimento-email': typeof ApiPublicCronAtendimentoEmailRoute
   '/api/public/cron/atendimento-sla': typeof ApiPublicCronAtendimentoSlaRoute
   '/api/public/cron/buscas-alertas': typeof ApiPublicCronBuscasAlertasRoute
-  '/api/public/cron/captacao': typeof ApiPublicCronCaptacaoRoute
   '/api/public/cron/construtora-ingestao': typeof ApiPublicCronConstrutoraIngestaoRoute
   '/api/public/cron/contratos-sla': typeof ApiPublicCronContratosSlaRoute
   '/api/public/cron/expire-trials': typeof ApiPublicCronExpireTrialsRoute
@@ -2055,8 +2010,6 @@ export interface FileRoutesById {
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
   '/api/public/feeds/$tenantSlug/meta-catalog.csv': typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
-  '/api/public/feeds/$tenantSlug/olx.xml': typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
-  '/api/public/feeds/$tenantSlug/vrsync.xml': typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   '/api/public/googleads/oauth/callback': typeof ApiPublicGoogleadsOauthCallbackRoute
   '/api/public/mercadopago/oauth/callback': typeof ApiPublicMercadopagoOauthCallbackRoute
   '/api/public/meta/oauth/callback': typeof ApiPublicMetaOauthCallbackRoute
@@ -2211,7 +2164,6 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
-    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2238,14 +2190,12 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
-    | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
-    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2281,8 +2231,6 @@ export interface FileRouteTypes {
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
-    | '/api/public/feeds/$tenantSlug/olx.xml'
-    | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
@@ -2430,7 +2378,6 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
-    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2457,14 +2404,12 @@ export interface FileRouteTypes {
     | '/app/imoveis'
     | '/app/leads'
     | '/app/locacao'
-    | '/app/portais'
     | '/app/site'
     | '/conta/chat'
     | '/admin/construtoras/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
-    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2500,8 +2445,6 @@ export interface FileRouteTypes {
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
-    | '/api/public/feeds/$tenantSlug/olx.xml'
-    | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
@@ -2654,7 +2597,6 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
-    | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
@@ -2681,14 +2623,12 @@ export interface FileRouteTypes {
     | '/app/imoveis/'
     | '/app/leads/'
     | '/app/locacao/'
-    | '/app/portais/'
     | '/app/site/'
     | '/conta/chat/'
     | '/admin/construtoras_/$id/ingestao'
     | '/api/public/cron/atendimento-email'
     | '/api/public/cron/atendimento-sla'
     | '/api/public/cron/buscas-alertas'
-    | '/api/public/cron/captacao'
     | '/api/public/cron/construtora-ingestao'
     | '/api/public/cron/contratos-sla'
     | '/api/public/cron/expire-trials'
@@ -2724,8 +2664,6 @@ export interface FileRouteTypes {
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
     | '/api/public/feeds/$tenantSlug/meta-catalog.csv'
-    | '/api/public/feeds/$tenantSlug/olx.xml'
-    | '/api/public/feeds/$tenantSlug/vrsync.xml'
     | '/api/public/googleads/oauth/callback'
     | '/api/public/mercadopago/oauth/callback'
     | '/api/public/meta/oauth/callback'
@@ -2799,7 +2737,6 @@ export interface RootRouteChildren {
   ApiPublicCronAtendimentoEmailRoute: typeof ApiPublicCronAtendimentoEmailRoute
   ApiPublicCronAtendimentoSlaRoute: typeof ApiPublicCronAtendimentoSlaRoute
   ApiPublicCronBuscasAlertasRoute: typeof ApiPublicCronBuscasAlertasRoute
-  ApiPublicCronCaptacaoRoute: typeof ApiPublicCronCaptacaoRoute
   ApiPublicCronConstrutoraIngestaoRoute: typeof ApiPublicCronConstrutoraIngestaoRoute
   ApiPublicCronContratosSlaRoute: typeof ApiPublicCronContratosSlaRoute
   ApiPublicCronExpireTrialsRoute: typeof ApiPublicCronExpireTrialsRoute
@@ -2829,8 +2766,6 @@ export interface RootRouteChildren {
   ApiPublicCanvaOauthCallbackRoute: typeof ApiPublicCanvaOauthCallbackRoute
   ApiPublicDocusignOauthCallbackRoute: typeof ApiPublicDocusignOauthCallbackRoute
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute: typeof ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute
-  ApiPublicFeedsTenantSlugOlxDotxmlRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRoute
-  ApiPublicFeedsTenantSlugVrsyncDotxmlRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRoute
   ApiPublicGoogleadsOauthCallbackRoute: typeof ApiPublicGoogleadsOauthCallbackRoute
   ApiPublicMercadopagoOauthCallbackRoute: typeof ApiPublicMercadopagoOauthCallbackRoute
   ApiPublicMetaOauthCallbackRoute: typeof ApiPublicMetaOauthCallbackRoute
@@ -3484,13 +3419,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSiteIndexRouteImport
       parentRoute: typeof AppSiteRoute
     }
-    '/app/portais/': {
-      id: '/app/portais/'
-      path: '/portais'
-      fullPath: '/app/portais/'
-      preLoaderRoute: typeof AppPortaisIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/app/locacao/': {
       id: '/app/locacao/'
       path: '/locacao'
@@ -3671,13 +3599,6 @@ declare module '@tanstack/react-router' {
       path: '/leads/configuracao'
       fullPath: '/app/leads/configuracao'
       preLoaderRoute: typeof AppLeadsConfiguracaoRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/leads/captacao': {
-      id: '/app/leads/captacao'
-      path: '/leads/captacao'
-      fullPath: '/app/leads/captacao'
-      preLoaderRoute: typeof AppLeadsCaptacaoRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/leads/analise-risco': {
@@ -4282,13 +4203,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronConstrutoraIngestaoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/cron/captacao': {
-      id: '/api/public/cron/captacao'
-      path: '/api/public/cron/captacao'
-      fullPath: '/api/public/cron/captacao'
-      preLoaderRoute: typeof ApiPublicCronCaptacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/cron/buscas-alertas': {
       id: '/api/public/cron/buscas-alertas'
       path: '/api/public/cron/buscas-alertas'
@@ -4357,20 +4271,6 @@ declare module '@tanstack/react-router' {
       path: '/api/public/googleads/oauth/callback'
       fullPath: '/api/public/googleads/oauth/callback'
       preLoaderRoute: typeof ApiPublicGoogleadsOauthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/feeds/$tenantSlug/vrsync.xml': {
-      id: '/api/public/feeds/$tenantSlug/vrsync.xml'
-      path: '/api/public/feeds/$tenantSlug/vrsync.xml'
-      fullPath: '/api/public/feeds/$tenantSlug/vrsync.xml'
-      preLoaderRoute: typeof ApiPublicFeedsTenantSlugVrsyncDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/feeds/$tenantSlug/olx.xml': {
-      id: '/api/public/feeds/$tenantSlug/olx.xml'
-      path: '/api/public/feeds/$tenantSlug/olx.xml'
-      fullPath: '/api/public/feeds/$tenantSlug/olx.xml'
-      preLoaderRoute: typeof ApiPublicFeedsTenantSlugOlxDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/feeds/$tenantSlug/meta-catalog.csv': {
@@ -4567,7 +4467,6 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
-  AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
   AppMarketingGoogleAdsRoute: typeof AppMarketingGoogleAdsRoute
@@ -4584,7 +4483,6 @@ interface AppRouteChildren {
   AppImoveisIndexRoute: typeof AppImoveisIndexRoute
   AppLeadsIndexRoute: typeof AppLeadsIndexRoute
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
-  AppPortaisIndexRoute: typeof AppPortaisIndexRoute
   AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
   AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
   AppLocacaoRepassesIdRoute: typeof AppLocacaoRepassesIdRoute
@@ -4632,7 +4530,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
-  AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
   AppMarketingGoogleAdsRoute: AppMarketingGoogleAdsRoute,
@@ -4649,7 +4546,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisIndexRoute: AppImoveisIndexRoute,
   AppLeadsIndexRoute: AppLeadsIndexRoute,
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
-  AppPortaisIndexRoute: AppPortaisIndexRoute,
   AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
   AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
   AppLocacaoRepassesIdRoute: AppLocacaoRepassesIdRoute,
@@ -4760,7 +4656,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronAtendimentoEmailRoute: ApiPublicCronAtendimentoEmailRoute,
   ApiPublicCronAtendimentoSlaRoute: ApiPublicCronAtendimentoSlaRoute,
   ApiPublicCronBuscasAlertasRoute: ApiPublicCronBuscasAlertasRoute,
-  ApiPublicCronCaptacaoRoute: ApiPublicCronCaptacaoRoute,
   ApiPublicCronConstrutoraIngestaoRoute: ApiPublicCronConstrutoraIngestaoRoute,
   ApiPublicCronContratosSlaRoute: ApiPublicCronContratosSlaRoute,
   ApiPublicCronExpireTrialsRoute: ApiPublicCronExpireTrialsRoute,
@@ -4793,10 +4688,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDocusignOauthCallbackRoute: ApiPublicDocusignOauthCallbackRoute,
   ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute:
     ApiPublicFeedsTenantSlugMetaCatalogDotcsvRoute,
-  ApiPublicFeedsTenantSlugOlxDotxmlRoute:
-    ApiPublicFeedsTenantSlugOlxDotxmlRoute,
-  ApiPublicFeedsTenantSlugVrsyncDotxmlRoute:
-    ApiPublicFeedsTenantSlugVrsyncDotxmlRoute,
   ApiPublicGoogleadsOauthCallbackRoute: ApiPublicGoogleadsOauthCallbackRoute,
   ApiPublicMercadopagoOauthCallbackRoute:
     ApiPublicMercadopagoOauthCallbackRoute,

@@ -4,6 +4,8 @@
  * ativo/rótulo usados pelo trilho, pelo submenu e pela barra inferior.
  */
 import {
+  Palette,
+  Share2,
   Clock,
   MessageCircle,
   Building2,
@@ -41,7 +43,6 @@ import {
   Upload,
   Receipt,
   Eye,
-  Radar,
   CreditCard,
   Target,
   Activity,
@@ -123,7 +124,6 @@ export const tenantModules: Module[] = [
       { to: "/app/empreendimentos", label: "Empreendimentos", icon: Building },
       { to: "/app/leads", label: "Leads", icon: Users },
       { to: "/app/leads/analise-risco", label: "Análise de Risco", icon: ShieldCheck },
-      { to: "/app/leads/captacao", label: "Captação Automática", icon: Radar },
       { to: "/app/parceiros-comerciais", label: "Parceiros Comerciais", icon: Briefcase },
       { to: "/app/tarefas", label: "Minhas tarefas", icon: CheckSquare },
       { to: "/app/visitas", label: "Agenda de visitas", icon: Calendar },
@@ -194,7 +194,8 @@ export const tenantModules: Module[] = [
     curto: "Marketing",
     icon: Megaphone,
     items: [
-      { to: "/app/portais", label: "Portais & Redes sociais", icon: Globe2 },
+      { to: "/app/portais/meta", label: "Redes sociais", icon: Share2 },
+      { to: "/app/portais/canva", label: "Canva", icon: Palette },
       { to: "/app/marketing/google-ads", label: "Google Ads", icon: Target },
       { to: "/app/parcerias", label: "Parcerias", icon: HeartHandshake },
     ],

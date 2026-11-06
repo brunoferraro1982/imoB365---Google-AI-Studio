@@ -95,7 +95,7 @@ const MARKETING: Record<
     highlight: true,
     features: [
       "Tudo do Basic",
-      "Marketing: VivaReal, ZAP, OLX",
+      "Marketing: redes sociais e Google Ads",
       "Jurídico: modelos de contrato",
       "E-Learning completo",
       "Suporte prioritário",

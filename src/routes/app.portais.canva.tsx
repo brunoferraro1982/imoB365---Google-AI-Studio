@@ -158,7 +158,7 @@ function CanvaConexaoPage() {
   return (
     <div className="mx-auto max-w-2xl p-8">
       <Link
-        to="/app/portais"
+        to="/app/imoveis"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> Voltar

@@ -27,7 +27,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
-import { PORTAIS } from "@/lib/portais";
 
 export const Route = createFileRoute("/app/configuracoes/golive")({
   component: GoLivePage,
@@ -66,7 +65,7 @@ function GoLivePage() {
   useEffect(() => {
     if (!tenantId) return;
     (async () => {
-      const [t, sset, imv, cor, pages, pf] = await Promise.all([
+      const [t, sset, imv, cor, pages] = await Promise.all([
         supabase
           .from("tenants")
           .select("nome,cnpj,creci_juridico,plano_slug")
@@ -88,12 +87,10 @@ function GoLivePage() {
           .select("id", { count: "exact", head: true })
           .eq("publicada", true)
           .limit(1),
-        (supabase as any).from("portal_feeds").select("*").eq("tenant_id", tenantId),
       ]);
 
       const tenant: any = t.data ?? {};
       const ss: any = sset.data ?? {};
-      const feedsList: any[] = pf.data ?? [];
 
       // Build general Operational Check list
       const list: Check[] = [
@@ -148,35 +145,6 @@ function GoLivePage() {
         details:
           "Envios automáticos de segurança e notificações ocorrem via domínio genérico padrão: 'notify.imob365.com.br'.",
         icon: Mail,
-      };
-
-      // Check Real Estate Portals
-      const totalPortalsConfigured = PORTAIS.filter((p) =>
-        feedsList.some((f) => f.portal_slug === p.slug && f.enabled),
-      ).length;
-      const totalPortalsDisponiveis = PORTAIS.filter((p) => p.disponivel).length;
-      const portalStatusDetail = PORTAIS.map((p) => {
-        const ativo = feedsList.some((f) => f.portal_slug === p.slug && f.enabled);
-        return `${p.nome}: ${ativo ? "Ativo" : "Pendente"}`;
-      }).join("; ");
-
-      const portalDiag: IntegrationDiagnosis = {
-        id: "portals",
-        name: "Portais Imobiliários (Feeds por Tenant)",
-        category: "Marketing",
-        status:
-          totalPortalsConfigured >= totalPortalsDisponiveis
-            ? "active"
-            : totalPortalsConfigured > 0
-              ? "sandbox"
-              : "pending",
-        statusText: `${totalPortalsConfigured} de ${totalPortalsDisponiveis} ativos`,
-        description:
-          "Disparo automático de anúncios via arquivos públicos de feed VRSync XML e OLX Realty.",
-        details: `Integrado via API no 'src/lib/portais.ts'. ${portalStatusDetail}. Ative o portal desejado em /app/portais e cole a URL do feed gerada no painel do parceiro.`,
-        icon: Globe2,
-        actionText: "Ajustar Portais",
-        actionLink: "/app/portais",
       };
 
       // Check Google Maps / Geocoding
@@ -278,7 +246,6 @@ function GoLivePage() {
 
       setDiagnostics([
         emailDiag,
-        portalDiag,
         mapsDiag,
         waDiag,
         trackingDiag,

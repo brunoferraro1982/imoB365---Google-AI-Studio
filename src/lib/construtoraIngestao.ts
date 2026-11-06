@@ -7,7 +7,7 @@
 // (service role, todas as construtoras) quanto pelo botão "Sincronizar
 // agora" (server function autenticada) via
 // src/lib/construtoraIngestao.functions.ts. Espelha a arquitetura de
-// src/lib/captacao.ts (watermark de execução, dedupe por UNIQUE).
+// o módulo de captação (removido) (watermark de execução, dedupe por UNIQUE).
 //
 // Confirmado via fetch real (curl) contra os 3 links do GMV citados pelo
 // usuário: cada página Linktree embute um <script id="__NEXT_DATA__"> com
@@ -576,7 +576,7 @@ export async function processarIngestao(
         // Um lote com erro (ex.: GOOGLE_DRIVE_API_KEY ausente, pasta sem
         // compartilhamento público, rate limit) não pode abortar os demais
         // lotes/fontes do mesmo ciclo — cada lote falha isoladamente,
-        // registrado pra diagnóstico, mesmo espírito de captacao.ts (nunca
+        // registrado pra diagnóstico, mesmo espírito de o módulo de captação (nunca
         // deixar um erro silencioso nem deixar um erro isolado derrubar o
         // lote inteiro).
         await client

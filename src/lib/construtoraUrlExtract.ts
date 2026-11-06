@@ -1,7 +1,7 @@
 // Fase 2 do Assistente de importação de construtoras: extração best-effort
 // de um imóvel a partir do HTML do anúncio no site da construtora.
 //
-// Estratégia (mesma filosofia da captação via Chaves na Mão em captacao.ts):
+// Estratégia (mesma filosofia da captação via fonte externa de anúncios):
 // preferir dado ESTRUTURADO já servido pra SEO/rich-snippets —
 // <script type="application/ld+json"> (schema.org RealEstateListing/Product/
 // Residence/Offer) e depois OpenGraph (og:*/product:*) — antes de qualquer

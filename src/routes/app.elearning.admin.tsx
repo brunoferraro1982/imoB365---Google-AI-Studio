@@ -358,7 +358,6 @@ const SEED_CURSOS = [
 <p>Antes de abordar proprietários, é essencial mapear onde estão as oportunidades na sua região de atuação.</p>
 <h3>Fontes de leads de captação</h3>
 <ul>
-  <li><strong>Portais de anúncio próprio</strong>: OLX, VivaReal, ZAP (proprietários anunciando por conta)</li>
   <li><strong>Grupos de WhatsApp/Facebook</strong>: "Compro e Vendo [bairro]"</li>
   <li><strong>Placa de vende-se/aluga-se</strong>: andando pelo bairro de atuação</li>
   <li><strong>Indicações</strong>: carteira de clientes, amigos, família</li>
@@ -528,7 +527,6 @@ const SEED_CURSOS = [
 <h3>Ferramentas essenciais</h3>
 <ul>
   <li><strong>CRM imobiliário</strong>: organize leads, imóveis e pipeline de vendas</li>
-  <li><strong>Portais de anúncio</strong>: VivaReal, ZAP Imóveis, OLX</li>
   <li><strong>Google Workspace ou similar</strong>: e-mail profissional, agenda, documentos</li>
   <li><strong>WhatsApp Business</strong>: catálogo de imóveis, respostas automáticas</li>
   <li><strong>Sistema de gestão financeira</strong>: controle de comissões a receber</li>
@@ -611,7 +609,7 @@ const SEED_CURSOS = [
             tipo: "texto",
             duracao_min: 15,
             conteudo_html: `<h2>Anunciando nos principais portais</h2>
-<p>VivaReal, ZAP Imóveis e OLX são os portais com maior tráfego imobiliário no Brasil. Saiba como maximizar sua visibilidade.</p>
+<p>Divulgar seus imóveis em redes sociais e no Google Ads amplia a visibilidade do seu portfólio. Saiba como maximizar seu alcance.</p>
 <h3>Título do anúncio</h3>
 <p>Use o formato: <code>[Tipo] [Metragem] [Bairro] [Diferencial] — [Cidade]</code></p>
 <p>Exemplo: "Apartamento 90m² Boqueirão 3 dorms 2 vagas — Praia Grande/SP"</p>

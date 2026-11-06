@@ -4,7 +4,7 @@ import { sugerirRespostaChamado } from "@/lib/aiAssistant";
 
 // Central de Atendimento Sprint 9 — sugestão de resposta por IA, gated aos
 // planos Pro/Business (mesmo padrão de PLANOS_COM_ACESSO já usado em
-// captacao.ts). Rota crua (não createServerFn) pelo mesmo motivo de
+// o módulo de captação). Rota crua (não createServerFn) pelo mesmo motivo de
 // api.ai.assistente.ts: precisa devolver um Response em streaming.
 const PLANOS_COM_ACESSO = ["pro", "business"];
 

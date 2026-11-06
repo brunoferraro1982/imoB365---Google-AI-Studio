@@ -79,7 +79,7 @@ const ARTIGOS = [
     title: "Como publicar um anúncio em todos os portais de uma vez",
     steps: [
       "Cadastre e publique o imóvel normalmente.",
-      "Em Marketing > Portais, ative os portais que sua imobiliária usa (VivaReal, ZAP, Wimóveis, Chaves na Mão, Imovelweb, Mercado Livre, OLX).",
+      "Em Marketing > Redes sociais, conecte as contas da sua imobiliária e publique seus imóveis nelas.",
       "O feed é gerado automaticamente — não é preciso reenviar a cada alteração de preço ou status.",
       "Acompanhe o status de cada portal na tela de integrações.",
     ],

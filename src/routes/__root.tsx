@@ -108,7 +108,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         {
           name: "description",
           content:
-            "imob365 é o portal e SaaS para imobiliárias: catálogo, CRM, corretores, integrações com OLX/VivaReal e gestão completa do mercado imobiliário brasileiro.",
+            "imob365 é o portal e SaaS para imobiliárias: catálogo, CRM, corretores, integrações com redes sociais e Google Ads, e gestão completa do mercado imobiliário brasileiro.",
         },
         { name: "author", content: "imob365" },
         { property: "og:title", content: "imob365 — Plataforma imobiliária all-in-one" },

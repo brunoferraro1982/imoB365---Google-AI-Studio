@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Link2, Mail, Rss, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Link2, Mail, CheckCircle2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
@@ -11,7 +11,6 @@ export const Route = createFileRoute("/admin/integracoes")({
 type TenantRow = { id: string; nome: string };
 type WebhookRow = { tenant_id: string; ativo: boolean };
 type DeliveryRow = { tenant_id: string; status: string };
-type FeedRow = { tenant_id: string; enabled: boolean };
 type EmailRow = { status: string };
 
 function AdminIntegracoes() {
@@ -19,13 +18,12 @@ function AdminIntegracoes() {
   const [tenants, setTenants] = useState<TenantRow[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookRow[]>([]);
   const [deliveries, setDeliveries] = useState<DeliveryRow[]>([]);
-  const [feeds, setFeeds] = useState<FeedRow[]>([]);
   const [emails, setEmails] = useState<EmailRow[]>([]);
 
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const [t, w, d, f, e] = await Promise.all([
+      const [t, w, d, e] = await Promise.all([
         supabase.from("tenants").select("id,nome").order("nome"),
         supabase.from("tenant_webhooks").select("tenant_id,ativo"),
         supabase
@@ -33,7 +31,6 @@ function AdminIntegracoes() {
           .select("tenant_id,status")
           .order("created_at", { ascending: false })
           .limit(2000),
-        supabase.from("portal_feeds").select("tenant_id,enabled"),
         supabase
           .from("email_send_log")
           .select("status")
@@ -43,7 +40,6 @@ function AdminIntegracoes() {
       setTenants((t.data as TenantRow[]) ?? []);
       setWebhooks((w.data as WebhookRow[]) ?? []);
       setDeliveries((d.data as DeliveryRow[]) ?? []);
-      setFeeds((f.data as FeedRow[]) ?? []);
       setEmails((e.data as EmailRow[]) ?? []);
       setLoading(false);
     })();
@@ -59,37 +55,33 @@ function AdminIntegracoes() {
       taxaEntrega: entregasTotal > 0 ? Math.round((entregasOk / entregasTotal) * 100) : null,
       emailsFalha,
       emailsTotal: emails.length,
-      feedsAtivos: feeds.filter((f) => f.enabled).length,
     };
-  }, [webhooks, deliveries, emails, feeds]);
+  }, [webhooks, deliveries, emails]);
 
   const porTenant = useMemo(() => {
     return tenants
       .map((t) => {
         const wh = webhooks.filter((w) => w.tenant_id === t.id);
         const dl = deliveries.filter((d) => d.tenant_id === t.id);
-        const fd = feeds.filter((f) => f.tenant_id === t.id);
         return {
           id: t.id,
           nome: t.nome,
           webhooksAtivos: wh.filter((w) => w.ativo).length,
           entregasOk: dl.filter((d) => d.status === "entregue").length,
           entregasTotal: dl.length,
-          feedsAtivos: fd.filter((f) => f.enabled).length,
         };
       })
-      .filter((r) => r.webhooksAtivos > 0 || r.entregasTotal > 0 || r.feedsAtivos > 0);
-  }, [tenants, webhooks, deliveries, feeds]);
+      .filter((r) => r.webhooksAtivos > 0 || r.entregasTotal > 0);
+  }, [tenants, webhooks, deliveries]);
 
   return (
     <div className="space-y-8 p-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Saúde das integrações</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Visão consolidada, entre todos os tenants, de webhooks, e-mail e feeds de portal — cada
-          imobiliária configura os próprios em{" "}
-          <code className="rounded bg-muted px-1">/app/configuracoes</code>; aqui é só
-          monitoramento.
+          Visão consolidada, entre todos os tenants, de webhooks e e-mail — cada imobiliária
+          configura os próprios em <code className="rounded bg-muted px-1">/app/configuracoes</code>
+          ; aqui é só monitoramento.
         </p>
       </div>
 
@@ -120,13 +112,6 @@ function AdminIntegracoes() {
               sub={`de ${agg.emailsTotal} recentes`}
               tone={agg.emailsFalha > 0 ? "text-amber-600" : "text-emerald-600"}
             />
-            <StatCard
-              icon={Rss}
-              label="Feeds de portal ativos"
-              value={String(agg.feedsAtivos)}
-              sub="VivaReal / ZAP / OLX"
-              tone="text-emerald-600"
-            />
           </div>
 
           <div className="overflow-hidden rounded-xl border border-border">
@@ -139,7 +124,6 @@ function AdminIntegracoes() {
                   <th className="px-4 py-2">Imobiliária</th>
                   <th className="px-4 py-2">Webhooks ativos</th>
                   <th className="px-4 py-2">Entregas</th>
-                  <th className="px-4 py-2">Feeds ativos</th>
                 </tr>
               </thead>
               <tbody>
@@ -173,7 +157,6 @@ function AdminIntegracoes() {
                         <span className="text-xs text-muted-foreground">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-2">{r.feedsAtivos}</td>
                   </tr>
                 ))}
               </tbody>

@@ -42,7 +42,7 @@ const MODULES = [
   {
     slug: "mod-mkt",
     nome: "Marketing & Site",
-    descricao: "Site próprio, blog, portais (ZAP/OLX), campanhas e automações",
+    descricao: "Site próprio, blog, campanhas e automações",
     icon: Megaphone,
   },
   {

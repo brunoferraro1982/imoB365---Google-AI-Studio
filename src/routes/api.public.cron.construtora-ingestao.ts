@@ -5,7 +5,7 @@ import { processarIngestao } from "@/lib/construtoraIngestao";
 // Roda diariamente via pg_cron (ver supabase/migrations/
 // ..._construtora_ingestao_cron.sql) — a própria engine decide, por fonte,
 // se já passou o intervalo configurado (intervalo_horas + ultima_execucao),
-// mesmo padrão de src/routes/api.public.cron.captacao.ts.
+// mesmo padrão de o cron de captação (removido).
 //
 // Achado real (produção, dataset real do GMV): o ciclo completo leva
 // 20-25+ minutos — muito além do timeout padrão de `net.http_post` do

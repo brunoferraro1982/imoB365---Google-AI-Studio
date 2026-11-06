@@ -94,7 +94,7 @@ const clientSignupInput = z.object({
 // nenhum dos passos de completeOnboarding acima: não pede CRECI/CNPJ, não
 // chama provision_trial_business (não cria tenant nem user_roles). Mesmo
 // padrão de mercado das plataformas de referência (Zillow, Redfin,
-// QuintoAndar, VivaReal): virar "profissional" é sempre um fluxo separado
+// QuintoAndar): virar "profissional" é sempre um fluxo separado
 // e posterior (aqui, completeOnboarding em si, acessível depois via
 // "Anunciar Imóvel"), nunca uma etapa obrigatória do cadastro básico.
 export const registerAsClient = createServerFn({ method: "POST" })
