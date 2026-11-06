@@ -7,7 +7,6 @@ import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
 import { LogOut, Menu, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/hooks/useAuth";
-import { canAccessModule, isModuleEnabled } from "@/lib/permissions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
@@ -20,6 +19,7 @@ import { TemaSelector } from "@/components/layout/TemaSelector";
 import {
   activeSection,
   adminGroups,
+  modulosVisiveis,
   isItemActive,
   tenantModules,
   type Item,
@@ -228,20 +228,15 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   }
 
   // Tenant: trilho de módulos (vertical) + submenu + barra utilitária.
-  // A visibilidade respeita papel (Guard 1) e plano (Guard 2), como antes.
-  const visibleModules = tenantModules.filter((m) => {
-    // Super admins (por role ou por e-mail) enxergam todos os módulos
-    if (isSuperAdmin) return true;
-    // Guard 1: role tem acesso ao módulo
-    const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
-    // Guard 2: plano do tenant inclui o módulo (lista vazia = tudo habilitado — fallback para Tenant 0)
-    const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
-    return roleOk && planOk;
-  });
+  // Visibilidade por papel (Guard 1) e plano (Guard 2), na mesma regra do painel inicial.
+  const visibleModules = modulosVisiveis({ roles, enabledModules, isSuperAdmin });
 
-  // Módulo ativo: o item de maior prefixo entre TODOS os módulos (mesma regra de antes).
-  const activeModule = activeSection(tenantModules, current) ?? tenantModules[0];
-  const itemAtual = activeModule.items.find((it) => isItemActive(it, activeModule.items, current));
+  // Na tela inicial (painel liquid glass) nenhum módulo fica selecionado no trilho.
+  const telaInicial = current === "/app";
+  const activeModule = telaInicial
+    ? undefined
+    : (activeSection(tenantModules, current) ?? tenantModules[0]);
+  const itemAtual = activeModule?.items.find((it) => isItemActive(it, activeModule.items, current));
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -255,7 +250,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           destaque: m.destaque,
           badge: m.id === "chat" ? <ChatUnreadBadge /> : undefined,
         }))}
-        activeId={activeModule.id}
+        activeId={activeModule?.id}
         ariaLabel="Módulos"
         footer={
           isSuperAdmin ? (
@@ -268,18 +263,24 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           ) : undefined
         }
       />
-      <AppSubMenu
-        title={activeModule.label}
-        icon={activeModule.icon}
-        items={activeModule.items}
-        current={current}
-        aberto={submenuAberto}
-        onToggle={() => setSubmenuAberto((v) => !v)}
-        ariaLabel={`Menu de ${activeModule.label}`}
-      />
+      {activeModule && (
+        <AppSubMenu
+          title={activeModule.label}
+          icon={activeModule.icon}
+          items={activeModule.items}
+          current={current}
+          aberto={submenuAberto}
+          onToggle={() => setSubmenuAberto((v) => !v)}
+          ariaLabel={`Menu de ${activeModule.label}`}
+        />
+      )}
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopBar
-          trilha={[activeModule.label, ...(itemAtual ? [itemAtual.label] : [])]}
+          trilha={
+            activeModule
+              ? [activeModule.label, ...(itemAtual ? [itemAtual.label] : [])]
+              : ["Início"]
+          }
           actions={
             <>
               <ChatBadge />
@@ -290,7 +291,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           onSignOut={signOut}
         />
         {/* Abaixo de lg: sub-páginas do módulo ativo em dropdown (sticky sob a barra utilitária). */}
-        <ModuleSubNav items={activeModule.items} current={current} />
+        {activeModule && <ModuleSubNav items={activeModule.items} current={current} />}
         <main className="min-w-0 flex-1 overflow-x-hidden pb-24 lg:pb-0">
           <Outlet />
         </main>

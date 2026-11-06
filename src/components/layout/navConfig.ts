@@ -54,7 +54,8 @@ import {
   Search,
   type LucideIcon,
 } from "lucide-react";
-import type { AppModule } from "@/lib/permissions";
+import { canAccessModule, isModuleEnabled, type AppModule } from "@/lib/permissions";
+import type { AppRole } from "@/hooks/useAuth";
 
 export type Item = { to: string; label: string; icon: LucideIcon };
 export type Module = {
@@ -79,12 +80,24 @@ export const tenantModules: Module[] = [
     items: [{ to: "/app/chat", label: "Conversas", icon: MessageCircle }],
   },
   {
+    id: "atendimento",
+    requiredModule: "atendimento" as AppModule,
+    label: "Central de Atendimento",
+    curto: "Central",
+    destaque: true,
+    icon: Headset,
+    items: [
+      { to: "/app/atendimento", label: "Chamados", icon: Headset },
+      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
+    ],
+  },
+  {
     id: "dashboard",
-    label: "Dashboard",
+    label: "Início",
     curto: "Início",
     icon: LayoutDashboard,
     items: [
-      { to: "/app", label: "Painel inicial", icon: LayoutDashboard },
+      { to: "/app", label: "Dashboards", icon: LayoutDashboard },
       { to: "/app/relatorios", label: "Relatórios", icon: BarChart3 },
     ],
   },
@@ -107,17 +120,6 @@ export const tenantModules: Module[] = [
       { to: "/app/roteiro-visitas", label: "Roteiro de Visitas", icon: Route },
       { to: "/app/configuracoes/checklist", label: "Checklist de documentos", icon: CheckSquare },
       { to: "/app/cartao-virtual", label: "Cartão Virtual", icon: IdCard },
-    ],
-  },
-  {
-    id: "atendimento",
-    requiredModule: "atendimento" as AppModule,
-    label: "Central de Atendimento",
-    curto: "Atend.",
-    icon: Headset,
-    items: [
-      { to: "/app/atendimento", label: "Chamados", icon: Headset },
-      { to: "/app/atendimento/painel", label: "Painel", icon: LayoutDashboard },
     ],
   },
   {
@@ -354,4 +356,25 @@ export function activeSection<T extends { items: Item[] }>(
       }
     }
   return best;
+}
+
+/**
+ * Módulos que o usuário enxerga: papel (Guard 1) e plano (Guard 2).
+ * Super admins veem todos. Usado pelo trilho e pelo painel inicial.
+ */
+export function modulosVisiveis({
+  roles,
+  enabledModules,
+  isSuperAdmin,
+}: {
+  roles: AppRole[];
+  enabledModules: AppModule[];
+  isSuperAdmin: boolean;
+}): Module[] {
+  return tenantModules.filter((m) => {
+    if (isSuperAdmin) return true;
+    const roleOk = !m.requiredModule || canAccessModule(roles, m.requiredModule);
+    const planOk = !m.requiredModule || isModuleEnabled(enabledModules, m.requiredModule);
+    return roleOk && planOk;
+  });
 }
