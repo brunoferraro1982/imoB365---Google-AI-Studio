@@ -231,12 +231,9 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
   // Visibilidade por papel (Guard 1) e plano (Guard 2), na mesma regra do painel inicial.
   const visibleModules = modulosVisiveis({ roles, enabledModules, isSuperAdmin });
 
-  // Na tela inicial (painel liquid glass) nenhum módulo fica selecionado no trilho.
-  const telaInicial = current === "/app";
-  const activeModule = telaInicial
-    ? undefined
-    : (activeSection(tenantModules, current) ?? tenantModules[0]);
-  const itemAtual = activeModule?.items.find((it) => isItemActive(it, activeModule.items, current));
+  // Módulo ativo pelo caminho. Em /app é o Início (item "Dashboards").
+  const activeModule = activeSection(tenantModules, current) ?? tenantModules[0];
+  const itemAtual = activeModule.items.find((it) => isItemActive(it, activeModule.items, current));
 
   return (
     <div className="flex min-h-screen bg-muted/20">
@@ -276,11 +273,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <AppTopBar
-          trilha={
-            activeModule
-              ? [activeModule.label, ...(itemAtual ? [itemAtual.label] : [])]
-              : ["Início"]
-          }
+          trilha={activeModule ? [activeModule.label, ...(itemAtual ? [itemAtual.label] : [])] : []}
           actions={
             <>
               <ChatBadge />
