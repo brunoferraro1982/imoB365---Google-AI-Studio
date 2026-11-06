@@ -1,7 +1,8 @@
--- Métricas de performance dos anúncios (Relatórios → Performance & Desempenho).
--- A RPC existia só no banco de dev (criada manualmente), sem migration no repo:
--- em produção as estatísticas ficavam zeradas porque a função não existia.
--- Definição idêntica à do dev; apenas versionada.
+-- Versiona a RPC de métricas de anúncios (Relatórios → Performance & Desempenho).
+-- Já existia em dev e em produção, mas sem migration no repo. Definição idêntica
+-- à do dev: a migration é idempotente (CREATE OR REPLACE) e só registra o histórico.
+-- A causa dos zeros em produção NÃO era a função: o rastreamento de visualizações
+-- nunca gravava (chamada RPC sem .then no cliente) — ver imovel.$slug.tsx.
 CREATE OR REPLACE FUNCTION public.relatorio_metricas_imoveis()
  RETURNS TABLE(imovel_id uuid, views bigint, whatsapp_clicks bigint, favoritos bigint)
  LANGUAGE plpgsql
