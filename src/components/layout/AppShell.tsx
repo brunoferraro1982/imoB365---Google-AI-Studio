@@ -4,7 +4,7 @@ import { getPendingMfaFactorId } from "@/lib/mfaGate";
 import { ChatBadge } from "@/components/chat/ChatBadge";
 import { ApprovalsNavBadge } from "@/components/admin/ApprovalsNavBadge";
 import { FaturamentoNavBadge } from "@/components/admin/FaturamentoNavBadge";
-import { LogOut, Menu, ShieldCheck, Sparkles } from "lucide-react";
+import { LogOut, Menu, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useAuth } from "@/hooks/useAuth";
 import { canAccessModule, isModuleEnabled } from "@/lib/permissions";
@@ -280,16 +280,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           trilha={[activeModule.label, ...(itemAtual ? [itemAtual.label] : [])]}
           actions={
             <>
-              <Link
-                to="/app/contratacao"
-                className="hidden items-center gap-1.5 rounded-full border border-primary/30 bg-primary/15 px-3 py-1 text-xs font-bold text-primary transition-colors hover:bg-primary/25 md:inline-flex"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Planos & Assinatura</span>
-              </Link>
-              <span className="hidden md:inline-flex">
-                <ChatBadge />
-              </span>
+              <ChatBadge />
             </>
           }
           email={user.email ?? ""}

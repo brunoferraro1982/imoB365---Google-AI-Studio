@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { LogOut, Monitor, Moon, ShieldCheck, Sun } from "lucide-react";
+import { LogOut, Monitor, Moon, ShieldCheck, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -63,6 +63,11 @@ export function UserMenu({
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>
+        <DropdownMenuItem asChild>
+          <Link to="/app/contratacao">
+            <Sparkles className="mr-2 h-4 w-4" /> Planos & Assinatura
+          </Link>
+        </DropdownMenuItem>
         {isSuperAdmin && (
           <>
             <DropdownMenuSeparator />
