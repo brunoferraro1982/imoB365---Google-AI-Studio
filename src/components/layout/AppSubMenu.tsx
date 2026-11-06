@@ -31,17 +31,41 @@ export function AppSubMenu({
   renderBadge?: (item: Item) => ReactNode;
 }) {
   if (!aberto) {
+    // Recolhido: mantém os ícones dos itens do módulo, com o atual destacado,
+    // para o usuário continuar vendo onde está. O nome aparece no tooltip (title).
     return (
-      <aside className="sticky top-0 hidden h-screen w-10 shrink-0 flex-col items-center border-r border-border/80 bg-card pt-3 lg:flex print:hidden">
+      <aside className="sticky top-0 hidden h-screen w-14 shrink-0 flex-col items-center border-r border-border/80 bg-card pt-3 lg:flex print:hidden">
         <button
           type="button"
           onClick={onToggle}
           aria-label="Expandir menu"
           aria-expanded={false}
-          className="grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+          title={title}
+          className="mb-2 grid h-8 w-8 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
+        <nav aria-label={ariaLabel} className="flex flex-col items-center gap-1 overflow-y-auto">
+          {items.map((item) => {
+            const ativo = isItemActive(item, items, current);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                title={item.label}
+                aria-label={item.label}
+                aria-current={ativo ? "page" : undefined}
+                className={`grid h-9 w-9 place-items-center rounded-lg transition-colors ${
+                  ativo
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground/75 hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <item.icon className={`h-4 w-4 ${ativo ? "stroke-[2.25px]" : ""}`} />
+              </Link>
+            );
+          })}
+        </nav>
       </aside>
     );
   }
