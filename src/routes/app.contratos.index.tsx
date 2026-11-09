@@ -3,6 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Plus, FileText, Pencil, Trash2, LayoutTemplate } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  buscarSituacaoChecklist,
+  type SituacaoChecklist,
+} from "@/components/checklist/checklistData";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +23,7 @@ export const Route = createFileRoute("/app/contratos/")({
 
 type Contrato = {
   id: string;
+  etapa_atual: string;
   numero: string | null;
   tipo: string;
   status: string;
@@ -30,7 +35,7 @@ type Contrato = {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="glass-fosco rounded-3xl border border-white/40 p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
       {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
@@ -40,6 +45,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
 
 function ContratosList() {
   const [items, setItems] = useState<Contrato[]>([]);
+  const [situacao, setSituacao] = useState<Map<string, SituacaoChecklist>>(new Map());
   const { tenantId } = useAuth();
   const { confirmDialog, ConfirmDialog } = useConfirm();
   const [loading, setLoading] = useState(true);
@@ -55,11 +61,16 @@ function ContratosList() {
     }
     const { data, error } = await (supabase as any)
       .from("contratos")
-      .select("id,numero,tipo,status,valor,data_inicio,assinatura_status,updated_at")
+      .select("id,numero,tipo,status,valor,data_inicio,assinatura_status,updated_at,etapa_atual")
       .eq("tenant_id", tenantId)
       .order("updated_at", { ascending: false });
     if (error) toast.error(error.message);
     setItems((data ?? []) as Contrato[]);
+    setSituacao(
+      await buscarSituacaoChecklist(
+        ((data ?? []) as Contrato[]).map((c) => ({ id: c.id, etapa_atual: c.etapa_atual })),
+      ),
+    );
     setLoading(false);
   }
 
@@ -102,10 +113,12 @@ function ContratosList() {
   const hasFilters = search || filterStatus || filterTipo;
 
   return (
-    <div className="p-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jurídico</h1>
+          <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Jurídico
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Contratos, modelos jurídicos e assinaturas digitais.
           </p>
@@ -203,7 +216,7 @@ function ContratosList() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <div className="overflow-x-auto glass-fosco rounded-3xl border border-white/40">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
@@ -213,6 +226,7 @@ function ContratosList() {
                 <th className="px-4 py-3 text-right">Valor</th>
                 <th className="px-4 py-3 text-left">Início</th>
                 <th className="px-4 py-3 text-left">Assinatura</th>
+                <th className="px-4 py-3 text-left">Checklist</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -241,6 +255,9 @@ function ContratosList() {
                         : "—"}
                     </td>
                     <td className="px-4 py-3">
+                      <ChecklistSelo situacao={situacao.get(c.id)} />
+                    </td>
+                    <td className="px-4 py-3">
                       <span
                         className={`inline-block rounded px-2 py-0.5 text-[11px] font-medium ${assInfo.className}`}
                       >
@@ -266,5 +283,35 @@ function ContratosList() {
       )}
       <ConfirmDialog />
     </div>
+  );
+}
+
+function ChecklistSelo({ situacao }: { situacao?: SituacaoChecklist }) {
+  if (!situacao) return <span className="text-xs text-muted-foreground">—</span>;
+  if (situacao.semChecklist) {
+    return (
+      <span className="inline-block rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+        sem checklist
+      </span>
+    );
+  }
+  if (situacao.pendentesObrigatorios > 0) {
+    return (
+      <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700 dark:bg-red-950/40 dark:text-red-300">
+        {situacao.pendentesObrigatorios} pendente(s)
+      </span>
+    );
+  }
+  if (situacao.etapasSemDocumento.length > 0) {
+    return (
+      <span className="inline-block rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+        etapa sem docs
+      </span>
+    );
+  }
+  return (
+    <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300">
+      em dia
+    </span>
   );
 }

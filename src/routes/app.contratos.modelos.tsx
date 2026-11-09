@@ -87,6 +87,28 @@ const VARIABLE_GROUPS = [
       { label: "Parceiro B", value: "{{partes.parceiro_b}}" },
     ],
   },
+  {
+    label: "Cliente",
+    vars: [
+      { label: "Nome", value: "{{cliente.nome}}" },
+      { label: "CPF / CNPJ", value: "{{cliente.documento}}" },
+      { label: "RG", value: "{{cliente.rg}}" },
+      { label: "Endereço", value: "{{cliente.endereco}}" },
+      { label: "Nacionalidade", value: "{{cliente.nacionalidade}}" },
+      { label: "Estado civil", value: "{{cliente.estado_civil}}" },
+      { label: "Profissão", value: "{{cliente.profissao}}" },
+    ],
+  },
+  {
+    label: "Cônjuge",
+    vars: [
+      { label: "Nome", value: "{{conjuge.nome}}" },
+      { label: "CPF", value: "{{conjuge.documento}}" },
+      { label: "RG", value: "{{conjuge.rg}}" },
+      { label: "Nacionalidade", value: "{{conjuge.nacionalidade}}" },
+      { label: "Profissão", value: "{{conjuge.profissao}}" },
+    ],
+  },
 ];
 
 // ─── Toolbar button ───────────────────────────────────────────────────────────
@@ -416,7 +438,7 @@ function ModelosPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <Link
         to="/app/contratos"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -424,9 +446,11 @@ function ModelosPage() {
         <ArrowLeft className="h-4 w-4" /> Voltar para Jurídico
       </Link>
 
-      <header className="mb-6 flex items-center justify-between gap-4">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Modelos de contrato</h1>
+          <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Modelos de contrato
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Templates reutilizáveis para geração de documentos.
           </p>
@@ -450,7 +474,7 @@ function ModelosPage() {
       {editing ? (
         <form
           onSubmit={save}
-          className="max-w-4xl space-y-5 rounded-xl border border-border bg-card p-6"
+          className="max-w-4xl space-y-5 glass-fosco rounded-3xl border border-white/40 p-6"
         >
           {/* Nome + Tipo */}
           <div className="grid gap-4 md:grid-cols-3">
@@ -527,7 +551,7 @@ function ModelosPage() {
           {items.map((t) => (
             <div
               key={t.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4"
+              className="flex items-center justify-between gap-3 glass-fosco rounded-3xl border border-white/40 p-4"
             >
               <div>
                 <div className="flex items-center gap-2">

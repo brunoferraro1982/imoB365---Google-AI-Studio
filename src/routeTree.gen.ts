@@ -149,6 +149,7 @@ import { Route as AppCorretoresIdRouteImport } from './routes/app.corretores.$id
 import { Route as AppContratosPainelRouteImport } from './routes/app.contratos.painel'
 import { Route as AppContratosNovoRouteImport } from './routes/app.contratos.novo'
 import { Route as AppContratosModelosRouteImport } from './routes/app.contratos.modelos'
+import { Route as AppContratosChecklistRouteImport } from './routes/app.contratos.checklist'
 import { Route as AppContratosIdRouteImport } from './routes/app.contratos.$id'
 import { Route as AppConfiguracoesWebhooksRouteImport } from './routes/app.configuracoes.webhooks'
 import { Route as AppConfiguracoesSegurancaRouteImport } from './routes/app.configuracoes.seguranca'
@@ -183,6 +184,7 @@ import { Route as AdminTenantsIdRouteImport } from './routes/admin.tenants_.$id'
 import { Route as AdminCorretoresIdRouteImport } from './routes/admin.corretores.$id'
 import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
+import { Route as AppContratosChecklistIndexRouteImport } from './routes/app.contratos.checklist.index'
 import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
 import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
@@ -191,6 +193,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.repasses.$id'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
+import { Route as AppContratosChecklistNovoRouteImport } from './routes/app.contratos.checklist.novo'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
 import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
 import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
@@ -933,6 +936,11 @@ const AppContratosModelosRoute = AppContratosModelosRouteImport.update({
   path: '/contratos/modelos',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContratosChecklistRoute = AppContratosChecklistRouteImport.update({
+  id: '/contratos/checklist',
+  path: '/contratos/checklist',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContratosIdRoute = AppContratosIdRouteImport.update({
   id: '/contratos/$id',
   path: '/contratos/$id',
@@ -1117,6 +1125,12 @@ const AppLocacaoRepassesIndexRoute = AppLocacaoRepassesIndexRouteImport.update({
   path: '/locacao/repasses/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContratosChecklistIndexRoute =
+  AppContratosChecklistIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AppContratosChecklistRoute,
+  } as any)
 const AppConfiguracoesIntegracoesBancariasIndexRoute =
   AppConfiguracoesIntegracoesBancariasIndexRouteImport.update({
     id: '/integracoes-bancarias/',
@@ -1159,6 +1173,12 @@ const AppContratosModelosBibliotecaRoute =
     id: '/contratos/modelos_/biblioteca',
     path: '/contratos/modelos/biblioteca',
     getParentRoute: () => AppRoute,
+  } as any)
+const AppContratosChecklistNovoRoute =
+  AppContratosChecklistNovoRouteImport.update({
+    id: '/novo',
+    path: '/novo',
+    getParentRoute: () => AppContratosChecklistRoute,
   } as any)
 const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
   id: '/contratos/$id_/imprimir',
@@ -1500,6 +1520,7 @@ export interface FileRoutesByFullPath {
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
   '/app/contratos/$id': typeof AppContratosIdRoute
+  '/app/contratos/checklist': typeof AppContratosChecklistRouteWithChildren
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/contratos/painel': typeof AppContratosPainelRoute
@@ -1578,6 +1599,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
+  '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1586,6 +1608,7 @@ export interface FileRoutesByFullPath {
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/contratos/checklist/': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
@@ -1794,6 +1817,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
+  '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1802,6 +1826,7 @@ export interface FileRoutesByTo {
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/contratos/checklist': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
@@ -1938,6 +1963,7 @@ export interface FileRoutesById {
   '/app/configuracoes/seguranca': typeof AppConfiguracoesSegurancaRoute
   '/app/configuracoes/webhooks': typeof AppConfiguracoesWebhooksRoute
   '/app/contratos/$id': typeof AppContratosIdRoute
+  '/app/contratos/checklist': typeof AppContratosChecklistRouteWithChildren
   '/app/contratos/modelos': typeof AppContratosModelosRoute
   '/app/contratos/novo': typeof AppContratosNovoRoute
   '/app/contratos/painel': typeof AppContratosPainelRoute
@@ -2016,6 +2042,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
+  '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -2024,6 +2051,7 @@ export interface FileRoutesById {
   '/site/$slug_/blog_/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/contratos/checklist/': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
   '/api/public/docusign/oauth/callback': typeof ApiPublicDocusignOauthCallbackRoute
@@ -2161,6 +2189,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/seguranca'
     | '/app/configuracoes/webhooks'
     | '/app/contratos/$id'
+    | '/app/contratos/checklist'
     | '/app/contratos/modelos'
     | '/app/contratos/novo'
     | '/app/contratos/painel'
@@ -2239,6 +2268,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
+    | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
@@ -2247,6 +2277,7 @@ export interface FileRouteTypes {
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
+    | '/app/contratos/checklist/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
@@ -2455,6 +2486,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id/imprimir'
+    | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
@@ -2463,6 +2495,7 @@ export interface FileRouteTypes {
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias'
+    | '/app/contratos/checklist'
     | '/app/locacao/repasses'
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
@@ -2598,6 +2631,7 @@ export interface FileRouteTypes {
     | '/app/configuracoes/seguranca'
     | '/app/configuracoes/webhooks'
     | '/app/contratos/$id'
+    | '/app/contratos/checklist'
     | '/app/contratos/modelos'
     | '/app/contratos/novo'
     | '/app/contratos/painel'
@@ -2676,6 +2710,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
     | '/app/contratos/$id_/imprimir'
+    | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos_/biblioteca'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
@@ -2684,6 +2719,7 @@ export interface FileRouteTypes {
     | '/site/$slug_/blog_/$postSlug'
     | '/site/$slug_/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
+    | '/app/contratos/checklist/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
     | '/api/public/docusign/oauth/callback'
@@ -3780,6 +3816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContratosModelosRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contratos/checklist': {
+      id: '/app/contratos/checklist'
+      path: '/contratos/checklist'
+      fullPath: '/app/contratos/checklist'
+      preLoaderRoute: typeof AppContratosChecklistRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/contratos/$id': {
       id: '/app/contratos/$id'
       path: '/contratos/$id'
@@ -4018,6 +4061,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLocacaoRepassesIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contratos/checklist/': {
+      id: '/app/contratos/checklist/'
+      path: '/'
+      fullPath: '/app/contratos/checklist/'
+      preLoaderRoute: typeof AppContratosChecklistIndexRouteImport
+      parentRoute: typeof AppContratosChecklistRoute
+    }
     '/app/configuracoes/integracoes-bancarias/': {
       id: '/app/configuracoes/integracoes-bancarias/'
       path: '/integracoes-bancarias'
@@ -4073,6 +4123,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/contratos/modelos/biblioteca'
       preLoaderRoute: typeof AppContratosModelosBibliotecaRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/app/contratos/checklist/novo': {
+      id: '/app/contratos/checklist/novo'
+      path: '/novo'
+      fullPath: '/app/contratos/checklist/novo'
+      preLoaderRoute: typeof AppContratosChecklistNovoRouteImport
+      parentRoute: typeof AppContratosChecklistRoute
     }
     '/app/contratos/$id_/imprimir': {
       id: '/app/contratos/$id_/imprimir'
@@ -4465,6 +4522,21 @@ const AppSiteRouteChildren: AppSiteRouteChildren = {
 const AppSiteRouteWithChildren =
   AppSiteRoute._addFileChildren(AppSiteRouteChildren)
 
+interface AppContratosChecklistRouteChildren {
+  AppContratosChecklistNovoRoute: typeof AppContratosChecklistNovoRoute
+  AppContratosChecklistIndexRoute: typeof AppContratosChecklistIndexRoute
+}
+
+const AppContratosChecklistRouteChildren: AppContratosChecklistRouteChildren = {
+  AppContratosChecklistNovoRoute: AppContratosChecklistNovoRoute,
+  AppContratosChecklistIndexRoute: AppContratosChecklistIndexRoute,
+}
+
+const AppContratosChecklistRouteWithChildren =
+  AppContratosChecklistRoute._addFileChildren(
+    AppContratosChecklistRouteChildren,
+  )
+
 interface AppRouteChildren {
   AppCartaoVirtualRoute: typeof AppCartaoVirtualRoute
   AppCartoriosRoute: typeof AppCartoriosRoute
@@ -4485,6 +4557,7 @@ interface AppRouteChildren {
   AppComissoesIdRoute: typeof AppComissoesIdRoute
   AppComissoesNovoRoute: typeof AppComissoesNovoRoute
   AppContratosIdRoute: typeof AppContratosIdRoute
+  AppContratosChecklistRoute: typeof AppContratosChecklistRouteWithChildren
   AppContratosModelosRoute: typeof AppContratosModelosRoute
   AppContratosNovoRoute: typeof AppContratosNovoRoute
   AppContratosPainelRoute: typeof AppContratosPainelRoute
@@ -4549,6 +4622,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppComissoesIdRoute: AppComissoesIdRoute,
   AppComissoesNovoRoute: AppComissoesNovoRoute,
   AppContratosIdRoute: AppContratosIdRoute,
+  AppContratosChecklistRoute: AppContratosChecklistRouteWithChildren,
   AppContratosModelosRoute: AppContratosModelosRoute,
   AppContratosNovoRoute: AppContratosNovoRoute,
   AppContratosPainelRoute: AppContratosPainelRoute,

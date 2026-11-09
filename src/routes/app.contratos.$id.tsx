@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { ContratoForm } from "@/components/contratos/ContratoForm";
 import { PartesSection } from "@/components/contratos/PartesSection";
 import { ParcelasSection } from "@/components/contratos/ParcelasSection";
-import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
-import { EtapasStepper } from "@/components/contratos/EtapasStepper";
+import { FluxoContrato } from "@/components/contratos/FluxoContrato";
+import { ModelosVinculados } from "@/components/contratos/ModelosVinculados";
 import { ReajusteSection } from "@/components/contratos/ReajusteSection";
 import { GarantiasSection } from "@/components/contratos/GarantiasSection";
 import { DadosPagamentoSection } from "@/components/contratos/DadosPagamentoSection";
@@ -62,7 +62,7 @@ function EditarContrato() {
   }
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <Link
         to="/app/contratos"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -70,8 +70,10 @@ function EditarContrato() {
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
 
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Editar contrato</h1>
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Editar contrato
+        </h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -96,7 +98,19 @@ function EditarContrato() {
       </header>
 
       <div className="max-w-4xl space-y-6">
-        <EtapasStepper contratoId={id} />
+        {tipoContrato && (
+          <section className="glass-fosco space-y-4 rounded-3xl border border-white/40 p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-base font-bold">
+                <FileText className="h-4 w-4 text-primary" /> Fluxo do contrato
+              </h2>
+              <Link to="/app/contratos/checklist" className="text-xs font-semibold text-primary">
+                Modelos de checklist
+              </Link>
+            </div>
+            <FluxoContrato contratoId={id} tipoContrato={tipoContrato} />
+          </section>
+        )}
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
         <ParcelasSection contratoId={id} />
@@ -109,16 +123,10 @@ function EditarContrato() {
           </>
         )}
 
+        {tipoContrato && <ModelosVinculados contratoId={id} tipoContrato={tipoContrato} />}
+
         {tenantId && (
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Checklist */}
-            <section className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground border-b border-border pb-2 flex items-center gap-1.5">
-                <FileText className="h-4 w-4" /> Checklist de documentos
-              </h2>
-              <ContratoChecklist contratoId={id} tenantId={tenantId} />
-            </section>
-
             <AssinaturaEletronicaPanel contratoId={id} />
           </div>
         )}

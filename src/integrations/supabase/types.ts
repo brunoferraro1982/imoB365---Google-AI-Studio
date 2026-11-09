@@ -883,6 +883,7 @@ export type Database = {
           created_at: string;
           id: string;
           nome: string;
+          padrao: boolean;
           tenant_id: string;
           tipo: string;
           updated_at: string;
@@ -892,6 +893,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           nome: string;
+          padrao?: boolean;
           tenant_id: string;
           tipo?: string;
           updated_at?: string;
@@ -901,6 +903,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           nome?: string;
+          padrao?: boolean;
           tenant_id?: string;
           tipo?: string;
           updated_at?: string;
@@ -1709,6 +1712,52 @@ export type Database = {
           },
         ];
       };
+      contrato_modelos: {
+        Row: {
+          contrato_id: string;
+          created_at: string;
+          id: string;
+          template_id: string;
+          tenant_id: string;
+        };
+        Insert: {
+          contrato_id: string;
+          created_at?: string;
+          id?: string;
+          template_id: string;
+          tenant_id: string;
+        };
+        Update: {
+          contrato_id?: string;
+          created_at?: string;
+          id?: string;
+          template_id?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_modelos_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_modelos_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_modelos_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contrato_parcelas: {
         Row: {
           contrato_id: string;
@@ -1786,6 +1835,7 @@ export type Database = {
         Row: {
           assinatura_referencia_externa: string | null;
           assinatura_status: string;
+          conjuge: Json | null;
           contrato_id: string;
           created_at: string;
           documento: string | null;
@@ -1799,12 +1849,14 @@ export type Database = {
           percentual_participacao: number | null;
           profissao: string | null;
           responsabilidade: string | null;
+          rg: string | null;
           telefone: string | null;
           tenant_id: string;
         };
         Insert: {
           assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
+          conjuge?: Json | null;
           contrato_id: string;
           created_at?: string;
           documento?: string | null;
@@ -1818,12 +1870,14 @@ export type Database = {
           percentual_participacao?: number | null;
           profissao?: string | null;
           responsabilidade?: string | null;
+          rg?: string | null;
           telefone?: string | null;
           tenant_id: string;
         };
         Update: {
           assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
+          conjuge?: Json | null;
           contrato_id?: string;
           created_at?: string;
           documento?: string | null;
@@ -1837,6 +1891,7 @@ export type Database = {
           percentual_participacao?: number | null;
           profissao?: string | null;
           responsabilidade?: string | null;
+          rg?: string | null;
           telefone?: string | null;
           tenant_id?: string;
         };
@@ -7442,6 +7497,10 @@ export type Database = {
       };
       cron_snapshot_tenant_usage: { Args: never; Returns: number };
       current_tenant_id: { Args: { _user_id: string }; Returns: string };
+      definir_checklist_padrao: {
+        Args: { _template: string };
+        Returns: undefined;
+      };
       delete_email: {
         Args: { message_id: number; queue_name: string };
         Returns: boolean;

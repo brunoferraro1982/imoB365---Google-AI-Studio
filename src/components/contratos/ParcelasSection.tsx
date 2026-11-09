@@ -123,7 +123,7 @@ export function ParcelasSection({ contratoId }: { contratoId: string }) {
     .reduce((s, p) => s + Number(p.valor), 0);
 
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl border border-white/40 p-6">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold">Cronograma de pagamento</h2>
         {parcelas.length > 0 && (

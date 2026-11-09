@@ -35,7 +35,7 @@ function BibliotecaModelosPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <Link
         to="/app/contratos/modelos"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -43,7 +43,7 @@ function BibliotecaModelosPage() {
         <ArrowLeft className="h-4 w-4" /> Voltar para Modelos de contrato
       </Link>
 
-      <header className="mb-6">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6">
         <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
           <Sparkles className="h-6 w-6 text-primary" />
           Biblioteca de modelos prontos
@@ -58,7 +58,7 @@ function BibliotecaModelosPage() {
         {BUILTIN_TEMPLATES.map((tpl) => (
           <div
             key={tpl.slug}
-            className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4"
+            className="flex flex-col gap-2 glass-fosco rounded-2xl border border-white/40 p-4"
           >
             <div className="flex items-start justify-between gap-2">
               <div>
