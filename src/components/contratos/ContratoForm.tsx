@@ -17,6 +17,54 @@ type Props = { contratoId?: string };
 
 type Template = { id: string; nome: string; tipo: string };
 
+type ClienteForm = {
+  papel: string;
+  nome: string;
+  documento: string;
+  email: string;
+  telefone: string;
+  endereco: string;
+  nacionalidade: string;
+  estado_civil: string;
+  profissao: string;
+};
+
+function clienteVazio(papel: string): ClienteForm {
+  return {
+    papel,
+    nome: "",
+    documento: "",
+    email: "",
+    telefone: "",
+    endereco: "",
+    nacionalidade: "",
+    estado_civil: "",
+    profissao: "",
+  };
+}
+
+// Papel padrão do cliente conforme o tipo (o usuário pode trocar).
+const PAPEL_CLIENTE_PADRAO: Record<string, string> = {
+  venda: "comprador",
+  locacao: "locatario",
+  administracao: "locador",
+  permuta: "vendedor",
+  exclusividade: "vendedor",
+  captacao: "vendedor",
+  parceria: "outro",
+  prestacao_servico: "outro",
+  outro: "outro",
+};
+
+const PAPEIS_CLIENTE: ReadonlyArray<[string, string]> = [
+  ["comprador", "Comprador"],
+  ["vendedor", "Vendedor / proprietário"],
+  ["locador", "Locador"],
+  ["locatario", "Locatário"],
+  ["fiador", "Fiador"],
+  ["outro", "Outro"],
+];
+
 export function ContratoForm({ contratoId }: Props) {
   const { tenantId } = useAuth();
   const navigate = useNavigate();
@@ -33,7 +81,6 @@ export function ContratoForm({ contratoId }: Props) {
     imovel_id: string;
     lead_id: string;
     corretor_id: string;
-    template_id: string;
     valor_sinal: number | string;
     valor_entrada: number | string;
     numero_parcelas: number | string;
@@ -62,7 +109,6 @@ export function ContratoForm({ contratoId }: Props) {
     imovel_id: "",
     lead_id: "",
     corretor_id: "",
-    template_id: "",
     valor_sinal: "",
     valor_entrada: "",
     numero_parcelas: "",
@@ -83,14 +129,25 @@ export function ContratoForm({ contratoId }: Props) {
   const [imoveis, setImoveis] = useState<
     Array<{ id: string; titulo: string; codigo_interno: string | null }>
   >([]);
-  const [leads, setLeads] = useState<Array<{ id: string; nome: string }>>([]);
+  const [leads, setLeads] = useState<
+    Array<{ id: string; nome: string; email: string | null; telefone: string | null }>
+  >([]);
   const [corretores, setCorretores] = useState<Array<{ id: string; nome: string }>>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [cliente, setCliente] = useState<ClienteForm>(clienteVazio("comprador"));
+  const [modeloIds, setModeloIds] = useState<string[]>([]);
   const [centrosCusto, setCentrosCusto] = useState<
     Array<{ id: string; codigo: string; nome: string }>
   >([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(!!contratoId);
+
+  // Ao escolher o tipo (cadastro novo): papel padrão do cliente e modelos do mesmo tipo.
+  useEffect(() => {
+    if (contratoId) return;
+    setCliente((c) => ({ ...c, papel: PAPEL_CLIENTE_PADRAO[form.tipo] ?? "outro" }));
+    setModeloIds(templates.filter((t) => t.tipo === form.tipo).map((t) => t.id));
+  }, [form.tipo, templates, contratoId]);
 
   // Load relational data
   useEffect(() => {
@@ -103,7 +160,11 @@ export function ContratoForm({ contratoId }: Props) {
             .select("id,titulo,codigo_interno")
             .eq("tenant_id", tenantId)
             .order("titulo"),
-          supabase.from("leads").select("id,nome").eq("tenant_id", tenantId).order("nome"),
+          supabase
+            .from("leads")
+            .select("id,nome,email,telefone")
+            .eq("tenant_id", tenantId)
+            .order("nome"),
           supabase
             .from("corretores")
             .select("id,nome")
@@ -111,9 +172,8 @@ export function ContratoForm({ contratoId }: Props) {
             .eq("ativo", true)
             .order("nome"),
           supabase
-            .from("checklist_templates")
+            .from("contrato_templates")
             .select("id,nome,tipo")
-            .eq("tenant_id", tenantId)
             .eq("ativo", true)
             .order("nome"),
           supabase
@@ -154,7 +214,6 @@ export function ContratoForm({ contratoId }: Props) {
           imovel_id: data.imovel_id ?? "",
           lead_id: data.lead_id ?? "",
           corretor_id: data.corretor_id ?? "",
-          template_id: "",
           valor_sinal: data.valor_sinal ?? "",
           valor_entrada: data.valor_entrada ?? "",
           numero_parcelas: data.numero_parcelas ?? "",
@@ -246,26 +305,36 @@ export function ContratoForm({ contratoId }: Props) {
         setSaving(false);
         toast.success("Contrato atualizado");
       } else {
-        // Checklist: "" = padrão do tipo (automático), "__none__" = não aplicar, uuid = modelo escolhido.
-        const checklist_template_id =
-          form.template_id === ""
-            ? undefined
-            : form.template_id === "__none__"
-              ? null
-              : form.template_id;
-        const { id, checklist } = await criarContrato({
-          data: { ...payload, checklist_template_id },
+        const temCliente = cliente.nome.trim().length > 0;
+        const opt = (v: string) => (v.trim() ? v.trim() : null);
+        const { id, checklist, parte, modelos } = await criarContrato({
+          data: {
+            ...payload,
+            cliente: temCliente
+              ? {
+                  papel: cliente.papel as never,
+                  nome: cliente.nome.trim(),
+                  documento: opt(cliente.documento),
+                  email: opt(cliente.email),
+                  telefone: opt(cliente.telefone),
+                  endereco: opt(cliente.endereco),
+                  nacionalidade: opt(cliente.nacionalidade),
+                  estado_civil: opt(cliente.estado_civil),
+                  profissao: opt(cliente.profissao),
+                }
+              : null,
+            modelo_ids: modeloIds,
+          },
         });
         setSaving(false);
-        if (checklist.status === "aplicado") {
-          toast.success(`Contrato criado com checklist (${checklist.quantidade} itens)`);
-        } else if (checklist.status === "erro") {
-          toast.warning("Contrato criado, mas o checklist não foi aplicado: " + checklist.erro);
-        } else if (checklist.status === "sem_modelo") {
-          toast.warning("Contrato criado sem checklist: não há modelo padrão para este tipo.");
-        } else {
-          toast.success("Contrato criado");
-        }
+        const avisos: string[] = [];
+        if (checklist.status === "erro") avisos.push("checklist não aplicado: " + checklist.erro);
+        if (checklist.status === "sem_modelo")
+          avisos.push("sem checklist (não há modelo padrão deste tipo)");
+        if (parte.status === "erro") avisos.push("cliente não salvo: " + parte.erro);
+        if (modelos.status === "erro") avisos.push("modelos não vinculados: " + modelos.erro);
+        if (avisos.length) toast.warning("Contrato criado, mas " + avisos.join("; "));
+        else toast.success("Contrato criado");
         navigate({ to: "/app/contratos/$id", params: { id } });
         return;
       }
@@ -539,7 +608,18 @@ export function ContratoForm({ contratoId }: Props) {
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.lead_id}
-              onChange={(e) => set("lead_id", e.target.value)}
+              onChange={(e) => {
+                const lead = leads.find((l) => l.id === e.target.value);
+                set("lead_id", e.target.value);
+                if (lead && !contratoId) {
+                  setCliente((c) => ({
+                    ...c,
+                    nome: c.nome || lead.nome,
+                    email: c.email || lead.email || "",
+                    telefone: c.telefone || lead.telefone || "",
+                  }));
+                }
+              }}
             >
               <option value="">— Nenhum —</option>
               {leads.map((l) => (
@@ -567,37 +647,127 @@ export function ContratoForm({ contratoId }: Props) {
         </div>
       </section>
 
-      {/* Template de checklist (só na criação) */}
+      {/* Cliente (só na criação; em edição a parte fica na seção de partes) */}
       {!contratoId && (
         <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-base font-semibold">Checklist de documentos</h2>
+          <h2 className="mb-1 text-base font-semibold">Cliente</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Por padrão, o modelo marcado como padrão para o tipo do contrato é aplicado
-            automaticamente.
+            Se escolher um lead acima, nome, e-mail e telefone são preenchidos. Esses dados entram
+            automaticamente nos modelos de contrato escolhidos.
           </p>
-          <Field label="Modelo de checklist">
-            <select
-              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={form.template_id}
-              onChange={(e) => set("template_id", e.target.value)}
-            >
-              <option value="">Padrão do tipo (automático)</option>
-              <option value="__none__">Não aplicar</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nome} ({TIPOS_CONTRATO.find((x) => x.value === t.tipo)?.label ?? t.tipo})
-                </option>
-              ))}
-            </select>
-          </Field>
-          {templates.length === 0 && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              Nenhum modelo de checklist ativo.{" "}
-              <a href="/app/contratos/checklist" className="underline">
-                Criar modelo de checklist
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Papel no contrato">
+              <select
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={cliente.papel}
+                onChange={(e) => setCliente((c) => ({ ...c, papel: e.target.value }))}
+              >
+                {PAPEIS_CLIENTE.map(([v, label]) => (
+                  <option key={v} value={v}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Nome completo">
+              <ClienteInput
+                value={cliente.nome}
+                onChange={(v) => setCliente((c) => ({ ...c, nome: v }))}
+              />
+            </Field>
+            <Field label="CPF / CNPJ">
+              <ClienteInput
+                value={cliente.documento}
+                onChange={(v) => setCliente((c) => ({ ...c, documento: v }))}
+              />
+            </Field>
+            <Field label="E-mail">
+              <ClienteInput
+                type="email"
+                value={cliente.email}
+                onChange={(v) => setCliente((c) => ({ ...c, email: v }))}
+              />
+            </Field>
+            <Field label="Telefone">
+              <ClienteInput
+                value={cliente.telefone}
+                onChange={(v) => setCliente((c) => ({ ...c, telefone: v }))}
+              />
+            </Field>
+            <Field label="Nacionalidade">
+              <ClienteInput
+                value={cliente.nacionalidade}
+                onChange={(v) => setCliente((c) => ({ ...c, nacionalidade: v }))}
+              />
+            </Field>
+            <Field label="Estado civil">
+              <select
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={cliente.estado_civil}
+                onChange={(e) => setCliente((c) => ({ ...c, estado_civil: e.target.value }))}
+              >
+                <option value="">—</option>
+                <option value="solteiro">Solteiro(a)</option>
+                <option value="casado">Casado(a)</option>
+                <option value="divorciado">Divorciado(a)</option>
+                <option value="viuvo">Viúvo(a)</option>
+                <option value="uniao_estavel">União estável</option>
+              </select>
+            </Field>
+            <Field label="Profissão">
+              <ClienteInput
+                value={cliente.profissao}
+                onChange={(v) => setCliente((c) => ({ ...c, profissao: v }))}
+              />
+            </Field>
+            <div className="md:col-span-2">
+              <Field label="Endereço">
+                <ClienteInput
+                  value={cliente.endereco}
+                  onChange={(v) => setCliente((c) => ({ ...c, endereco: v }))}
+                />
+              </Field>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Modelos de contrato (só na criação; o documento é gerado com os dados atuais) */}
+      {!contratoId && (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Modelos de contrato</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Modelos do tipo do contrato vêm marcados. Você pode incluir ou remover antes de salvar.
+          </p>
+          {templates.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Nenhum modelo de contrato ativo.{" "}
+              <a href="/app/contratos/modelos" className="underline">
+                Criar modelo de contrato
               </a>
-              .
             </p>
+          ) : (
+            <ul className="grid gap-2 md:grid-cols-2">
+              {templates.map((t) => (
+                <li key={t.id}>
+                  <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={modeloIds.includes(t.id)}
+                      onChange={(e) =>
+                        setModeloIds((ids) =>
+                          e.target.checked ? [...ids, t.id] : ids.filter((x) => x !== t.id),
+                        )
+                      }
+                    />
+                    <span className="flex-1">{t.nome}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {TIPOS_CONTRATO.find((x) => x.value === t.tipo)?.label ?? t.tipo}
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       )}
@@ -634,5 +804,24 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </Label>
       {children}
     </div>
+  );
+}
+
+function ClienteInput({
+  value,
+  onChange,
+  type = "text",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
   );
 }

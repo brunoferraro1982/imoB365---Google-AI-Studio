@@ -77,8 +77,12 @@ function ImprimirContrato() {
           .maybeSingle();
         setImovel(i);
       }
+      // ?modelo=<id> (vindo de "Gerar documento") tem prioridade sobre o modelo do tipo.
+      const modeloUrl = new URLSearchParams(window.location.search).get("modelo");
+      const doParametro = (tpls ?? []).find((x: any) => x.id === modeloUrl);
       const sugest = (tpls ?? []).find((x: any) => x.tipo === c?.tipo);
-      if (sugest) setTemplateId(sugest.id);
+      if (doParametro) setTemplateId(doParametro.id);
+      else if (sugest) setTemplateId(sugest.id);
       setLoading(false);
     })();
   }, [id, tenantId]);

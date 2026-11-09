@@ -1712,6 +1712,52 @@ export type Database = {
           },
         ];
       };
+      contrato_modelos: {
+        Row: {
+          contrato_id: string;
+          created_at: string;
+          id: string;
+          template_id: string;
+          tenant_id: string;
+        };
+        Insert: {
+          contrato_id: string;
+          created_at?: string;
+          id?: string;
+          template_id: string;
+          tenant_id: string;
+        };
+        Update: {
+          contrato_id?: string;
+          created_at?: string;
+          id?: string;
+          template_id?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "contrato_modelos_contrato_id_fkey";
+            columns: ["contrato_id"];
+            isOneToOne: false;
+            referencedRelation: "contratos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_modelos_template_id_fkey";
+            columns: ["template_id"];
+            isOneToOne: false;
+            referencedRelation: "contrato_templates";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "contrato_modelos_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       contrato_parcelas: {
         Row: {
           contrato_id: string;

@@ -58,9 +58,42 @@ const contratoPayload = z.object({
 
 // Modelo de checklist: undefined = usa o padrão do tipo (automático);
 // null = não aplicar; uuid = aplicar esse modelo.
+const PAPEIS_PARTE = [
+  "comprador",
+  "vendedor",
+  "locador",
+  "locatario",
+  "fiador",
+  "procurador",
+  "outro",
+  "testemunha",
+  "corretor",
+  "advogado",
+  "administrador",
+] as const;
+
+const clientePayload = z.object({
+  papel: z.enum(PAPEIS_PARTE),
+  nome: z.string().trim().min(1).max(200),
+  documento: z.string().trim().max(30).nullable(),
+  email: z.string().trim().max(200).nullable(),
+  telefone: z.string().trim().max(30).nullable(),
+  endereco: z.string().trim().max(300).nullable(),
+  nacionalidade: z.string().trim().max(60).nullable(),
+  estado_civil: z.string().trim().max(40).nullable(),
+  profissao: z.string().trim().max(80).nullable(),
+});
+
 const criarContratoPayload = contratoPayload.extend({
   checklist_template_id: z.string().uuid().nullable().optional(),
+  cliente: clientePayload.nullable().optional(),
+  modelo_ids: z.array(z.string().uuid()).optional(),
 });
+
+export type ResultadoModelos =
+  | { status: "vinculados"; quantidade: number }
+  | { status: "nenhum" }
+  | { status: "erro"; erro: string };
 
 export type ResultadoChecklist =
   | { status: "aplicado"; quantidade: number; modelo: string }
@@ -72,7 +105,7 @@ export const criarContrato = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(criarContratoPayload)
   .handler(async ({ context, data }) => {
-    const { checklist_template_id, ...dados } = data;
+    const { checklist_template_id, cliente, modelo_ids, ...dados } = data;
     const { data: contrato, error } = await context.supabase
       .from("contratos")
       .insert({ ...dados, created_by: context.userId })
@@ -95,7 +128,42 @@ export const criarContrato = createServerFn({ method: "POST" })
         erro: err instanceof Error ? err.message : "Falha no checklist",
       };
     }
-    return { id: contrato.id as string, checklist };
+    // Cliente e modelos: a falha não desfaz o contrato; é reportada ao usuário.
+    const contratoId = contrato.id as string;
+    let parte: { status: "criada" } | { status: "nenhuma" } | { status: "erro"; erro: string } = {
+      status: "nenhuma",
+    };
+    if (cliente) {
+      const { error: eParte } = await context.supabase.from("contrato_partes").insert({
+        tenant_id: dados.tenant_id,
+        contrato_id: contratoId,
+        papel: cliente.papel,
+        nome: cliente.nome,
+        documento: cliente.documento,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        endereco: cliente.endereco,
+        nacionalidade: cliente.nacionalidade,
+        estado_civil: cliente.estado_civil,
+        profissao: cliente.profissao,
+      });
+      parte = eParte ? { status: "erro", erro: eParte.message } : { status: "criada" };
+    }
+
+    let modelos: ResultadoModelos = { status: "nenhum" };
+    if (modelo_ids && modelo_ids.length > 0) {
+      const { error: eMod } = await context.supabase.from("contrato_modelos").insert(
+        modelo_ids.map((template_id) => ({
+          tenant_id: dados.tenant_id,
+          contrato_id: contratoId,
+          template_id,
+        })),
+      );
+      modelos = eMod
+        ? { status: "erro", erro: eMod.message }
+        : { status: "vinculados", quantidade: modelo_ids.length };
+    }
+    return { id: contratoId, checklist, parte, modelos };
   });
 
 async function aplicarChecklistAoContrato(

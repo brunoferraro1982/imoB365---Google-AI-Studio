@@ -9,6 +9,7 @@ import { ContratoForm } from "@/components/contratos/ContratoForm";
 import { PartesSection } from "@/components/contratos/PartesSection";
 import { ParcelasSection } from "@/components/contratos/ParcelasSection";
 import { FluxoContrato } from "@/components/contratos/FluxoContrato";
+import { ModelosVinculados } from "@/components/contratos/ModelosVinculados";
 import { ReajusteSection } from "@/components/contratos/ReajusteSection";
 import { GarantiasSection } from "@/components/contratos/GarantiasSection";
 import { DadosPagamentoSection } from "@/components/contratos/DadosPagamentoSection";
@@ -119,6 +120,8 @@ function EditarContrato() {
             <DadosPagamentoSection contratoId={id} />
           </>
         )}
+
+        {tipoContrato && <ModelosVinculados contratoId={id} tipoContrato={tipoContrato} />}
 
         {tenantId && (
           <div className="grid gap-6 md:grid-cols-2">
