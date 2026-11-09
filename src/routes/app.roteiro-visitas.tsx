@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { statusPelaEtapa } from "@/lib/roteiroVisitasSync";
 
 export const Route = createFileRoute("/app/roteiro-visitas")({
   head: () => ({ meta: [{ title: "Roteiro de Visitas — imob365" }] }),
@@ -218,6 +219,16 @@ function RoteiroVisitasPage() {
     if (error) {
       toast.error(error.message);
       load();
+      return;
+    }
+
+    // Reflexo Roteiro → Agenda: mover pra uma etapa reconhecível (Realizada,
+    // Não compareceu/Cancelada) também atualiza o status na Agenda de
+    // Visitas — best-effort, nunca desfaz a troca de coluna se falhar.
+    const nomeEtapa = etapaId ? (etapas.find((e) => e.id === etapaId)?.nome ?? null) : null;
+    const statusReflexo = statusPelaEtapa(nomeEtapa);
+    if (statusReflexo) {
+      await (supabase as any).from("visitas").update({ status: statusReflexo }).eq("id", id);
     }
   }
 
@@ -273,17 +284,36 @@ function RoteiroVisitasPage() {
     const data_hora = new Date(`${form.data}T${form.hora}:00`).toISOString();
     const primeiraEtapa = etapas[0]?.id ?? null;
     const corretorId = form.corretor_id || meuCorretorId || null;
-    const { error } = await supabase.from("visitas").insert({
-      tenant_id: tenantId,
-      imovel_id: form.imovel_id,
-      corretor_id: corretorId,
-      lead_id: form.lead_id || null,
-      data_hora,
-      observacoes: form.observacoes || null,
-      roteiro_etapa_id: primeiraEtapa,
-    } as any);
+    const { data: novaVisita, error } = await supabase
+      .from("visitas")
+      .insert({
+        tenant_id: tenantId,
+        imovel_id: form.imovel_id,
+        corretor_id: corretorId,
+        lead_id: form.lead_id || null,
+        data_hora,
+        observacoes: form.observacoes || null,
+        roteiro_etapa_id: primeiraEtapa,
+      } as any)
+      .select("id")
+      .single();
     if (error) return toast.error(error.message);
     toast.success("Visita criada");
+
+    // Veio de "Gerar visita" numa tarefa (app.tarefas.tsx / LeadTarefas.tsx)
+    // — grava o vínculo de volta e conclui a tarefa de origem, pra não ficar
+    // "pendente" pra sempre depois da visita já agendada.
+    if (taskId && novaVisita) {
+      await (supabase as any)
+        .from("lead_tarefas")
+        .update({
+          visita_id: (novaVisita as { id: string }).id,
+          status: "concluida",
+          concluida_em: new Date().toISOString(),
+        })
+        .eq("id", taskId);
+    }
+
     setShowForm(false);
     setForm({ imovel_id: "", corretor_id: "", lead_id: "", data: "", hora: "", observacoes: "" });
     load();

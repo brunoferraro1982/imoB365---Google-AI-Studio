@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { CheckCircle2, Circle, Plus, Trash2, AlertCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CheckCircle2, Circle, Plus, Trash2, AlertCircle, Route as RouteIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { isTarefaAtrasada } from "@/lib/tarefasHelpers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -112,8 +114,6 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
     load();
   }
 
-  const now = new Date();
-
   return (
     <section className="rounded-xl border border-border bg-card p-6">
       <div className="mb-3 flex items-center justify-between">
@@ -181,7 +181,7 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
       <ul className="space-y-2">
         {tarefas.length === 0 && <li className="text-sm text-muted-foreground">Nenhuma tarefa.</li>}
         {tarefas.map((t) => {
-          const atrasada = t.status === "pendente" && t.prazo && new Date(t.prazo) < now;
+          const atrasada = isTarefaAtrasada(t);
           return (
             <li
               key={t.id}
@@ -225,6 +225,16 @@ export function LeadTarefas({ leadId, tenantId }: { leadId: string; tenantId: st
                   </p>
                 )}
               </div>
+              {t.status === "pendente" && (
+                <Link
+                  to="/app/roteiro-visitas"
+                  search={{ leadId: undefined, taskId: t.id }}
+                  title="Gerar visita a partir desta tarefa"
+                  className="mt-2 shrink-0 text-muted-foreground hover:text-primary"
+                >
+                  <RouteIcon className="h-4 w-4" />
+                </Link>
+              )}
               <Button size="sm" variant="ghost" onClick={() => remove(t.id)}>
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>

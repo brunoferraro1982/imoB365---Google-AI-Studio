@@ -31,6 +31,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { isTarefaAtrasada, isTarefaHoje } from "@/lib/tarefasHelpers";
 
 export const Route = createFileRoute("/app/tarefas")({
   component: TarefasPage,
@@ -233,14 +234,9 @@ function TarefasPage() {
     if (form.parceiroId === NOVO_PARCEIRO) carregarParceiros();
   }
 
-  const now = new Date();
   const pendentes = tarefas.filter((t) => t.status === "pendente");
-  const atrasadas = pendentes.filter((t) => t.prazo && new Date(t.prazo) < now);
-  const hoje = pendentes.filter((t) => {
-    if (!t.prazo) return false;
-    const d = new Date(t.prazo);
-    return d.toDateString() === now.toDateString();
-  });
+  const atrasadas = pendentes.filter((t) => isTarefaAtrasada(t));
+  const hoje = pendentes.filter((t) => isTarefaHoje(t));
 
   return (
     <div className="mx-auto max-w-5xl p-8">
@@ -291,7 +287,7 @@ function TarefasPage() {
       ) : (
         <ul className="space-y-2">
           {tarefas.map((t) => {
-            const atrasada = t.status === "pendente" && t.prazo && new Date(t.prazo) < now;
+            const atrasada = isTarefaAtrasada(t);
             return (
               <li
                 key={t.id}
