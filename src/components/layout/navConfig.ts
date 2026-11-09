@@ -210,7 +210,6 @@ export const tenantModules: Module[] = [
     items: [
       { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
-      { to: "/app/configuracoes/cadencias", label: "Cadências", icon: Calendar },
       {
         to: "/app/configuracoes/integracoes-bancarias",
         label: "Integrações Bancárias",

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Users, Settings2, GitBranch, Trophy } from "lucide-react";
+import { Plus, Users, Settings2, GitBranch, Trophy, Workflow } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -158,6 +158,11 @@ function LeadsKanban() {
           <Button variant="outline" asChild>
             <Link to="/app/leads/pontuacao">
               <Trophy className="mr-2 h-4 w-4" /> Pontuação
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/app/leads/cadencias">
+              <Workflow className="mr-2 h-4 w-4" /> Cadências
             </Link>
           </Button>
           <Button variant="outline" asChild>

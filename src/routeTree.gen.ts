@@ -130,6 +130,7 @@ import { Route as AppLeadsPontuacaoRouteImport } from './routes/app.leads.pontua
 import { Route as AppLeadsFunisRouteImport } from './routes/app.leads.funis'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
+import { Route as AppLeadsCadenciasRouteImport } from './routes/app.leads.cadencias'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -839,6 +840,11 @@ const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
 const AppLeadsCaptacaoRoute = AppLeadsCaptacaoRouteImport.update({
   id: '/leads/captacao',
   path: '/leads/captacao',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsCadenciasRoute = AppLeadsCadenciasRouteImport.update({
+  id: '/leads/cadencias',
+  path: '/leads/cadencias',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
@@ -1554,6 +1560,7 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
@@ -1774,6 +1781,7 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
@@ -2001,6 +2009,7 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
@@ -2229,6 +2238,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/leads/funis'
@@ -2449,6 +2459,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/leads/funis'
@@ -2675,6 +2686,7 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
     | '/app/leads/funis'
@@ -3707,6 +3719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLeadsCaptacaoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leads/cadencias': {
+      id: '/app/leads/cadencias'
+      path: '/leads/cadencias'
+      fullPath: '/app/leads/cadencias'
+      preLoaderRoute: typeof AppLeadsCadenciasRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/analise-risco': {
       id: '/app/leads/analise-risco'
       path: '/leads/analise-risco'
@@ -4617,6 +4636,7 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
+  AppLeadsCadenciasRoute: typeof AppLeadsCadenciasRoute
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLeadsFunisRoute: typeof AppLeadsFunisRoute
@@ -4684,6 +4704,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
+  AppLeadsCadenciasRoute: AppLeadsCadenciasRoute,
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLeadsFunisRoute: AppLeadsFunisRoute,
