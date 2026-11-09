@@ -17,6 +17,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
+import { etapaIdPeloStatus, type VisitaStatus } from "@/lib/roteiroVisitasSync";
 
 export const Route = createFileRoute("/app/visitas")({
   head: () => ({ meta: [{ title: "Visitas — imob365" }] }),
@@ -138,6 +139,7 @@ function VisitasPage() {
   const [imoveis, setImoveis] = useState<any[]>([]);
   const [corretores, setCorretores] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
+  const [etapas, setEtapas] = useState<{ id: string; nome: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"lista" | "mes">("lista");
   const [mesRef, setMesRef] = useState(() => {
@@ -159,7 +161,7 @@ function VisitasPage() {
   async function load() {
     if (!tenantId) return;
     setLoading(true);
-    const [{ data: v }, { data: i }, { data: c }, { data: l }] = await Promise.all([
+    const [{ data: v }, { data: i }, { data: c }, { data: l }, { data: et }] = await Promise.all([
       supabase
         .from("visitas")
         .select("*,imovel:imoveis(id,titulo),corretor:corretores(id,nome),lead:leads(id,nome)")
@@ -167,11 +169,13 @@ function VisitasPage() {
       supabase.from("imoveis").select("id,titulo").order("titulo"),
       supabase.from("corretores").select("id,nome").eq("ativo", true).order("nome"),
       supabase.from("leads").select("id,nome").order("created_at", { ascending: false }).limit(100),
+      (supabase as any).from("roteiro_visita_etapas").select("id,nome").eq("tenant_id", tenantId),
     ]);
     setItems(v ?? []);
     setImoveis(i ?? []);
     setCorretores(c ?? []);
     setLeads(l ?? []);
+    setEtapas((et as { id: string; nome: string }[]) ?? []);
     setLoading(false);
   }
   useEffect(() => {
@@ -214,6 +218,16 @@ function VisitasPage() {
       .update({ status: status as any })
       .eq("id", id);
     if (error) return toast.error(error.message);
+
+    // Reflexo Agenda → Roteiro: só pros status terminais (realizada/
+    // cancelada/não compareceu), onde existe uma etapa real do tenant com
+    // nome equivalente — best-effort, não bloqueia a troca de status se
+    // não achar etapa correspondente.
+    const etapaId = etapaIdPeloStatus(status as VisitaStatus, etapas);
+    if (etapaId) {
+      await (supabase as any).from("visitas").update({ roteiro_etapa_id: etapaId }).eq("id", id);
+    }
+
     load();
   }
 
