@@ -87,6 +87,28 @@ const VARIABLE_GROUPS = [
       { label: "Parceiro B", value: "{{partes.parceiro_b}}" },
     ],
   },
+  {
+    label: "Cliente",
+    vars: [
+      { label: "Nome", value: "{{cliente.nome}}" },
+      { label: "CPF / CNPJ", value: "{{cliente.documento}}" },
+      { label: "RG", value: "{{cliente.rg}}" },
+      { label: "Endereço", value: "{{cliente.endereco}}" },
+      { label: "Nacionalidade", value: "{{cliente.nacionalidade}}" },
+      { label: "Estado civil", value: "{{cliente.estado_civil}}" },
+      { label: "Profissão", value: "{{cliente.profissao}}" },
+    ],
+  },
+  {
+    label: "Cônjuge",
+    vars: [
+      { label: "Nome", value: "{{conjuge.nome}}" },
+      { label: "CPF", value: "{{conjuge.documento}}" },
+      { label: "RG", value: "{{conjuge.rg}}" },
+      { label: "Nacionalidade", value: "{{conjuge.nacionalidade}}" },
+      { label: "Profissão", value: "{{conjuge.profissao}}" },
+    ],
+  },
 ];
 
 // ─── Toolbar button ───────────────────────────────────────────────────────────

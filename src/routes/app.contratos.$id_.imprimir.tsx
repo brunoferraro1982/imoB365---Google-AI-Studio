@@ -123,6 +123,19 @@ function ImprimirContrato() {
       "partes.locatario": partesByPapel(partes, "locatario"),
       "partes.fiador": partesByPapel(partes, "fiador"),
       "partes.testemunha": partesByPapel(partes, "testemunha"),
+      // Cliente principal (primeira parte cadastrada) e cônjuge, para os modelos.
+      "cliente.nome": partes[0]?.nome ?? "—",
+      "cliente.documento": partes[0]?.documento ?? "—",
+      "cliente.rg": partes[0]?.rg ?? "—",
+      "cliente.endereco": partes[0]?.endereco ?? "—",
+      "cliente.nacionalidade": partes[0]?.nacionalidade ?? "—",
+      "cliente.estado_civil": partes[0]?.estado_civil ?? "—",
+      "cliente.profissao": partes[0]?.profissao ?? "—",
+      "conjuge.nome": partes[0]?.conjuge?.nome ?? "—",
+      "conjuge.documento": partes[0]?.conjuge?.documento ?? "—",
+      "conjuge.rg": partes[0]?.conjuge?.rg ?? "—",
+      "conjuge.nacionalidade": partes[0]?.conjuge?.nacionalidade ?? "—",
+      "conjuge.profissao": partes[0]?.conjuge?.profissao ?? "—",
     };
     return out;
   }, [contrato, imovel, tenant, partes, enderecoImovel]);

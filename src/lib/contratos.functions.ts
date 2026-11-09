@@ -72,10 +72,20 @@ const PAPEIS_PARTE = [
   "administrador",
 ] as const;
 
+const conjugePayload = z.object({
+  nome: z.string().trim().min(1).max(200),
+  documento: z.string().trim().max(30).nullable(),
+  rg: z.string().trim().max(30).nullable(),
+  nacionalidade: z.string().trim().max(60).nullable(),
+  profissao: z.string().trim().max(80).nullable(),
+});
+
 const clientePayload = z.object({
   papel: z.enum(PAPEIS_PARTE),
   nome: z.string().trim().min(1).max(200),
   documento: z.string().trim().max(30).nullable(),
+  rg: z.string().trim().max(30).nullable(),
+  conjuge: conjugePayload.nullable().optional(),
   email: z.string().trim().max(200).nullable(),
   telefone: z.string().trim().max(30).nullable(),
   endereco: z.string().trim().max(300).nullable(),
@@ -140,6 +150,8 @@ export const criarContrato = createServerFn({ method: "POST" })
         papel: cliente.papel,
         nome: cliente.nome,
         documento: cliente.documento,
+        rg: cliente.rg,
+        conjuge: cliente.conjuge ?? null,
         email: cliente.email,
         telefone: cliente.telefone,
         endereco: cliente.endereco,

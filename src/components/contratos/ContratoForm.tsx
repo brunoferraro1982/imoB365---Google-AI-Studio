@@ -17,10 +17,20 @@ type Props = { contratoId?: string };
 
 type Template = { id: string; nome: string; tipo: string };
 
+type ConjugeForm = {
+  nome: string;
+  documento: string;
+  rg: string;
+  nacionalidade: string;
+  profissao: string;
+};
+
 type ClienteForm = {
   papel: string;
   nome: string;
   documento: string;
+  rg: string;
+  conjuge: ConjugeForm;
   email: string;
   telefone: string;
   endereco: string;
@@ -34,6 +44,8 @@ function clienteVazio(papel: string): ClienteForm {
     papel,
     nome: "",
     documento: "",
+    rg: "",
+    conjuge: { nome: "", documento: "", rg: "", nacionalidade: "", profissao: "" },
     email: "",
     telefone: "",
     endereco: "",
@@ -41,6 +53,11 @@ function clienteVazio(papel: string): ClienteForm {
     estado_civil: "",
     profissao: "",
   };
+}
+
+// Estado civil que exige dados do cônjuge.
+function exigeConjuge(estadoCivil: string) {
+  return estadoCivil === "casado" || estadoCivil === "uniao_estavel";
 }
 
 // Papel padrão do cliente conforme o tipo (o usuário pode trocar).
@@ -306,6 +323,8 @@ export function ContratoForm({ contratoId }: Props) {
         toast.success("Contrato atualizado");
       } else {
         const temCliente = cliente.nome.trim().length > 0;
+        const temConjuge =
+          exigeConjuge(cliente.estado_civil) && cliente.conjuge.nome.trim().length > 0;
         const opt = (v: string) => (v.trim() ? v.trim() : null);
         const { id, checklist, parte, modelos } = await criarContrato({
           data: {
@@ -315,6 +334,16 @@ export function ContratoForm({ contratoId }: Props) {
                   papel: cliente.papel as never,
                   nome: cliente.nome.trim(),
                   documento: opt(cliente.documento),
+                  rg: opt(cliente.rg),
+                  conjuge: temConjuge
+                    ? {
+                        nome: cliente.conjuge.nome.trim(),
+                        documento: opt(cliente.conjuge.documento),
+                        rg: opt(cliente.conjuge.rg),
+                        nacionalidade: opt(cliente.conjuge.nacionalidade),
+                        profissao: opt(cliente.conjuge.profissao),
+                      }
+                    : null,
                   email: opt(cliente.email),
                   telefone: opt(cliente.telefone),
                   endereco: opt(cliente.endereco),
@@ -348,6 +377,149 @@ export function ContratoForm({ contratoId }: Props) {
 
   return (
     <form onSubmit={save} className="max-w-4xl space-y-6">
+      {/* Cliente (só na criação; em edição a parte fica na seção de partes) */}
+      {!contratoId && (
+        <section className="rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-1 text-base font-semibold">Cliente</h2>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Se escolher um lead abaixo, nome, e-mail e telefone são preenchidos. Esses dados entram
+            automaticamente nos modelos de contrato escolhidos.
+          </p>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label="Papel no contrato">
+              <select
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={cliente.papel}
+                onChange={(e) => setCliente((c) => ({ ...c, papel: e.target.value }))}
+              >
+                {PAPEIS_CLIENTE.map(([v, label]) => (
+                  <option key={v} value={v}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Nome completo">
+              <ClienteInput
+                value={cliente.nome}
+                onChange={(v) => setCliente((c) => ({ ...c, nome: v }))}
+              />
+            </Field>
+            <Field label="CPF / CNPJ">
+              <ClienteInput
+                value={cliente.documento}
+                onChange={(v) => setCliente((c) => ({ ...c, documento: v }))}
+              />
+            </Field>
+            <Field label="RG">
+              <ClienteInput
+                value={cliente.rg}
+                onChange={(v) => setCliente((c) => ({ ...c, rg: v }))}
+              />
+            </Field>
+            <Field label="E-mail">
+              <ClienteInput
+                type="email"
+                value={cliente.email}
+                onChange={(v) => setCliente((c) => ({ ...c, email: v }))}
+              />
+            </Field>
+            <Field label="Telefone">
+              <ClienteInput
+                value={cliente.telefone}
+                onChange={(v) => setCliente((c) => ({ ...c, telefone: v }))}
+              />
+            </Field>
+            <Field label="Nacionalidade">
+              <ClienteInput
+                value={cliente.nacionalidade}
+                onChange={(v) => setCliente((c) => ({ ...c, nacionalidade: v }))}
+              />
+            </Field>
+            <Field label="Estado civil">
+              <select
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                value={cliente.estado_civil}
+                onChange={(e) => setCliente((c) => ({ ...c, estado_civil: e.target.value }))}
+              >
+                <option value="">—</option>
+                <option value="solteiro">Solteiro(a)</option>
+                <option value="casado">Casado(a)</option>
+                <option value="divorciado">Divorciado(a)</option>
+                <option value="viuvo">Viúvo(a)</option>
+                <option value="uniao_estavel">União estável</option>
+              </select>
+            </Field>
+            <Field label="Profissão">
+              <ClienteInput
+                value={cliente.profissao}
+                onChange={(v) => setCliente((c) => ({ ...c, profissao: v }))}
+              />
+            </Field>
+            <div className="md:col-span-2">
+              <Field label="Endereço">
+                <ClienteInput
+                  value={cliente.endereco}
+                  onChange={(v) => setCliente((c) => ({ ...c, endereco: v }))}
+                />
+              </Field>
+            </div>
+            {exigeConjuge(cliente.estado_civil) && (
+              <div className="space-y-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 md:col-span-2">
+                <div>
+                  <p className="text-sm font-bold">Cônjuge</p>
+                  <p className="text-xs text-muted-foreground">
+                    Obrigatório quando o cliente é casado(a) ou vive em união estável.
+                  </p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Nome do cônjuge">
+                    <ClienteInput
+                      value={cliente.conjuge.nome}
+                      onChange={(v) =>
+                        setCliente((c) => ({ ...c, conjuge: { ...c.conjuge, nome: v } }))
+                      }
+                    />
+                  </Field>
+                  <Field label="CPF do cônjuge">
+                    <ClienteInput
+                      value={cliente.conjuge.documento}
+                      onChange={(v) =>
+                        setCliente((c) => ({ ...c, conjuge: { ...c.conjuge, documento: v } }))
+                      }
+                    />
+                  </Field>
+                  <Field label="RG do cônjuge">
+                    <ClienteInput
+                      value={cliente.conjuge.rg}
+                      onChange={(v) =>
+                        setCliente((c) => ({ ...c, conjuge: { ...c.conjuge, rg: v } }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Nacionalidade do cônjuge">
+                    <ClienteInput
+                      value={cliente.conjuge.nacionalidade}
+                      onChange={(v) =>
+                        setCliente((c) => ({ ...c, conjuge: { ...c.conjuge, nacionalidade: v } }))
+                      }
+                    />
+                  </Field>
+                  <Field label="Profissão do cônjuge">
+                    <ClienteInput
+                      value={cliente.conjuge.profissao}
+                      onChange={(v) =>
+                        setCliente((c) => ({ ...c, conjuge: { ...c.conjuge, profissao: v } }))
+                      }
+                    />
+                  </Field>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* Dados gerais */}
       <section className="rounded-xl border border-border bg-card p-6">
         <h2 className="mb-4 text-base font-semibold">Dados gerais</h2>
@@ -646,91 +818,6 @@ export function ContratoForm({ contratoId }: Props) {
           </Field>
         </div>
       </section>
-
-      {/* Cliente (só na criação; em edição a parte fica na seção de partes) */}
-      {!contratoId && (
-        <section className="rounded-xl border border-border bg-card p-6">
-          <h2 className="mb-1 text-base font-semibold">Cliente</h2>
-          <p className="mb-4 text-xs text-muted-foreground">
-            Se escolher um lead acima, nome, e-mail e telefone são preenchidos. Esses dados entram
-            automaticamente nos modelos de contrato escolhidos.
-          </p>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Papel no contrato">
-              <select
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={cliente.papel}
-                onChange={(e) => setCliente((c) => ({ ...c, papel: e.target.value }))}
-              >
-                {PAPEIS_CLIENTE.map(([v, label]) => (
-                  <option key={v} value={v}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Nome completo">
-              <ClienteInput
-                value={cliente.nome}
-                onChange={(v) => setCliente((c) => ({ ...c, nome: v }))}
-              />
-            </Field>
-            <Field label="CPF / CNPJ">
-              <ClienteInput
-                value={cliente.documento}
-                onChange={(v) => setCliente((c) => ({ ...c, documento: v }))}
-              />
-            </Field>
-            <Field label="E-mail">
-              <ClienteInput
-                type="email"
-                value={cliente.email}
-                onChange={(v) => setCliente((c) => ({ ...c, email: v }))}
-              />
-            </Field>
-            <Field label="Telefone">
-              <ClienteInput
-                value={cliente.telefone}
-                onChange={(v) => setCliente((c) => ({ ...c, telefone: v }))}
-              />
-            </Field>
-            <Field label="Nacionalidade">
-              <ClienteInput
-                value={cliente.nacionalidade}
-                onChange={(v) => setCliente((c) => ({ ...c, nacionalidade: v }))}
-              />
-            </Field>
-            <Field label="Estado civil">
-              <select
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                value={cliente.estado_civil}
-                onChange={(e) => setCliente((c) => ({ ...c, estado_civil: e.target.value }))}
-              >
-                <option value="">—</option>
-                <option value="solteiro">Solteiro(a)</option>
-                <option value="casado">Casado(a)</option>
-                <option value="divorciado">Divorciado(a)</option>
-                <option value="viuvo">Viúvo(a)</option>
-                <option value="uniao_estavel">União estável</option>
-              </select>
-            </Field>
-            <Field label="Profissão">
-              <ClienteInput
-                value={cliente.profissao}
-                onChange={(v) => setCliente((c) => ({ ...c, profissao: v }))}
-              />
-            </Field>
-            <div className="md:col-span-2">
-              <Field label="Endereço">
-                <ClienteInput
-                  value={cliente.endereco}
-                  onChange={(v) => setCliente((c) => ({ ...c, endereco: v }))}
-                />
-              </Field>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Modelos de contrato (só na criação; o documento é gerado com os dados atuais) */}
       {!contratoId && (

@@ -1835,6 +1835,7 @@ export type Database = {
         Row: {
           assinatura_referencia_externa: string | null;
           assinatura_status: string;
+          conjuge: Json | null;
           contrato_id: string;
           created_at: string;
           documento: string | null;
@@ -1848,12 +1849,14 @@ export type Database = {
           percentual_participacao: number | null;
           profissao: string | null;
           responsabilidade: string | null;
+          rg: string | null;
           telefone: string | null;
           tenant_id: string;
         };
         Insert: {
           assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
+          conjuge?: Json | null;
           contrato_id: string;
           created_at?: string;
           documento?: string | null;
@@ -1867,12 +1870,14 @@ export type Database = {
           percentual_participacao?: number | null;
           profissao?: string | null;
           responsabilidade?: string | null;
+          rg?: string | null;
           telefone?: string | null;
           tenant_id: string;
         };
         Update: {
           assinatura_referencia_externa?: string | null;
           assinatura_status?: string;
+          conjuge?: Json | null;
           contrato_id?: string;
           created_at?: string;
           documento?: string | null;
@@ -1886,6 +1891,7 @@ export type Database = {
           percentual_participacao?: number | null;
           profissao?: string | null;
           responsabilidade?: string | null;
+          rg?: string | null;
           telefone?: string | null;
           tenant_id?: string;
         };
