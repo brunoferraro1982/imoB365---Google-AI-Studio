@@ -33,6 +33,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { LeadChat } from "@/components/chat/LeadChat";
 import { LeadPreferenciasMatch } from "@/components/leads/LeadPreferenciasMatch";
 import { LeadTarefas } from "@/components/leads/LeadTarefas";
+import { LeadCadencia } from "@/components/leads/LeadCadencia";
 import { LeadTimeline } from "@/components/leads/LeadTimeline";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/useConfirm";
@@ -430,6 +431,7 @@ function LeadDetail() {
           </section>
 
           <LeadTarefas leadId={lead.id} tenantId={lead.tenant_id} />
+          <LeadCadencia leadId={lead.id} leadNome={lead.nome} telefone={lead.telefone} />
 
           <LeadPreferenciasMatch leadId={lead.id} tenantId={lead.tenant_id} />
 

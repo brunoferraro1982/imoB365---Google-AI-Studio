@@ -210,9 +210,6 @@ export const tenantModules: Module[] = [
     items: [
       { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
-      { to: "/app/configuracoes/funis", label: "Funis", icon: BarChart3 },
-      { to: "/app/configuracoes/scoring", label: "Lead scoring", icon: Gauge },
-      { to: "/app/configuracoes/cadencias", label: "Cadências", icon: Calendar },
       {
         to: "/app/configuracoes/integracoes-bancarias",
         label: "Integrações Bancárias",
@@ -236,11 +233,6 @@ export const tenantModules: Module[] = [
       {
         to: "/app/configuracoes/atendimento-canais",
         label: "Canais de Atendimento",
-        icon: Headset,
-      },
-      {
-        to: "/app/configuracoes/atendimento-sla",
-        label: "SLA de Atendimento",
         icon: Headset,
       },
       { to: "/app/contratacao", label: "Plano & Contratação", icon: Banknote },

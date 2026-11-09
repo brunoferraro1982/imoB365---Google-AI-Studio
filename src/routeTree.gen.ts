@@ -126,8 +126,11 @@ import { Route as AppPortaisMetaRouteImport } from './routes/app.portais.meta'
 import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
 import { Route as AppMarketingGoogleAdsRouteImport } from './routes/app.marketing.google-ads'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
+import { Route as AppLeadsPontuacaoRouteImport } from './routes/app.leads.pontuacao'
+import { Route as AppLeadsFunisRouteImport } from './routes/app.leads.funis'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
 import { Route as AppLeadsCaptacaoRouteImport } from './routes/app.leads.captacao'
+import { Route as AppLeadsCadenciasRouteImport } from './routes/app.leads.cadencias'
 import { Route as AppLeadsAnaliseRiscoRouteImport } from './routes/app.leads.analise-risco'
 import { Route as AppLeadsIdRouteImport } from './routes/app.leads.$id'
 import { Route as AppImoveisNovoRouteImport } from './routes/app.imoveis.novo'
@@ -819,6 +822,16 @@ const AppLocacaoPrestacaoContasRoute =
     path: '/locacao/prestacao-contas',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLeadsPontuacaoRoute = AppLeadsPontuacaoRouteImport.update({
+  id: '/leads/pontuacao',
+  path: '/leads/pontuacao',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsFunisRoute = AppLeadsFunisRouteImport.update({
+  id: '/leads/funis',
+  path: '/leads/funis',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
   id: '/leads/configuracao',
   path: '/leads/configuracao',
@@ -827,6 +840,11 @@ const AppLeadsConfiguracaoRoute = AppLeadsConfiguracaoRouteImport.update({
 const AppLeadsCaptacaoRoute = AppLeadsCaptacaoRouteImport.update({
   id: '/leads/captacao',
   path: '/leads/captacao',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLeadsCadenciasRoute = AppLeadsCadenciasRouteImport.update({
+  id: '/leads/cadencias',
+  path: '/leads/cadencias',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLeadsAnaliseRiscoRoute = AppLeadsAnaliseRiscoRouteImport.update({
@@ -1542,8 +1560,11 @@ export interface FileRoutesByFullPath {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/leads/funis': typeof AppLeadsFunisRoute
+  '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -1760,8 +1781,11 @@ export interface FileRoutesByTo {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/leads/funis': typeof AppLeadsFunisRoute
+  '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -1985,8 +2009,11 @@ export interface FileRoutesById {
   '/app/imoveis/novo': typeof AppImoveisNovoRoute
   '/app/leads/$id': typeof AppLeadsIdRoute
   '/app/leads/analise-risco': typeof AppLeadsAnaliseRiscoRoute
+  '/app/leads/cadencias': typeof AppLeadsCadenciasRoute
   '/app/leads/captacao': typeof AppLeadsCaptacaoRoute
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
+  '/app/leads/funis': typeof AppLeadsFunisRoute
+  '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -2211,8 +2238,11 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/leads/funis'
+    | '/app/leads/pontuacao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -2429,8 +2459,11 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/leads/funis'
+    | '/app/leads/pontuacao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -2653,8 +2686,11 @@ export interface FileRouteTypes {
     | '/app/imoveis/novo'
     | '/app/leads/$id'
     | '/app/leads/analise-risco'
+    | '/app/leads/cadencias'
     | '/app/leads/captacao'
     | '/app/leads/configuracao'
+    | '/app/leads/funis'
+    | '/app/leads/pontuacao'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -3655,6 +3691,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLocacaoPrestacaoContasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/leads/pontuacao': {
+      id: '/app/leads/pontuacao'
+      path: '/leads/pontuacao'
+      fullPath: '/app/leads/pontuacao'
+      preLoaderRoute: typeof AppLeadsPontuacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/leads/funis': {
+      id: '/app/leads/funis'
+      path: '/leads/funis'
+      fullPath: '/app/leads/funis'
+      preLoaderRoute: typeof AppLeadsFunisRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/configuracao': {
       id: '/app/leads/configuracao'
       path: '/leads/configuracao'
@@ -3667,6 +3717,13 @@ declare module '@tanstack/react-router' {
       path: '/leads/captacao'
       fullPath: '/app/leads/captacao'
       preLoaderRoute: typeof AppLeadsCaptacaoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/leads/cadencias': {
+      id: '/app/leads/cadencias'
+      path: '/leads/cadencias'
+      fullPath: '/app/leads/cadencias'
+      preLoaderRoute: typeof AppLeadsCadenciasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/leads/analise-risco': {
@@ -4579,8 +4636,11 @@ interface AppRouteChildren {
   AppImoveisNovoRoute: typeof AppImoveisNovoRoute
   AppLeadsIdRoute: typeof AppLeadsIdRoute
   AppLeadsAnaliseRiscoRoute: typeof AppLeadsAnaliseRiscoRoute
+  AppLeadsCadenciasRoute: typeof AppLeadsCadenciasRoute
   AppLeadsCaptacaoRoute: typeof AppLeadsCaptacaoRoute
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
+  AppLeadsFunisRoute: typeof AppLeadsFunisRoute
+  AppLeadsPontuacaoRoute: typeof AppLeadsPontuacaoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
   AppMarketingGoogleAdsRoute: typeof AppMarketingGoogleAdsRoute
   AppPortaisCanvaRoute: typeof AppPortaisCanvaRoute
@@ -4644,8 +4704,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppImoveisNovoRoute: AppImoveisNovoRoute,
   AppLeadsIdRoute: AppLeadsIdRoute,
   AppLeadsAnaliseRiscoRoute: AppLeadsAnaliseRiscoRoute,
+  AppLeadsCadenciasRoute: AppLeadsCadenciasRoute,
   AppLeadsCaptacaoRoute: AppLeadsCaptacaoRoute,
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
+  AppLeadsFunisRoute: AppLeadsFunisRoute,
+  AppLeadsPontuacaoRoute: AppLeadsPontuacaoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
   AppMarketingGoogleAdsRoute: AppMarketingGoogleAdsRoute,
   AppPortaisCanvaRoute: AppPortaisCanvaRoute,
