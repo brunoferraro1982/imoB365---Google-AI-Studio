@@ -45,3 +45,8 @@ dist-ssr
 
 *.bak
 *.bak.*
+
+# Capacitor — projetos nativos gerados por `npx cap add` (não versionar;
+# recriados localmente com `npm run cap:add:android` / `cap:add:ios`)
+/android
+/ios
