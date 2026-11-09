@@ -6,21 +6,12 @@ import { toast } from "sonner";
 import { Check, ChevronRight } from "lucide-react";
 import { podeAgirNaEtapa, type EtapaContrato } from "@/lib/permissions";
 import { ativarContrato } from "@/lib/contratos.functions";
+import { ETAPAS_CHECKLIST } from "@/lib/checklistContratos";
 
 // Sequência fixa do workflow (CLM) — texto livre no banco (contrato_etapas
 // não usa enum, ver migration 20260728160000), a ordem aqui é só a
 // convenção de UI/avanço padrão do stepper.
-const ETAPAS: { value: EtapaContrato; label: string }[] = [
-  { value: "captacao", label: "Captação" },
-  { value: "analise", label: "Análise" },
-  { value: "documentacao", label: "Documentação" },
-  { value: "juridico", label: "Jurídico" },
-  { value: "assinatura", label: "Assinatura" },
-  { value: "ativacao", label: "Ativação" },
-  { value: "financeiro", label: "Financeiro" },
-  { value: "administracao", label: "Administração" },
-  { value: "encerramento", label: "Encerramento" },
-];
+const ETAPAS: { value: EtapaContrato; label: string }[] = [...ETAPAS_CHECKLIST];
 
 type HistoricoEtapa = {
   id: string;

@@ -1,3 +1,4 @@
+import { aplicarModeloAoContrato } from "@/components/checklist/checklistData";
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
@@ -111,8 +112,9 @@ export function ContratoForm({ contratoId }: Props) {
             .eq("ativo", true)
             .order("nome"),
           supabase
-            .from("contrato_templates")
+            .from("checklist_templates")
             .select("id,nome,tipo")
+            .eq("tenant_id", tenantId)
             .eq("ativo", true)
             .order("nome"),
           supabase
@@ -198,30 +200,15 @@ export function ContratoForm({ contratoId }: Props) {
     });
   }
 
+  // Aplica o modelo de checklist escolhido ao contrato recém-criado.
   async function applyChecklistTemplate(contratoId: string) {
-    if (!form.template_id || !tenantId) return;
-    const { data: tplItens } = await supabase
-      .from("checklist_template_itens")
-      .select("*")
-      .eq("template_id", form.template_id)
-      .order("ordem");
-    if (!tplItens?.length) return;
-    const rows = (
-      tplItens as Array<{
-        etapa: string;
-        titulo: string;
-        obrigatorio: boolean;
-        ordem: number;
-      }>
-    ).map((i) => ({
-      tenant_id: tenantId,
-      contrato_id: contratoId,
-      etapa: i.etapa,
-      titulo: i.titulo,
-      obrigatorio: i.obrigatorio,
-      ordem: i.ordem,
-    }));
-    await supabase.from("contrato_checklist").insert(rows as any);
+    if (!form.template_id || !tenantId) return { ok: true as const };
+    const r = await aplicarModeloAoContrato({
+      tenantId,
+      contratoId,
+      modeloId: form.template_id,
+    });
+    return "erro" in r ? { ok: false as const, erro: r.erro } : { ok: true as const };
   }
 
   async function save(e: FormEvent) {
@@ -275,9 +262,15 @@ export function ContratoForm({ contratoId }: Props) {
         setSaving(false);
         // Auto-apply checklist template if selected
         if (form.template_id) {
-          await applyChecklistTemplate(id);
+          const r = await applyChecklistTemplate(id);
+          if (!r.ok) {
+            toast.warning("Contrato criado, mas o checklist não foi aplicado: " + r.erro);
+          } else {
+            toast.success("Contrato criado com checklist aplicado");
+          }
+        } else {
+          toast.success("Contrato criado");
         }
-        toast.success("Contrato criado" + (form.template_id ? " com checklist aplicado" : ""));
         navigate({ to: "/app/contratos/$id", params: { id } });
         return;
       }
@@ -602,9 +595,9 @@ export function ContratoForm({ contratoId }: Props) {
           </Field>
           {templates.length === 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
-              Nenhum template ativo.{" "}
-              <a href="/app/contratos/modelos" className="underline">
-                Criar templates
+              Nenhum modelo de checklist ativo.{" "}
+              <a href="/app/contratos/checklist" className="underline">
+                Criar modelo de checklist
               </a>
               .
             </p>

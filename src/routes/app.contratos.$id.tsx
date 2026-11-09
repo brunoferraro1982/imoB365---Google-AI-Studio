@@ -112,11 +112,16 @@ function EditarContrato() {
         {tenantId && (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Checklist */}
-            <section className="rounded-xl border bg-card p-6 shadow-sm space-y-4">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground border-b border-border pb-2 flex items-center gap-1.5">
-                <FileText className="h-4 w-4" /> Checklist de documentos
-              </h2>
-              <ContratoChecklist contratoId={id} tenantId={tenantId} />
+            <section className="glass-fosco space-y-4 rounded-3xl border border-white/40 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="flex items-center gap-2 text-base font-bold">
+                  <FileText className="h-4 w-4 text-primary" /> Checklist de documentos
+                </h2>
+                <Link to="/app/contratos/checklist" className="text-xs font-semibold text-primary">
+                  Modelos
+                </Link>
+              </div>
+              <ContratoChecklist contratoId={id} tenantId={tenantId} tipoContrato={tipoContrato ?? undefined} />
             </section>
 
             <AssinaturaEletronicaPanel contratoId={id} />
