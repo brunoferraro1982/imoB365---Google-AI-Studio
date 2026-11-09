@@ -348,10 +348,13 @@ export const ativarContrato = createServerFn({ method: "POST" })
       }
     }
 
+    // Só a etapa que está sendo encerrada (assinatura) bloqueia a ativação. Os itens
+    // da etapa "ativacao" só aparecem depois da ativação, então exigi-los aqui travaria o contrato.
     const { count: checklistPendente } = await supabase
       .from("contrato_checklist")
       .select("id", { count: "exact", head: true })
       .eq("contrato_id", contrato_id)
+      .eq("etapa", contrato.etapa_atual)
       .eq("obrigatorio", true)
       .eq("concluido", false);
     if ((checklistPendente ?? 0) > 0) {
