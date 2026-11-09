@@ -120,7 +120,7 @@ export function ReajusteSection({ contratoId }: { contratoId: string }) {
   if (loading) return null;
 
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl border border-white/40 p-6">
       <h2 className="mb-1 flex items-center gap-1.5 text-base font-semibold">
         <TrendingUp className="h-4 w-4" /> Reajuste do aluguel
       </h2>

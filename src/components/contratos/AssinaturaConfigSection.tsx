@@ -94,7 +94,10 @@ export function AssinaturaConfigSection() {
 
   return (
     <div className="max-w-2xl space-y-6">
-      <form onSubmit={salvar} className="space-y-4 rounded-xl border border-border bg-card p-6">
+      <form
+        onSubmit={salvar}
+        className="space-y-4 glass-fosco rounded-3xl border border-white/40 p-6"
+      >
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold">Provedor de assinatura eletrônica</h2>
           {existe &&
@@ -162,7 +165,7 @@ export function AssinaturaConfigSection() {
         </div>
       </form>
 
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-2 text-sm font-semibold">URL do webhook</h2>
         <p className="mb-2 text-xs text-muted-foreground">
           Cadastre esta URL no painel do provedor escolhido, para os eventos de assinatura de

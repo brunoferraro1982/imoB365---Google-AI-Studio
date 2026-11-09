@@ -77,8 +77,12 @@ function ImprimirContrato() {
           .maybeSingle();
         setImovel(i);
       }
+      // ?modelo=<id> (vindo de "Gerar documento") tem prioridade sobre o modelo do tipo.
+      const modeloUrl = new URLSearchParams(window.location.search).get("modelo");
+      const doParametro = (tpls ?? []).find((x: any) => x.id === modeloUrl);
       const sugest = (tpls ?? []).find((x: any) => x.tipo === c?.tipo);
-      if (sugest) setTemplateId(sugest.id);
+      if (doParametro) setTemplateId(doParametro.id);
+      else if (sugest) setTemplateId(sugest.id);
       setLoading(false);
     })();
   }, [id, tenantId]);
@@ -119,6 +123,19 @@ function ImprimirContrato() {
       "partes.locatario": partesByPapel(partes, "locatario"),
       "partes.fiador": partesByPapel(partes, "fiador"),
       "partes.testemunha": partesByPapel(partes, "testemunha"),
+      // Cliente principal (primeira parte cadastrada) e cônjuge, para os modelos.
+      "cliente.nome": partes[0]?.nome ?? "—",
+      "cliente.documento": partes[0]?.documento ?? "—",
+      "cliente.rg": partes[0]?.rg ?? "—",
+      "cliente.endereco": partes[0]?.endereco ?? "—",
+      "cliente.nacionalidade": partes[0]?.nacionalidade ?? "—",
+      "cliente.estado_civil": partes[0]?.estado_civil ?? "—",
+      "cliente.profissao": partes[0]?.profissao ?? "—",
+      "conjuge.nome": partes[0]?.conjuge?.nome ?? "—",
+      "conjuge.documento": partes[0]?.conjuge?.documento ?? "—",
+      "conjuge.rg": partes[0]?.conjuge?.rg ?? "—",
+      "conjuge.nacionalidade": partes[0]?.conjuge?.nacionalidade ?? "—",
+      "conjuge.profissao": partes[0]?.conjuge?.profissao ?? "—",
     };
     return out;
   }, [contrato, imovel, tenant, partes, enderecoImovel]);
@@ -177,7 +194,7 @@ function ImprimirContrato() {
     return <div className="p-8 text-sm text-muted-foreground">Contrato não encontrado.</div>;
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <div className="print:hidden">
         <Link
           to="/app/contratos/$id"
@@ -186,9 +203,11 @@ function ImprimirContrato() {
         >
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Imprimir contrato</h1>
+            <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Imprimir contrato
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Selecione um modelo, revise e imprima ou salve em PDF.
             </p>
@@ -232,7 +251,7 @@ function ImprimirContrato() {
       {template && (
         <article
           ref={corpoRef}
-          className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-12 leading-relaxed text-foreground shadow-sm print:max-w-none print:border-0 print:p-0 print:shadow-none [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6"
+          className="mx-auto max-w-3xl glass-fosco rounded-3xl border border-white/40 p-12 leading-relaxed text-foreground shadow-sm print:max-w-none print:border-0 print:p-0 print:shadow-none [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6"
           // Templates só podem ser editados por admins do tenant (RLS).
           dangerouslySetInnerHTML={{ __html: corpo }}
         />

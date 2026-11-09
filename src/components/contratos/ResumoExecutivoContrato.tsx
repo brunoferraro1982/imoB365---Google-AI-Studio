@@ -57,7 +57,7 @@ export function ResumoExecutivoContrato({ contratoId }: { contratoId: string }) 
   }
 
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl border border-white/40 p-6">
       <div className="mb-1 flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 text-base font-semibold">
           <Sparkles className="h-4 w-4" /> Resumo executivo (IA)

@@ -161,7 +161,7 @@ export function DocumentoUpload({ contratoId }: { contratoId: string }) {
   }, {});
 
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl border border-white/40 p-6">
       <h2 className="mb-1 flex items-center gap-1.5 text-base font-semibold">
         <FileText className="h-4 w-4" /> Documentos do contrato
       </h2>

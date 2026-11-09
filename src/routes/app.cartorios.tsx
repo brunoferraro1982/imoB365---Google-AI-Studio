@@ -130,12 +130,14 @@ function CartoriosPage() {
   }
 
   return (
-    <div className="p-8">
-      <header className="mb-6 flex items-center justify-between">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Landmark className="h-6 w-6 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Cartórios</h1>
+            <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Cartórios
+            </h1>
             <p className="text-sm text-muted-foreground">
               Acompanhamento de escrituras, registros e averbações.
             </p>
@@ -147,7 +149,7 @@ function CartoriosPage() {
       </header>
 
       {showForm && (
-        <div className="mb-6 rounded-xl border border-border bg-card p-6">
+        <div className="mb-6 glass-fosco rounded-3xl border border-white/40 p-6">
           <div className="grid gap-4 md:grid-cols-3">
             <div>
               <Label>Tipo</Label>
@@ -277,7 +279,7 @@ function CartoriosPage() {
           {items.map((r) => (
             <div
               key={r.id}
-              className="flex items-start justify-between gap-4 rounded-xl border border-border bg-card p-4"
+              className="flex items-start justify-between gap-4 glass-fosco rounded-3xl border border-white/40 p-4"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
