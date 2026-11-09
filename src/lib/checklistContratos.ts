@@ -106,3 +106,11 @@ export function agruparPorEtapa<T extends { etapa: string }>(itens: T[]) {
   if (resto.length) grupos.push({ etapa: "outras", label: "Outras", itens: resto });
   return grupos;
 }
+
+// Etapas que, quando não têm documentos cadastrados, são sinalizadas.
+// Demais etapas (captação, financeiro, ativação...) podem ficar sem itens.
+export const ETAPAS_EXIGEM_DOCUMENTO: readonly EtapaChecklist[] = [
+  "documentacao",
+  "juridico",
+  "assinatura",
+];

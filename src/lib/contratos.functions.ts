@@ -1,6 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+import { ETAPAS_CHECKLIST } from "@/lib/checklistContratos";
 
 // CLM Sprint 10 — Regras de Negócio: hoje contrato é gravado 100% direto do
 // client (ContratoForm.tsx), sem Zod, sem bloqueio nenhum — dá pra ativar um
@@ -53,18 +56,102 @@ const contratoPayload = z.object({
   centro_custo_id: z.string().uuid().nullable(),
 });
 
+// Modelo de checklist: undefined = usa o padrão do tipo (automático);
+// null = não aplicar; uuid = aplicar esse modelo.
+const criarContratoPayload = contratoPayload.extend({
+  checklist_template_id: z.string().uuid().nullable().optional(),
+});
+
+export type ResultadoChecklist =
+  | { status: "aplicado"; quantidade: number; modelo: string }
+  | { status: "sem_modelo" }
+  | { status: "nao_aplicado" }
+  | { status: "erro"; erro: string };
+
 export const criarContrato = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(contratoPayload)
+  .validator(criarContratoPayload)
   .handler(async ({ context, data }) => {
+    const { checklist_template_id, ...dados } = data;
     const { data: contrato, error } = await context.supabase
       .from("contratos")
-      .insert({ ...data, created_by: context.userId })
+      .insert({ ...dados, created_by: context.userId })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    return { id: contrato.id as string };
+
+    // O contrato já existe: falha no checklist não desfaz a criação, só é reportada.
+    let checklist: ResultadoChecklist;
+    try {
+      checklist = await aplicarChecklistAoContrato(context.supabase, {
+        tenantId: dados.tenant_id,
+        tipo: dados.tipo,
+        contratoId: contrato.id as string,
+        modeloId: checklist_template_id,
+      });
+    } catch (err) {
+      checklist = {
+        status: "erro",
+        erro: err instanceof Error ? err.message : "Falha no checklist",
+      };
+    }
+    return { id: contrato.id as string, checklist };
   });
+
+async function aplicarChecklistAoContrato(
+  supabase: SupabaseClientLike,
+  params: {
+    tenantId: string;
+    tipo: string;
+    contratoId: string;
+    modeloId: string | null | undefined;
+  },
+): Promise<ResultadoChecklist> {
+  if (params.modeloId === null) return { status: "nao_aplicado" };
+
+  let modeloId = params.modeloId;
+  if (!modeloId) {
+    const { data: padrao, error } = await supabase
+      .from("checklist_templates")
+      .select("id")
+      .eq("tenant_id", params.tenantId)
+      .eq("tipo", params.tipo)
+      .eq("padrao", true)
+      .eq("ativo", true)
+      .maybeSingle();
+    if (error) return { status: "erro", erro: error.message };
+    if (!padrao) return { status: "sem_modelo" };
+    modeloId = padrao.id as string;
+  }
+
+  const { data: modelo } = await supabase
+    .from("checklist_templates")
+    .select("nome")
+    .eq("id", modeloId)
+    .maybeSingle();
+  const { data: itens, error: e1 } = await supabase
+    .from("checklist_template_itens")
+    .select("etapa,titulo,obrigatorio,ordem")
+    .eq("template_id", modeloId)
+    .order("ordem");
+  if (e1) return { status: "erro", erro: e1.message };
+  if (!itens?.length) return { status: "erro", erro: "O modelo não tem itens." };
+
+  const { error: e2 } = await supabase.from("contrato_checklist").insert(
+    itens.map((i) => ({
+      tenant_id: params.tenantId,
+      contrato_id: params.contratoId,
+      etapa: i.etapa,
+      titulo: i.titulo,
+      obrigatorio: i.obrigatorio,
+      ordem: i.ordem,
+    })),
+  );
+  if (e2) return { status: "erro", erro: e2.message };
+  return { status: "aplicado", quantidade: itens.length, modelo: (modelo?.nome as string) ?? "" };
+}
+
+type SupabaseClientLike = SupabaseClient<Database>;
 
 export const atualizarContrato = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -254,5 +341,101 @@ export const ativarContrato = createServerFn({ method: "POST" })
         .eq("id", contrato.imovel_id);
     }
 
+    return { ok: true };
+  });
+
+// Etapas que reservam o imóvel ao entrar em assinatura (mesmo conjunto usado
+// no stepper; a ativação define o status final).
+const TIPOS_COM_RESERVA = new Set(["venda", "permuta", "locacao", "administracao"]);
+
+export type ResultadoAvanco =
+  | { ok: true }
+  | { ok: false; motivo: "checklist"; pendentes: { id: string; titulo: string }[]; etapa: string };
+
+/**
+ * Avança o contrato uma etapa. Bloqueia (sem exceção) quando a etapa atual tem
+ * obrigatórios pendentes, devolvendo a lista. O trigger tg_contrato_gate_checklist
+ * repete a checagem no banco. A ativação passa por `ativarContrato`.
+ */
+export const avancarEtapaContrato = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      contrato_id: z.string().uuid(),
+      para: z.enum(ETAPAS_CHECKLIST.map((e) => e.value) as [string, ...string[]]),
+    }),
+  )
+  .handler(async ({ context, data }): Promise<ResultadoAvanco> => {
+    const { supabase, userId } = context;
+    const ordem = ETAPAS_CHECKLIST.map((e) => e.value as string);
+
+    const { data: c, error: e0 } = await supabase
+      .from("contratos")
+      .select("id,tenant_id,tipo,etapa_atual,imovel_id")
+      .eq("id", data.contrato_id)
+      .maybeSingle();
+    if (e0) throw new Error(e0.message);
+    if (!c) throw new Error("Contrato não encontrado");
+
+    const atual = ordem.indexOf(c.etapa_atual);
+    const alvo = ordem.indexOf(data.para);
+    if (alvo !== atual + 1) {
+      throw new Error("Avance uma etapa por vez, sempre para a etapa seguinte.");
+    }
+    if (data.para === "ativacao") {
+      throw new Error("A ativação é feita pelo botão de ativar contrato (regras completas).");
+    }
+
+    const pendentes = async () => {
+      const { data: lista } = await supabase
+        .from("contrato_checklist")
+        .select("id,titulo")
+        .eq("contrato_id", c.id)
+        .eq("etapa", c.etapa_atual)
+        .eq("obrigatorio", true)
+        .eq("concluido", false)
+        .order("ordem");
+      return (lista ?? []) as { id: string; titulo: string }[];
+    };
+
+    const bloqueados = await pendentes();
+    if (bloqueados.length > 0) {
+      return { ok: false, motivo: "checklist", pendentes: bloqueados, etapa: c.etapa_atual };
+    }
+
+    // Atualizar o contrato primeiro: se o trigger barrar, nada de histórico é gravado.
+    const { error: e1 } = await supabase
+      .from("contratos")
+      .update({ etapa_atual: data.para })
+      .eq("id", c.id);
+    if (e1) {
+      if (e1.message.includes("CHECKLIST_PENDENTE")) {
+        return {
+          ok: false,
+          motivo: "checklist",
+          pendentes: await pendentes(),
+          etapa: c.etapa_atual,
+        };
+      }
+      throw new Error(e1.message);
+    }
+
+    const agora = new Date().toISOString();
+    await supabase
+      .from("contrato_etapas")
+      .update({ concluida_em: agora })
+      .eq("contrato_id", c.id)
+      .eq("etapa", c.etapa_atual)
+      .is("concluida_em", null);
+    await supabase.from("contrato_etapas").insert({
+      tenant_id: c.tenant_id,
+      contrato_id: c.id,
+      etapa: data.para,
+      responsavel_user_id: userId,
+    });
+
+    if (data.para === "assinatura" && c.imovel_id && TIPOS_COM_RESERVA.has(c.tipo)) {
+      await supabase.from("imoveis").update({ status: "reservado" }).eq("id", c.imovel_id);
+    }
     return { ok: true };
   });

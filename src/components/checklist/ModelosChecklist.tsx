@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, FileText, Plus, Sparkles, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowDown, ArrowUp, FileText, Plus, Sparkles, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfirm } from "@/hooks/useConfirm";
 import { Button } from "@/components/ui/button";
 import { SELO, TITULO_SECAO } from "@/components/portal/PaginaGlass";
+import { definirModeloPadrao } from "@/components/checklist/checklistData";
+import { analisarChecklist } from "@/lib/checklistStatus";
 import {
   ETAPAS_CHECKLIST,
   TIPO_CHECKLIST_LABEL,
@@ -14,7 +16,7 @@ import {
   type EtapaChecklist,
 } from "@/lib/checklistContratos";
 
-type Modelo = { id: string; nome: string; tipo: string; ativo: boolean };
+type Modelo = { id: string; nome: string; tipo: string; ativo: boolean; padrao: boolean };
 type ItemDb = {
   id: string;
   template_id: string;
@@ -41,7 +43,7 @@ export function ModelosChecklist() {
     const [{ data: md, error: e1 }, { data: it, error: e2 }] = await Promise.all([
       supabase
         .from("checklist_templates")
-        .select("id,nome,tipo,ativo")
+        .select("id,nome,tipo,ativo,padrao")
         .eq("tenant_id", tenantId)
         .order("nome"),
       supabase
@@ -71,6 +73,15 @@ export function ModelosChecklist() {
     [itens, selId],
   );
   const grupos = useMemo(() => agruparPorEtapa(itensDoModelo), [itensDoModelo]);
+
+  const semDocumentos = useMemo(
+    () =>
+      analisarChecklist(
+        itensDoModelo.map((i) => ({ ...i, concluido: false })),
+        "",
+      ).etapasSemDocumento,
+    [itensDoModelo],
+  );
 
   const porTipo = useMemo(() => {
     const map = new Map<string, Modelo[]>();
@@ -198,6 +209,11 @@ export function ModelosChecklist() {
                   >
                     <p className="flex items-center justify-between gap-2 font-semibold">
                       <span className="truncate">{m.nome}</span>
+                      {m.padrao && (
+                        <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold text-primary">
+                          padrão
+                        </span>
+                      )}
                       {!m.ativo && (
                         <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground">
                           inativo
@@ -228,6 +244,25 @@ export function ModelosChecklist() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
+                  {modelo.padrao ? (
+                    <span className="rounded-xl bg-primary/10 px-3 py-2 text-xs font-semibold text-primary">
+                      Padrão para contratos de {TIPO_CHECKLIST_LABEL[modelo.tipo] ?? modelo.tipo}
+                    </span>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!modelo.ativo}
+                      onClick={async () => {
+                        const r = await definirModeloPadrao(modelo.id);
+                        if ("erro" in r) return toast.error(r.erro);
+                        toast.success("Modelo definido como padrão");
+                        carregar();
+                      }}
+                    >
+                      Definir como padrão
+                    </Button>
+                  )}
                   <label className="flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2 text-xs font-semibold dark:bg-white/5">
                     <input
                       type="checkbox"
@@ -246,6 +281,21 @@ export function ModelosChecklist() {
                   </Button>
                 </div>
               </div>
+
+              {semDocumentos.length > 0 && (
+                <div className="flex items-start gap-3 rounded-xl border border-amber-300/70 bg-amber-50/80 p-3 text-sm dark:bg-amber-950/30">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                  <p className="text-amber-900 dark:text-amber-200">
+                    Sem documentos nesta etapa:{" "}
+                    <strong>
+                      {semDocumentos
+                        .map((e) => ETAPAS_CHECKLIST.find((x) => x.value === e)?.label)
+                        .join(", ")}
+                    </strong>
+                    . Contratos que passarem por elas serão sinalizados.
+                  </p>
+                </div>
+              )}
 
               {grupos.length === 0 && (
                 <p className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">

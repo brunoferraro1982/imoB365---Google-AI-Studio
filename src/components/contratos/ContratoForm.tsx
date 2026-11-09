@@ -1,4 +1,3 @@
-import { aplicarModeloAoContrato } from "@/components/checklist/checklistData";
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
@@ -200,17 +199,6 @@ export function ContratoForm({ contratoId }: Props) {
     });
   }
 
-  // Aplica o modelo de checklist escolhido ao contrato recém-criado.
-  async function applyChecklistTemplate(contratoId: string) {
-    if (!form.template_id || !tenantId) return { ok: true as const };
-    const r = await aplicarModeloAoContrato({
-      tenantId,
-      contratoId,
-      modeloId: form.template_id,
-    });
-    return "erro" in r ? { ok: false as const, erro: r.erro } : { ok: true as const };
-  }
-
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!tenantId) return toast.error("Sem tenant");
@@ -258,16 +246,23 @@ export function ContratoForm({ contratoId }: Props) {
         setSaving(false);
         toast.success("Contrato atualizado");
       } else {
-        const { id } = await criarContrato({ data: payload });
+        // Checklist: "" = padrão do tipo (automático), "__none__" = não aplicar, uuid = modelo escolhido.
+        const checklist_template_id =
+          form.template_id === ""
+            ? undefined
+            : form.template_id === "__none__"
+              ? null
+              : form.template_id;
+        const { id, checklist } = await criarContrato({
+          data: { ...payload, checklist_template_id },
+        });
         setSaving(false);
-        // Auto-apply checklist template if selected
-        if (form.template_id) {
-          const r = await applyChecklistTemplate(id);
-          if (!r.ok) {
-            toast.warning("Contrato criado, mas o checklist não foi aplicado: " + r.erro);
-          } else {
-            toast.success("Contrato criado com checklist aplicado");
-          }
+        if (checklist.status === "aplicado") {
+          toast.success(`Contrato criado com checklist (${checklist.quantidade} itens)`);
+        } else if (checklist.status === "erro") {
+          toast.warning("Contrato criado, mas o checklist não foi aplicado: " + checklist.erro);
+        } else if (checklist.status === "sem_modelo") {
+          toast.warning("Contrato criado sem checklist: não há modelo padrão para este tipo.");
         } else {
           toast.success("Contrato criado");
         }
@@ -577,15 +572,17 @@ export function ContratoForm({ contratoId }: Props) {
         <section className="rounded-xl border border-border bg-card p-6">
           <h2 className="mb-1 text-base font-semibold">Checklist de documentos</h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Selecione um template para gerar automaticamente o checklist ao criar o contrato.
+            Por padrão, o modelo marcado como padrão para o tipo do contrato é aplicado
+            automaticamente.
           </p>
-          <Field label="Template de checklist">
+          <Field label="Modelo de checklist">
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={form.template_id}
               onChange={(e) => set("template_id", e.target.value)}
             >
-              <option value="">— Não aplicar —</option>
+              <option value="">Padrão do tipo (automático)</option>
+              <option value="__none__">Não aplicar</option>
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.nome} ({TIPOS_CONTRATO.find((x) => x.value === t.tipo)?.label ?? t.tipo})

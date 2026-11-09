@@ -883,6 +883,7 @@ export type Database = {
           created_at: string;
           id: string;
           nome: string;
+          padrao: boolean;
           tenant_id: string;
           tipo: string;
           updated_at: string;
@@ -892,6 +893,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           nome: string;
+          padrao?: boolean;
           tenant_id: string;
           tipo?: string;
           updated_at?: string;
@@ -901,6 +903,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           nome?: string;
+          padrao?: boolean;
           tenant_id?: string;
           tipo?: string;
           updated_at?: string;
@@ -7442,6 +7445,10 @@ export type Database = {
       };
       cron_snapshot_tenant_usage: { Args: never; Returns: number };
       current_tenant_id: { Args: { _user_id: string }; Returns: string };
+      definir_checklist_padrao: {
+        Args: { _template: string };
+        Returns: undefined;
+      };
       delete_email: {
         Args: { message_id: number; queue_name: string };
         Returns: boolean;

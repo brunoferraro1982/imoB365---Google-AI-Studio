@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { EtapaChecklist } from "@/lib/checklistContratos";
+import { analisarChecklist } from "@/lib/checklistStatus";
 
 export type ItemModelo = {
   id?: string;
@@ -51,6 +52,12 @@ export async function aplicarModeloAoContrato(params: {
   contratoId: string;
   modeloId: string;
 }): Promise<{ quantidade: number } | { erro: string }> {
+  const { count: jaTem, error: e0 } = await supabase
+    .from("contrato_checklist")
+    .select("id", { count: "exact", head: true })
+    .eq("contrato_id", params.contratoId);
+  if (e0) return { erro: "Não foi possível verificar o checklist: " + e0.message };
+  if ((jaTem ?? 0) > 0) return { erro: "Este contrato já tem checklist." };
   const { data: itens, error: e1 } = await supabase
     .from("checklist_template_itens")
     .select("etapa,titulo,obrigatorio,ordem")
@@ -71,4 +78,60 @@ export async function aplicarModeloAoContrato(params: {
   );
   if (e2) return { erro: "Não foi possível aplicar o modelo: " + e2.message };
   return { quantidade: itens.length };
+}
+
+/** Marca o modelo como padrão do seu tipo (desmarca o anterior, no banco). */
+export async function definirModeloPadrao(
+  modeloId: string,
+): Promise<{ ok: true } | { erro: string }> {
+  const { error } = await supabase.rpc("definir_checklist_padrao", { _template: modeloId });
+  if (error) {
+    const msg = error.message.includes("SEM_PERMISSAO")
+      ? "Seu papel não pode definir o modelo padrão."
+      : error.message;
+    return { erro: msg };
+  }
+  return { ok: true };
+}
+
+export type SituacaoChecklist = {
+  semChecklist: boolean;
+  pendentesObrigatorios: number;
+  etapasSemDocumento: string[];
+};
+
+/** Situação do checklist de cada contrato (uma consulta para a lista inteira). */
+export async function buscarSituacaoChecklist(
+  contratos: { id: string; etapa_atual: string }[],
+): Promise<Map<string, SituacaoChecklist>> {
+  const mapa = new Map<string, SituacaoChecklist>();
+  const ids = contratos.map((c) => c.id);
+  if (ids.length === 0) return mapa;
+  const { data } = await supabase
+    .from("contrato_checklist")
+    .select("contrato_id,etapa,obrigatorio,concluido")
+    .in("contrato_id", ids);
+  const porContrato = new Map<
+    string,
+    { etapa: string; obrigatorio: boolean; concluido: boolean }[]
+  >();
+  for (const r of data ?? []) {
+    porContrato.set(r.contrato_id, [
+      ...(porContrato.get(r.contrato_id) ?? []),
+      { etapa: r.etapa, obrigatorio: r.obrigatorio, concluido: r.concluido },
+    ]);
+  }
+  for (const c of contratos) {
+    const itens = porContrato.get(c.id) ?? [];
+    const a = analisarChecklist(
+      itens.map((i, idx) => ({ id: String(idx), titulo: "", ...i })),
+      c.etapa_atual,
+    );
+    mapa.set(c.id, {
+      semChecklist: a.semChecklist,
+      pendentesObrigatorios: a.pendentesTotal,
+      etapasSemDocumento: a.etapasSemDocumento,
+    });
+  }
+  return mapa;
 }

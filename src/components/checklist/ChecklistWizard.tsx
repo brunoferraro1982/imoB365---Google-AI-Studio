@@ -18,8 +18,11 @@ import {
 import {
   aplicarModeloAoContrato,
   criarModeloComItens,
+  definirModeloPadrao,
   type ItemModelo,
 } from "@/components/checklist/checklistData";
+import { analisarChecklist } from "@/lib/checklistStatus";
+import { SUGESTOES_POR_TIPO } from "@/lib/checklistContratos";
 
 const PASSOS = ["Tipo", "Modelo", "Contrato", "Revisar"] as const;
 
@@ -27,7 +30,7 @@ const GLASS = "glass-fosco rounded-3xl border border-white/40 p-6 md:p-8";
 const INPUT =
   "h-11 w-full rounded-xl border border-border bg-background/80 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40";
 
-type ModeloExistente = { id: string; nome: string; tipo: string; qtd: number };
+type ModeloExistente = { id: string; nome: string; tipo: string; qtd: number; padrao: boolean };
 type ContratoOpcao = { id: string; numero: string | null; status: string; valor: number };
 
 /**
@@ -47,6 +50,7 @@ export function ChecklistWizard() {
   const [contratos, setContratos] = useState<ContratoOpcao[]>([]);
   const [contratoId, setContratoId] = useState("");
   const [salvando, setSalvando] = useState(false);
+  const [definirPadrao, setDefinirPadrao] = useState(false);
   const [concluido, setConcluido] = useState<{
     modeloId: string;
     contratoId?: string;
@@ -59,7 +63,7 @@ export function ChecklistWizard() {
     (async () => {
       const { data, error } = await supabase
         .from("checklist_templates")
-        .select("id,nome,tipo")
+        .select("id,nome,tipo,padrao")
         .eq("tenant_id", tenantId)
         .eq("tipo", tipo)
         .eq("ativo", true)
@@ -78,6 +82,7 @@ export function ChecklistWizard() {
         qtd: cont2.filter((c) => c.template_id === m.id).length,
       }));
       setModelos(lista);
+      setDefinirPadrao(!lista.some((m) => m.padrao));
       setModo(lista.length > 0 ? "existente" : "novo");
       setModeloId(lista[0]?.id ?? "");
       setNomeNovo(`Checklist — ${TIPO_CHECKLIST_LABEL[tipo] ?? tipo}`);
@@ -93,7 +98,7 @@ export function ChecklistWizard() {
         .from("contratos")
         .select("id,numero,status,valor")
         .eq("tenant_id", tenantId)
-        .eq("tipo", tipo as any)
+        .eq("tipo", tipo as never)
         .order("created_at", { ascending: false })
         .limit(50);
       if (error) return toast.error("Não foi possível carregar os contratos: " + error.message);
@@ -150,6 +155,10 @@ export function ChecklistWizard() {
         return toast.error(r.erro);
       }
       modeloFinal = r.id;
+    }
+    if (definirPadrao) {
+      const r = await definirModeloPadrao(modeloFinal);
+      if ("erro" in r) toast.warning("Modelo salvo, mas não foi definido como padrão: " + r.erro);
     }
     let qtd: number | undefined;
     if (contratoId) {
@@ -333,6 +342,26 @@ export function ChecklistWizard() {
               </div>
             )}
           </div>
+          <div className="space-y-2 rounded-2xl bg-white/60 p-4 dark:bg-white/5">
+            <label className="flex items-center gap-3 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={definirPadrao}
+                onChange={(e) => setDefinirPadrao(e.target.checked)}
+              />
+              Usar como padrão para contratos de {TIPO_CHECKLIST_LABEL[tipo]}
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Contratos desse tipo recebem o modelo padrão automaticamente ao serem criados.
+              {modelos.some((m) => m.padrao) && " O padrão atual deixa de valer."}
+            </p>
+            {modo === "novo" && !SUGESTOES_POR_TIPO[tipo] && (
+              <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                Ainda não há sugestão específica para este tipo: revise os documentos antes de
+                salvar.
+              </p>
+            )}
+          </div>
         </section>
       )}
 
@@ -404,6 +433,12 @@ export function ChecklistWizard() {
                 {modo === "novo"
                   ? `${nomeNovo} (novo)`
                   : modelos.find((m) => m.id === modeloId)?.nome}
+              </dd>
+            </div>
+            <div className="rounded-2xl bg-white/70 p-4 dark:bg-white/5">
+              <dt className="text-xs text-muted-foreground">Padrão do tipo</dt>
+              <dd className="font-semibold">
+                {definirPadrao ? "Sim, aplicar automaticamente" : "Não"}
               </dd>
             </div>
             <div className="rounded-2xl bg-white/70 p-4 dark:bg-white/5 sm:col-span-2">
@@ -523,20 +558,32 @@ function AdicionarEtapa({ onAdd }: { onAdd: (etapa: EtapaChecklist) => void }) {
 
 function ResumoEtapas({ itens }: { itens: ItemModelo[] }) {
   const grupos = useMemo(() => agruparPorEtapa(itens), [itens]);
+  const semDocs = analisarChecklist(
+    itens.map((i) => ({ ...i, id: "", concluido: false })),
+    "",
+  ).etapasSemDocumento;
   if (grupos.length === 0) {
     return <p className="text-sm text-muted-foreground">Nenhum documento no modelo.</p>;
   }
   return (
-    <ul className="grid gap-2 sm:grid-cols-2">
-      {grupos.map((g) => (
-        <li key={g.etapa} className="rounded-2xl bg-white/70 p-4 text-sm dark:bg-white/5">
-          <p className="font-bold">{ETAPA_LABEL[g.etapa] ?? g.label}</p>
-          <p className="text-xs text-muted-foreground">
-            {g.itens.length} documento{g.itens.length > 1 ? "s" : ""} ·{" "}
-            {g.itens.filter((i) => i.obrigatorio).length} obrigatório(s)
-          </p>
-        </li>
-      ))}
-    </ul>
+    <div className="space-y-3">
+      {semDocs.length > 0 && (
+        <p className="rounded-xl border border-amber-300/70 bg-amber-50/80 p-3 text-xs text-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          Sem documentos nas etapas: {semDocs.map((e) => ETAPA_LABEL[e]).join(", ")}. Contratos que
+          passarem por elas serão sinalizados.
+        </p>
+      )}
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {grupos.map((g) => (
+          <li key={g.etapa} className="rounded-2xl bg-white/70 p-4 text-sm dark:bg-white/5">
+            <p className="font-bold">{ETAPA_LABEL[g.etapa] ?? g.label}</p>
+            <p className="text-xs text-muted-foreground">
+              {g.itens.length} documento{g.itens.length > 1 ? "s" : ""} ·{" "}
+              {g.itens.filter((i) => i.obrigatorio).length} obrigatório(s)
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

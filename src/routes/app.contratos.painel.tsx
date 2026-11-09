@@ -10,6 +10,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  buscarSituacaoChecklist,
+  type SituacaoChecklist,
+} from "@/components/checklist/checklistData";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +30,7 @@ export const Route = createFileRoute("/app/contratos/painel")({
 
 type ContratoResumo = {
   id: string;
+  etapa_atual: string;
   numero: string | null;
   tipo: string;
   status: string;
@@ -85,6 +90,7 @@ function StatTile({
 function PainelContratosPage() {
   const { tenantId } = useAuth();
   const [contratos, setContratos] = useState<ContratoResumo[]>([]);
+  const [checklistSit, setChecklistSit] = useState<Map<string, SituacaoChecklist>>(new Map());
   const [financeiro, setFinanceiro] = useState<ResumoFinanceiro | null>(null);
   const [loading, setLoading] = useState(true);
   const [verificando, setVerificando] = useState(false);
@@ -108,7 +114,7 @@ function PainelContratosPage() {
     ] = await Promise.all([
       supabase
         .from("contratos")
-        .select("id,numero,tipo,status,data_inicio,data_fim,valor,corretor_id")
+        .select("id,numero,tipo,status,data_inicio,data_fim,valor,corretor_id,etapa_atual")
         .order("data_fim", { ascending: true, nullsFirst: false }),
       supabase.from("corretores").select("id,nome"),
       (supabase as any).from("contrato_parcelas").select("valor,status"),
@@ -180,6 +186,12 @@ function PainelContratosPage() {
       reajustesPendentes: reajustesPendentes ?? 0,
     });
     setContratos(merged as ContratoResumo[]);
+    const sit = await buscarSituacaoChecklist(
+      (merged as ContratoResumo[])
+        .filter((c) => c.status === "ativo" || c.status === "rascunho")
+        .map((c) => ({ id: c.id, etapa_atual: c.etapa_atual })),
+    );
+    setChecklistSit(sit);
     setLoading(false);
   }
 
@@ -243,6 +255,30 @@ function PainelContratosPage() {
           {verificando ? "Verificando…" : "Verificar SLA agora"}
         </Button>
       </header>
+
+      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+        <StatTile
+          label="Checklist com pendências"
+          value={
+            contratos.filter((c) => (checklistSit.get(c.id)?.pendentesObrigatorios ?? 0) > 0).length
+          }
+          tone="critical"
+          icon={AlertTriangle}
+        />
+        <StatTile
+          label="Etapa sem documentos"
+          value={
+            contratos.filter((c) => (checklistSit.get(c.id)?.etapasSemDocumento.length ?? 0) > 0)
+              .length
+          }
+          tone="warning"
+        />
+        <StatTile
+          label="Sem checklist"
+          value={contratos.filter((c) => checklistSit.get(c.id)?.semChecklist).length}
+          tone="serious"
+        />
+      </div>
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <StatTile label="Ativos" value={ativos.length} />

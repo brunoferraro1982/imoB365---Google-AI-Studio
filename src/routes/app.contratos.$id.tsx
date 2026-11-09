@@ -8,8 +8,7 @@ import { toast } from "sonner";
 import { ContratoForm } from "@/components/contratos/ContratoForm";
 import { PartesSection } from "@/components/contratos/PartesSection";
 import { ParcelasSection } from "@/components/contratos/ParcelasSection";
-import { ContratoChecklist } from "@/components/contratos/ContratoChecklist";
-import { EtapasStepper } from "@/components/contratos/EtapasStepper";
+import { FluxoContrato } from "@/components/contratos/FluxoContrato";
 import { ReajusteSection } from "@/components/contratos/ReajusteSection";
 import { GarantiasSection } from "@/components/contratos/GarantiasSection";
 import { DadosPagamentoSection } from "@/components/contratos/DadosPagamentoSection";
@@ -96,7 +95,19 @@ function EditarContrato() {
       </header>
 
       <div className="max-w-4xl space-y-6">
-        <EtapasStepper contratoId={id} />
+        {tipoContrato && (
+          <section className="glass-fosco space-y-4 rounded-3xl border border-white/40 p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-base font-bold">
+                <FileText className="h-4 w-4 text-primary" /> Fluxo do contrato
+              </h2>
+              <Link to="/app/contratos/checklist" className="text-xs font-semibold text-primary">
+                Modelos de checklist
+              </Link>
+            </div>
+            <FluxoContrato contratoId={id} tipoContrato={tipoContrato} />
+          </section>
+        )}
         <ContratoForm contratoId={id} />
         <PartesSection contratoId={id} />
         <ParcelasSection contratoId={id} />
@@ -111,19 +122,6 @@ function EditarContrato() {
 
         {tenantId && (
           <div className="grid gap-6 md:grid-cols-2">
-            {/* Checklist */}
-            <section className="glass-fosco space-y-4 rounded-3xl border border-white/40 p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="flex items-center gap-2 text-base font-bold">
-                  <FileText className="h-4 w-4 text-primary" /> Checklist de documentos
-                </h2>
-                <Link to="/app/contratos/checklist" className="text-xs font-semibold text-primary">
-                  Modelos
-                </Link>
-              </div>
-              <ContratoChecklist contratoId={id} tenantId={tenantId} tipoContrato={tipoContrato ?? undefined} />
-            </section>
-
             <AssinaturaEletronicaPanel contratoId={id} />
           </div>
         )}
