@@ -379,7 +379,7 @@ export function ContratoForm({ contratoId }: Props) {
     <form onSubmit={save} className="max-w-4xl space-y-6">
       {/* Cliente (só na criação; em edição a parte fica na seção de partes) */}
       {!contratoId && (
-        <section className="rounded-xl border border-border bg-card p-6">
+        <section className="glass-fosco rounded-3xl border border-white/40 p-6">
           <h2 className="mb-1 text-base font-semibold">Cliente</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             Se escolher um lead abaixo, nome, e-mail e telefone são preenchidos. Esses dados entram
@@ -521,7 +521,7 @@ export function ContratoForm({ contratoId }: Props) {
       )}
 
       {/* Dados gerais */}
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-4 text-base font-semibold">Dados gerais</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Número">
@@ -603,7 +603,7 @@ export function ContratoForm({ contratoId }: Props) {
       </section>
 
       {/* Vigência */}
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-4 text-base font-semibold">Vigência</h2>
         <div className="grid gap-4 md:grid-cols-4">
           <Field label="Carência (dias)">
@@ -667,7 +667,7 @@ export function ContratoForm({ contratoId }: Props) {
       </section>
 
       {/* Encargos e centro de custo */}
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-4 text-base font-semibold">Encargos e centro de custo</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Condomínio (R$)">
@@ -715,7 +715,7 @@ export function ContratoForm({ contratoId }: Props) {
 
       {/* Negociação de venda — sinal/entrada/parcelas */}
       {form.tipo === "venda" && (
-        <section className="rounded-xl border border-border bg-card p-6">
+        <section className="glass-fosco rounded-3xl border border-white/40 p-6">
           <h2 className="mb-1 text-base font-semibold">Negociação (sinal, entrada e parcelas)</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             Ao ativar o contrato, o cronograma de pagamento é gerado automaticamente: sinal e
@@ -757,7 +757,7 @@ export function ContratoForm({ contratoId }: Props) {
       )}
 
       {/* Vínculos */}
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-4 text-base font-semibold">Vínculos</h2>
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="Imóvel">
@@ -821,7 +821,7 @@ export function ContratoForm({ contratoId }: Props) {
 
       {/* Modelos de contrato (só na criação; o documento é gerado com os dados atuais) */}
       {!contratoId && (
-        <section className="rounded-xl border border-border bg-card p-6">
+        <section className="glass-fosco rounded-3xl border border-white/40 p-6">
           <h2 className="mb-1 text-base font-semibold">Modelos de contrato</h2>
           <p className="mb-4 text-xs text-muted-foreground">
             Modelos do tipo do contrato vêm marcados. Você pode incluir ou remover antes de salvar.
@@ -860,7 +860,7 @@ export function ContratoForm({ contratoId }: Props) {
       )}
 
       {/* Observações */}
-      <section className="rounded-xl border border-border bg-card p-6">
+      <section className="glass-fosco rounded-3xl border border-white/40 p-6">
         <h2 className="mb-4 text-base font-semibold">Observações internas</h2>
         <Textarea
           value={form.observacoes}

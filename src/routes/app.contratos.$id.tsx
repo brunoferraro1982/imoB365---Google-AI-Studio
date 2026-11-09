@@ -62,7 +62,7 @@ function EditarContrato() {
   }
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <Link
         to="/app/contratos"
         className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -70,8 +70,10 @@ function EditarContrato() {
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
 
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold tracking-tight">Editar contrato</h1>
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Editar contrato
+        </h1>
         <div className="flex gap-2">
           <Button
             variant="outline"

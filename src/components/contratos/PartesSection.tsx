@@ -124,7 +124,7 @@ export function PartesSection({ contratoId }: { contratoId: string }) {
   }
 
   return (
-    <section className="rounded-xl border border-border bg-card p-6">
+    <section className="glass-fosco rounded-3xl border border-white/40 p-6">
       <h2 className="mb-4 text-base font-semibold">Partes do contrato</h2>
 
       {loading ? (

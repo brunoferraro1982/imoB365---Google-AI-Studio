@@ -194,7 +194,7 @@ function ImprimirContrato() {
     return <div className="p-8 text-sm text-muted-foreground">Contrato não encontrado.</div>;
 
   return (
-    <div className="p-8">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
       <div className="print:hidden">
         <Link
           to="/app/contratos/$id"
@@ -203,9 +203,11 @@ function ImprimirContrato() {
         >
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
-        <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Imprimir contrato</h1>
+            <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Imprimir contrato
+            </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Selecione um modelo, revise e imprima ou salve em PDF.
             </p>
@@ -249,7 +251,7 @@ function ImprimirContrato() {
       {template && (
         <article
           ref={corpoRef}
-          className="mx-auto max-w-3xl rounded-xl border border-border bg-card p-12 leading-relaxed text-foreground shadow-sm print:max-w-none print:border-0 print:p-0 print:shadow-none [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6"
+          className="mx-auto max-w-3xl glass-fosco rounded-3xl border border-white/40 p-12 leading-relaxed text-foreground shadow-sm print:max-w-none print:border-0 print:p-0 print:shadow-none [&_h1]:mb-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-lg [&_h2]:font-semibold [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-3 [&_ol]:list-decimal [&_ol]:pl-6"
           // Templates só podem ser editados por admins do tenant (RLS).
           dangerouslySetInnerHTML={{ __html: corpo }}
         />

@@ -77,7 +77,7 @@ function StatTile({
     neutral: "text-foreground",
   }[tone];
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="glass-fosco rounded-3xl border border-white/40 p-4">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
         {Icon && <Icon className="h-3.5 w-3.5" />}
         {label}
@@ -239,12 +239,14 @@ function PainelContratosPage() {
   );
 
   return (
-    <div className="p-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <LayoutDashboard className="h-6 w-6 text-primary" />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Painel de Contratos</h1>
+            <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Painel de Contratos
+            </h1>
             <p className="text-sm text-muted-foreground">
               Visão geral de contratos ativos, vencimentos e SLA de cartórios.
             </p>
@@ -294,31 +296,31 @@ function PainelContratosPage() {
             <Wallet className="h-3.5 w-3.5" /> Dashboard financeiro da carteira
           </h2>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="text-xs text-muted-foreground">Valor da carteira ativa</div>
               <div className="mt-1 text-lg font-bold">
                 {formatBRL(financeiro.valorCarteiraAtiva)}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="text-xs text-muted-foreground">Tempo médio de contrato</div>
               <div className="mt-1 text-lg font-bold">
                 {financeiro.tempoMedioDias != null ? `${financeiro.tempoMedioDias}d` : "—"}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <TrendingUp className="h-3 w-3" /> Receita prevista
               </div>
               <div className="mt-1 text-lg font-bold">{formatBRL(financeiro.receitaPrevista)}</div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="text-xs text-muted-foreground">Receita realizada</div>
               <div className="mt-1 text-lg font-bold text-emerald-600">
                 {formatBRL(financeiro.receitaRealizada)}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <ShieldCheck className="h-3 w-3" /> Garantias vencendo ({ALERTA_ANTECEDENCIA_DIAS}d)
               </div>
@@ -328,7 +330,7 @@ function PainelContratosPage() {
                 {financeiro.garantiasVencendo}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-4">
+            <div className="glass-fosco rounded-3xl border border-white/40 p-4">
               <div className="text-xs text-muted-foreground">
                 Reajustes pendentes ({ALERTA_ANTECEDENCIA_DIAS}d)
               </div>
@@ -377,7 +379,7 @@ function PainelContratosPage() {
                   key={c.id}
                   to="/app/contratos/$id"
                   params={{ id: c.id }}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-4 text-sm hover:border-primary/40"
+                  className="flex items-center justify-between gap-4 glass-fosco rounded-3xl border border-white/40 p-4 text-sm hover:border-primary/40"
                 >
                   <div>
                     <div className="flex items-center gap-2">

@@ -172,7 +172,7 @@ export function DocusignConnectSection() {
 
       {!data?.appConfigured ? (
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-card p-4 text-sm">
+          <div className="glass-fosco rounded-2xl border border-white/40 p-4 text-sm">
             <p className="mb-2 font-medium">Passo a passo (leva de 10 a 20 minutos)</p>
             <ol className="space-y-3 text-xs text-muted-foreground">
               <li>
@@ -212,7 +212,7 @@ export function DocusignConnectSection() {
             </ol>
           </div>
 
-          <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+          <div className="space-y-3 glass-fosco rounded-2xl border border-white/40 p-4">
             <div className="space-y-1.5">
               <Label>Integration Key (Client ID)</Label>
               <Input value={clientId} onChange={(e) => setClientId(e.target.value)} />

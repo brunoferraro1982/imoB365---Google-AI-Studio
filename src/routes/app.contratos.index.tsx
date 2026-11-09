@@ -35,7 +35,7 @@ type Contrato = {
 
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="glass-fosco rounded-3xl border border-white/40 p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-2 text-2xl font-bold tracking-tight">{value}</p>
       {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}
@@ -113,10 +113,12 @@ function ContratosList() {
   const hasFilters = search || filterStatus || filterTipo;
 
   return (
-    <div className="p-8">
-      <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="mesh-brand-claro min-h-full p-4 md:p-8">
+      <header className="glass-fosco rounded-3xl border border-white/40 p-6 md:p-8 mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jurídico</h1>
+          <h1 className="font-brand-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Jurídico
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Contratos, modelos jurídicos e assinaturas digitais.
           </p>
@@ -214,7 +216,7 @@ function ContratosList() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+        <div className="overflow-x-auto glass-fosco rounded-3xl border border-white/40">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
