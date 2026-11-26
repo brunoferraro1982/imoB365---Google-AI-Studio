@@ -42,10 +42,37 @@ async function getServerRoles(): Promise<AppRole[]> {
     return _rolesCache.roles;
   }
 
-  const { data } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", session.user.id);
+  // Falha de consulta não pode virar "sem roles" (que redireciona para o login e fica em cache).
+  if (error) throw new Error(`Falha ao carregar permissões: ${error.message}`);
   const roles = (data ?? []).map((r) => r.role as AppRole);
   _rolesCache = { userId: session.user.id, roles, at: now };
   return roles;
+}
+
+/**
+ * Limite para verificar roles durante a navegação. Se a consulta travar (sessão, rede ou
+ * RLS), a navegação falha com erro em vez de ficar pendente e manter a tela anterior.
+ * Não liberamos a rota no timeout: o acesso continua bloqueado até as roles serem lidas.
+ */
+const GUARD_TIMEOUT_MS = 8_000;
+
+async function getRolesComTimeout(): Promise<AppRole[]> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error("Tempo esgotado ao verificar permissões. Tente novamente.")),
+      GUARD_TIMEOUT_MS,
+    );
+  });
+  try {
+    return await Promise.race([getServerRoles(), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -58,7 +85,7 @@ export function moduleGuard(module: AppModule) {
     // navegador, inacessível aqui — checar roles nesse momento sempre daria "sem sessão"
     // e derrubaria usuários autenticados no /login. A validação real acontece no cliente.
     if (typeof window === "undefined") return;
-    const roles = await getServerRoles();
+    const roles = await getRolesComTimeout();
     if (roles.length === 0) throw redirect({ to: "/login" });
     if (!canAccessModule(roles, module)) {
       throw redirect({ to: "/app", search: { forbidden: "1" } });
@@ -72,7 +99,7 @@ export function moduleGuard(module: AppModule) {
 export function actionGuard(module: AppModule, action: AppAction) {
   return async () => {
     if (typeof window === "undefined") return;
-    const roles = await getServerRoles();
+    const roles = await getRolesComTimeout();
     if (roles.length === 0) throw redirect({ to: "/login" });
     if (!can(roles, module, action)) {
       throw redirect({ to: "/app", search: { forbidden: "1" } });
@@ -86,7 +113,7 @@ export function actionGuard(module: AppModule, action: AppAction) {
 export function roleGuard(...requiredRoles: AppRole[]) {
   return async () => {
     if (typeof window === "undefined") return;
-    const roles = await getServerRoles();
+    const roles = await getRolesComTimeout();
     if (roles.length === 0) throw redirect({ to: "/login" });
     const hasAccess = requiredRoles.some((r) => roles.includes(r));
     if (!hasAccess) {
