@@ -10,6 +10,14 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Navegação lenta mostra feedback em vez de manter a tela anterior congelada.
+    defaultPendingMs: 300,
+    defaultPendingMinMs: 200,
+    defaultPendingComponent: () => (
+      <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+        Carregando…
+      </div>
+    ),
   });
 
   return router;
