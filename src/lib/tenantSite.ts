@@ -165,9 +165,13 @@ export type ImoveisSite = {
 };
 
 export async function carregarImoveisSite(tenantId: string, limite?: number): Promise<ImoveisSite> {
+  // Fotos vêm embutidas no mesmo select (relação imovel_fotos_imovel_id_fkey).
+  // Antes era uma 2ª consulta com `imovel_id=in.(...)` listando todos os IDs:
+  // com ~180 imóveis a URL passava de 7 KB e a requisição falhava no navegador,
+  // deixando a página sem nenhuma foto e refazendo a consulta várias vezes.
   let q = supabase
     .from("imoveis")
-    .select(COLS_IMOVEL, { count: "exact" })
+    .select(`${COLS_IMOVEL},imovel_fotos(storage_path,capa,ordem)`, { count: "exact" })
     .eq("tenant_id", tenantId)
     .eq("publicado", true)
     .eq("status", "ativo")
@@ -175,21 +179,17 @@ export async function carregarImoveisSite(tenantId: string, limite?: number): Pr
     .order("publicado_em", { ascending: false });
   if (limite) q = q.limit(limite);
   const { data, count } = await q;
-  const imoveis = (data as ImovelCard[]) ?? [];
+  type Linha = ImovelCard & {
+    imovel_fotos: { storage_path: string; capa: boolean | null; ordem: number | null }[] | null;
+  };
+  const linhas = (data as unknown as Linha[]) ?? [];
+  const imoveis: ImovelCard[] = linhas.map(({ imovel_fotos: _fotos, ...imovel }) => imovel);
   const fotosMap: Record<string, string> = {};
-  if (imoveis.length) {
-    const { data: fotos } = await supabase
-      .from("imovel_fotos")
-      .select("imovel_id,storage_path,capa,ordem")
-      .in(
-        "imovel_id",
-        imoveis.map((i) => i.id),
-      )
-      .order("capa", { ascending: false })
-      .order("ordem");
-    (fotos ?? []).forEach((f) => {
-      if (!fotosMap[f.imovel_id]) fotosMap[f.imovel_id] = imovelFotoUrl(f.storage_path);
-    });
+  for (const l of linhas) {
+    const capa = [...(l.imovel_fotos ?? [])].sort(
+      (a, b) => Number(!!b.capa) - Number(!!a.capa) || (a.ordem ?? 0) - (b.ordem ?? 0),
+    )[0];
+    if (capa) fotosMap[l.id] = imovelFotoUrl(capa.storage_path);
   }
   return { imoveis, total: count ?? imoveis.length, fotosMap };
 }
