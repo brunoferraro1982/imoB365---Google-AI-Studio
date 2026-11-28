@@ -18,3 +18,11 @@ ALTER TABLE public.contratos
 
 COMMENT ON COLUMN public.contratos.taxa_administracao_percentual IS 'Taxa de administração da locação (%). Nulo para contratos que não são de locação.';
 COMMENT ON COLUMN public.contratos.indice_reajuste IS 'Índice de reajuste anual do aluguel (IPCA, IGP-M ou INPC).';
+
+-- Dados cadastrais das partes (contrato de locação): data de nascimento e CRECI do procurador.
+ALTER TABLE public.contrato_partes
+  ADD COLUMN IF NOT EXISTS data_nascimento date,
+  ADD COLUMN IF NOT EXISTS creci text;
+
+COMMENT ON COLUMN public.contrato_partes.data_nascimento IS 'Data de nascimento da parte (pessoa física), para o contrato.';
+COMMENT ON COLUMN public.contrato_partes.creci IS 'Número do CRECI, quando a parte for corretor procurador.';
