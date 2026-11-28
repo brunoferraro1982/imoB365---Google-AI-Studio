@@ -198,6 +198,7 @@ import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.r
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosChecklistNovoRouteImport } from './routes/app.contratos.checklist.novo'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
+import { Route as AppConfiguracoesIntegracoesWhatsappRouteImport } from './routes/app.configuracoes.integracoes.whatsapp'
 import { Route as AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport } from './routes/app.configuracoes.integracoes-bancarias.mercadopago'
 import { Route as ApiPublicWebhooksMetaRouteImport } from './routes/api.public.webhooks.meta'
 import { Route as ApiPublicWebhooksMercadopagoMarketplaceRouteImport } from './routes/api.public.webhooks.mercadopago-marketplace'
@@ -1203,6 +1204,12 @@ const AppContratosIdImprimirRoute = AppContratosIdImprimirRouteImport.update({
   path: '/contratos/$id/imprimir',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConfiguracoesIntegracoesWhatsappRoute =
+  AppConfiguracoesIntegracoesWhatsappRouteImport.update({
+    id: '/integracoes/whatsapp',
+    path: '/integracoes/whatsapp',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesIntegracoesBancariasMercadopagoRoute =
   AppConfiguracoesIntegracoesBancariasMercadopagoRouteImport.update({
     id: '/integracoes-bancarias/mercadopago',
@@ -1619,6 +1626,7 @@ export interface FileRoutesByFullPath {
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
+  '/app/configuracoes/integracoes/whatsapp': typeof AppConfiguracoesIntegracoesWhatsappRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -1840,6 +1848,7 @@ export interface FileRoutesByTo {
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
+  '/app/configuracoes/integracoes/whatsapp': typeof AppConfiguracoesIntegracoesWhatsappRoute
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -2068,6 +2077,7 @@ export interface FileRoutesById {
   '/api/public/webhooks/mercadopago-marketplace': typeof ApiPublicWebhooksMercadopagoMarketplaceRoute
   '/api/public/webhooks/meta': typeof ApiPublicWebhooksMetaRoute
   '/app/configuracoes/integracoes-bancarias/mercadopago': typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
+  '/app/configuracoes/integracoes/whatsapp': typeof AppConfiguracoesIntegracoesWhatsappRoute
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
@@ -2297,6 +2307,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
+    | '/app/configuracoes/integracoes/whatsapp'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
@@ -2518,6 +2529,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
+    | '/app/configuracoes/integracoes/whatsapp'
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
@@ -2745,6 +2757,7 @@ export interface FileRouteTypes {
     | '/api/public/webhooks/mercadopago-marketplace'
     | '/api/public/webhooks/meta'
     | '/app/configuracoes/integracoes-bancarias/mercadopago'
+    | '/app/configuracoes/integracoes/whatsapp'
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos_/biblioteca'
@@ -4195,6 +4208,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContratosIdImprimirRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/configuracoes/integracoes/whatsapp': {
+      id: '/app/configuracoes/integracoes/whatsapp'
+      path: '/integracoes/whatsapp'
+      fullPath: '/app/configuracoes/integracoes/whatsapp'
+      preLoaderRoute: typeof AppConfiguracoesIntegracoesWhatsappRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/integracoes-bancarias/mercadopago': {
       id: '/app/configuracoes/integracoes-bancarias/mercadopago'
       path: '/integracoes-bancarias/mercadopago'
@@ -4524,6 +4544,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesWebhooksRoute: typeof AppConfiguracoesWebhooksRoute
   AppConfiguracoesIndexRoute: typeof AppConfiguracoesIndexRoute
   AppConfiguracoesIntegracoesBancariasMercadopagoRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
+  AppConfiguracoesIntegracoesWhatsappRoute: typeof AppConfiguracoesIntegracoesWhatsappRoute
   AppConfiguracoesIntegracoesBancariasIndexRoute: typeof AppConfiguracoesIntegracoesBancariasIndexRoute
 }
 
@@ -4553,6 +4574,8 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
   AppConfiguracoesIndexRoute: AppConfiguracoesIndexRoute,
   AppConfiguracoesIntegracoesBancariasMercadopagoRoute:
     AppConfiguracoesIntegracoesBancariasMercadopagoRoute,
+  AppConfiguracoesIntegracoesWhatsappRoute:
+    AppConfiguracoesIntegracoesWhatsappRoute,
   AppConfiguracoesIntegracoesBancariasIndexRoute:
     AppConfiguracoesIntegracoesBancariasIndexRoute,
 }
