@@ -43,6 +43,9 @@ function LocacaoIndex() {
       <header className="flex items-center gap-3">
         <Home className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-bold">Locação / Administração</h1>
+        <Button asChild size="sm" className="ml-auto">
+          <Link to="/app/locacao/novo">Nova locação</Link>
+        </Button>
       </header>
 
       <section className="rounded-xl border bg-card p-6">
