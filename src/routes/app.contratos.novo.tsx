@@ -1,8 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { ContratoForm } from "@/components/contratos/ContratoForm";
 
 export const Route = createFileRoute("/app/contratos/novo")({
+  validateSearch: (search: Record<string, unknown>): { tipo?: string } => ({
+    tipo: typeof search.tipo === "string" ? search.tipo : undefined,
+  }),
+  // Locações são cadastradas no módulo de Locação (/app/locacao/novo).
+  // Usa `href` (e não `to`) porque a rota de destino vem de outra branch e ainda
+  // não está no routeTree.gen.ts desta branch.
+  beforeLoad: ({ search }) => {
+    if (search.tipo === "locacao") {
+      throw redirect({ href: "/app/locacao/novo" });
+    }
+  },
   component: NovoContrato,
 });
 
