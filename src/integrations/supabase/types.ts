@@ -1838,6 +1838,8 @@ export type Database = {
           conjuge: Json | null;
           contrato_id: string;
           created_at: string;
+          creci: string | null;
+          data_nascimento: string | null;
           documento: string | null;
           email: string | null;
           endereco: string | null;
@@ -1859,6 +1861,8 @@ export type Database = {
           conjuge?: Json | null;
           contrato_id: string;
           created_at?: string;
+          creci?: string | null;
+          data_nascimento?: string | null;
           documento?: string | null;
           email?: string | null;
           endereco?: string | null;
@@ -1880,6 +1884,8 @@ export type Database = {
           conjuge?: Json | null;
           contrato_id?: string;
           created_at?: string;
+          creci?: string | null;
+          data_nascimento?: string | null;
           documento?: string | null;
           email?: string | null;
           endereco?: string | null;
@@ -1959,6 +1965,7 @@ export type Database = {
           etapa_atual: string;
           id: string;
           imovel_id: string | null;
+          indice_reajuste: string;
           lead_id: string | null;
           numero: string | null;
           numero_parcelas: number | null;
@@ -1969,6 +1976,7 @@ export type Database = {
           quantidade_renovacoes: number;
           renovacao_automatica: boolean;
           status: Database["public"]["Enums"]["contrato_status"];
+          taxa_administracao_percentual: number | null;
           tenant_id: string;
           tipo: Database["public"]["Enums"]["contrato_tipo"];
           updated_at: string;
@@ -1996,6 +2004,7 @@ export type Database = {
           etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
+          indice_reajuste?: string;
           lead_id?: string | null;
           numero?: string | null;
           numero_parcelas?: number | null;
@@ -2006,6 +2015,7 @@ export type Database = {
           quantidade_renovacoes?: number;
           renovacao_automatica?: boolean;
           status?: Database["public"]["Enums"]["contrato_status"];
+          taxa_administracao_percentual?: number | null;
           tenant_id: string;
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
           updated_at?: string;
@@ -2033,6 +2043,7 @@ export type Database = {
           etapa_atual?: string;
           id?: string;
           imovel_id?: string | null;
+          indice_reajuste?: string;
           lead_id?: string | null;
           numero?: string | null;
           numero_parcelas?: number | null;
@@ -2043,6 +2054,7 @@ export type Database = {
           quantidade_renovacoes?: number;
           renovacao_automatica?: boolean;
           status?: Database["public"]["Enums"]["contrato_status"];
+          taxa_administracao_percentual?: number | null;
           tenant_id?: string;
           tipo?: Database["public"]["Enums"]["contrato_tipo"];
           updated_at?: string;
@@ -3962,6 +3974,7 @@ export type Database = {
       };
       lead_funil_etapas: {
         Row: {
+          categoria: string;
           cor: string | null;
           created_at: string;
           funil_id: string;
@@ -3975,6 +3988,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          categoria: string;
           cor?: string | null;
           created_at?: string;
           funil_id: string;
@@ -3988,6 +4002,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          categoria?: string;
           cor?: string | null;
           created_at?: string;
           funil_id?: string;
@@ -4255,6 +4270,51 @@ export type Database = {
           },
           {
             foreignKeyName: "lead_preferencias_tenant_id_fkey";
+            columns: ["tenant_id"];
+            isOneToOne: false;
+            referencedRelation: "tenants";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lead_score_eventos: {
+        Row: {
+          created_at: string;
+          evento: string;
+          id: string;
+          lead_id: string;
+          pontos: number;
+          ref: string;
+          tenant_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          evento: string;
+          id?: string;
+          lead_id: string;
+          pontos: number;
+          ref?: string;
+          tenant_id: string;
+        };
+        Update: {
+          created_at?: string;
+          evento?: string;
+          id?: string;
+          lead_id?: string;
+          pontos?: number;
+          ref?: string;
+          tenant_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lead_score_eventos_lead_id_fkey";
+            columns: ["lead_id"];
+            isOneToOne: false;
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_score_eventos_tenant_id_fkey";
             columns: ["tenant_id"];
             isOneToOne: false;
             referencedRelation: "tenants";
@@ -7485,9 +7545,22 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      _aplicar_cadencia_lead: {
+        Args: { _cadencia: string; _lead: string };
+        Returns: number;
+      };
+      _recalcular_scores: { Args: { _tenant: string }; Returns: number };
+      aplicar_cadencia_lead: {
+        Args: { _cadencia: string; _lead: string };
+        Returns: number;
+      };
       assign_lead_round_robin: { Args: { _tenant_id: string }; Returns: string };
       auth_tenant_id: { Args: never; Returns: string };
       compute_lead_matches: { Args: { _lead_id: string }; Returns: number };
+      concluir_tarefa_cadencia: {
+        Args: { _job: string; _resultado?: string };
+        Returns: undefined;
+      };
       cron_expire_trials: {
         Args: never;
         Returns: {
@@ -7513,6 +7586,7 @@ export type Database = {
         Args: { _evento: string; _payload: Json; _tenant_id: string };
         Returns: undefined;
       };
+      garantir_funil_padrao: { Args: { _tenant: string }; Returns: string };
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"];
@@ -7659,6 +7733,11 @@ export type Database = {
           msg_id: number;
           read_ct: number;
         }[];
+      };
+      recalcular_scores_tenant: { Args: { _tenant: string }; Returns: number };
+      registrar_evento_lead: {
+        Args: { _evento: string; _lead: string; _ref?: string };
+        Returns: undefined;
       };
       relatorio_metricas_imoveis: {
         Args: never;
