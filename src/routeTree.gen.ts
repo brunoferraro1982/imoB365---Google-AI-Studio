@@ -188,6 +188,7 @@ import { Route as AdminCorretoresIdRouteImport } from './routes/admin.corretores
 import { Route as AdminAtendimentoPainelRouteImport } from './routes/admin.atendimento.painel'
 import { Route as AppLocacaoRepassesIndexRouteImport } from './routes/app.locacao.repasses.index'
 import { Route as AppContratosChecklistIndexRouteImport } from './routes/app.contratos.checklist.index'
+import { Route as AppConfiguracoesIntegracoesIndexRouteImport } from './routes/app.configuracoes.integracoes.index'
 import { Route as AppConfiguracoesIntegracoesBancariasIndexRouteImport } from './routes/app.configuracoes.integracoes-bancarias.index'
 import { Route as SiteSlugPPageSlugRouteImport } from './routes/site.$slug_.p.$pageSlug'
 import { Route as SiteSlugBlogPostSlugRouteImport } from './routes/site.$slug_.blog_.$postSlug'
@@ -1149,6 +1150,12 @@ const AppContratosChecklistIndexRoute =
     path: '/',
     getParentRoute: () => AppContratosChecklistRoute,
   } as any)
+const AppConfiguracoesIntegracoesIndexRoute =
+  AppConfiguracoesIntegracoesIndexRouteImport.update({
+    id: '/integracoes/',
+    path: '/integracoes/',
+    getParentRoute: () => AppConfiguracoesRoute,
+  } as any)
 const AppConfiguracoesIntegracoesBancariasIndexRoute =
   AppConfiguracoesIntegracoesBancariasIndexRouteImport.update({
     id: '/integracoes-bancarias/',
@@ -1629,6 +1636,7 @@ export interface FileRoutesByFullPath {
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/configuracoes/integracoes/': typeof AppConfiguracoesIntegracoesIndexRoute
   '/app/contratos/checklist/': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
@@ -1850,6 +1858,7 @@ export interface FileRoutesByTo {
   '/site/$slug/blog/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/configuracoes/integracoes': typeof AppConfiguracoesIntegracoesIndexRoute
   '/app/contratos/checklist': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
@@ -2078,6 +2087,7 @@ export interface FileRoutesById {
   '/site/$slug_/blog_/$postSlug': typeof SiteSlugBlogPostSlugRoute
   '/site/$slug_/p/$pageSlug': typeof SiteSlugPPageSlugRoute
   '/app/configuracoes/integracoes-bancarias/': typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  '/app/configuracoes/integracoes/': typeof AppConfiguracoesIntegracoesIndexRoute
   '/app/contratos/checklist/': typeof AppContratosChecklistIndexRoute
   '/app/locacao/repasses/': typeof AppLocacaoRepassesIndexRoute
   '/api/public/canva/oauth/callback': typeof ApiPublicCanvaOauthCallbackRoute
@@ -2307,6 +2317,7 @@ export interface FileRouteTypes {
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
+    | '/app/configuracoes/integracoes/'
     | '/app/contratos/checklist/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
@@ -2528,6 +2539,7 @@ export interface FileRouteTypes {
     | '/site/$slug/blog/$postSlug'
     | '/site/$slug/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias'
+    | '/app/configuracoes/integracoes'
     | '/app/contratos/checklist'
     | '/app/locacao/repasses'
     | '/api/public/canva/oauth/callback'
@@ -2755,6 +2767,7 @@ export interface FileRouteTypes {
     | '/site/$slug_/blog_/$postSlug'
     | '/site/$slug_/p/$pageSlug'
     | '/app/configuracoes/integracoes-bancarias/'
+    | '/app/configuracoes/integracoes/'
     | '/app/contratos/checklist/'
     | '/app/locacao/repasses/'
     | '/api/public/canva/oauth/callback'
@@ -4125,6 +4138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContratosChecklistIndexRouteImport
       parentRoute: typeof AppContratosChecklistRoute
     }
+    '/app/configuracoes/integracoes/': {
+      id: '/app/configuracoes/integracoes/'
+      path: '/integracoes'
+      fullPath: '/app/configuracoes/integracoes/'
+      preLoaderRoute: typeof AppConfiguracoesIntegracoesIndexRouteImport
+      parentRoute: typeof AppConfiguracoesRoute
+    }
     '/app/configuracoes/integracoes-bancarias/': {
       id: '/app/configuracoes/integracoes-bancarias/'
       path: '/integracoes-bancarias'
@@ -4525,6 +4545,7 @@ interface AppConfiguracoesRouteChildren {
   AppConfiguracoesIndexRoute: typeof AppConfiguracoesIndexRoute
   AppConfiguracoesIntegracoesBancariasMercadopagoRoute: typeof AppConfiguracoesIntegracoesBancariasMercadopagoRoute
   AppConfiguracoesIntegracoesBancariasIndexRoute: typeof AppConfiguracoesIntegracoesBancariasIndexRoute
+  AppConfiguracoesIntegracoesIndexRoute: typeof AppConfiguracoesIntegracoesIndexRoute
 }
 
 const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
@@ -4555,6 +4576,7 @@ const AppConfiguracoesRouteChildren: AppConfiguracoesRouteChildren = {
     AppConfiguracoesIntegracoesBancariasMercadopagoRoute,
   AppConfiguracoesIntegracoesBancariasIndexRoute:
     AppConfiguracoesIntegracoesBancariasIndexRoute,
+  AppConfiguracoesIntegracoesIndexRoute: AppConfiguracoesIntegracoesIndexRoute,
 }
 
 const AppConfiguracoesRouteWithChildren =

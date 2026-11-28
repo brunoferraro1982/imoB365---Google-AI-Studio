@@ -38,6 +38,7 @@ import {
   GraduationCap,
   BookOpen,
   PlayCircle,
+  Plug,
   Library,
   LayoutGrid,
   HeartHandshake,
@@ -210,6 +211,7 @@ export const tenantModules: Module[] = [
     items: [
       { to: "/app/configuracoes", label: "Visão geral", icon: LayoutDashboard },
       { to: "/app/configuracoes/equipe", label: "Equipe", icon: Users },
+      { to: "/app/configuracoes/integracoes", label: "Integrações", icon: Plug },
       {
         to: "/app/configuracoes/integracoes-bancarias",
         label: "Integrações Bancárias",
