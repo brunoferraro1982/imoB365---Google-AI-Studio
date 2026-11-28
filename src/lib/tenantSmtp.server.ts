@@ -17,6 +17,9 @@ export type CanalEmailConfig = {
   usuario?: string;
   senha?: string;
   endereco_exibicao?: string;
+  /** Modo de segurança escolhido na página de integrações (ssl = conexão TLS direta; starttls). */
+  seguranca?: "ssl" | "starttls";
+  reply_to?: string;
 };
 
 export type EnvioEmailResultado = { enviado: true } | { enviado: false; motivo: string };
@@ -47,7 +50,8 @@ export async function sendWithSmtp(
     const transporter = nodemailer.createTransport({
       host: cfg.smtp_host,
       port: cfg.smtp_port ?? 587,
-      secure: cfg.smtp_port === 465,
+      // Respeita a opção escolhida; sem opção salva, mantém o comportamento antigo (porta 465 = SSL).
+      secure: cfg.seguranca ? cfg.seguranca === "ssl" : cfg.smtp_port === 465,
       auth: { user: cfg.usuario, pass: cfg.senha },
     });
     await transporter.sendMail({
@@ -56,7 +60,7 @@ export async function sendWithSmtp(
       subject: mail.subject,
       text: mail.text,
       html: mail.html,
-      replyTo: mail.replyTo,
+      replyTo: mail.replyTo ?? cfg.reply_to,
     });
     return { enviado: true };
   } catch (err) {

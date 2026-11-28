@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,6 +83,15 @@ function NotificacoesPage() {
       <Button onClick={save} disabled={saving}>
         {saving ? "Salvando…" : "Salvar preferências"}
       </Button>
+      <p className="text-sm text-muted-foreground">
+        As notificações por e-mail são enviadas pelo servidor SMTP da sua imobiliária.{" "}
+        <Link
+          to="/app/configuracoes/integracoes/email"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Configurar e-mail (SMTP)
+        </Link>
+      </p>
     </div>
   );
 }
