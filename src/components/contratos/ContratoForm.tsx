@@ -539,11 +539,15 @@ export function ContratoForm({ contratoId }: Props) {
               value={form.tipo}
               onChange={(e) => set("tipo", e.target.value)}
             >
-              {TIPOS_CONTRATO.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
+              {/* Locação é cadastrada no módulo de Locação (/app/locacao/novo). Aqui só aparece
+                  quando o contrato já é de locação, para não perder o valor ao editar. */}
+              {TIPOS_CONTRATO.filter((t) => t.value !== "locacao" || form.tipo === "locacao").map(
+                (t) => (
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
+                ),
+              )}
             </select>
           </Field>
 

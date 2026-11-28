@@ -1,8 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { ContratoForm } from "@/components/contratos/ContratoForm";
 
 export const Route = createFileRoute("/app/contratos/novo")({
+  validateSearch: (search: Record<string, unknown>): { tipo?: string } => ({
+    tipo: typeof search.tipo === "string" ? search.tipo : undefined,
+  }),
+  // Locações são cadastradas no módulo de Locação (/app/locacao/novo).
+  beforeLoad: ({ search }) => {
+    if (search.tipo === "locacao") {
+      throw redirect({ to: "/app/locacao/novo" });
+    }
+  },
   component: NovoContrato,
 });
 

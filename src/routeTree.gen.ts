@@ -126,6 +126,7 @@ import { Route as AppPortaisMetaRouteImport } from './routes/app.portais.meta'
 import { Route as AppPortaisCanvaRouteImport } from './routes/app.portais.canva'
 import { Route as AppMarketingGoogleAdsRouteImport } from './routes/app.marketing.google-ads'
 import { Route as AppLocacaoPrestacaoContasRouteImport } from './routes/app.locacao.prestacao-contas'
+import { Route as AppLocacaoNovoRouteImport } from './routes/app.locacao.novo'
 import { Route as AppLeadsPontuacaoRouteImport } from './routes/app.leads.pontuacao'
 import { Route as AppLeadsFunisRouteImport } from './routes/app.leads.funis'
 import { Route as AppLeadsConfiguracaoRouteImport } from './routes/app.leads.configuracao'
@@ -826,6 +827,11 @@ const AppLocacaoPrestacaoContasRoute =
     path: '/locacao/prestacao-contas',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLocacaoNovoRoute = AppLocacaoNovoRouteImport.update({
+  id: '/locacao/novo',
+  path: '/locacao/novo',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLeadsPontuacaoRoute = AppLeadsPontuacaoRouteImport.update({
   id: '/leads/pontuacao',
   path: '/leads/pontuacao',
@@ -1593,6 +1599,7 @@ export interface FileRoutesByFullPath {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
   '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
+  '/app/locacao/novo': typeof AppLocacaoNovoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -1818,6 +1825,7 @@ export interface FileRoutesByTo {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
   '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
+  '/app/locacao/novo': typeof AppLocacaoNovoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -2050,6 +2058,7 @@ export interface FileRoutesById {
   '/app/leads/configuracao': typeof AppLeadsConfiguracaoRoute
   '/app/leads/funis': typeof AppLeadsFunisRoute
   '/app/leads/pontuacao': typeof AppLeadsPontuacaoRoute
+  '/app/locacao/novo': typeof AppLocacaoNovoRoute
   '/app/locacao/prestacao-contas': typeof AppLocacaoPrestacaoContasRoute
   '/app/marketing/google-ads': typeof AppMarketingGoogleAdsRoute
   '/app/portais/canva': typeof AppPortaisCanvaRoute
@@ -2283,6 +2292,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/leads/funis'
     | '/app/leads/pontuacao'
+    | '/app/locacao/novo'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -2508,6 +2518,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/leads/funis'
     | '/app/leads/pontuacao'
+    | '/app/locacao/novo'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -2739,6 +2750,7 @@ export interface FileRouteTypes {
     | '/app/leads/configuracao'
     | '/app/leads/funis'
     | '/app/leads/pontuacao'
+    | '/app/locacao/novo'
     | '/app/locacao/prestacao-contas'
     | '/app/marketing/google-ads'
     | '/app/portais/canva'
@@ -3743,6 +3755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLocacaoPrestacaoContasRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/locacao/novo': {
+      id: '/app/locacao/novo'
+      path: '/locacao/novo'
+      fullPath: '/app/locacao/novo'
+      preLoaderRoute: typeof AppLocacaoNovoRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/leads/pontuacao': {
       id: '/app/leads/pontuacao'
       path: '/leads/pontuacao'
@@ -4730,6 +4749,7 @@ interface AppRouteChildren {
   AppLeadsConfiguracaoRoute: typeof AppLeadsConfiguracaoRoute
   AppLeadsFunisRoute: typeof AppLeadsFunisRoute
   AppLeadsPontuacaoRoute: typeof AppLeadsPontuacaoRoute
+  AppLocacaoNovoRoute: typeof AppLocacaoNovoRoute
   AppLocacaoPrestacaoContasRoute: typeof AppLocacaoPrestacaoContasRoute
   AppMarketingGoogleAdsRoute: typeof AppMarketingGoogleAdsRoute
   AppPortaisCanvaRoute: typeof AppPortaisCanvaRoute
@@ -4798,6 +4818,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLeadsConfiguracaoRoute: AppLeadsConfiguracaoRoute,
   AppLeadsFunisRoute: AppLeadsFunisRoute,
   AppLeadsPontuacaoRoute: AppLeadsPontuacaoRoute,
+  AppLocacaoNovoRoute: AppLocacaoNovoRoute,
   AppLocacaoPrestacaoContasRoute: AppLocacaoPrestacaoContasRoute,
   AppMarketingGoogleAdsRoute: AppMarketingGoogleAdsRoute,
   AppPortaisCanvaRoute: AppPortaisCanvaRoute,
