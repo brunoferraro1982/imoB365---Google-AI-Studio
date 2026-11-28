@@ -22,6 +22,9 @@ import { getDocusignConnectionStatus } from "@/lib/docusignOAuth.functions";
 import { getMetaConnectionStatus } from "@/lib/metaOAuth.functions";
 import { getCanvaConnectionStatus } from "@/lib/canvaOAuth.functions";
 import { getNfeConfigStatus } from "@/lib/nfeFocusNfe.functions";
+import { obterConfigAsaas } from "@/lib/asaas.functions";
+import { obterWhatsAppEvolution } from "@/lib/whatsappEvolution.functions";
+import { getTenantSmtpConfig } from "@/lib/tenantSmtp.functions";
 
 export const Route = createFileRoute("/app/configuracoes/integracoes/")({
   head: () => ({ meta: [{ title: "Integrações — imob365" }] }),
@@ -68,6 +71,9 @@ function IntegracoesHubPage() {
   const fetchMeta = useServerFn(getMetaConnectionStatus);
   const fetchCanva = useServerFn(getCanvaConnectionStatus);
   const fetchNfe = useServerFn(getNfeConfigStatus);
+  const fetchAsaas = useServerFn(obterConfigAsaas);
+  const fetchWhatsApp = useServerFn(obterWhatsAppEvolution);
+  const fetchSmtp = useServerFn(getTenantSmtpConfig);
 
   const mpQuery = useQuery({
     queryKey: ["mercadopago-connection-status"],
@@ -93,6 +99,22 @@ function IntegracoesHubPage() {
     enabled: isAdmin,
   });
 
+  const asaasQuery = useQuery({
+    queryKey: ["asaas-config-view"],
+    queryFn: () => fetchAsaas(),
+    enabled: isAdmin,
+  });
+  const whatsappQuery = useQuery({
+    queryKey: ["whatsapp-evolution-config"],
+    queryFn: () => fetchWhatsApp(),
+    enabled: isAdmin,
+  });
+  const smtpQuery = useQuery({
+    queryKey: ["tenant-smtp-config"],
+    queryFn: () => fetchSmtp(),
+    enabled: isAdmin,
+  });
+
   const cards: IntegracaoCardProps[] = [
     {
       nome: "Mercado Pago",
@@ -108,21 +130,35 @@ function IntegracoesHubPage() {
       descricao: "Cobrança e boletos via Asaas.",
       icon: Wallet,
       to: "/app/configuracoes/integracoes/asaas",
-      status: { state: "nao_configurado" },
+      status: !isAdmin
+        ? { state: "nao_configurado", detalhe: "Visível apenas para administradores" }
+        : statusFromQuery(asaasQuery, (d) =>
+            d.existe && d.ativo
+              ? { state: "conectado", detalhe: d.ambiente }
+              : { state: "nao_configurado" },
+          ),
     },
     {
       nome: "WhatsApp (Evolution API)",
       descricao: "Envio de mensagens e atendimento pelo WhatsApp.",
       icon: MessageCircle,
       to: "/app/configuracoes/integracoes/whatsapp",
-      status: { state: "nao_configurado" },
+      status: !isAdmin
+        ? { state: "nao_configurado", detalhe: "Visível apenas para administradores" }
+        : statusFromQuery(whatsappQuery, (d) =>
+            d.configurado && d.ativo ? { state: "conectado" } : { state: "nao_configurado" },
+          ),
     },
     {
       nome: "E-mail (SMTP)",
       descricao: "Servidor próprio para envio de e-mails da imobiliária.",
       icon: Mail,
       to: "/app/configuracoes/integracoes/email",
-      status: { state: "nao_configurado" },
+      status: !isAdmin
+        ? { state: "nao_configurado", detalhe: "Visível apenas para administradores" }
+        : statusFromQuery(smtpQuery, (d) =>
+            d.configurado && d.ativo ? { state: "conectado" } : { state: "nao_configurado" },
+          ),
     },
     {
       nome: "Meta (Facebook e Instagram)",
@@ -214,9 +250,7 @@ function IntegracaoCard({ nome, descricao, icon: Icon, to, status }: IntegracaoC
 
   return (
     <Link
-      // A rota de destino pode ainda não existir nesta branch (criada em outra
-      // branch de integrações); o cast evita a checagem de rota tipada aqui.
-      to={to as never}
+      to={to}
       className="flex items-center justify-between gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted/40"
     >
       <div className="flex items-center gap-4">
