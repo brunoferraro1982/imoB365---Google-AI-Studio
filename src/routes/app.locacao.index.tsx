@@ -63,6 +63,7 @@ type Vinculos = {
   repasses: number;
   lancamentos: number;
   comissoes: number;
+  outros: number;
 };
 
 type Bloqueio = Vinculos & { nome: string };
@@ -293,6 +294,28 @@ function LocacaoIndex() {
     });
   }
 
+  /**
+   * Tabelas com FK para contratos que bloqueiam a exclusão quando têm registros.
+   * contrato_partes não entra: a própria exclusão a remove antes do contrato.
+   */
+  const TABELAS_VINCULADAS = [
+    "contrato_parcelas",
+    "locacao_repasses",
+    "lancamentos_financeiros",
+    "comissoes",
+    "locacao_reajustes",
+    "locacao_ordens_servico",
+    "locacao_garantias",
+    "locacao_vistorias",
+    "contrato_checklist",
+    "contrato_documentos",
+    "contrato_etapas",
+    "contrato_modelos",
+    "contrato_dados_pagamento",
+    "cartorio_registros",
+    "lead_tarefas",
+  ] as const;
+
   /** Conta os vínculos que impedem a exclusão. Retorna null se alguma consulta falhar. */
   async function contarVinculos(contratoId: string): Promise<Vinculos | null> {
     if (!tenantId) return null;
@@ -302,22 +325,27 @@ function LocacaoIndex() {
         .select("id", { count: "exact", head: true })
         .eq("contrato_id", contratoId)
         .eq("tenant_id", tenantId);
-    const [parcelas, repasses, lancamentos, comissoes] = await Promise.all([
-      contar("contrato_parcelas"),
-      contar("locacao_repasses"),
-      contar("lancamentos_financeiros"),
-      contar("comissoes"),
-    ]);
-    const erro = [parcelas, repasses, lancamentos, comissoes].find((r) => r.error);
+    const resultados = await Promise.all(TABELAS_VINCULADAS.map((t) => contar(t)));
+    const erro = resultados.find((r) => r.error);
     if (erro) {
       toast.error(`Não foi possível verificar os vínculos da locação: ${erro.error.message}`);
       return null;
     }
+    const total = (tabela: string) =>
+      resultados[TABELAS_VINCULADAS.indexOf(tabela as (typeof TABELAS_VINCULADAS)[number])].count ??
+      0;
+    const outros = resultados.reduce((soma, r) => soma + (r.count ?? 0), 0);
     return {
-      parcelas: parcelas.count ?? 0,
-      repasses: repasses.count ?? 0,
-      lancamentos: lancamentos.count ?? 0,
-      comissoes: comissoes.count ?? 0,
+      parcelas: total("contrato_parcelas"),
+      repasses: total("locacao_repasses"),
+      lancamentos: total("lancamentos_financeiros"),
+      comissoes: total("comissoes"),
+      outros:
+        outros -
+        total("contrato_parcelas") -
+        total("locacao_repasses") -
+        total("lancamentos_financeiros") -
+        total("comissoes"),
     };
   }
 
@@ -328,7 +356,11 @@ function LocacaoIndex() {
     const vinculos = await contarVinculos(l.id);
     if (!vinculos) return;
     const totalVinculos =
-      vinculos.parcelas + vinculos.repasses + vinculos.lancamentos + vinculos.comissoes;
+      vinculos.parcelas +
+      vinculos.repasses +
+      vinculos.lancamentos +
+      vinculos.comissoes +
+      vinculos.outros;
     if (totalVinculos > 0) {
       setBloqueio({ nome, ...vinculos });
       return;
@@ -447,7 +479,7 @@ function LocacaoIndex() {
     await aplicarLote(patch);
   }
 
-  const linkEditar = { to: "/app/locacao/$id/editar" } as any;
+  const linkEditar = { to: "/app/locacao/$id/editar" } as const;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
@@ -822,6 +854,8 @@ function LocacaoIndex() {
                         "lançamentos financeiros",
                       ),
                     bloqueio.comissoes > 0 && plural(bloqueio.comissoes, "comissão", "comissões"),
+                    bloqueio.outros > 0 &&
+                      plural(bloqueio.outros, "outro registro", "outros registros"),
                   ]
                     .filter(Boolean)
                     .join(", ")}
