@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { InstallAppButton } from "@/components/layout/InstallAppButton";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { ModuleSubNav } from "@/components/layout/ModuleSubNav";
 import { AppRail } from "@/components/layout/AppRail";
@@ -284,6 +285,7 @@ export function AppShell({ variant }: { variant: "tenant" | "admin" }) {
           trilha={activeModule ? [activeModule.label, ...(itemAtual ? [itemAtual.label] : [])] : []}
           actions={
             <>
+              <InstallAppButton />
               <ChatBadge />
             </>
           }
@@ -369,6 +371,7 @@ function AdminLayout({
             Super-admin
           </span>
           <div className="ml-auto flex items-center gap-1">
+            <InstallAppButton />
             <NotificationBell />
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
