@@ -7,11 +7,9 @@ export const Route = createFileRoute("/app/contratos/novo")({
     tipo: typeof search.tipo === "string" ? search.tipo : undefined,
   }),
   // Locações são cadastradas no módulo de Locação (/app/locacao/novo).
-  // Usa `href` (e não `to`) porque a rota de destino vem de outra branch e ainda
-  // não está no routeTree.gen.ts desta branch.
   beforeLoad: ({ search }) => {
     if (search.tipo === "locacao") {
-      throw redirect({ href: "/app/locacao/novo" });
+      throw redirect({ to: "/app/locacao/novo" });
     }
   },
   component: NovoContrato,

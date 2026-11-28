@@ -144,8 +144,9 @@ function LocacaoIndex() {
           <Home className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Locação / Administração</h1>
         </div>
-        {/* Espaço reservado para o botão "Nova locação" (adicionado em outra tarefa). */}
-        <div />
+        <Button asChild size="sm">
+          <Link to="/app/locacao/novo">Nova locação</Link>
+        </Button>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
