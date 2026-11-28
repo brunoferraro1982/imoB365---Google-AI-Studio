@@ -197,6 +197,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as AppLocacaoRepassesIdRouteImport } from './routes/app.locacao.repasses.$id'
+import { Route as AppLocacaoIdEditarRouteImport } from './routes/app.locacao.$id.editar'
 import { Route as AppContratosModelosBibliotecaRouteImport } from './routes/app.contratos.modelos_.biblioteca'
 import { Route as AppContratosChecklistNovoRouteImport } from './routes/app.contratos.checklist.novo'
 import { Route as AppContratosIdImprimirRouteImport } from './routes/app.contratos.$id_.imprimir'
@@ -1202,6 +1203,11 @@ const AppLocacaoRepassesIdRoute = AppLocacaoRepassesIdRouteImport.update({
   path: '/locacao/repasses/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLocacaoIdEditarRoute = AppLocacaoIdEditarRouteImport.update({
+  id: '/locacao/$id/editar',
+  path: '/locacao/$id/editar',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppContratosModelosBibliotecaRoute =
   AppContratosModelosBibliotecaRouteImport.update({
     id: '/contratos/modelos_/biblioteca',
@@ -1660,6 +1666,7 @@ export interface FileRoutesByFullPath {
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/$id/editar': typeof AppLocacaoIdEditarRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1886,6 +1893,7 @@ export interface FileRoutesByTo {
   '/app/contratos/$id/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/$id/editar': typeof AppLocacaoIdEditarRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -2119,6 +2127,7 @@ export interface FileRoutesById {
   '/app/contratos/$id_/imprimir': typeof AppContratosIdImprimirRoute
   '/app/contratos/checklist/novo': typeof AppContratosChecklistNovoRoute
   '/app/contratos/modelos_/biblioteca': typeof AppContratosModelosBibliotecaRoute
+  '/app/locacao/$id/editar': typeof AppLocacaoIdEditarRoute
   '/app/locacao/repasses/$id': typeof AppLocacaoRepassesIdRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -2353,6 +2362,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
+    | '/app/locacao/$id/editar'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -2579,6 +2589,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos/biblioteca'
+    | '/app/locacao/$id/editar'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -2811,6 +2822,7 @@ export interface FileRouteTypes {
     | '/app/contratos/$id_/imprimir'
     | '/app/contratos/checklist/novo'
     | '/app/contratos/modelos_/biblioteca'
+    | '/app/locacao/$id/editar'
     | '/app/locacao/repasses/$id'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -4252,6 +4264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLocacaoRepassesIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/locacao/$id/editar': {
+      id: '/app/locacao/$id/editar'
+      path: '/locacao/$id/editar'
+      fullPath: '/app/locacao/$id/editar'
+      preLoaderRoute: typeof AppLocacaoIdEditarRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/contratos/modelos_/biblioteca': {
       id: '/app/contratos/modelos_/biblioteca'
       path: '/contratos/modelos/biblioteca'
@@ -4767,6 +4786,7 @@ interface AppRouteChildren {
   AppLocacaoIndexRoute: typeof AppLocacaoIndexRoute
   AppContratosIdImprimirRoute: typeof AppContratosIdImprimirRoute
   AppContratosModelosBibliotecaRoute: typeof AppContratosModelosBibliotecaRoute
+  AppLocacaoIdEditarRoute: typeof AppLocacaoIdEditarRoute
   AppLocacaoRepassesIdRoute: typeof AppLocacaoRepassesIdRoute
   AppLocacaoRepassesIndexRoute: typeof AppLocacaoRepassesIndexRoute
 }
@@ -4836,6 +4856,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLocacaoIndexRoute: AppLocacaoIndexRoute,
   AppContratosIdImprimirRoute: AppContratosIdImprimirRoute,
   AppContratosModelosBibliotecaRoute: AppContratosModelosBibliotecaRoute,
+  AppLocacaoIdEditarRoute: AppLocacaoIdEditarRoute,
   AppLocacaoRepassesIdRoute: AppLocacaoRepassesIdRoute,
   AppLocacaoRepassesIndexRoute: AppLocacaoRepassesIndexRoute,
 }
